@@ -477,7 +477,7 @@
         return ['@echo off', 'rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.',
             'rem The dashboard is loaded from the internet each time, so it is always the latest version.',
             'rem PRIVATE: this file contains your access code. Don\'t share it.',
-            'set "SCREEN=' + appsBase + 'screen/"', 'set "LINK=' + link + '"', 'set "FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk"',
+            'set "SCREEN=' + appsBase + 'screen/"', 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', 'set "FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk"',
             'if not exist "%FDPROFILE%" mkdir "%FDPROFILE%"', 'if not exist "%FDPROFILE%\\asked-startup.txt" (', '  echo asked> "%FDPROFILE%\\asked-startup.txt"',
             '  choice /C YN /M "Start the Family Dashboard automatically when this PC turns on"',
             '  if not errorlevel 2 powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Startup\')+\'\\Family Dashboard.lnk\'); $s.TargetPath=\'%~f0\'; $s.WorkingDirectory=\'%~dp0\'; $s.WindowStyle=7; $s.Save()"',
