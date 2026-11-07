@@ -1,0 +1,22 @@
+{
+    "author": "Russ",
+    "id": "uk.macmillan.familydashboard",
+    "name": "Family Dashboard",
+    "description": "Full-screen family dashboard: Home (weather, traffic, trains, bins), Boys rewards and a 3-month calendar.",
+    "version": "0.2.0",
+    "preview_icon": "resources/icon.svg",
+    "min_app_version": "5.47",
+    "min_framework_version": "1.0.0",
+    "os": [
+        { "platform": "windows" }
+    ],
+    "supported_devices": [
+        { "type": "dashboard_lcd", "features": ["sensor-screen"] }
+    ],
+    "interactive": true,
+    "permissions": [
+        { "type": "url", "domain": "script.google.com", "port": 443 },
+        { "type": "url", "domain": "script.googleusercontent.com", "port": 443 },
+        { "type": "url", "domain": "api.tomtom.com", "port": 443 }
+    ]
+}

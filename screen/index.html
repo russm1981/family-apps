@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tr('Family Dashboard')</title>
+    <link rel="icon" type="image/svg+xml" href="resources/icon.svg" />
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';" />
+    <meta name="x-icue-property" content="apiUrl" data-label="tr('Web app URL')" data-type="textfield" data-default="''" />
+    <meta name="x-icue-property" content="accessCode" data-label="tr('Access code')" data-type="textfield" data-default="''" />
+    <script type="application/json" id="x-icue-groups">
+        [{ "title": "tr('Connection')", "properties": ["apiUrl", "accessCode"], "info": "tr('Paste the Apps Script web app URL (ends in /exec) and the access code from the Settings tab of your Google Sheet.')" }]
+    </script>
+    <link rel="stylesheet" href="./vendor/leaflet.css" />
+    <link rel="stylesheet" href="./styles/style.css" />
+</head>
+<body>
+    <div id="app">
+        <nav id="rail">
+            <div id="railPages" class="rail-pages"></div>
+            <div class="rail-foot"><span id="sync" class="sync" title="Sync status"></span></div>
+        </nav>
+
+        <main id="screens">
+            <!-- Widget pages (Home, Other, …) are built from the Google Sheet by scripts/pages.js -->
+            <section id="screen-calendar" class="screen">
+                <header class="cal-head">
+                    <button class="cal-btn" id="calPrev" aria-label="Earlier">◀</button>
+                    <div class="cal-title"><span id="calYear" class="cal-year">----</span><span id="calRange" class="cal-range"></span></div>
+                    <button class="cal-btn" id="calNext" aria-label="Later">▶</button>
+                    <button class="cal-btn today" id="calToday">Today</button>
+                    <div id="calViews" class="cal-views"><button class="vw-btn on" data-view="3m">3 months</button><button class="vw-btn" data-view="1m">Month</button><button class="vw-btn" data-view="week">Week</button></div>
+                    <span class="cal-spacer"></span>
+                    <span id="calStatus" class="cal-status"></span>
+                    <button class="cal-btn add" id="calAdd">+ Add</button>
+                </header>
+                <div id="calAddBar" class="cal-addbar">
+                    <div class="ab-step"><span class="ab-n">1</span><div id="abCats" class="ab-cats"></div></div>
+                    <div class="ab-step"><span class="ab-n">2</span><div id="abDates" class="ab-dates">Tap a day</div></div>
+                    <div class="ab-step grow"><span class="ab-n">3</span><input id="abTitle" class="ab-input" maxlength="40" placeholder="What is it?" autocomplete="off" />
+                        <input id="abNote" class="ab-input note" maxlength="300" placeholder="Notes or time (optional)" autocomplete="off" /></div>
+                    <button class="cal-btn" id="abCancel">Cancel</button>
+                    <button class="cal-btn save" id="abSave" disabled>Save</button>
+                </div>
+                <div class="cal-body">
+                    <div id="calRows" class="cal-rows"></div>
+                    <aside class="cal-side"><h3>Key</h3><div id="calKey" class="cal-key"></div></aside>
+                </div>
+                <div id="calDay" class="cal-day"><div class="cal-day-card"><header><h3 id="calDayTitle"></h3><button id="calDayAdd" class="cal-btn add">+ Add on this day</button><button id="calDayClose" class="cal-btn">✕</button></header><div id="calDayList"></div></div></div>
+            </section>
+
+            <section id="screen-boys" class="screen">
+                <div id="boysGrid" class="boys-grid"></div>
+                <div id="boyPanel" class="boy-panel"></div>
+                <div id="boysMsg" class="msg"></div>
+            </section>
+        </main>
+    </div>
+    <div id="pop" class="pop"><div class="pop-card"><header><h3 id="popTitle"></h3><button id="popClose" class="cal-btn">✕</button></header><div id="popBody" class="pop-body"></div></div></div>
+    <div id="alarm" class="alarm"><div class="alarm-card"><span class="alarm-ico">⏲</span><b id="alarmText">Timer finished</b><button class="alarm-stop">Stop</button></div></div>
+    <div id="toast" class="toast"><span id="toastText"></span><button id="toastUndo" class="toast-undo">Undo</button></div>
+    <script src="./vendor/leaflet.js"></script>
+    <script src="./scripts/widgets.js"></script>
+    <script src="./scripts/widgets2.js"></script>
+    <script src="./scripts/screens.js"></script>
+    <script src="./scripts/pages.js"></script>
+    <script src="./scripts/app.js"></script>
+</body>
+</html>

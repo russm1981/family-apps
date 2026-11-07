@@ -1,0 +1,14 @@
+{
+    "en": {
+        "translation": {
+            "Family Dashboard": "Family Dashboard",
+            "Connection": "Connection",
+            "Web app URL": "Web app URL",
+            "Access code": "Access code",
+            "Paste the Apps Script web app URL (ends in /exec) and the access code from the Settings tab of your Google Sheet.": "Paste the Apps Script web app URL (ends in /exec) and the access code from the Settings tab of your Google Sheet.",
+            "Start on": "Start on",
+            "Home": "Home",
+            "Boys": "Boys"
+        }
+    }
+}

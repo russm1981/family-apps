@@ -1,0 +1,65 @@
+.row2 { margin-top: 9px; }
+.row2 .seg { flex: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 9px; font-size: 12.5px; color: var(--text); }
+.lg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.lg i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; box-shadow: 0 0 0 1px rgba(255,255,255,.15) inset; }
+.lg i.bar { height: 4px; border-radius: 2px; }
+
+/* month grid */
+.mgrid { display: flex; flex-direction: column; gap: 3px; }
+.mhead, .mrow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+.mhead b { text-align: center; font-size: 12px; color: var(--mute); padding-bottom: 2px; }
+.mhead b.we { color: #9fb3ff; }
+.mcell { position: relative; min-height: 74px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 3px 3px 7px;
+    display: flex; flex-direction: column; gap: 2px; text-align: left; overflow: hidden; }
+.mcell.we { background: var(--wk); }
+.mcell.out { opacity: .38; }
+.mcell.today { border-color: var(--acc); border-width: 2px; }
+.mcell.sel { box-shadow: 0 0 0 2px #fff; }
+.mnum { font-size: 13px; font-weight: 700; line-height: 1.1; padding-left: 2px; }
+.mcell.today .mnum { color: var(--acc); }
+.mev { --ec: var(--acc); --et: #fff; background: var(--ec); color: var(--et); font-size: 9.5px; font-weight: 700; line-height: 1.25; border-radius: 3px;
+    padding: 0 3px; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.mmore { font-size: 9.5px; color: var(--mute); padding-left: 2px; }
+.hbar { --hc: #facc15; position: absolute; left: -1px; right: -1px; bottom: 0; height: 4px; background: var(--hc); }
+.hbar.s { left: 3px; border-bottom-left-radius: 3px; } .hbar.e { right: 3px; border-bottom-right-radius: 3px; }
+
+/* events */
+.ev { --ec: var(--acc); --et: #fff; display: flex; align-items: center; gap: 10px; background: var(--panel); border: 1px solid var(--line);
+    border-left: 6px solid var(--ec); border-radius: 12px; padding: 10px 12px; margin-top: 8px; }
+.ev-time { width: 54px; flex: none; color: var(--mute); font-size: 13px; font-variant-numeric: tabular-nums; }
+.ev-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ev-main b { font-size: 16px; font-weight: 700; }
+.ev-main small { color: var(--mute); font-size: 13px; }
+.ev-grp { flex: none; background: var(--ec); color: var(--et); font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; }
+.daylist { margin-top: 16px; }
+.daylist h2, .wd-head, .ld-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
+.daylist h2 { font-size: 18px; }
+.tag { font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.tag.bh { background: var(--wk); color: #9fb3ff; }
+.tag.hol { --hc: #facc15; border: 2px solid var(--hc); color: var(--hc); }
+
+/* week */
+.wday { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; margin-bottom: 10px; position: relative; overflow: hidden; }
+.wday.we { background: var(--wk); }
+.wday.today { border-color: var(--acc); border-width: 2px; }
+.wday.hol::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--hc, #facc15); }
+.wd-head b { font-size: 20px; font-weight: 800; }
+.wd-head span { color: var(--mute); }
+.wd-head i { font-style: normal; margin-left: auto; width: 30px; height: 30px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--acc); }
+.wday.today .wd-head b { color: var(--acc); }
+.wd-empty { color: var(--mute); font-size: 14px; margin-top: 6px; }
+.wday .ev { background: var(--panel-2); }
+
+/* list */
+.lday { margin-bottom: 16px; }
+.ld-head b { font-size: 17px; }
+.ld-head span { color: var(--mute); }
+.lday.today .ld-head b { color: var(--acc); }
+
+.fab { position: fixed; right: 18px; bottom: calc(22px + var(--safe-b)); width: 60px; height: 60px; border-radius: 20px; background: var(--acc); color: #fff;
+    font-size: 34px; font-weight: 300; box-shadow: 0 6px 20px rgba(0,0,0,.5); z-index: 30; line-height: 1; }
+.main { padding-bottom: calc(100px + var(--safe-b)); }
+.dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.toast { bottom: calc(96px + var(--safe-b)); }
