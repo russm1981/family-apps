@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.13",
-  "script": "2026.11.9",
+  "app": "2026.11.14",
+  "script": "2026.11.10",
   "date": "2026-11-07",
   "notes": [
-    "Calendar setting to line up weekdays (or not) in the 3-month views",
-    "Calmer train board; version number in the side bar"
+    "Traffic: tap a route to zoom in on it (turned to fit); tap again for both",
+    "Holiday countdown has a title",
+    "New front page with everything in one place"
   ]
 }

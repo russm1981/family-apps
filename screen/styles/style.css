@@ -921,3 +921,19 @@ body.osk-open .pop-card { max-height: 44vh; }
 /* weekday alignment switched off: days 1–31 straight across */
 .cal-rows.no-align .cal-row { grid-template-columns: 4.2rem repeat(31, minmax(0, 1fr)); }
 .cal-rows.view-3ms.no-align .cal-row { grid-template-columns: 4.2rem repeat(31, var(--cw, 8rem)); }
+
+/* countdown title */
+.cd-title { margin: 0; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); }
+/* traffic: tap a route to zoom to it (and turn it to run across) */
+.wg-traffic .map { position: relative; overflow: hidden; }
+.map-rot { position: absolute; inset: 0; }
+.map-rot.leaflet-container { background: #0c0e12; }
+.map-credit { display: none; position: absolute; right: 0.3rem; bottom: 0.15rem; z-index: 500; font-size: 0.6rem; color: var(--mute); }
+.wg-traffic .map.turned .leaflet-control-attribution { display: none; }
+.wg-traffic .map.turned .map-credit { display: block; }
+.wg-traffic .map-label { background: transparent; padding: 0; }
+.wg-traffic .ml-in { display: inline-block; background: rgba(0, 0, 0, .75); border-radius: 0.4rem; padding: 0.15rem 0.45rem; transform: rotate(var(--unrot, 0deg)); }
+.wg-traffic .route[data-i] { cursor: pointer; }
+.wg-traffic .route.sel { background: rgba(63, 169, 245, .16); box-shadow: 0 0 0 1px var(--acc) inset; }
+/* a route picked: labels sit just above their dots, upright even when the map is turned */
+.wg-traffic .map.picked .ml-in { transform: rotate(var(--unrot, 0deg)) translateY(-1.55em); }

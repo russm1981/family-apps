@@ -24,7 +24,7 @@
 
     T.countdown = function (el, w) {
         var s = w.settings, data = null;
-        el.innerHTML = '<div class="cd-body">' + loading() + '</div>';
+        el.innerHTML = (s.Title === '' ? '' : '<h3 class="cd-title">' + esc(s.Title || 'Holiday countdown') + '</h3>') + '<div class="cd-body">' + loading() + '</div>';
         var body = el.querySelector('.cd-body');
         function render() {
             if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No dates'); return; }

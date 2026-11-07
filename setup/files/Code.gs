@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.9';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.10';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -243,6 +243,7 @@ const QUOTE_CHANGE = ['Every day', 'Every hour', 'Every 10 minutes'];
 Object.assign(WIDGET_TYPES, {
   countdown: { name: 'Holiday countdown', icon: '🏖️', sizes: ['half', 'full'], ttl: 15 * 60, calendar: true, about: 'Days to go until the next holiday, from the calendar and your own dates.',
     settings: [
+      { k: 'Title', label: 'Title', type: 'text', def: 'Holiday countdown', max: 30 },
       { k: 'Categories', label: 'Calendar categories to count down to', type: 'text', def: 'Holiday', max: 80, help: 'Category names separated by commas, e.g. Holiday, School holiday. Blank = only the dates below.' },
       { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', help: 'One per line: Name | date, e.g. Orlando | 3/4/2027 or Christmas | 25 Dec.' },
       { k: 'Show', label: 'How many to show', type: 'number', def: 3, min: 1, max: 6 },

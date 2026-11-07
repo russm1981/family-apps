@@ -146,14 +146,55 @@
     var LINE = { green: '#4cd964', amber: '#ffb020', red: '#ff4d4d' };
 
     T.traffic = function (el, w, ctx) {
-        el.innerHTML = '<div class="map"></div><div class="routes">' + loading() + '</div>';
-        var mapEl = el.querySelector('.map'), box = el.querySelector('.routes');
-        var map = null, layers = null, flow = null, bounds = null, key = ctx.tomtomKey;
+        // The map sits in .map-rot so it can be turned: tapping a route zooms to it and turns it to run across the box.
+        el.innerHTML = '<div class="map"><div class="map-rot"></div><span class="map-credit">\u00a9 TomTom</span></div><div class="routes">' + loading() + '</div>';
+        var outer = el.querySelector('.map'), mapEl = el.querySelector('.map-rot'), box = el.querySelector('.routes');
+        var map = null, layers = null, flow = null, bounds = null, key = ctx.tomtomKey, sel = -1, last = null;
         function flowUrl() {
             return 'https://api.tomtom.com/traffic/map/4/tile/flow/relative0-dark/{z}/{x}/{y}.png?key=' + encodeURIComponent(key) + '&t=' + Math.floor(Date.now() / 600000);
         }
-        function fit() { if (!map || !mapEl.isConnected) return; try { map.invalidateSize(); if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { paddingTopLeft: [48, 26], paddingBottomRight: [70, 26] }); } catch (e) { /* page was rebuilt */ } }   // tight, leaving room for the labels
-        function draw(t) {
+        function unturn() {
+            outer.classList.remove('turned'); mapEl.style.cssText = ''; outer.style.removeProperty('--unrot');
+        }
+        function fit() {
+            if (!map || !mapEl.isConnected) return;
+            try {
+                var r = last && sel >= 0 ? last.routes[sel] : null;
+                if (r && r.points && r.points.length > 1) { fitRoute(r); return; }
+                unturn(); map.invalidateSize();
+                if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { paddingTopLeft: [48, 26], paddingBottomRight: [70, 26] });   // tight, leaving room for the labels
+            } catch (e) { /* page was rebuilt */ }
+        }
+        /** Zoom to one route and turn the map so the route runs left to right, filling the box. */
+        function fitRoute(r) {
+            var W = outer.clientWidth, H = outer.clientHeight; if (!W || !H) return;
+            var z0 = map.getZoom(), pts = r.points.concat(last.home ? [last.home] : []).map(function (p) { return map.project(p, z0); });
+            var p0 = map.project(r.points[0], z0), p1 = map.project(r.points[r.points.length - 1], z0);
+            var a = Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180 / Math.PI;           // start → destination
+            if (a > 90) a -= 180; else if (a < -90) a += 180;                       // never upside down
+            if (Math.abs(a) < 12) a = 0;                                            // nearly level already: don't bother turning
+            var rad = -a * Math.PI / 180, cos = Math.cos(rad), sin = Math.sin(rad);
+            var rot = pts.map(function (p) { return { x: p.x * cos - p.y * sin, y: p.x * sin + p.y * cos }; });
+            var xs = rot.map(function (p) { return p.x; }), ys = rot.map(function (p) { return p.y; });
+            var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs), minY = Math.min.apply(null, ys), maxY = Math.max.apply(null, ys);
+            var scale = Math.min((W - 240) / Math.max(1, maxX - minX), (H - 90) / Math.max(1, maxY - minY));   // room for the labels above the dots
+            var cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;                     // centre in the turned frame → back to map pixels
+            var c = L.point(cx * Math.cos(-rad) - cy * Math.sin(-rad), cx * Math.sin(-rad) + cy * Math.cos(-rad));
+            var D = Math.ceil(Math.sqrt(W * W + H * H)) + 4;                        // a square big enough to cover the box when turned
+            outer.classList.toggle('turned', a !== 0);
+            mapEl.style.cssText = 'width:' + D + 'px;height:' + D + 'px;left:' + (W - D) / 2 + 'px;top:' + (H - D) / 2 + 'px;transform:rotate(' + (-a) + 'deg)';
+            outer.style.setProperty('--unrot', a + 'deg');
+            map.invalidateSize();
+            map.setView(map.unproject(c, z0), Math.min(17, z0 + Math.log(scale) / Math.LN2));
+        }
+        /** Tap a route: zoom to it (others fade). Tap it again: back to all routes. */
+        box.addEventListener('click', function (e) {
+            var row = e.target.closest('.route[data-i]'); if (!row || !last) return;
+            var i = +row.getAttribute('data-i');
+            sel = sel === i ? -1 : i;
+            draw(last, true);
+        });
+        function draw(t, keepView) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return; }
             if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key on the Installation tab to see the traffic map</div>'; return; }
             if (!map) {
@@ -165,23 +206,29 @@
                 map.setView([51.6, -2.5], 11);
             } else flow.setUrl(flowUrl());
             layers.clearLayers();
+            last = t;
             if (!t || !t.routes) return;
+            if (sel >= t.routes.length) sel = -1;
+            Array.prototype.forEach.call(box.querySelectorAll('.route[data-i]'), function (row) { row.classList.toggle('sel', +row.getAttribute('data-i') === sel); });
+            outer.classList.toggle('picked', sel >= 0);
             var b = [];
-            t.routes.forEach(function (r) {
+            t.routes.forEach(function (r, i) {
                 if (r.error || !r.points || !r.points.length) return;
-                L.polyline(r.points, { color: '#000', weight: 9, opacity: 0.55 }).addTo(layers);
-                L.polyline(r.points, { color: LINE[r.status] || '#3fa9f5', weight: 5, opacity: 0.95 }).addTo(layers);
+                var dim = sel >= 0 && sel !== i ? 0.25 : 1;
+                L.polyline(r.points, { color: '#000', weight: 9, opacity: 0.55 * dim }).addTo(layers);
+                L.polyline(r.points, { color: LINE[r.status] || '#3fa9f5', weight: 5, opacity: 0.95 * dim }).addTo(layers);
                 (r.jams || []).forEach(function (j) {
                     var seg = r.points.slice(j.from, j.to + 1);
-                    if (seg.length > 1) L.polyline(seg, { color: '#ff2d2d', weight: 7, opacity: 1 }).addTo(layers);
+                    if (seg.length > 1) L.polyline(seg, { color: '#ff2d2d', weight: 7, opacity: dim }).addTo(layers);
                 });
+                if (dim < 1) return;
                 L.circleMarker(r.to, { radius: 7, color: '#fff', weight: 2, fillColor: LINE[r.status], fillOpacity: 1 })
-                    .bindTooltip(esc(r.name), { permanent: true, direction: 'right', className: 'map-label', offset: [8, 0] }).addTo(layers);
+                    .bindTooltip('<span class="ml-in">' + esc(r.name) + '</span>', sel >= 0 ? { permanent: true, direction: 'center', className: 'map-label' } : { permanent: true, direction: 'right', className: 'map-label', offset: [8, 0] }).addTo(layers);
                 b = b.concat(r.points);
             });
             if (t.home) {
                 L.circleMarker(t.home, { radius: 8, color: '#fff', weight: 2, fillColor: '#3fa9f5', fillOpacity: 1 })
-                    .bindTooltip('Home', { permanent: true, direction: 'left', className: 'map-label', offset: [-8, 0] }).addTo(layers);
+                    .bindTooltip('<span class="ml-in">Home</span>', sel >= 0 ? { permanent: true, direction: 'center', className: 'map-label' } : { permanent: true, direction: 'left', className: 'map-label', offset: [-8, 0] }).addTo(layers);
                 b.push(t.home);
             }
             bounds = b.length ? b : null;
@@ -190,10 +237,10 @@
         return {
             update: function (t) {
                 if (!t || t.error) { box.innerHTML = errBox(t ? t.error : 'No traffic data'); draw(null); return; }
-                box.innerHTML = t.routes.map(function (r) {
+                box.innerHTML = t.routes.map(function (r, i) {
                     if (r.error) return '<div class="route"><div class="r-l"><span class="r-name">' + esc(r.name) + '</span>' + errBox(r.error) + '</div></div>';
                     var diff = r.mins - r.usualMins;
-                    return '<div class="route ' + r.status + '"><div class="r-l"><span class="r-name">' + esc(r.name) + '</span>' +
+                    return '<div class="route ' + r.status + '" data-i="' + i + '"><div class="r-l"><span class="r-name">' + esc(r.name) + '</span>' +
                         '<span class="r-sub">' + (diff > 0 ? '+' + diff + ' min \u00b7 usually ' : 'Usually ') + r.usualMins + ' min \u00b7 ' + r.miles + ' mi</span></div>' +
                         '<span class="pill ' + r.status + '">' + STATUS[r.status] + '</span>' +
                         '<div class="r-time"><b>' + r.mins + '</b> min</div></div>';

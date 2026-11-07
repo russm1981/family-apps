@@ -7,56 +7,188 @@
 <link rel="stylesheet" href="shared/base.css">
 <style>
  body { min-height: 100vh; }
- .wrap { max-width: 1060px; margin: 0 auto; padding: 36px 18px 50px; }
- .hero { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+ .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
+ .hero { display: flex; align-items: center; gap: 16px; }
  .hero .logo { width: 56px; height: 56px; border-radius: 16px; background: var(--acc); display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; flex: none; }
  h1 { font-size: 30px; margin: 0; }
- .lead { color: #cdd5e1; font-size: 17px; margin: 6px 0 24px; }
- .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
- .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+ .ver { color: var(--mute); font-size: 13px; margin-top: 2px; }
+ .lead { color: #cdd5e1; font-size: 17px; margin: 14px 0 6px; }
+ h2 { font-size: 20px; margin: 34px 0 4px; display: flex; align-items: center; gap: 10px; }
+ h2 small { color: var(--mute); font-weight: 400; font-size: 14px; }
+ .sub { color: var(--mute); font-size: 14px; margin: 0 0 14px; }
+ .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+ .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; color: inherit; text-decoration: none; }
+ a.tile:hover { border-color: var(--acc); }
  .tile.first { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc) inset; }
  .tile .thead { display: flex; align-items: center; gap: 12px; }
- .tile .ico { width: 52px; height: 52px; border-radius: 14px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--panel-2); }
+ .tile .ico { width: 46px; height: 46px; border-radius: 13px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 23px; background: var(--panel-2); }
  .tile img.ico { padding: 0; }
- .tile b { font-size: 18px; display: block; } .tile .who { color: var(--mute); font-size: 13px; }
+ .tile b { font-size: 17px; display: block; } .tile .who { color: var(--mute); font-size: 13px; }
  .tile p { color: var(--mute); font-size: 14px; margin: 0; flex: 1; }
- .qr { background: #fff; border-radius: 12px; padding: 8px; width: 150px; height: 150px; align-self: center; }
+ .qr { background: #fff; border-radius: 12px; padding: 8px; width: 140px; height: 140px; align-self: center; }
  .qr svg { width: 100%; height: 100%; display: block; }
  .tile .btn { text-align: center; text-decoration: none; }
- .step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; margin-bottom: 2px; }
- .foot { color: var(--mute); font-size: 13px; margin-top: 26px; }
- .foot a { color: var(--acc); }
+ .step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; }
+ .mine { background: linear-gradient(135deg, rgba(63,169,245,.16), rgba(63,169,245,.04)); border: 1px solid rgba(63,169,245,.45); border-radius: 20px; padding: 18px; }
+ .mine .tiles { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+ .mine .tile { padding: 12px 14px; flex-direction: row; align-items: center; gap: 12px; }
+ .mine .tile .ico { width: 40px; height: 40px; font-size: 20px; }
+ .mine .tile b { font-size: 15px; } .mine .tile .who { font-size: 12px; }
+ .note { color: var(--mute); font-size: 13px; margin: 12px 0 0; }
+ .paste { display: flex; gap: 8px; margin-top: 10px; }
+ .paste input { flex: 1; min-width: 0; background: #0b0d11; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; }
+ .news { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+ .news ul { margin: 6px 0 0; padding-left: 18px; color: #cdd5e1; font-size: 14px; } .news li { margin: 4px 0; }
+ details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin: 8px 0; }
+ details summary { cursor: pointer; font-weight: 700; }
+ details p, details li { color: #cdd5e1; font-size: 14px; }
+ .foot { color: var(--mute); font-size: 13px; margin-top: 30px; }
+ .foot a, .sub a, details a { color: var(--acc); }
+ [hidden] { display: none !important; }
 </style>
 </head>
 <body><div class="wrap">
- <div class="hero"><span class="logo">▦</span><h1>Family Dashboard</h1></div>
- <p class="lead">A touch-screen family dashboard with phone apps. New here? Start with <b>Setup</b> – it walks you through everything.</p>
- <div class="tiles">
-  <div class="tile first"><span class="step">Start here</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>Setup</b><span class="who">First-time setup, step by step</span></span></div>
-   <p>Makes your own Google Sheet, connects the screen and phones, and checks everything works.</p>
-   <div class="qr" data-qr="setup/"></div><a class="btn" href="setup/">Open setup</a></div>
-  <div class="tile"><div class="thead"><span class="ico">🖥</span><span><b>Screen app</b><span class="who">Windows PC + Corsair XENEON EDGE</span></span></div>
-   <p>Download, unzip, and double-click the start file. It updates itself. (Raspberry Pi or tablet: setup gives you a link instead.)</p>
-   <div class="qr" data-qr="downloads/family-dashboard-windows.zip"></div><a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a></div>
-  <div class="tile"><div class="thead"><img class="ico" src="calendar/icons/icon-192.png" alt=""><span><b>Family Calendar</b><span class="who">Phone app – for everyone</span></span></div>
-   <p>See and add calendar entries. Scan with your phone’s camera, then add it to your home screen.</p>
-   <div class="qr" data-qr="calendar/"></div><a class="btn" href="calendar/">Open Family Calendar</a></div>
-  <div class="tile"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for parents</span></span></div>
-   <p>Points, tasks, reminders, widgets and settings. Scan, then add it to your home screen.</p>
-   <div class="qr" data-qr="admin/"></div><a class="btn" href="admin/">Open Family Admin</a></div>
- </div>
- <p class="foot">Add to home screen: iPhone – open in Safari → Share → <b>Add to Home Screen</b>. Android – open in Chrome → ⋮ → <b>Install app</b>.
-  The apps only connect to <b>your</b> family’s Google Sheet once you use the private links from Setup. · <a href="privacy.html">Privacy notice</a></p>
+ <div class="hero"><span class="logo">▦</span><div><h1>Family Dashboard</h1><div class="ver" id="ver"></div></div></div>
+ <p class="lead">Everything in one place: set up, install the apps, and manage your dashboard.</p>
+
+ <!-- Shown on a device that is already connected to a family's Google Sheet -->
+ <section id="mine" hidden>
+  <h2>Your dashboard <small>this device is connected</small></h2>
+  <div class="mine"><div class="tiles" id="mineTiles"></div>
+   <p class="note">These links contain your private access code. They only appear on devices that are already connected – don’t share them outside the family.</p></div>
+ </section>
+
+ <section>
+  <h2>New here? Start with Setup</h2>
+  <p class="sub">Setup walks you through everything step by step, about 20–30 minutes the first time.</p>
+  <div class="tiles">
+   <a class="tile first" href="setup/"><span class="step">Start here</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>Setup</b><span class="who">First time, or a new family</span></span></div>
+    <p>Accept the privacy notice, install the apps, make your own Google Sheet, connect the screen and phones, add your family and free API keys, and check it all works.</p>
+    <span class="btn">Open Setup</span></a>
+   <a class="tile" id="copyTile" href="setup/"><div class="thead"><span class="ico">📄</span><span><b>Make my copy of the Sheet</b><span class="who">Step 3 of Setup, on its own</span></span></div>
+    <p>Copies the ready-made Family Dashboard Google Sheet (with all the code inside) into your Google account. Each family’s copy is completely separate.</p>
+    <span class="btn">Make my copy</span></a>
+   <div class="tile"><div class="thead"><span class="ico">🔗</span><span><b>Already set up?</b><span class="who">Connect this device</span></span></div>
+    <p>Paste the private link from Setup (step “Connect your devices”), or from your Sheet: 🏠 Family Dashboard → Connect my screen and phones.</p>
+    <div class="paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div>
+    <span class="who" id="pasteMsg"></span></div>
+  </div>
+ </section>
+
+ <section>
+  <h2>Install the apps</h2>
+  <p class="sub">Scan a code with your phone’s camera. Then add it to your home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>; Android – Chrome → ⋮ → <b>Install app</b>. The apps connect to your family’s Sheet using the private links from Setup.</p>
+  <div class="tiles">
+   <div class="tile"><div class="thead"><img class="ico" src="calendar/icons/icon-192.png" alt=""><span><b>Family Calendar</b><span class="who">Phone app – for everyone</span></span></div>
+    <p>See the family calendar and add entries.</p><div class="qr" data-qr="calendar/"></div><a class="btn" href="calendar/">Open Family Calendar</a></div>
+   <div class="tile"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for parents</span></span></div>
+    <p>Points and tasks, lists, notes, widgets, pages and all the settings.</p><div class="qr" data-qr="admin/"></div><a class="btn" href="admin/">Open Family Admin</a></div>
+   <div class="tile"><div class="thead"><span class="ico">🖥</span><span><b>Screen – Windows PC</b><span class="who">Corsair XENEON EDGE or any screen</span></span></div>
+    <p>Download, unzip and double-click the start file. It runs full-screen, starts with the PC if you like, and updates itself.</p>
+    <a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a>
+    <span class="who">Tip: Setup’s “Connect your devices” step gives you a start file that’s already connected.</span></div>
+   <div class="tile"><div class="thead"><span class="ico">🍓</span><span><b>Screen – Raspberry Pi or tablet</b><span class="who">Any browser, full-screen</span></span></div>
+    <p>Open the screen in the browser (Fully Kiosk Browser on Android / Fire tablets; Chromium kiosk on a Pi). Use the private screen link from Setup so it connects.</p>
+    <div class="qr" data-qr="screen/"></div><a class="btn" href="screen/">Open the screen</a></div>
+  </div>
+ </section>
+
+ <section>
+  <h2>What’s new</h2>
+  <div class="news" id="news"><span class="who">Loading…</span></div>
+ </section>
+
+ <section>
+  <h2>Help</h2>
+  <details><summary>The screen says “Can’t reach the Google Sheet”</summary>
+   <p>Usually the screen is using an old or mistyped link. Open Setup → “Connect your devices” (or your Sheet → 🏠 Family Dashboard → Connect my screen and phones) and use the new start file or screen link. If it says “Wrong access code”, the code was changed – use the new links.</p></details>
+  <details><summary>“Your Google script needs updating”</summary>
+   <p>Open your Sheet → Extensions → Apps Script, paste in the new Code.gs, Save, then Deploy → Manage deployments → pencil → Version: <b>New version</b> → Deploy. Saving alone isn’t enough – the new version has to be deployed. Setup’s “Updates” step shows the details.</p></details>
+  <details><summary>How updates work</summary>
+   <ul><li><b>Screen:</b> checks every 10 minutes and updates itself when nobody is using it (or offers “Update now”). The version number is at the bottom of its side bar.</li>
+    <li><b>Phone apps:</b> update themselves next time they’re opened.</li>
+    <li><b>Google script:</b> the only part updated by hand (see above).</li></ul></details>
+  <details><summary>Free API keys (maps, trains, buses, NASA, Spotify)</summary>
+   <p>Setup’s “Free API keys” step has a short guide for each one. Keys go in Family Admin → Install.</p>
+   <p><a href="setup/#go=keys" id="keysLink">Open the API key guides</a></p></details>
+  <details><summary>Voice commands</summary>
+   <p>Tap the microphone at the bottom of the screen’s side bar, wait for the beep, then say for example “Ben add 15 points”, “calendar add Ben drums at 12 on Saturday”, “memo dentist moved to Thursday”, “add milk to the shopping list”, “timer 10 minutes” or “go to calendar”. Say “help” for more.</p></details>
+ </section>
+
+ <p class="foot"><a href="privacy.html">Privacy notice</a> · Your family’s information stays in your own Google account – these pages hold no family data.</p>
 </div>
+<script src="setup/config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
  (function () {
+   'use strict';
    var base = location.href.replace(/[#?].*$/, '').replace(/index\.html$/, '');
-   document.querySelectorAll('[data-qr]').forEach(function (el) {
+   function $(id) { return document.getElementById(id); }
+   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+   function qr(el, text) {
      if (!window.qrcode) { el.style.display = 'none'; return; }
-     var q = qrcode(0, 'M'); q.addData(base + el.getAttribute('data-qr')); q.make();
+     var q = qrcode(0, 'M'); q.addData(text); q.make();
      el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 1, scalable: true });
-   });
+   }
+   document.querySelectorAll('[data-qr]').forEach(function (el) { qr(el, base + el.getAttribute('data-qr')); });
+
+   // One-click copy of the template Sheet, if this site has one.
+   var tid = window.FD_SETUP && window.FD_SETUP.templateId;
+   if (tid) $('copyTile').href = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tid) + '/copy';
+   else $('copyTile').hidden = true;
+
+   // Version and what's new.
+   fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
+     $('ver').textContent = 'Version ' + v.app + (v.date ? ' · ' + v.date : '');
+     $('news').innerHTML = '<b>Version ' + esc(v.app) + '</b><ul>' + (v.notes || []).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+   }).catch(function () { $('news').textContent = ''; });
+
+   // Is this device already connected? (The phone apps, setup and the screen keep their link on the device.)
+   function saved() {
+     var keys = ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'];
+     for (var i = 0; i < keys.length; i++) {
+       try { var c = JSON.parse(localStorage.getItem(keys[i]) || 'null'); if (c && c.url && c.code) return { url: c.url, code: c.code }; } catch (e) { /* ignore */ }
+     }
+     return null;
+   }
+   function parse(text) {
+     text = String(text || '').trim();
+     var m = text.match(/[#?&]api=([^&#\s]+)/), c = text.match(/[#?&]code=([^&#\s]+)/);
+     if (m && c) return { url: decodeURIComponent(m[1]), code: decodeURIComponent(c[1]) };
+     return null;
+   }
+   // A link straight to this page (…/#api=…&code=…) connects it too.
+   var fromLink = parse(location.hash);
+   if (fromLink) { try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(fromLink)); } catch (e) { /* ignore */ } history.replaceState(null, '', location.pathname); }
+   $('pasteGo').onclick = function () {
+     var c = parse($('pasteIn').value);
+     if (!c || !/^https:\/\/script\.google\.com\//.test(c.url)) { $('pasteMsg').textContent = 'That doesn’t look like a setup link – it should contain #api=… and code=…'; return; }
+     try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(c)); } catch (e) { /* ignore */ }
+     $('pasteIn').value = ''; $('pasteMsg').textContent = 'Connected. Your links are at the top of the page.';
+     showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
+   };
+   function showMine() {
+     var c = saved(); if (!c) return;
+     var hash = '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code);
+     var items = [
+       ['admin/' + hash, 'admin/icons/icon-192.png', 'Family Admin', 'Points, lists, widgets, settings'],
+       ['calendar/' + hash, 'calendar/icons/icon-192.png', 'Family Calendar', 'See and add entries'],
+       [c.url, '🌐', 'Web admin', 'The same settings, on a computer'],
+       ['setup/' + hash + '&go=family', '👪', 'Family & calendar', 'People, groups, categories, children’s page'],
+       ['setup/' + hash + '&go=devices', '📱', 'Connect devices', 'QR codes, links and the PC start file'],
+       ['setup/' + hash + '&go=keys', '🔑', 'Free API keys', 'Maps, trains, buses, NASA, Spotify'],
+       ['setup/' + hash + '&go=check', '✅', 'Check everything', 'Tests every widget'],
+       ['setup/' + hash + '&go=update', '⬆', 'Updates', 'Is your Google script up to date?'],
+       ['screen/' + hash, '🖥', 'Open the screen', 'The dashboard, on this device'],
+     ];
+     $('mineTiles').innerHTML = items.map(function (x) {
+       var ico = /\.png$/.test(x[1]) ? '<img class="ico" src="' + x[1] + '" alt="">' : '<span class="ico">' + x[1] + '</span>';
+       return '<a class="tile" href="' + esc(x[0]) + '" target="_blank" rel="noopener">' + ico + '<span><b>' + esc(x[2]) + '</b><span class="who">' + esc(x[3]) + '</span></span></a>';
+     }).join('');
+     $('keysLink').href = 'setup/' + hash + '&go=keys';
+     $('mine').hidden = false;
+   }
+   showMine();
  })();
 </script>
 </body></html>
