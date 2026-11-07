@@ -111,6 +111,11 @@
 
     /* ------------------------------------------------------------ boys */
 
+    /** A link into the setup app at one step, already connected to this family's Sheet. */
+    function setupLink(step) {
+        var c = FD.config(), base = location.href.replace(/admin\/.*$/, '') + 'setup/';
+        return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&go=' + step;
+    }
     function renderBoys() {
         var s = DATA.state, target = s.cashIn.points;
         $('body').innerHTML = s.boys.map(function (b, i) {
@@ -119,7 +124,7 @@
                 '<div class="boy-top"><h2>' + esc(b.name) + '</h2></div>' + reminders(b) +
                 '<div class="score"><b>' + b.balance + '</b><span>points</span><span class="to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' to £' + s.cashIn.value) + '</span></div>' +
                 '<div class="bar"><span style="width:' + pct + '%"></span></div>' +
-                '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
+                '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') + '<a class="card link-card" href="' + setupLink('family') + '" target="_blank" rel="noopener"><b>Change children, family or calendar ›</b><span class="mute small">Add or rename children, rename this page, change the calendar groups, categories and colours.</span></a>' +
                     '<button class="bonus" data-bonus="' + i + '">+ Bonus</button></div>' +
                 '<button class="btn wide cash' + (can ? '' : ' off') + '" data-cash="' + i + '"' + (can ? '' : ' disabled') + '>Cash in ' + target + ' for £' + s.cashIn.value + '</button>' +
                 '<h3>Tasks (' + (b.allTasks || b.tasks).length + ')</h3>' + ((b.allTasks || b.tasks).length ? (b.allTasks || b.tasks).map(function (t) {
@@ -529,6 +534,11 @@
                     (f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '');
             }).join('') + '</section>' +
             '<button class="btn wide" id="sSave">Save installation settings</button>' +
+            '<section class="card" style="margin-top:16px"><h2>Change your setup</h2><p class="mute small">Opens the setup app at that step, already connected. Easiest on a computer, but works on a phone.</p>' +
+            [['family', 'Family & calendar', 'people, groups, categories, children’s page'], ['devices', 'Connect devices', 'QR codes, links and the PC start file'],
+             ['keys', 'Free API keys', 'maps, trains, buses, Spotify…'], ['check', 'Check everything', 'tests every widget'], ['update', 'Updates', 'is your Google script up to date?']].map(function (x) {
+                return '<a class="setup-link" href="' + setupLink(x[0]) + '" target="_blank" rel="noopener"><b>' + x[1] + '</b><span>' + x[2] + '</span><i>›</i></a>';
+            }).join('') + '</section>' +
             '<section class="card" style="margin-top:16px"><h2>Access code</h2>' +
             '<p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'The code protects your dashboard: anyone with your links and code can use it. ' +
             'After changing it, every other device needs its new link (setup app → Connect your devices) and the PC needs its new start file. This phone updates itself.</p>' +

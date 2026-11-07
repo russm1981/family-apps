@@ -62,7 +62,7 @@
     <button data-tab="statement">Points &amp; statement</button>
     <button data-tab="todos">Morning to-dos</button>
     <button data-tab="timetable">Weekly reminders</button>
-    <button data-tab="boys">Children</button>
+    <button data-tab="boys">Family</button>
     <button data-tab="widgets">Pages &amp; widgets</button>
     <button data-tab="install">Installation</button>
   </nav>
@@ -128,10 +128,10 @@
 
     <section id="boys">
       <div class="card">
-        <h2>Children</h2>
-        <p class="mute">Points history is stored against the name, so rename before any points are earned (or rename in the Ledger tab too).</p>
-        <table class="edit" id="boysTable"></table>
-        <p style="margin-bottom:0"><button class="btn" onclick="saveList('boys')">Save</button></p>
+        <h2>Children, family &amp; calendar</h2>
+        <p class="mute">Children, the adults, the calendar groups and categories, and the name of the children’s page are all changed in one place, so renaming a child keeps their points and calendar entries.</p>
+        <table class="edit" id="boysTable" style="display:none"></table>
+        <p style="margin-bottom:0"><button class="btn" onclick="openSetup('family')">Change family &amp; calendar</button></p>
       </div>
     </section>
     <section id="widgets">
@@ -179,6 +179,11 @@ function login() {
   CODE = $('codeIn').value.trim();
   $('loginErr').textContent = '';
   load(true);
+}
+function openSetup(step) {
+  if (!DATA || !DATA.execUrl) return;
+  const base = DATA.setupBase || ((DATA.appsAddress || '').replace(/\/?$/, '/') + 'setup/');
+  window.open(base + '#api=' + encodeURIComponent(DATA.execUrl) + '&code=' + encodeURIComponent(CODE) + '&go=' + step, '_blank');
 }
 function logout() { store('brCode', null); CODE = ''; $('app').style.display = 'none'; $('login').style.display = 'block'; }
 

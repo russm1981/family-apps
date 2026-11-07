@@ -453,7 +453,9 @@
             S.scriptVersion = p.version || '';
             return S.code ? null : get('claim').then(function (d) { S.code = d.code; save(); });
         }).then(function () { return get('layout'); }).then(function (L) {
-            S.connected = true; S.needCode = false; save();
+            S.connected = true; S.needCode = false;
+            if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
+            save();
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
             if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Family Admin app (Install tab).' : ''));
             renderSteps();
@@ -605,14 +607,16 @@
         var h = location.hash.replace(/^#/, ''), p = {};
         h.split('&').forEach(function (kv) { var x = kv.split('='); if (x[0]) { try { p[x[0]] = decodeURIComponent(x.slice(1).join('=')); } catch (e) { /* skip */ } } });
         if (location.hash && history.replaceState) history.replaceState(null, '', location.pathname);
-        var wantUpdate = 'update' in p;
+        var wantUpdate = 'update' in p, goTo = p.go || '';
         if (p.api && p.code) {
             var changed = p.api !== S.url || p.code !== S.code;
             S.url = p.api; S.code = p.code; if (changed) S.connected = false; save();
         }
         render();
         var after = function () {
-            if (wantUpdate) S.step = STEPS.map(function (x) { return x.id; }).indexOf('update');
+            var ids = STEPS.map(function (x) { return x.id; });
+            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family') S.fam = null; S.step = S.privacy === P.version ? ids.indexOf(goTo) : 0; }
+            else if (wantUpdate) S.step = ids.indexOf('update');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? STEPS.map(function (x) { return x.id; }).indexOf('devices') : 0;
             render();
             if (p.from === 'sheet' && connected()) toast('Connected to your Family Dashboard Sheet \u2705');

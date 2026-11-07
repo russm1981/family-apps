@@ -736,6 +736,7 @@ function getAdmin_() {
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
+    setupBase: appsBase_() + 'setup/',
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
     pageTypes: Object.keys(PAGE_TYPES).map(k => schemaOut_(k, PAGE_TYPES[k])),
   };
@@ -2476,6 +2477,7 @@ function spotifyControl_(op) {
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
     .addItem('Connect my screen and phones', 'menuConnect')
+    .addItem('Change family & calendar', 'menuFamily')
     .addItem('Check for updates', 'menuUpdate')
     .addSeparator()
     .addItem('Repair the tabs (runs setup)', 'setup')
@@ -2508,6 +2510,15 @@ function menuConnect() {
     '<p>Open the setup app to connect the screen and phones – it already knows your Sheet, so there’s nothing to type:</p>' +
     '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Open the setup app</a></p>' +
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
+}
+/** Opens the setup app straight at "Family & calendar": people, groups, categories and the children's page. */
+function menuFamily() {
+  const url = myUrl_();
+  if (!url) { menuConnect(); return; }
+  const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&go=family';
+  dialog_('Change family & calendar', '<p>Add or rename people, change who is an adult or a child, rename the groups and the children’s page, and change the calendar categories and colours.</p>' +
+    '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Open Family &amp; calendar</a></p>' +
+    '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 280);
 }
 function menuUpdate() {
   let latest = null;
