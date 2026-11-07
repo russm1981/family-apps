@@ -1,14 +1,21 @@
 /* Family Dashboard – update checks and the privacy notice on the screen.
- * - Every hour the screen reads version.json from where the apps are hosted (GitHub Pages). If there's a newer
+ * - Every 10 minutes the screen reads version.json from where the apps are hosted (GitHub Pages). If there's a newer
  *   screen version it offers "Update now / Later". (Restarting the PC also picks up the new version.)
  * - If the family's Google script is older than the version the apps need, it says how to update it.
  * - If the privacy notice hasn't been accepted (or has changed since), it must be accepted before carrying on.
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.8';
+    var APP_VERSION = '2026.11.9';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
-    var latest = null, lastLayout = null, privacyOpen = false;
+    var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
+    var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
+    document.addEventListener('pointerdown', function () { lastTouch = Date.now(); }, true);
+    /** Something on screen that an automatic reload would interrupt: an alarm, a pop-up, the keyboard, voice, adding to the calendar. */
+    function busyScreen() {
+        return ['alarm', 'pop', 'voice', 'osk'].some(function (id) { var e = document.getElementById(id); return e && e.classList.contains('on'); }) ||
+            !!document.querySelector('#screen-calendar.adding') || privacyOpen;
+    }
     function api() { return window.FDApi; }
     function esc(s) { return api().esc(s); }
     function newer(a, b) {
@@ -38,7 +45,16 @@
     }
     function showUpdate() {
         var snooze = Number(api().load(SNOOZE_KEY) || 0);
-        if (!latest || !newer(latest.app, APP_VERSION) || Date.now() < snooze) { banner('updBanner', ''); return; }
+        if (!latest || !newer(latest.app, APP_VERSION)) { banner('updBanner', ''); return; }
+        // Nobody using it: just update. (Also after a "Later", once the screen is idle.)
+        if (Date.now() - lastTouch > IDLE_MS && !busyScreen()) {
+            var tried = String(api().load('familyDashboard.autoUpdate') || '').split('|');   // "version|time" of the last try
+            if (tried[0] !== latest.app || Date.now() - Number(tried[1] || 0) > 30 * 60000) {
+                api().store('familyDashboard.autoUpdate', latest.app + '|' + Date.now());
+                update(); return;
+            }
+        }
+        if (Date.now() < snooze) { banner('updBanner', ''); return; }
         var b = banner('updBanner', '<span class="n-ico">⬆</span><div class="n-text"><b>Update available (' + esc(latest.app) + ')</b>' +
             (latest.notes ? '<span>' + latest.notes.map(esc).join(' · ') + '</span>' : '') + '</div>' +
             '<button class="n-btn" data-u="now">Update now</button><button class="n-btn ghost" data-u="later">Later</button>');
@@ -51,6 +67,7 @@
     }
     /** Fetch fresh copies of every file first (so the browser cache can't hand back the old ones), then reload. */
     function update() {
+        if (updating) return; updating = true;
         var files = ['index.html'];
         Array.prototype.forEach.call(document.querySelectorAll('script[src], link[rel=stylesheet]'), function (el) {
             var u = el.getAttribute('src') || el.getAttribute('href');
@@ -101,5 +118,6 @@
             if (first) checkForUpdate(); else showScript();
         },
     };
-    setInterval(checkForUpdate, 60 * 60000);
+    setInterval(checkForUpdate, 10 * 60000);                                 // look for a new version every 10 minutes
+    setInterval(function () { if (latest) showUpdate(); }, 60000);            // and update as soon as the screen is left alone
 })();
