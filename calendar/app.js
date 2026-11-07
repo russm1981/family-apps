@@ -60,6 +60,8 @@
         $('fab').onclick = function () { openAdd(view === 'month' ? selected : ymd(new Date())); };
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         $('body').onclick = function (e) {
+            var ev = e.target.closest('[data-ev]');
+            if (ev && EVS[+ev.getAttribute('data-ev')]) { openEvent(EVS[+ev.getAttribute('data-ev')]); return; }
             var d = e.target.closest('[data-day]'); if (!d) return;
             var ds = d.getAttribute('data-day');
             if (view === 'month') { selected = ds; render(); var dl = $('dayList'); if (dl) dl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
@@ -83,6 +85,7 @@
     }
 
     function render() {
+        EVS = [];
         if (!$('body')) return;
         Array.prototype.forEach.call(document.querySelectorAll('#views button'), function (b) { b.classList.toggle('on', b.getAttribute('data-v') === view); });
         $('prev').style.visibility = $('next').style.visibility = view === 'list' ? 'hidden' : '';
@@ -95,8 +98,10 @@
         else renderList(c, today);
     }
 
+    var EVS = [];      // the entries on screen, so tapping one can open it
     function evRow(e, big) {
-        return '<div class="ev' + (big ? ' big' : '') + '" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' +
+        EVS.push(e);
+        return '<div class="ev' + (big ? ' big' : '') + '" data-ev="' + (EVS.length - 1) + '" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' +
             '<span class="ev-time">' + (e.time ? esc(e.time) : 'All day') + '</span>' +
             '<span class="ev-main"><b>' + esc(e.t) + '</b>' + (e.note ? '<small>' + esc(e.note) + '</small>' : '') + '</span>' +
             '<span class="ev-grp">' + esc(e.k) + '</span></div>';
@@ -185,6 +190,33 @@
         $('fCancel').onclick = closeSheet;
         $('fSave').onclick = save;
         $('sheetBg').classList.add('on');
+    }
+    /** Tap an entry: see it in full, and delete it (repeating ones: just this one, or every repeat). */
+    function openEvent(e) {
+        var when = e.s ? new Date(e.s) : null;
+        $('sheet').innerHTML = '<div class="grab"></div><h2>' + esc(e.full || e.t) + '</h2>' +
+            '<p class="ev-info"><span class="ev-dot" style="--ec:' + esc(e.c) + '"></span>' + esc(e.cat || e.k || '') +
+            (when ? ' \u00b7 ' + when.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) : '') + ' \u00b7 ' + (e.time ? esc(e.time) : 'All day') +
+            (e.rec ? ' \u00b7 repeats' : '') + '</p>' +
+            (e.note ? '<p class="ev-note">' + esc(e.note) + '</p>' : '') +
+            '<div id="evMsg"></div>' +
+            (e.id ? '<div class="sheet-actions">' + (e.rec ? '<button class="btn bad" data-delete="one">Delete this one</button><button class="btn bad" data-delete="all">Delete every repeat</button>'
+                : '<button class="btn bad" data-delete="one">Delete</button>') + '</div>' : '') +
+            '<div class="sheet-actions"><button class="btn ghost" id="evClose">Close</button></div>';
+        $('sheetBg').classList.add('on');
+        $('evClose').onclick = closeSheet;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-delete]'), function (b) {
+            b.onclick = function () {
+                var all = b.getAttribute('data-delete') === 'all';
+                if (b.getAttribute('data-sure') !== '1') {        // second tap confirms
+                    b.setAttribute('data-sure', '1'); b.textContent = all ? 'Tap again: delete every repeat' : 'Tap again to delete'; return;
+                }
+                b.disabled = true; b.textContent = 'Deleting\u2026';
+                FD.post({ action: 'deleteEvent', id: e.id, cal: e.cal, s: e.s, all: all }).then(function () {
+                    closeSheet(); FD.toast('Deleted'); cache = {}; load(true);
+                }).catch(function (err) { b.disabled = false; b.removeAttribute('data-sure'); b.textContent = all ? 'Delete every repeat' : 'Delete'; $('evMsg').innerHTML = '<p class="ev-err">' + esc(err.message) + '</p>'; });
+            };
+        });
     }
     function closeSheet() { $('sheetBg').classList.remove('on'); }
     function save() {

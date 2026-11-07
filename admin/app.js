@@ -76,7 +76,7 @@
         var out = '';
         if (DATA.codeWeak) out += '<div class="banner warn"><b>Your access code is weak.</b> Make a strong one on the Install tab. <button class="link" data-goto="install">Fix it</button></div>';
         if (LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion))
-            out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <a class="link" href="../setup/#update">How to update</a></div>';
+            out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <button class="link" data-goto="install">Update now</button></div>';
         return out;
     }
     function privacyCheck() {
@@ -526,6 +526,39 @@
 
     /* ------------------------------------------------------------ installation */
 
+    /** Google script updates: version, "Update now", and automatic updates on/off. */
+    function updatesCard() {
+        var mine = DATA.scriptVersion || '?', newest = LATEST && LATEST.script, behind = newest && DATA.scriptVersion && newer(newest, DATA.scriptVersion);
+        var last = {}; try { last = JSON.parse(DATA.lastUpdate || '{}'); } catch (e) { last = {}; }
+        return '<section class="card" style="margin-top:16px"><h2>Google script updates</h2>' +
+            '<p>' + (behind ? '<b>Version ' + esc(newest) + ' is available</b> – you have ' + esc(mine) + '.' : 'Up to date: version ' + esc(mine) + '.') + '</p>' +
+            '<button class="btn wide' + (behind ? '' : ' ghost') + '" id="suNow">' + (behind ? 'Update the Google script now' : 'Check for an update now') + '</button>' +
+            '<div class="row-between" style="margin-top:14px"><span><b>Automatic updates</b><br><span class="mute small">Updates itself within minutes of a new version (and checks hourly)</span></span>' +
+            '<button class="btn ' + (DATA.autoUpdate ? 'good' : 'ghost') + '" id="suAuto">' + (DATA.autoUpdate ? 'On' : 'Off') + '</button></div>' +
+            (last.at ? '<p class="mute small">Last automatic update: ' + esc(String(last.at).slice(0, 16).replace('T', ' ')) + ' – ' + esc(last.result || '') + (last.to ? ' (' + esc(last.to) + ')' : '') + (last.message ? '<br>' + esc(last.message) : '') + '</p>' : '') +
+            '<details class="adv"><summary>What automatic updates need</summary><p class="small">Once per Google account, switch on <b>Google Apps Script API</b> at ' +
+            '<a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>. ' +
+            'Your script then downloads new versions from ' + esc(DATA.appsAddress || '') + ' – only turn this on if you trust whoever publishes that site.</p></details></section>';
+    }
+    function wireUpdates() {
+        if ($('suNow')) $('suNow').onclick = function () {
+            var b = $('suNow'); b.disabled = true; b.textContent = 'Updating… (up to a minute)';
+            FD.post({ action: 'selfUpdate', why: 'app' }).then(function (r) {
+                FD.toast(r.updated ? 'Updated to ' + r.to : r.upToDate ? 'Already up to date' : (r.message || 'Done'), !r.updated && !r.upToDate);
+                load();
+            }).catch(function (e) {
+                FD.toast(e.message, true); b.disabled = false; b.textContent = 'Try again';
+                if (/Apps Script API/.test(e.message)) sheet('<h2>One-time switch needed</h2><p>' + esc(e.message) + '</p><ol><li>Open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> (signed in as the Sheet’s owner).</li><li>Switch <b>Google Apps Script API</b> on.</li><li>Come back and press Update again.</li></ol><p class="mute small">Tap outside this box to close it.</p>');
+            });
+        };
+        if ($('suAuto')) $('suAuto').onclick = function () {
+            act({ action: 'autoUpdate', on: !DATA.autoUpdate }).then(function (r) {
+                FD.toast(r.autoUpdate ? 'Automatic updates on' : 'Automatic updates off');
+                if (r.warning) sheet('<h2>Automatic updates are on, but…</h2><p>' + esc(r.warning) + '</p><p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>.</p>');
+                load();
+            }, function () {});
+        };
+    }
     function renderInstall() {
         var c = FD.config();
         $('body').innerHTML = '<p class="mute small help">Set once when the dashboard is installed: keys for the map, trains and calendar. Each widget’s own settings are on the Widgets tab.</p>' +
@@ -534,6 +567,7 @@
                     (f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '');
             }).join('') + '</section>' +
             '<button class="btn wide" id="sSave">Save installation settings</button>' +
+            updatesCard() +
             '<section class="card" style="margin-top:16px"><h2>Change your setup</h2><p class="mute small">Opens the setup app at that step, already connected. Easiest on a computer, but works on a phone.</p>' +
             [['family', 'Family & calendar', 'people, groups, categories, children’s page'], ['devices', 'Connect devices', 'QR codes, links and the PC start file'],
              ['keys', 'Free API keys', 'maps, trains, buses, Spotify…'], ['check', 'Check everything', 'tests every widget'], ['update', 'Updates', 'is your Google script up to date?']].map(function (x) {
@@ -572,6 +606,7 @@
         }
         $('cNew').onclick = function () { changeCode(''); };
         $('cSet').onclick = function () { var v = $('cOwn').value.trim(), p = codeProblem(v); if (p) { FD.toast('The code needs ' + p, true); return; } changeCode(v); };
+        wireUpdates();
         $('sSave').onclick = function () {
             var values = {}; document.querySelectorAll('[data-set]').forEach(function (i) { values[i.getAttribute('data-set')] = i.value.trim(); });
             act({ action: 'saveInstall', values: values }, 'Installation settings saved');

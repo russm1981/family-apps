@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.15';
+    var APP_VERSION = '2026.11.19';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
@@ -76,13 +76,35 @@
         Promise.all(files.map(function (f) { return fetch(f, { cache: 'reload' }).catch(function () { /* ignore */ }); }))
             .then(function () { location.reload(); });
     }
+    /** Automatic updates on: ask the Google script to update itself (at most every 15 minutes per version). */
+    var scriptUpdating = false;
+    function autoScript() {
+        var tried = String(api().load('familyDashboard.scriptAuto') || '').split('|');
+        if (scriptUpdating || (tried[0] === latest.script && Date.now() - Number(tried[1] || 0) < 15 * 60000)) return false;
+        api().store('familyDashboard.scriptAuto', latest.script + '|' + Date.now());
+        scriptUpdating = true;
+        banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Updating the Google script to ' + esc(latest.script) + '…</b></div>');
+        api().post({ action: 'selfUpdate', why: 'screen' }).then(function (r) {
+            scriptUpdating = false;
+            if (r && (r.updated || r.upToDate)) { lastLayout.scriptVersion = r.to || r.version || latest.script; banner('scrBanner', ''); return; }
+            banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc((r && r.message) || '') + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
+        }).catch(function (err) {
+            scriptUpdating = false;
+            banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc(err.message) + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
+        });
+        var b = document.getElementById('scrBanner');
+        b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
+        return true;
+    }
     function showScript() {
         if (!latest || !lastLayout || !lastLayout.scriptVersion) return;
+        if (lastLayout.autoUpdate && newer(latest.script, lastLayout.scriptVersion) && autoScript()) return;
+        if (scriptUpdating) return;
         var nag = Number(api().load(SCRIPT_KEY) || 0);
         if (!newer(latest.script, lastLayout.scriptVersion) || Date.now() < nag) { banner('scrBanner', ''); return; }
         var b = banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Your Google script needs updating</b>' +
             '<span>You have version ' + esc(lastLayout.scriptVersion) + '; the apps now need ' + esc(latest.script) +
-            '. On a computer open your Google Sheet → 🏠 Family Dashboard → Check for updates.</span></div>' +
+            '. Update it from the Family Admin app (Install tab), or in your Google Sheet → 🏠 Family Dashboard → Update the Google script now.</span></div>' +
             '<button class="n-btn ghost" data-s="ok">OK</button>');
         b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
     }
@@ -124,6 +146,7 @@
             if (!L) return;
             var first = !lastLayout;
             lastLayout = L;
+            if (window.FDSleep && L.sleep) window.FDSleep.config(L.sleep);
             showVersion();
             showPrivacy();
             if (first) checkForUpdate(); else showScript();

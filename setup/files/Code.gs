@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.10';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.15';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -97,6 +97,7 @@ const INSTALL = [
   { k: 'AccessCode', label: 'Access code', help: 'Made for you when the Sheet is set up. Change it from the Family Admin app (Install tab) so the rules are checked.', hidden: true },
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
+  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
   { k: 'HomeAddress', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
@@ -104,6 +105,9 @@ const INSTALL = [
   { k: 'RailDataKey', label: 'National Rail key', help: 'Either an OpenLDBWS token (from realtime.nationalrail.co.uk/OpenLDBWSRegistration – the same one the Raspberry Pi departure boards use) or a Rail Data Marketplace key (raildata.org.uk).' },
   { k: 'CalendarIds', label: 'Calendars to show', def: 'default', help: 'default = your main calendar, all = every calendar, or calendar IDs separated by commas.' },
   { k: 'AddToCalendar', label: 'Calendar for new events', def: 'default', help: 'Where + Add saves events: default = your main calendar, or a calendar ID.' },
+  { k: 'SleepMinutes', label: 'Screen sleep after (minutes)', def: '30', help: 'With nobody touching the screen, it goes dark after this many minutes; a touch wakes it. 0 = never.' },
+  { k: 'SleepStyle', label: 'Sleep screen', def: 'Clock', help: 'Clock = black with a small, dim clock. Black = completely black.' },
+  { k: 'NightHours', label: 'Night hours', def: '23:30-06:30', help: 'Between these times the screen sleeps (unless someone touches it), and goes back to sleep after 2 minutes. Blank = no night hours.' },
   { k: 'NasaKey', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA picture of the day. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
   { k: 'TransportApiId', label: 'TransportAPI app ID', help: 'For live bus times (free account at developer.transportapi.com \u2013 the same service the MagicMirror bus module uses).' },
   { k: 'TransportApiKey', label: 'TransportAPI app key', help: 'From the same TransportAPI account.' },
@@ -168,7 +172,7 @@ const WIDGET_TYPES = {
       { k: 'Rows', label: 'Trains to show', type: 'number', def: 3, min: 1, max: 7, help: 'A half-height widget fits 3; full height fits 7.' },
     ],
     data: (s) => trains_(s.From, s.To) },
-  agenda: { name: 'Today & tomorrow', icon: '\uD83D\uDCC5', sizes: ['half', 'full'], about: 'Calendar entries for today and tomorrow.',
+  agenda: { name: 'Today & tomorrow', icon: '\uD83D\uDCC5', sizes: ['half', 'full'], calendar: true, about: 'Calendar entries for today and tomorrow.',
     settings: [
       { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 4, min: 2, max: 10 },
     ],
@@ -519,7 +523,7 @@ function doGet(e) {
   if (p.action) {
     return json_(() => {
       ensureMigrated_();
-      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER };
+      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_() };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
       if (p.action === 'state') return getState_();
@@ -588,8 +592,11 @@ function dispatch_(b) {
     case 'memo': return memo_(b);
     case 'spotify': return spotifyControl_(b.op);
     case 'addEvent': return addEvent_(b);
+    case 'deleteEvent': return deleteEvent_(b);
     case 'changeCode': return changeCode_(b);
     case 'acceptPrivacy': return acceptPrivacy_(b);
+    case 'selfUpdate': return selfUpdate_(b.why || 'app');
+    case 'autoUpdate': return setAutoUpdate_(!!b.on);
     default: throw new Error('Unknown action: ' + b.action);
   }
 }
@@ -759,6 +766,7 @@ function getAdmin_() {
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
+    autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '',
     setupBase: appsBase_() + 'setup/',
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
     pageTypes: Object.keys(PAGE_TYPES).map(k => schemaOut_(k, PAGE_TYPES[k])),
@@ -1063,7 +1071,7 @@ function layout_() {
   return { pages: pages, widgets: widgets, tomtomKey: String(inst_('TomTomKey') || ''), columns: LIMITS.columns,
     version: hash_(JSON.stringify([pages, widgets])), scriptVersion: SCRIPT_VERSION,
     privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
-    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT) };
+    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT), autoUpdate: autoUpdateOn_(), sleep: sleepSettings_() };
 }
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
@@ -1381,7 +1389,7 @@ function weather_(place) {
   let i0 = d.hourly.time.indexOf(nowHour);
   if (i0 < 0) i0 = 0;
   const hours = [];
-  for (let i = i0 + 1; i < Math.min(i0 + 9, d.hourly.time.length); i++) {
+  for (let i = i0 + 1; i < Math.min(i0 + 13, d.hourly.time.length); i++) {   // the next 12 hours (half-height weather shows every 2nd)
     hours.push({ time: d.hourly.time[i].slice(11, 16), temp: Math.round(d.hourly.temperature_2m[i]),
       rain: d.hourly.precipitation_probability[i], code: d.hourly.weather_code[i], isDay: d.hourly.is_day[i] === 1 });
   }
@@ -1797,6 +1805,11 @@ function listItem_(b) {
       T.Tasks.patch(t.status === 'completed' ? { status: 'needsAction', completed: null } : { status: 'completed' }, listId, b.id);
     } else if (op === 'remove') T.Tasks.remove(listId, b.id);
     else if (op === 'clearDone') T.Tasks.clear(listId);
+    else if (op === 'star') {                                     // priority: kept here, as Google Tasks has no priority field
+      const st = todoStars_();
+      if (st[b.id]) delete st[b.id]; else st[b.id] = 1;
+      PropertiesService.getScriptProperties().setProperty('todoStars', JSON.stringify(st));
+    }
     else throw new Error('Unknown list action');
     if (w.type === 'todo') return { ok: true, id: w.id, data: todo_(w.settings) };
   } else {
@@ -2059,6 +2072,29 @@ function bankHolidays_() {
   return v && !v.error ? v : {};
 }
 
+/**
+ * Delete a calendar entry from the screen or the Family Calendar app.
+ * b.id / b.cal / b.s identify the entry (as sent with the calendar); b.all = true deletes every repeat of a repeating entry,
+ * otherwise only that day's one. Only calendars the dashboard shows can be touched.
+ */
+function deleteEvent_(b) {
+  const id = String(b.id || ''), calId = String(b.cal || ''), at = Number(b.s);
+  if (!id || !calId || !at) throw new Error('Which entry?');
+  const cal = calendarsFrom_(inst_('CalendarIds')).find(c => c.getId() === calId);
+  if (!cal) throw new Error('That calendar isn’t one the dashboard shows');
+  const t = new Date(at), evs = cal.getEvents(new Date(at - 2 * 86400000), new Date(at + 2 * 86400000));
+  const ev = evs.find(e => e.getId() === id && Math.abs((e.isAllDayEvent() ? e.getAllDayStartDate() : e.getStartTime()).getTime() - t.getTime()) < 36 * 3600000)
+    || evs.find(e => e.getId() === id);
+  if (!ev) throw new Error('Couldn’t find that entry – it may already have gone');
+  const title = ev.getTitle();
+  try {
+    if (b.all && ev.isRecurringEvent()) ev.getEventSeries().deleteEventSeries();
+    else ev.deleteEvent();
+  } catch (err) { throw new Error('Google Calendar wouldn’t delete it (' + err.message + '). You may only be able to view that calendar.'); }
+  bumpCalVersion_();
+  return { ok: true, deleted: title };
+}
+
 function calVersion_() { return PropertiesService.getScriptProperties().getProperty('calVer') || '0'; }
 function bumpCalVersion_() { PropertiesService.getScriptProperties().setProperty('calVer', String(Date.now())); }
 
@@ -2105,7 +2141,8 @@ function getCalendar_(start, end) {
         const inGroup = cat && cat.group !== cat.name;
         const item = { t: c.text + (inGroup ? ' (' + cat.name + ')' : ''), full: title,
           c: cat ? cat.groupColour : OTHER_COLOUR, k: cat ? cat.group : 'Other', cat: cat ? cat.name : 'Other', bar: !!(cat && cat.bar), allDay: allDay,
-          time: allDay ? '' : fmt_(s, 'HH:mm'), note: String(ev.getDescription() || '').slice(0, 300) };
+          time: allDay ? '' : fmt_(s, 'HH:mm'), note: String(ev.getDescription() || '').slice(0, 300),
+          id: ev.getId(), cal: cal.getId(), s: s.getTime(), rec: ev.isRecurringEvent() };   // for deleting
         let d = first, guard = 0;
         while (d <= last && guard++ < 370) {
           if (d >= start && d < end) (days[d] = days[d] || []).push(Object.assign({}, item, { time: d === first ? item.time : '' }));
@@ -2371,11 +2408,17 @@ function nearestStop_() {
 
 /* ------------------------------------------------------ to-do (Google Tasks) */
 
+function todoStars_() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('todoStars') || '{}'); } catch (e) { return {}; } }
+
 function todo_(s) {
   const T = tasksApi_(), listId = tasksListId_(s.TasksList);
   const items = (T.Tasks.list(listId, { showCompleted: true, showHidden: false, maxResults: 100 }).items || []).filter(t => t.title)
     .map(t => ({ id: t.id, text: t.title, done: t.status === 'completed', due: t.due ? String(t.due).slice(0, 10) : '', notes: String(t.notes || '').slice(0, 140) }));
-  const open = items.filter(i => !i.done).sort((a, b) => (a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0);
+  // Priorities (★) first, then by due date.
+  const st = todoStars_(), alive = {};
+  items.forEach(i => { i.star = !!st[i.id]; if (st[i.id]) alive[i.id] = 1; });
+  if (Object.keys(alive).length !== Object.keys(st).length) PropertiesService.getScriptProperties().setProperty('todoStars', JSON.stringify(alive));   // forget deleted tasks
+  const open = items.filter(i => !i.done).sort((a, b) => (b.star - a.star) || ((a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0));
   return { name: s.Title, source: 'tasks', today: fmt_(new Date(), 'yyyy-MM-dd'), items: open.concat(items.filter(i => i.done)) };
 }
 
@@ -2629,7 +2672,8 @@ function onOpen() {
   SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
     .addItem('Connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
-    .addItem('Check for updates', 'menuUpdate')
+    .addItem('Update the Google script now', 'menuUpdate')
+    .addItem('Turn automatic updates on / off', 'menuAutoUpdate')
     .addSeparator()
     .addItem('Repair the tabs (runs setup)', 'setup')
     .addToUi();
@@ -2672,19 +2716,122 @@ function menuFamily() {
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 280);
 }
 function menuUpdate() {
-  let latest = null;
-  try { latest = JSON.parse(UrlFetchApp.fetch(appsBase_() + 'version.json', { muteHttpExceptions: true }).getContentText()); } catch (err) { latest = null; }
-  if (!latest) { dialog_('Check for updates', '<p>Couldn’t check for updates just now. Try again later.</p>', 200); return; }
+  let r;
+  try { r = selfUpdate_('menu'); } catch (err) { r = { ok: false, message: err.message, apiOff: err.apiOff }; }
+  if (r.upToDate) { dialog_('Up to date', '<p>✅ Your Google script is up to date (version ' + SCRIPT_VERSION + ').</p><p>The screen and phone apps update themselves.</p>', 200); return; }
+  if (r.updated) {
+    dialog_('Updated', '<p>✅ Updated the Google script from ' + clean_(r.from) + ' to <b>' + clean_(r.to) + '</b>. The screen and phones use it straight away.</p>' +
+      (r.approve ? '<p><b>One more step:</b> this version needs a new permission. Choose 🏠 Family Dashboard → Update the Google script now once more and approve Google’s screen.</p>' : ''), 240);
+    return;
+  }
   const url = myUrl_();
   const link = appsBase_() + 'setup/#update' + (url ? '&api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) : '');
-  if (newer_(latest.script, SCRIPT_VERSION)) {
-    dialog_('Update available', '<p>A new version of the dashboard’s Google script is available: <b>' + clean_(latest.script) + '</b> (you have ' + SCRIPT_VERSION + ').</p>' +
-      (latest.notes ? '<ul>' + latest.notes.map(n => '<li>' + clean_(n) + '</li>').join('') + '</ul>' : '') +
-      '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Show me how to update</a></p>', 380);
-  } else {
-    dialog_('Up to date', '<p>✅ Your Google script is up to date (version ' + SCRIPT_VERSION + ').</p><p>The screen and phone apps update themselves.</p>', 200);
-  }
+  dialog_('Couldn’t update automatically', '<p>' + clean_(r.message || 'Something went wrong.') + '</p>' +
+    (r.apiOff ? '<p>Open <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a>, switch <b>Google Apps Script API</b> on, then choose this menu item again.</p>' : '') +
+    '<p>Or update by hand: <a href="' + link + '" target="_blank">show me how</a>.</p>', 320);
 }
+function menuAutoUpdate() {
+  const on = !autoUpdateOn_();
+  let r; try { r = setAutoUpdate_(on); } catch (err) { r = { ok: false, message: err.message }; }
+  dialog_('Automatic updates', on
+    ? (r.ok ? '<p>✅ Automatic updates are <b>on</b>. The Google script checks every hour, and straight away when the screen spots a new version.</p>' + (r.warning ? '<p>⚠ ' + clean_(r.warning) + '</p>' : '')
+        : '<p>' + clean_(r.message) + '</p>')
+    : '<p>Automatic updates are <b>off</b>. You’ll be told when there’s a new version, and can update from this menu.</p>', 260);
+}
+
+/* ------------------------------------------------------ automatic updates of this script */
+// The script updates itself from <apps address>/setup/files/ using Google's Apps Script API:
+// it writes the new files into this project, makes a new version and moves the existing web-app deployment to it,
+// so the web address (and every connected screen and phone) stays the same.
+// Needs: the "Google Apps Script API" switched on at script.google.com/home/usersettings (once per Google account),
+// and the script.projects / script.deployments permissions listed in appsscript.json (approved with the others).
+const UPDATE_FILES = [['Code', 'SERVER_JS', 'Code.gs'], ['Admin', 'HTML', 'Admin.html'], ['appsscript', 'JSON', 'appsscript.json']];
+/** Sleep screen settings for the screen, tidied: minutes (0 = never), style, night hours as "HH:MM" pair or none. */
+function sleepSettings_() {
+  const mins = Math.max(0, Math.min(720, Math.round(Number(String(inst_('SleepMinutes') === '' ? 30 : inst_('SleepMinutes')).replace(/[^0-9.]/g, '')) || 0)));
+  const style = /black/i.test(String(inst_('SleepStyle') || '')) ? 'black' : 'clock';
+  const m = /(\d{1,2})[:.](\d{2})\s*[-–to]+\s*(\d{1,2})[:.](\d{2})/.exec(String(inst_('NightHours') || ''));
+  const hm = (h, mm) => ('0' + Math.min(23, +h)).slice(-2) + ':' + ('0' + Math.min(59, +mm)).slice(-2);
+  return { minutes: mins, style: style, nightFrom: m ? hm(m[1], m[2]) : '', nightTo: m ? hm(m[3], m[4]) : '' };
+}
+function autoUpdateOn_() { return yes_(inst_('AutoUpdate'), false); }
+function setAutoUpdate_(on) {
+  setInst_('AutoUpdate', on ? 'Yes' : 'No');
+  ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'autoUpdateTick').forEach(t => ScriptApp.deleteTrigger(t));
+  if (!on) return { ok: true, autoUpdate: false };
+  ScriptApp.newTrigger('autoUpdateTick').timeBased().everyHours(1).create();
+  let warning = '';
+  try { scriptApi_('get', '/content'); } catch (err) { warning = err.message; }    // can it reach the Apps Script API?
+  return { ok: true, autoUpdate: true, warning: warning };
+}
+/** Hourly (when automatic updates are on). */
+function autoUpdateTick() { if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
+
+function scriptApi_(method, path, body) {
+  const res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects/' + ScriptApp.getScriptId() + path, {
+    method: method, contentType: 'application/json', muteHttpExceptions: true,
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, payload: body ? JSON.stringify(body) : undefined });
+  const code = res.getResponseCode(), text = res.getContentText();
+  if (code >= 200 && code < 300) return text ? JSON.parse(text) : {};
+  let msg = text; try { msg = JSON.parse(text).error.message; } catch (e) { /* plain text */ }
+  const err = new Error(String(msg).slice(0, 300));
+  if (/has not been used|is disabled|not enabled|SERVICE_DISABLED|User has not enabled the Apps Script API/i.test(text)) {
+    err.message = 'The Google Apps Script API is switched off for your Google account.'; err.apiOff = true;
+  } else if (code === 403 && /scope|insufficient/i.test(text)) {
+    err.message = 'The script hasn’t been given permission to update itself yet: in the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve Google’s screen.';
+  } else if (/version/i.test(text) && /limit|maximum|200/i.test(text)) {
+    err.message = 'Your script has reached Google’s limit of 200 saved versions. In Apps Script open Project history and delete old versions, then try again.';
+  }
+  throw err;
+}
+function deploymentId_() { const m = /\/macros\/s\/([^/]+)\/exec/.exec(myUrl_() || ''); return m ? m[1] : ''; }
+
+/**
+ * Bring this script up to the version on the apps address.
+ * why: 'menu' (someone is at the Sheet, so new permissions can be approved), 'app' (a button or the screen), 'timer'.
+ */
+function selfUpdate_(why) {
+  const P = PropertiesService.getScriptProperties();
+  const busy = Number(P.getProperty('updating') || 0);
+  if (Date.now() - busy < 3 * 60000) return { ok: true, busy: true, message: 'An update is already running' };
+  const base = appsBase_(), bust = '?t=' + Date.now();
+  const fetchText = u => { const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true }); if (r.getResponseCode() !== 200) throw new Error('Couldn’t download ' + u.replace(/\?.*/, '') + ' (' + r.getResponseCode() + ')'); return r.getContentText(); };
+  const latest = JSON.parse(fetchText(base + 'version.json' + bust));
+  if (!newer_(latest.script, SCRIPT_VERSION)) return { ok: true, upToDate: true, version: SCRIPT_VERSION };
+  const dep = deploymentId_();
+  if (!dep) throw new Error('Open the web app address once so the script knows its own address, then try again');
+  P.setProperty('updating', String(Date.now()));
+  try {
+    const files = {};
+    UPDATE_FILES.forEach(f => { files[f[0]] = fetchText(base + 'setup/files/' + f[2] + bust); });
+    // Make sure what we downloaded is whole and is the version advertised (GitHub can lag for a minute or two).
+    const m = /const SCRIPT_VERSION = '([^']+)'/.exec(files.Code);
+    if (!m || m[1] !== latest.script || files.Code.length < 20000 || !/function doGet\(/.test(files.Code)) throw new Error('The new files on GitHub aren’t ready yet (expected ' + latest.script + '). Try again in a few minutes.');
+    const man = JSON.parse(files.appsscript);
+    const cur = scriptApi_('get', '/content');
+    const curMan = JSON.parse(((cur.files || []).find(f => f.name === 'appsscript') || {}).source || '{}');
+    const newScopes = (man.oauthScopes || []).filter(x => (curMan.oauthScopes || []).indexOf(x) < 0);
+    // A version that needs a new kind of permission would stop the web app until someone approves it – only do that when someone is at the Sheet.
+    if (newScopes.length && curMan.oauthScopes && why !== 'menu') {
+      P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'needs approval', to: latest.script }));
+      const msg = 'This update needs a new permission. In the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve.';
+      return { ok: false, approval: true, message: msg, error: msg };
+    }
+    const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
+    scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
+    const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });
+    scriptApi_('put', '/deployments/' + dep, { deploymentConfig: { scriptId: ScriptApp.getScriptId(), versionNumber: ver.versionNumber,
+      manifestFileName: 'appsscript', description: 'Family Dashboard ' + latest.script } });
+    P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'updated', from: SCRIPT_VERSION, to: latest.script, how: why }));
+    try { CacheService.getScriptCache().removeAll(['layout']); } catch (e) { /* fine */ }
+    return { ok: true, updated: true, from: SCRIPT_VERSION, to: latest.script, version: ver.versionNumber, approve: newScopes.length > 0 };
+  } catch (err) {
+    P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'failed', message: err.message, to: latest.script }));
+    if (why === 'app' || why === 'menu') throw err;
+    return { ok: false, message: err.message, error: err.message };
+  } finally { P.deleteProperty('updating'); }
+}
+
 /** "2026.11.4" > "2026.11.3"? */
 function newer_(a, b) {
   const x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number);

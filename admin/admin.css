@@ -103,3 +103,5 @@ ul.pvl { display: block; padding-left: 18px; font-size: 14px; margin: 10px 0; } 
 .setup-link b { grid-column: 1; } .setup-link span { grid-column: 1; color: var(--mute); font-size: 13px; } .setup-link i { grid-column: 2; grid-row: 1 / 3; align-self: center; color: var(--acc); font-style: normal; font-size: 22px; }
 
 .link-card { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: inherit; border: 1px dashed var(--line); border-radius: 14px; padding: 14px 16px; margin: 4px 0 16px; }
+.row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.row-between .btn { min-width: 76px; }

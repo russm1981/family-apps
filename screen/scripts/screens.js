@@ -323,6 +323,33 @@
         }).finally(function () { $('abSave').textContent = 'Save'; });
     }
 
+    var dayEvents = [];
+    /** Delete: tap the bin, then confirm. Repeating entries ask: just this one, or all of them. */
+    function onDayListClick(e) {
+        var b = e.target.closest('[data-del]');
+        if (b) {
+            var i = +b.getAttribute('data-del'), ev = dayEvents[i], row = b.closest('.dl-row');
+            if (!ev || row.querySelector('.dl-confirm')) return;
+            var box = document.createElement('div'); box.className = 'dl-confirm';
+            box.innerHTML = '<span>Delete \u201c' + esc(ev.full || ev.t) + '\u201d?</span>' +
+                (ev.rec ? '<button data-go="one">Just this one</button><button data-go="all" class="danger">Every repeat</button>' : '<button data-go="one" class="danger">Delete</button>') +
+                '<button data-go="no">Cancel</button>';
+            box.setAttribute('data-i', i);
+            row.appendChild(box);
+            return;
+        }
+        var g = e.target.closest('[data-go]'); if (!g) return;
+        var conf = g.closest('.dl-confirm'), r2 = conf.closest('.dl-row'), ev2 = dayEvents[+conf.getAttribute('data-i')], how = g.getAttribute('data-go');
+        if (how === 'no') { conf.remove(); return; }
+        conf.innerHTML = '<span>Deleting\u2026</span>';
+        api().post({ action: 'deleteEvent', id: ev2.id, cal: ev2.cal, s: ev2.s, all: how === 'all' }).then(function () {
+            r2.classList.add('gone'); setTimeout(function () { r2.remove(); }, 250);
+            api().toast('Deleted');
+            calCache = {}; loadCalendar(true);
+            if (window.FDPages && window.FDPages.refreshNow) window.FDPages.refreshNow(true);
+        }).catch(function (err) { conf.innerHTML = '<span class="bad">' + esc(err.message) + '</span><button data-go="no">OK</button>'; });
+    }
+
     function openDay(ds) {
         var r = calRange(), data = ((cover(r) || {}).days || {})[ds] || [];
         var dt = parseYmd(ds);
@@ -331,10 +358,12 @@
         data = data.filter(function (e) { return !e.bar; });
         var bhName = ((cover(r) || {}).bh || {})[ds];
         var top = (bhName ? '<div class="dl-bh">Bank holiday \u00b7 ' + esc(bhName) + '</div>' : '') + bars.map(function (e) { return '<div class="dl-bar" style="--hc:' + esc(e.c) + '"><span>' + esc(e.k) + '</span> ' + esc(e.t) + '</div>'; }).join('');
-        $('calDayList').innerHTML = top + (data.length ? data.map(function (e) {
-            return '<div class="dl-row" style="--ec:' + esc(e.c) + '"><span class="dl-time">' + (e.allDay ? 'All day' : esc(e.time || '')) + '</span>' +
+        dayEvents = data;
+        $('calDayList').innerHTML = top + (data.length ? data.map(function (e, i) {
+            return '<div class="dl-row" data-i="' + i + '" style="--ec:' + esc(e.c) + '"><span class="dl-time">' + (e.allDay ? 'All day' : esc(e.time || '')) + '</span>' +
                 '<span class="dl-main"><span>' + esc(e.t) + '</span>' + (e.note ? '<span class="dl-note">' + esc(e.note) + '</span>' : '') + '</span>' +
-                '<span class="dl-cat" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' + esc(e.k || '') + '</span></div>';
+                '<span class="dl-cat" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' + esc(e.k || '') + '</span>' +
+                (e.id ? '<button class="dl-del" data-del="' + i + '" aria-label="Delete">\uD83D\uDDD1</button>' : '') + '</div>';
         }).join('') : (top ? '' : '<div class="empty">Nothing in the calendar</div>'));
         openDayStr = ds;
         $('calDay').classList.add('on');
@@ -399,6 +428,7 @@
                 $('abTitle').addEventListener('keydown', function (e) { if (e.key === 'Enter') saveEvent(); });
                 $('abNote').addEventListener('keydown', function (e) { if (e.key === 'Enter') saveEvent(); });
                 $('calDay').addEventListener('click', function (e) { if (e.target === $('calDay') || e.target.closest('#calDayClose')) $('calDay').classList.remove('on'); });
+                $('calDayList').addEventListener('click', onDayListClick);
                 renderCalendar();
                 setInterval(function () { if (visible('screen-calendar')) loadCalendar(true); }, 15 * 60000);
                 // Ready before anyone taps Calendar: fetch this block and the next in the background, and keep them fresh.

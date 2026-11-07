@@ -141,8 +141,9 @@
             return '<em class="td-due ' + (n < 0 ? 'late' : n === 0 ? 'now' : '') + '">' + esc(t) + '</em>';
         }
         function row(i) {
-            return '<button class="td-it' + (i.done ? ' done' : '') + '" data-l="toggle" data-id="' + esc(i.id) + '"><span class="box"></span>' +
-                '<span class="td-tx"><span>' + esc(i.text) + '</span>' + (i.notes && full ? '<small>' + esc(i.notes) + '</small>' : '') + '</span>' + (i.done ? '' : due(i)) + '</button>';
+            return '<div class="td-it' + (i.done ? ' done' : '') + (i.star ? ' starred' : '') + '"><button class="td-main" data-l="toggle" data-id="' + esc(i.id) + '"><span class="box"></span>' +
+                '<span class="td-tx"><span>' + esc(i.text) + '</span>' + (i.notes && full ? '<small>' + esc(i.notes) + '</small>' : '') + '</span>' + (i.done ? '' : due(i)) + '</button>' +
+                (i.done ? '' : '<button class="td-star' + (i.star ? ' on' : '') + '" data-l="star" data-id="' + esc(i.id) + '" aria-label="Priority">' + (i.star ? '\u2605' : '\u2606') + '</button>') + '</div>';
         }
         function shown() { return (data && data.items || []).filter(function (i) { return s.ShowTicked || !i.done; }); }
         function render() {
@@ -157,8 +158,9 @@
                 (ticked && s.ShowTicked && all.length <= cut ? '<button class="ls-clear" data-l="clear">Clear ticked (' + ticked + ')</button>' : '')
                 : '<div class="empty">Nothing to do 🎉</div>';
         }
+        var touched = 0;   // a background refresh straight after a change may carry older data: ignore it for a few seconds
         function send(b) {
-            if (busy) return; busy = true;
+            if (busy) return; busy = true; touched = Date.now();
             b.action = 'listItem'; b.widget = w.id;
             post(b, function (r) { data = r.data; render(); if (popAll && document.getElementById('pop').classList.contains('on')) openAll(); })
                 .catch(function () {}).finally(function () { busy = false; });
@@ -185,15 +187,23 @@
             var a = b.getAttribute('data-l');
             if (a === 'toggle') {
                 var it = data.items.filter(function (i) { return i.id === b.getAttribute('data-id'); })[0];
-                if (it) { it.done = !it.done; b.classList.toggle('done', it.done); setTimeout(render, 0); }
+                if (it) { it.done = !it.done; b.parentNode.classList.toggle('done', it.done); setTimeout(render, 0); }
                 send({ op: 'toggle', id: b.getAttribute('data-id') });
+            } else if (a === 'star') {                                       // priority on/off: starred go to the top
+                var st = data.items.filter(function (i) { return i.id === b.getAttribute('data-id'); })[0];
+                if (st) {
+                    st.star = !st.star;
+                    data.items.sort(function (x, y) { return (x.done - y.done) || (y.star - x.star); });
+                    render(); if (popAll) openAll();
+                }
+                send({ op: 'star', id: b.getAttribute('data-id') });
             } else if (a === 'all') openAll();
             else if (a === 'add') openAdd();
             else if (a === 'save') save();
             else if (a === 'clear') { send({ op: 'clearDone' }); if (popAll) closePop(); }
         }
         el.addEventListener('click', click);
-        return { update: function (d) { if (!busy) { data = d; render(); } } };
+        return { update: function (d) { if (!busy && Date.now() - touched > 8000) { data = d; render(); } } };
     };
 
     /* =============================================================== PARCELS */

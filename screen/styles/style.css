@@ -937,3 +937,28 @@ body.osk-open .pop-card { max-height: 44vh; }
 .wg-traffic .route.sel { background: rgba(63, 169, 245, .16); box-shadow: 0 0 0 1px var(--acc) inset; }
 /* a route picked: labels sit just above their dots, upright even when the map is turned */
 .wg-traffic .map.picked .ml-in { transform: rotate(var(--unrot, 0deg)) translateY(-1.55em); }
+
+/* calendar day pop-up: delete */
+.dl-row { flex-wrap: wrap; position: relative; transition: opacity .25s; }
+.dl-row.gone { opacity: 0; }
+.dl-del { flex: none; width: 2.6rem; height: 2.6rem; border-radius: 0.6rem; border: 1px solid var(--line); background: var(--panel-2); color: var(--mute); font-size: 1.1rem; margin-left: 0.4rem; }
+.dl-del:active { background: var(--bad); color: #fff; }
+.dl-confirm { flex-basis: 100%; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; padding: 0.5rem 0.6rem; border-radius: 0.6rem; background: rgba(255, 91, 91, .1); border: 1px solid rgba(255, 91, 91, .35); }
+.dl-confirm span { flex: 1; min-width: 10rem; font-weight: 600; } .dl-confirm .bad { color: #ffb3b3; }
+.dl-confirm button { height: 2.6rem; padding: 0 1rem; border-radius: 0.6rem; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font: inherit; font-weight: 700; }
+.dl-confirm button.danger { background: var(--bad); border-color: var(--bad); color: #fff; }
+
+/* to-do: priority star */
+.td-main { flex: 1; min-width: 0; display: flex; align-items: center; gap: 0.6rem; text-align: left; background: none; border: 0; color: inherit; font: inherit; padding: 0; min-height: inherit; }
+.td-it.done .td-main { text-decoration: line-through; }
+.td-star { flex: none; width: 2.3rem; height: 2.3rem; border: 0; background: none; color: var(--mute); font-size: 1.35rem; line-height: 1; opacity: .55; padding: 0; }
+.td-star.on { color: #ffcc33; opacity: 1; }
+.td-it.starred .td-tx span { font-weight: 700; }
+
+/* sleep screen */
+.sleep { position: fixed; inset: 0; z-index: 5000; background: #000; display: none; cursor: none; touch-action: none; }
+.sleep.on { display: block; }
+.sleep .sl-clock { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 0.2rem; color: #6b7280; opacity: .55; transition: left 2s, top 2s; }
+.sleep .sl-time { font-size: 4.2rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1; }
+.sleep .sl-date { font-size: 1rem; }
+.sleep.black .sl-clock { display: none; }

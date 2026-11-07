@@ -125,7 +125,10 @@
                     '<div class="wx-label">' + esc(n.label) + '</div></div>' +
                     '<div class="wx-meta"><span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') +
                     ' \u00b7 ' + d.now.wind + ' mph</span></div>' + (s.ShowClock ? '<div class="clock">' + hhmm(new Date()) + '</div>' : '');
-                q('.wx-hours').innerHTML = d.hours.slice(0, hours).map(function (h) {
+                // Now, then every 2 hours: +2, +4, +6, +8, +10 (the list starts at the next hour).
+                var slots = [{ time: 'Now', temp: d.now.temp, code: d.now.code, isDay: d.now.isDay, rain: (d.hours[0] || {}).rain }];
+                for (var k = 1; slots.length < hours && k < d.hours.length; k += 2) slots.push(d.hours[k]);
+                q('.wx-hours').innerHTML = slots.map(function (h) {
                     var x = wx(h.code, h.isDay);
                     return '<div class="hr"><span class="t">' + esc(h.time) + '</span><span class="i">' + x.icon + '</span><span class="v">' + h.temp + '\u00b0</span>' +
                         '<span class="r' + (h.rain >= 50 ? ' wet' : '') + '">' + (h.rain || 0) + '%</span></div>';

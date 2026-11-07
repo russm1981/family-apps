@@ -63,3 +63,10 @@
 .main { padding-bottom: calc(100px + var(--safe-b)); }
 .dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .toast { bottom: calc(96px + var(--safe-b)); }
+
+/* tapping an entry */
+.ev[data-ev] { cursor: pointer; }
+.ev-info { color: var(--mute); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 8px; }
+.ev-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ec); flex: none; }
+.ev-note { background: var(--panel-2); border-radius: 12px; padding: 10px 12px; white-space: pre-wrap; }
+.ev-err { color: #ffb3b3; }

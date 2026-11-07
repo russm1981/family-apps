@@ -1,10 +1,10 @@
 {
-  "app": "2026.11.15",
-  "script": "2026.11.10",
+  "app": "2026.11.19",
+  "script": "2026.11.15",
   "date": "2026-11-07",
   "notes": [
-    "Start file: starting with Windows is remembered and repaired automatically, and it waits for the internet",
-    "Traffic: tap a route to zoom in on it; Holiday countdown title",
-    "New front page with everything in one place"
+    "Sleep screen: goes dark (or a small dim clock) after 30 minutes; touch to wake; night hours",
+    "The Google script can now update itself (switch on in Family Admin → Install)",
+    "To-do priority stars"
   ]
 }

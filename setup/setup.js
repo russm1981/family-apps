@@ -166,6 +166,7 @@
                 '<li>Google asks for permission: <b>Authorise access</b> → your account → "Google hasn’t verified this app" is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' +
                 '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
                 '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
+                '<li><b>Manage your Apps Script projects and deployments</b> – only used if you turn on automatic updates (Updates step); it lets the script install new versions of itself.</li>' +
                 '<li>It all runs as you, inside your own Google account.</li></ul></details></li>' +
                 '<li><b>Click the Web app URL</b> it shows (a page opens – close it), then <b>Done</b>.</li>' +
                 '<li>Back in your Sheet, <b>reload the page</b>. A new menu appears: <b>🏠 Family Dashboard → Connect my screen and phones → Open the setup app</b>. ' +
@@ -417,19 +418,45 @@
         { id: 'update', title: 'Updates', render: function () {
             var mine = S.scriptVersion || '', newest = LATEST && LATEST.script;
             var behind = mine && newest && newer(newest, mine);
-            return '<h1>Updates</h1><div class="card big"><h3>Screen and phone apps</h3><p>These update themselves. The screen shows <b>Update available</b> when there’s a new version; the phone apps pick it up the next time they’re opened.</p></div>' +
+            return '<h1>Updates</h1><div class="card big"><h3>Screen and phone apps</h3><p>These update themselves. The screen checks every 10 minutes and updates when nobody is using it; the phone apps pick it up the next time they’re opened.</p></div>' +
                 '<div class="card big"><h3>Your Google script</h3>' + (!connected() ? needConnect() :
                     (behind ? '<div class="note bad">An update is available: version <b>' + esc(newest) + '</b> (you have ' + esc(mine) + ').</div>' +
                         (LATEST.notes ? '<ul>' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '') +
-                        '<ol class="howto"><li>Open your Sheet → <b>Extensions → Apps Script</b>.</li>' +
+                        '<p><button class="btn big" id="updNow">Update the Google script now</button></p><div id="updMsg"></div>' +
+                        '<details><summary>Or update it by hand</summary><ol class="howto"><li>Open your Sheet → <b>Extensions → Apps Script</b>.</li>' +
                         '<li>Open <b>Code.gs</b>, select everything (Ctrl+A) and paste the new code:' + filesBox('Code.gs', 'Code.gs') + '</li>' +
                         '<li>Open <b>Admin.html</b> and do the same:' + filesBox('Admin.html', 'Admin.html') + '</li>' +
+                        '<li>Project Settings (cog) → tick “Show appsscript.json”, then replace <b>appsscript.json</b>:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
                         '<li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>' +
-                        '<li>Come back here and press <b>Check again</b>.</li></ol>'
+                        '<li>Come back here and press <b>Check again</b>.</li></ol></details>'
                     : mine ? okLine(true, 'Your Google script is up to date (version ' + mine + ').') : '<div class="status">Checking…</div>') +
-                    '<p><button class="btn ghost" id="recheck">Check again</button></p>') + '</div>';
+                    '<p><button class="btn ghost" id="recheck">Check again</button></p>') + '</div>' +
+                (connected() ? '<div class="card big"><h3>Automatic updates for the Google script <span class="mute">(optional)</span></h3>' +
+                    '<p>With this on, your Google script updates itself – within minutes of a new version, and it checks every hour – so you never have to copy code again.</p>' +
+                    '<div class="note"><b>Before you switch it on:</b> your script will download its new code from <b>' + esc(location.href.replace(/setup\/.*$/, '')) + '</b>. ' +
+                    'That code runs with the access you gave the script (your Sheet, calendar, Gmail delivery emails, Tasks and photos folder). Only switch it on if you trust whoever publishes these apps.</div>' +
+                    '<ol class="howto"><li>Once per Google account: open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> ' +
+                    '(signed in as the Sheet’s owner) and switch <b>Google Apps Script API</b> on.</li>' +
+                    '<li>Then: <button class="btn sm' + (S.autoUpdate ? ' ghost' : '') + '" id="autoBtn">' + (S.autoUpdate ? 'Turn automatic updates off' : 'Turn automatic updates on') + '</button></li></ol>' +
+                    '<div id="autoMsg">' + (S.autoUpdate ? okLine(true, 'Automatic updates are on.') : '') + '</div></div>' : '');
         }, wire: function () {
             if ($('recheck')) $('recheck').onclick = function () { S.scriptVersion = ''; save(); refreshVersions().then(render); };
+            if ($('updNow')) $('updNow').onclick = function () {
+                var b = $('updNow'); b.disabled = true; b.textContent = 'Updating… (up to a minute)';
+                post({ action: 'selfUpdate', why: 'app' }).then(function (r) {
+                    $('updMsg').innerHTML = okLine(!!(r.updated || r.upToDate), r.updated ? 'Updated to ' + r.to + '.' : r.upToDate ? 'Already up to date.' : (r.message || ''));
+                    S.scriptVersion = ''; save(); setTimeout(function () { refreshVersions().then(render); }, 1500);
+                }).catch(function (e) {
+                    b.disabled = false; b.textContent = 'Try again';
+                    $('updMsg').innerHTML = okLine(false, e.message) + (/Apps Script API/.test(e.message) ? '<p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>, then press Try again – or update by hand below.</p>' : '');
+                });
+            };
+            if ($('autoBtn')) $('autoBtn').onclick = function () {
+                post({ action: 'autoUpdate', on: !S.autoUpdate }).then(function (r) {
+                    S.autoUpdate = !!r.autoUpdate; save(); render();
+                    if (r.warning) $('autoMsg').innerHTML = okLine(false, r.warning) + '<p>Switch on <b>Google Apps Script API</b> (step 1), then it will work.</p>';
+                }).catch(function (e) { $('autoMsg').innerHTML = okLine(false, e.message); });
+            };
         } },
     ];
 
@@ -443,7 +470,7 @@
     }
     function refreshVersions() {
         return fetch('../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-            .then(function (v) { LATEST = v; return connected() ? get('ping').then(function (p) { S.scriptVersion = p.version || ''; save(); }).catch(function () {}) : null; });
+            .then(function (v) { LATEST = v; return connected() ? get('ping').then(function (p) { S.scriptVersion = p.version || ''; S.autoUpdate = !!p.autoUpdate; save(); }).catch(function () {}) : null; });
     }
     /** Connect with S.url (+ S.code if known): fetch the code once if needed, check it works, record privacy acceptance. */
     function connect(quiet) {
