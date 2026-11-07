@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.7';
+    var APP_VERSION = '2026.11.8';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false;
     function api() { return window.FDApi; }

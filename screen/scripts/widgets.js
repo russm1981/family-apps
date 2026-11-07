@@ -152,12 +152,12 @@
         function flowUrl() {
             return 'https://api.tomtom.com/traffic/map/4/tile/flow/relative0-dark/{z}/{x}/{y}.png?key=' + encodeURIComponent(key) + '&t=' + Math.floor(Date.now() / 600000);
         }
-        function fit() { if (!map || !mapEl.isConnected) return; try { map.invalidateSize(); if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { padding: [30, 30] }); } catch (e) { /* page was rebuilt */ } }
+        function fit() { if (!map || !mapEl.isConnected) return; try { map.invalidateSize(); if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { paddingTopLeft: [48, 26], paddingBottomRight: [70, 26] }); } catch (e) { /* page was rebuilt */ } }   // tight, leaving room for the labels
         function draw(t) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return; }
             if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key on the Installation tab to see the traffic map</div>'; return; }
             if (!map) {
-                map = L.map(mapEl, MAP_OPTS);
+                map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0 }));   // fractional zoom so the routes fill the map
                 map.attributionControl.setPrefix('');
                 baseTiles(key).addTo(map);
                 flow = L.tileLayer(flowUrl(), { maxZoom: 18, opacity: 0.9 }).addTo(map);
