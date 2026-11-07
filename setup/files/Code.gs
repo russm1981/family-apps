@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.7';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.9';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -123,6 +123,7 @@ const PAGE_TYPES = {
   ] },
   calendar: { name: 'Calendar', single: true, settings: [
     { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', '3 months (scroll)', 'Month', 'Week'] },
+    { k: 'AlignWeekdays', label: 'Line up weekdays in the 3-month views (each month starts under its weekday, so weekends form columns)', type: 'bool', def: true },
   ] },
 };
 
@@ -184,6 +185,7 @@ const WIDGET_TYPES = {
     settings: [
       { k: 'RadiusMiles', label: 'Distance from home (miles)', type: 'number', def: 20, min: 3, max: 60 },
       { k: 'Map', label: 'Map', type: 'select', def: 'Light', options: ['Light', 'Dark'] },
+      { k: 'MapStrength', label: 'Map strength (%) – how strongly towns and roads show behind the planes', type: 'number', def: 55, min: 10, max: 100 },
       { k: 'MaxAltitude', label: 'Highest altitude (feet)', type: 'number', def: 45000, min: 1000, max: 60000, help: 'Lower it (e.g. 10000) to see only planes taking off and landing.' },
       { k: 'Routes', label: 'Look up where each flight is going', type: 'bool', def: true },
       { k: 'ListRows', label: 'Flights listed under the map', type: 'number', def: 3, min: 0, max: 5 },

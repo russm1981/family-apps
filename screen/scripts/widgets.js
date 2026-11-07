@@ -334,7 +334,9 @@
             // Fractional zoom, so the outer ring can fill the box instead of jumping to the next zoom level down.
             map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0, zoomDelta: 0.25 }));
             map.attributionControl.setPrefix('');
-            baseTiles(ctx.tomtomKey, light).addTo(map);
+            // OpenStreetMap: towns and roads, faded back so the planes stand out. (Needs no key.)
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '\u00a9 OpenStreetMap contributors',
+                opacity: Math.max(0.1, Math.min(1, (Number(s.MapStrength) || 55) / 100)), className: light ? 'fl-tiles' : 'osm-dark' }).addTo(map);
             map.setView(d.centre, 9);
             return true;
         }

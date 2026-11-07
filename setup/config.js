@@ -4,5 +4,5 @@
  *             Leave '' to show the copy-and-paste instructions instead.
  */
 window.FD_SETUP = {
-    templateId: '1nF9smHtpS17mJ-_GkqsE82sis1Bu1KULil62kv1IoEY',
+    templateId: '',
 };

@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.9';
+    var APP_VERSION = '2026.11.13';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
@@ -108,12 +108,23 @@
             }).catch(function (err) { x.disabled = false; x.textContent = 'I accept'; api().toast('Didn’t save: ' + err.message, true); });
         };
     }
+    /** The version number, small, at the bottom of the side bar – so you can see when it has updated. */
+    function showVersion() {
+        var foot = document.querySelector('#rail .rail-foot');
+        if (!foot) return;
+        var v = document.getElementById('appVer');
+        if (!v) { v = document.createElement('div'); v.id = 'appVer'; v.className = 'app-ver'; foot.appendChild(v); }
+        v.textContent = 'v' + APP_VERSION;
+        v.title = 'Screen ' + APP_VERSION + (lastLayout && lastLayout.scriptVersion ? ' · Google script ' + lastLayout.scriptVersion : '');
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showVersion); else setTimeout(showVersion, 0);
     window.FDNotices = {
         version: APP_VERSION,
         check: function (L) {
             if (!L) return;
             var first = !lastLayout;
             lastLayout = L;
+            showVersion();
             showPrivacy();
             if (first) checkForUpdate(); else showScript();
         },

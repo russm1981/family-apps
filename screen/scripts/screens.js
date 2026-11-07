@@ -156,14 +156,14 @@
         curBH = c.bh || {};
         var today = ymd(new Date());
         $('calStatus').textContent = !api().ready() ? 'Not connected' : calErr ? '⚠ ' + calErr : calLoading ? 'Updating…' : '';
-        $('calRows').className = 'cal-rows view-' + calView;
+        $('calRows').className = 'cal-rows view-' + calView + (alignDays ? '' : ' no-align');
         if (calView === 'week') renderWeek(data, today);
         else if (calView === '1m') renderMonth(data, today);
         else render3m(data, today, calView === '3ms');
         renderKey();
     }
 
-    var scrollFor = '', drag = null, dragged = false;
+    var scrollFor = '', drag = null, dragged = false, alignDays = true;   // alignDays: months start under their weekday (setting)
     /** 3 months, or "3 months (scroll)": wider days (about 10 across) that you drag left and right. */
     function render3m(data, today, scroll) {
         var oldWrap = scroll ? $('calRows').querySelector('.cs-wrap') : null, oldLeft = oldWrap ? oldWrap.scrollLeft : 0;
@@ -176,8 +176,8 @@
             var dim = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
             html += '<div class="cal-row"><button class="cal-month" data-month="' + ymd(ms) + '"><b>' + MON[ms.getMonth()] + '</b><span>' + ms.getFullYear() + '</span></button>';
             // Each month starts under its own weekday, so Mondays (and weekends) line up down the page: 37 columns.
-            var off = (ms.getDay() + 6) % 7;
-            for (var col = 0; col < 37; col++) {
+            var off = alignDays ? (ms.getDay() + 6) % 7 : 0, cols = alignDays ? 37 : 31;
+            for (var col = 0; col < cols; col++) {
                 var d = col - off + 1;
                 if (d < 1 || d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
                 var dt = new Date(ms.getFullYear(), ms.getMonth(), d);
@@ -203,7 +203,7 @@
         if (scrollFor !== key) {
             scrollFor = key;
             var t = new Date(), first = calStart.getFullYear() === t.getFullYear() && calStart.getMonth() === t.getMonth();
-            wrap.scrollLeft = first ? Math.max(0, (((calStart.getDay() + 6) % 7) + t.getDate() - 3) * (cw + gap)) : 0;
+            wrap.scrollLeft = first ? Math.max(0, ((alignDays ? (calStart.getDay() + 6) % 7 : 0) + t.getDate() - 3) * (cw + gap)) : 0;
         } else wrap.scrollLeft = oldLeft;
     }
     /** Mouse dragging for the scroll view (fingers scroll it natively). */
@@ -411,7 +411,9 @@
             },
             onShow: function () { loadCalendar(); },
             /** Admin setting "Opens on": 3 months, Month or Week. Used until someone picks a view on the screen. */
-            setDefault: function (v) {
+            setDefault: function (v, align) {
+                align = align !== false;
+                if (align !== alignDays) { alignDays = align; if (visible('screen-calendar')) renderCalendar(); }
                 var view = { '3 months': '3m', '3 months (scroll)': '3ms', 'Month': '1m', 'Week': 'week' }[v] || '3m';
                 if (defaultView === view) return;
                 defaultView = view;
