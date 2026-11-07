@@ -91,3 +91,8 @@ details.adv summary { color: var(--acc); font-weight: 700; font-size: 14px; }
 .mm-x { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: 8px 0; }
 .mm-x small { color: var(--mute); font-size: 12px; }
 a.btn { display: block; text-align: center; text-decoration: none; }
+.banner { background: rgba(63,169,245,.12); border: 1px solid rgba(63,169,245,.45); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.banner.warn { background: rgba(255,176,32,.12); border-color: rgba(255,176,32,.5); }
+.banner .link { margin-left: 6px; }
+ul.pv { padding-left: 18px; font-size: 14px; } ul.pv li { margin: 6px 0; }
+.pv-full { font-size: 13px; color: #cdd5e1; } .pv-full h3 { font-size: 14px; margin: 12px 0 4px; }

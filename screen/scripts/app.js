@@ -29,10 +29,31 @@
 
     /* ---------------------------------------------------------- config */
 
+    /**
+     * Which family's Google Sheet this screen talks to. It arrives once in the screen link
+     * (…/screen/#api=…&code=…, from the setup app or the start file), is kept on this device, and is then
+     * removed from the address bar. Older start files put it in ?api=…&code=… – that still works.
+     */
+    var CFG_KEY = 'familyDashboard.cfg.v1';
+    function fromLink(text) {
+        var t = String(text || '').trim(), i = t.search(/[#?]/), out = {};
+        if (i < 0) return out;
+        t.slice(i + 1).split(/[&#?]/).forEach(function (kv) {
+            var p = kv.split('='); if (p.length < 2) return;
+            try { out[p[0]] = decodeURIComponent(p.slice(1).join('=').replace(/\+/g, ' ')); } catch (e) { /* skip */ }
+        });
+        return out;
+    }
     function readConfig() {
-        var q = new URLSearchParams(location.search);
-        var url = (typeof apiUrl !== 'undefined' && apiUrl) || q.get('api') || '';
-        var code = (typeof accessCode !== 'undefined' && accessCode) || q.get('code') || '';
+        var link = fromLink(location.href), saved = {};
+        try { saved = JSON.parse(load(CFG_KEY) || '{}') || {}; } catch (e) { saved = {}; }
+        if (link.api && link.code) {
+            saved = { url: link.api, code: link.code };
+            store(CFG_KEY, JSON.stringify(saved));
+            if (/#/.test(location.href) && history.replaceState) history.replaceState(null, '', location.pathname + location.search.replace(/([?&])(api|code)=[^&]*/g, '$1').replace(/[?&]+$/, ''));
+        }
+        var url = (typeof apiUrl !== 'undefined' && apiUrl) || saved.url || '';
+        var code = (typeof accessCode !== 'undefined' && accessCode) || saved.code || '';
         var changed = url !== cfg.url || code !== cfg.code;
         cfg.url = String(url).trim();
         cfg.code = String(code).trim();
@@ -67,6 +88,16 @@
     // Shared with screens.js (Home and Calendar screens).
     window.FDApi = {
         ready: function () { return !!(cfg.url && cfg.code); },
+        config: function () { return { url: cfg.url, code: cfg.code }; },
+        /** Connect this screen with a pasted screen/setup link. */
+        connect: function (text) {
+            var l = fromLink(text);
+            if (!l.api || !l.code) return false;
+            store(CFG_KEY, JSON.stringify({ url: l.api, code: l.code }));
+            location.replace(location.pathname);
+            return true;
+        },
+        forget: function () { try { localStorage.removeItem(CFG_KEY); } catch (e) { /* ignore */ } location.replace(location.pathname); },
         get: function (action, params) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -78,7 +109,13 @@
         esc: esc, store: store, load: load,
     };
     function screens() { return window.FDScreens || {}; }
-    window.FDBoys = { onShow: function () { renderBoys(); if (!busy) refresh(); } };
+    var boysPart = 0;
+    function boysRange(n, part) {
+        if (n <= 3) return [0, n];
+        var first = Math.ceil(n / 2);
+        return part ? [first, n] : [0, first];
+    }
+    window.FDBoys = { onShow: function (part) { boysPart = part || 0; renderBoys(); if (!busy) refresh(); }, range: boysRange };
 
     /* ---------------------------------------------------------- refresh */
 
@@ -126,8 +163,11 @@
         }
         msg.style.display = 'none';
         var s = state, target = s.cashIn.points;
-        grid.style.gridTemplateColumns = 'repeat(' + Math.max(s.boys.length, 1) + ', minmax(0, 1fr))';
+        // 1–3 children share one screen; 4–6 are split over two (4 → 2+2, 5 → 3+2, 6 → 3+3).
+        var rng = boysRange(s.boys.length, boysPart);
+        grid.style.gridTemplateColumns = 'repeat(' + Math.max(rng[1] - rng[0], 1) + ', minmax(0, 1fr))';
         grid.innerHTML = s.boys.map(function (b, bi) {
+            if (bi < rng[0] || bi >= rng[1]) return '';
             var pct = Math.max(0, Math.min(100, (b.balance / target) * 100));
             var canCash = b.balance >= target;
             var tasks = b.tasks.length ? b.tasks.map(function (t) { return taskBtn(bi, t); }).join('') : '<div class="empty">No tasks waiting 🎉</div>';

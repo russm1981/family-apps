@@ -6,7 +6,7 @@
     <title>tr('Family Dashboard')</title>
     <link rel="icon" type="image/svg+xml" href="resources/icon.svg" />
     <meta http-equiv="Content-Security-Policy"
-        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src https://script.google.com https://script.googleusercontent.com; object-src 'none'; base-uri 'none'; form-action 'none';" />
+        content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.github.io; object-src 'none'; base-uri 'none'; form-action 'none';" />
     <meta name="x-icue-property" content="apiUrl" data-label="tr('Web app URL')" data-type="textfield" data-default="''" />
     <meta name="x-icue-property" content="accessCode" data-label="tr('Access code')" data-type="textfield" data-default="''" />
     <script type="application/json" id="x-icue-groups">
@@ -65,6 +65,8 @@
     <script src="./scripts/widgets2.js"></script>
     <script src="./scripts/screens.js"></script>
     <script src="./scripts/pages.js"></script>
+    <script src="./scripts/privacy.js"></script>
+    <script src="./scripts/notices.js"></script>
     <script src="./scripts/app.js"></script>
 </body>
 </html>

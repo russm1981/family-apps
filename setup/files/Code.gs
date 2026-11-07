@@ -16,6 +16,8 @@
  */
 
 const TZ = 'Europe/London';
+const SCRIPT_VERSION = '2026.11.5';      // compared with version.json on GitHub to tell families when to update
+const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
   tasks: ['ID', 'Boy', 'Task', 'Points', 'Repeat', 'Order', 'Active'],
@@ -23,7 +25,7 @@ const SHEETS = {
   todos: ['Boy', 'Item', 'Days', 'Order'],
   todoLog: ['Date', 'Boy', 'Item'],
   timetable: ['Boy', 'Day', 'Reminder'],
-  categories: ['Category', 'Colour', 'Match', 'Group', 'Show'],
+  categories: ['Category', 'Colour', 'Match', 'Group', 'Show', 'Kind'],
   install: ['Setting', 'Value', 'Notes'],
   pages: ['Page', 'Title', 'Type', 'Icon', 'Order', 'Show'],
   widgets: ['Widget', 'Page', 'Order', 'Type', 'Size', 'Show'],
@@ -42,19 +44,18 @@ const TAB = {
 // Match = extra words that put an un-prefixed event into the category (e.g. "Football practice" → Josh).
 // Group = shown in that group's colour and key entry, with the person's name in brackets: "Drums (Ben)".
 // Show  = "bar" draws a strip along the bottom of the days instead of an entry (school holidays).
+// Kind  = child / adult (a person), children / adults (the two groups), family, holiday, special. Set by the setup app.
+// A new Sheet starts with just the fixed categories; the setup app adds the family.
 const DEFAULT_CATEGORIES = [
-  ['Alex', '#7ed321', '', 'Boys', ''],
-  ['Ben', '#3fa9f5', 'Cubs, drums', 'Boys', ''],
-  ['Josh', '#f5a623', 'football', 'Boys', ''],
-  ['Boys', '#22d3ee', '', '', ''],
-  ['Russ', '#a855f7', '', 'Russ & Becky', ''],
-  ['Becky', '#f472b6', '', 'Russ & Becky', ''],
-  ['Russ & Becky', '#a855f7', '', '', ''],
-  ['Family', '#c08457', '', '', ''],
-  ['Holiday', '#ef4444', 'flight', '', ''],
-  ['School holiday', '#facc15', 'half term, inset, school holiday', '', 'bar'],
-  ['Birthday', '#ffffff', 'birthday', '', ''],
+  ['Children', '#22d3ee', '', '', '', 'children'],
+  ['Adults', '#a855f7', '', '', '', 'adults'],
+  ['Family', '#c08457', '', '', '', 'family'],
+  ['Holiday', '#ef4444', 'flight', '', '', 'holiday'],
+  ['School holiday', '#facc15', 'half term, inset, school holiday', '', 'bar', 'special'],
+  ['Birthday', '#ffffff', 'birthday', '', '', 'special'],
 ];
+// How many the calendar key can hold neatly: children's group, adults' group, Family, Holiday, up to 3 special, Other.
+const FAMILY_LIMITS = { people: 12, children: 6, specials: 3, name: 10, group: 14, special: 16, match: 120 };
 const OTHER_COLOUR = '#8a93a3';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -93,7 +94,10 @@ function checkPoints_(what, n, max) {
 // Set once when the dashboard is installed. Edited on the admin "Installation" tab (except the access code).
 
 const INSTALL = [
-  { k: 'AccessCode', label: 'Access code', help: 'Change this in the Sheet only. The screen and phone apps need it.', hidden: true },
+  { k: 'AccessCode', label: 'Access code', help: 'Made for you when the Sheet is set up. Change it from the Family Admin app (Install tab) so the rules are checked.', hidden: true },
+  { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
+  { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
+  { k: 'AppsAddress', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
   { k: 'HomeAddress', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
   { k: 'TomTomKey', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
@@ -347,10 +351,7 @@ function setup() {
   const def = ss.getSheetByName('Sheet1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
 
-  const boys = sheet_('boys');
-  if (boys.getLastRow() === 1) {
-    boys.getRange(2, 1, 3, 2).setValues([['Ben', '#3fa9f5'], ['Josh', '#f5a623'], ['Alex', '#7ed321']]);
-  }
+  // Children (the points page) are added by the setup app's "Family & calendar" step.
   const tasks = sheet_('tasks');
   if (tasks.getLastRow() === 1) {
     tasks.getRange(2, 1, 4, 7).setValues([
@@ -370,10 +371,10 @@ function setup() {
   }
   const tt = sheet_('timetable');
   if (tt.getLastRow() === 1) {
-    tt.getRange(2, 1, 2, 3).setValues([['Ben', 'Tue', 'PE kit'], ['Josh', 'Thu', 'Swimming kit']]);
+    tt.getRange(2, 1, 2, 3).setValues([['All', 'Mon', 'PE kit'], ['All', 'Fri', 'Library book']]);
   }
   const cats = sheet_('categories');
-  if (cats.getLastRow() === 1) cats.getRange(2, 1, DEFAULT_CATEGORIES.length, 5).setValues(DEFAULT_CATEGORIES);
+  if (cats.getLastRow() === 1) cats.getRange(2, 1, DEFAULT_CATEGORIES.length, 6).setValues(DEFAULT_CATEGORIES);
   else upgradeCategories_();
   migrate_();
   applySheetRules_();
@@ -386,11 +387,12 @@ function setup() {
 /** Setup wizard: hand over the access code once, within 2 hours of running setup. */
 function claim_() {
   const props = PropertiesService.getScriptProperties();
-  if (props.getProperty('claimed') || Date.now() > Number(props.getProperty('claimUntil') || 0)) {
+  const fresh = Date.now() - Number(props.getProperty('installedAt') || 0) < 24 * 3600000;   // a brand-new copy, within a day
+  if (props.getProperty('claimed') || (Date.now() > Number(props.getProperty('claimUntil') || 0) && !fresh)) {
     throw new Error('Type the access code instead: it\u2019s in the Installation tab of your Google Sheet (or run setup again).');
   }
   props.setProperty('claimed', String(Date.now()));
-  return { ok: true, code: String(inst_('AccessCode')), version: LAYOUT_VER };
+  return { ok: true, code: String(inst_('AccessCode')), version: SCRIPT_VERSION };
 }
 
 function ensureTabs_() {
@@ -422,7 +424,8 @@ function migrate_() {
   const have = rows_('install').map(r => String(r.Setting));
   INSTALL.forEach(f => {
     if (have.indexOf(f.k) >= 0) return;
-    const v = has(old[f.k]) ? old[f.k] : f.k === 'AccessCode' ? Utilities.getUuid().replace(/-/g, '').slice(0, 12) : (f.def || '');
+    const v = has(old[f.k]) ? old[f.k] : f.k === 'AccessCode' ? genCode_() : (f.def || '');
+    if (f.k === 'AccessCode') PropertiesService.getScriptProperties().setProperty('installedAt', String(Date.now()));
     inst.appendRow([f.k, v, f.hidden ? 'Only change this here. The screen and phone apps need the new code.' : f.help]);
   });
 
@@ -487,12 +490,13 @@ function ensureMigrated_() {
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  rememberUrl_();
   if (p.spotify === 'login') return spotifyLoginPage_(p.key);
   if (p.state && /^sp_/.test(p.state)) return spotifyCallback_(p);
   if (p.action) {
     return json_(() => {
       ensureMigrated_();
-      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: LAYOUT_VER };
+      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
       if (p.action === 'state') return getState_();
@@ -508,6 +512,15 @@ function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('Admin')
     .setTitle('Family Dashboard – Admin')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
+
+/** The web app's own /exec address, noted on the first visit so the Sheet menu can build the setup link. */
+function rememberUrl_() {
+  try {
+    const u = ScriptApp.getService().getUrl() || '';
+    const props = PropertiesService.getScriptProperties();
+    if (/\/exec$/.test(u) && props.getProperty('execUrl') !== u) props.setProperty('execUrl', u);
+  } catch (err) { /* not important */ }
 }
 
 function doPost(e) {
@@ -536,6 +549,8 @@ function dispatch_(b) {
     case 'deleteTask': return deleteRowById_('tasks', b.id);
     case 'saveList': return saveList_(b.list, b.rows);
     case 'saveBoys': return saveList_('boys', b.rows);
+    case 'family': return { ok: true, family: family_(), home: String(inst_('HomeAddress') || '') };
+    case 'saveFamily': return saveFamily_(b);
     case 'saveInstall': return saveInstall_(b.values);
     case 'saveWidget': return saveWidget_(b.widget);
     case 'addWidget': return addWidget_(b.page, b.type);
@@ -550,6 +565,8 @@ function dispatch_(b) {
     case 'memo': return memo_(b);
     case 'spotify': return spotifyControl_(b.op);
     case 'addEvent': return addEvent_(b);
+    case 'changeCode': return changeCode_(b);
+    case 'acceptPrivacy': return acceptPrivacy_(b);
     default: throw new Error('Unknown action: ' + b.action);
   }
 }
@@ -714,8 +731,11 @@ function getAdmin_() {
     pages: L.pages, widgets: L.widgets, lists: lists,
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
+    family: family_(),
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
-    execUrl: ScriptApp.getService().getUrl(),
+    execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
+    scriptVersion: SCRIPT_VERSION, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
+    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
     pageTypes: Object.keys(PAGE_TYPES).map(k => schemaOut_(k, PAGE_TYPES[k])),
   };
@@ -760,6 +780,7 @@ function saveList_(list, rows) {
     const names = (rows || []).map(r => r.Name).filter(Boolean);
     if (new Set(names.map(n => n.toLowerCase())).size !== names.length) throw new Error('Two children have the same name');
     if (!names.length) throw new Error('There must be at least one child');
+    if (names.length > FAMILY_LIMITS.children) throw new Error('The points page holds up to ' + FAMILY_LIMITS.children + ' children');
   }
   const values = (rows || []).filter(r => r[head[0]] || r[head[1]]).map(r => head.map(h => {
     let v = r[h] === undefined ? '' : r[h];
@@ -821,6 +842,46 @@ function setInst_(k, v) {
   const keys = sh.getRange(1, 1, sh.getLastRow(), 1).getValues().map(r => String(r[0]).trim());
   const i = keys.indexOf(k);
   if (i >= 0) sh.getRange(i + 1, 2).setValue(v); else sh.appendRow([k, v, '']);
+}
+
+/* ---------------------------------------------------------- access code */
+// Rules for a code someone types: 8+ characters, letters and numbers, and at least one special character.
+// Codes made by the system are 24 random characters, as nobody needs to type them (they travel in setup links).
+const CODE_SPECIALS = '-_.~!*';
+function codeProblem_(c) {
+  c = String(c == null ? '' : c);
+  if (c.length < 8) return 'must be at least 8 characters';
+  if (c.length > 64) return 'must be 64 characters or fewer';
+  if (/\s/.test(c)) return 'can\u2019t contain spaces';
+  if (!/[A-Za-z]/.test(c) || !/[0-9]/.test(c)) return 'must contain letters and numbers';
+  if (!/[^A-Za-z0-9]/.test(c)) return 'must contain at least one special character, e.g. ! * - _ . ~';
+  return '';
+}
+function genCode_() {
+  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const b = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, Utilities.getUuid() + Utilities.getUuid() + Date.now())
+    .map(x => (x + 256) % 256);
+  let out = '';
+  for (let i = 0; i < 24; i++) out += A[b[i] % A.length];
+  const chars = out.split('');
+  chars[b[24] % 8 + 2] = CODE_SPECIALS[b[25] % CODE_SPECIALS.length];
+  chars[b[26] % 8 + 12] = String(2 + b[27] % 8);
+  return chars.join('');
+}
+/** Admin app: change the access code. Blank = make a strong one. Every device then needs its new link. */
+function changeCode_(b) {
+  const c = String(b.newCode || '').trim() || genCode_();
+  const why = codeProblem_(c);
+  if (why) throw new Error('The access code ' + why);
+  setInst_('AccessCode', c);
+  return { ok: true, code: c };
+}
+function acceptPrivacy_(b) {
+  const v = String(b.version || '').trim();
+  if (!/^[\w.-]{1,20}$/.test(v)) throw new Error('Missing privacy notice version');
+  setInst_('PrivacyAccepted', v);
+  setInst_('PrivacyAcceptedOn', fmt_(new Date(), 'd MMM yyyy HH:mm') + (b.who ? ' \u2013 ' + String(b.who).slice(0, 30) : ''));
+  return { ok: true, privacyAccepted: v };
 }
 
 function checkCode_(code) {
@@ -961,8 +1022,10 @@ function layout_() {
   const pages = rows_('pages').filter(p => String(p.Page || '').trim() && PAGE_TYPES[String(p.Type || 'widgets').toLowerCase()])
     .map(p => {
       const type = String(p.Type || 'widgets').toLowerCase(), id = String(p.Page).trim();
-      return { id: id, title: String(p.Title || id), type: type, icon: String(p.Icon || '\u25C8'), order: Number(p.Order) || 99,
+      const o = { id: id, title: String(p.Title || id), type: type, icon: String(p.Icon || '\u25C8'), order: Number(p.Order) || 99,
         show: yes_(p.Show, true), settings: settingsFor_(id, PAGE_TYPES[type].settings, all) };
+      if (type === 'boys') o.children = Math.min(rows_('boys').filter(r => String(r.Name || '').trim()).length, FAMILY_LIMITS.children);   // 4–6 → split over two screens
+      return o;
     }).sort((a, b) => a.order - b.order);
   const pageOrder = {}; pages.forEach((p, i) => { pageOrder[p.id] = i; });
   const widgets = rows_('widgets').filter(w => String(w.Widget || '').trim() && WIDGET_TYPES[String(w.Type || '').trim()])
@@ -974,7 +1037,9 @@ function layout_() {
         settings: settingsFor_(id, T.settings, all) };
     }).sort((a, b) => ((pageOrder[a.page] || 0) - (pageOrder[b.page] || 0)) || (a.order - b.order));
   return { pages: pages, widgets: widgets, tomtomKey: String(inst_('TomTomKey') || ''), columns: LIMITS.columns,
-    version: hash_(JSON.stringify([pages, widgets])) };
+    version: hash_(JSON.stringify([pages, widgets])), scriptVersion: SCRIPT_VERSION,
+    privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
+    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT) };
 }
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
@@ -1732,6 +1797,142 @@ function categories_() {
   });
 }
 
+/* ------------------------------------------------------ family & calendar categories */
+
+/**
+ * The family as the setup app sees it, read from the Categories tab:
+ * people (each a child or an adult), the names of the two groups, Family and Holiday (always there),
+ * and up to 3 special categories (e.g. School holiday shown as a strip, Birthday).
+ * Older Sheets without the Kind column are worked out: a group whose members are on the points page is the children's.
+ */
+function family_() {
+  const raw = rows_('categories').filter(r => String(r.Category || '').trim()).map(r => ({
+    name: String(r.Category).trim(), colour: String(r.Colour || OTHER_COLOUR).trim(), match: String(r.Match || '').trim(),
+    group: String(r.Group || '').trim(), bar: String(r.Show || '').trim().toLowerCase() === 'bar', kind: String(r.Kind || '').trim().toLowerCase(),
+  }));
+  const kids = rows_('boys').map(b => norm_(b.Name)).filter(Boolean);
+  const groupNames = {};
+  raw.forEach(c => { if (c.group && c.group !== c.name) groupNames[c.group] = (groupNames[c.group] || []).concat(c.name); });
+  const groupKind = {};
+  Object.keys(groupNames).forEach(g => { groupKind[g] = groupNames[g].some(n => kids.indexOf(norm_(n)) >= 0) ? 'children' : 'adults'; });
+  raw.forEach(c => {
+    if (c.kind === 'children' || c.kind === 'adults') groupKind[c.name] = c.kind;
+  });
+  raw.forEach(c => {
+    if (c.kind) return;
+    const n = norm_(c.name);
+    if (c.group && c.group !== c.name) c.kind = groupKind[c.group] === 'children' ? 'child' : 'adult';
+    else if (groupNames[c.name]) c.kind = groupKind[c.name];
+    else if (n === 'family') c.kind = 'family';
+    else if (n === 'holiday' || n === 'holidays') c.kind = 'holiday';
+    else c.kind = 'special';
+  });
+  const find = k => raw.find(c => c.kind === k);
+  const rank = c => { const i = kids.indexOf(norm_(c.name)); return i < 0 ? 99 : i; };
+  const g = (k, def, colour) => { const c = find(k); return { name: c ? c.name : def, colour: c ? c.colour : colour, match: c ? c.match : '' }; };
+  const fam = find('family'), hol = find('holiday');
+  const ps = pageSettings_('boys'), page = rows_('pages').find(p => String(p.Type).toLowerCase() === 'boys');
+  return {
+    // Children in the order they're on the points page, then the adults.
+    people: raw.filter(c => c.kind === 'child').sort((x, y) => rank(x) - rank(y)).concat(raw.filter(c => c.kind === 'adult'))
+      .map(c => ({ name: c.name, colour: c.colour, match: c.match, role: c.kind })),
+    children: g('children', 'Children', '#22d3ee'), adults: g('adults', 'Adults', '#a855f7'),
+    family: { name: 'Family', colour: fam ? fam.colour : '#c08457', match: fam ? fam.match : '' },
+    holiday: { name: 'Holiday', colour: hol ? hol.colour : '#ef4444', match: hol ? hol.match : 'flight' },
+    specials: raw.filter(c => c.kind === 'special').slice(0, FAMILY_LIMITS.specials).map(c => ({ name: c.name, colour: c.colour, match: c.match, bar: c.bar })),
+    pointsTitle: page ? String(page.Title || '') : '', limits: FAMILY_LIMITS,
+  };
+}
+
+/** Save the family from the setup app: rewrites the Categories tab, the children on the points page and the page's name. */
+function saveFamily_(b) {
+  const L = FAMILY_LIMITS, hex = /^#[0-9a-f]{6}$/i, used = {};
+  const clean = (what, v, max) => {
+    v = String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+    if (!v) throw new Error(what + ' needs a name');
+    if (v.length > max) throw new Error(what + ' “' + v + '” is too long – up to ' + max + ' characters fit on the calendar key');
+    if (/[–—:\-|,]/.test(v)) throw new Error('“' + v + '” can’t contain a dash, colon, comma or |');
+    const k = norm_(v);
+    if (!k) throw new Error('“' + v + '” needs some letters');
+    if (used[k]) throw new Error('“' + v + '” is used twice – every name needs to be different');
+    used[k] = 1;
+    return v;
+  };
+  const colour = (what, c) => { c = String(c || '').trim(); if (!hex.test(c)) throw new Error('Colour for ' + what + ' must look like #3fa9f5'); return c; };
+  const match = (m, was, name) => {
+    const words = String(m || '').split(',').map(x => x.trim()).filter(Boolean);
+    // Renamed? Keep events that use the old name ("Boys – Swimming") in the same category.
+    if (was && norm_(was) !== norm_(name) && words.map(norm_).indexOf(norm_(was)) < 0) words.push(String(was).trim());
+    const out = words.join(', ');
+    if (out.length > L.match) throw new Error('Too many matching words for ' + name);
+    return out;
+  };
+  // The fixed ones first so nobody can call a person "Family".
+  clean('Family', 'Family', 20); clean('Holiday', 'Holiday', 20);
+  const people = (b.people || []).filter(p => p && String(p.name || '').trim());
+  if (!people.length) throw new Error('Add at least one person');
+  if (people.length > L.people) throw new Error('Up to ' + L.people + ' people');
+  const groups = {};
+  ['children', 'adults'].forEach(k => {
+    const gIn = b[k] || {};
+    groups[k] = { name: clean(k === 'children' ? 'The children’s group' : 'The adults’ group', gIn.name, L.group), was: gIn.was };
+    groups[k].colour = colour(groups[k].name, gIn.colour);
+    groups[k].match = match(gIn.match, gIn.was, groups[k].name);
+  });
+  const ppl = people.map(p => {
+    const role = p.role === 'child' ? 'child' : p.role === 'adult' ? 'adult' : '';
+    if (!role) throw new Error('Say whether ' + p.name + ' is an adult or a child');
+    const name = clean('Each person', p.name, L.name);
+    return { name: name, was: p.was, role: role, colour: colour(name, p.colour), match: match(p.match, p.was, name) };
+  });
+  const kids = ppl.filter(p => p.role === 'child');
+  if (kids.length > L.children) throw new Error('Up to ' + L.children + ' children');
+  const specials = (b.specials || []).filter(x => x && String(x.name || '').trim());
+  if (specials.length > L.specials) throw new Error('Up to ' + L.specials + ' special categories, so the calendar key stays readable');
+  const sp = specials.map(x => { const name = clean('Each special category', x.name, L.special); return { name: name, colour: colour(name, x.colour), match: match(x.match, x.was, name), bar: !!x.bar }; });
+  const fam = b.family || {}, hol = b.holiday || {};
+
+  const rows = [];
+  ['children', 'adults'].forEach(k => {
+    const members = ppl.filter(p => p.role === (k === 'children' ? 'child' : 'adult'));
+    members.forEach(p => rows.push([p.name, p.colour, p.match, groups[k].name, '', p.role]));
+    if (members.length) rows.push([groups[k].name, groups[k].colour, groups[k].match, '', '', k]);
+  });
+  rows.push(['Family', colour('Family', fam.colour || '#c08457'), match(fam.match, '', 'Family'), '', '', 'family']);
+  rows.push(['Holiday', colour('Holiday', hol.colour || '#ef4444'), match(hol.match == null ? 'flight' : hol.match, '', 'Holiday'), '', '', 'holiday']);
+  sp.forEach(x => rows.push([x.name, x.colour, x.match, '', x.bar ? 'bar' : '', 'special']));
+
+  {   // (already inside the request lock)
+    const sh = sheet_('categories');
+    sh.clearContents();
+    sh.getRange(1, 1, 1, SHEETS.categories.length).setValues([SHEETS.categories]).setFontWeight('bold');
+    sh.getRange(2, 1, rows.length, SHEETS.categories.length).setValues(rows);
+    // The children are also the points page. Renaming keeps their points, tasks and reminders.
+    if (b.points !== false && kids.length) {
+      kids.forEach(k => { if (k.was && k.was !== k.name) renameChild_(k.was, k.name); });
+      const bs = sheet_('boys');
+      if (bs.getLastRow() > 1) bs.getRange(2, 1, bs.getLastRow() - 1, SHEETS.boys.length).clearContent();
+      bs.getRange(2, 1, kids.length, 2).setValues(kids.map(k => [k.name, k.colour]));
+    }
+    const title = String(b.pointsTitle || '').trim() || groups.children.name;
+    if (title.length > 14) throw new Error('The points page name can be up to 14 characters');
+    setColumn_('pages', 'Title', r => String(r[2]).toLowerCase() === 'boys' ? title : undefined);
+    bumpCalVersion_(); bumpVersions_();
+    return { ok: true, family: family_() };
+  }
+}
+
+/** A child has been renamed: move their points, tasks, to-dos and reminders to the new name. */
+function renameChild_(was, name) {
+  [['tasks', 'Boy'], ['ledger', 'Boy'], ['todos', 'Boy'], ['todoLog', 'Boy'], ['timetable', 'Boy']].forEach(t => {
+    const sh = SpreadsheetApp.getActive().getSheetByName(TAB[t[0]]); if (!sh) return;
+    const data = sh.getDataRange().getValues(), c = data[0].map(String).indexOf(t[1]);
+    if (c < 0 || data.length < 2) return;
+    const vals = data.slice(1).map(r => [String(r[c]).trim() === was ? name : r[c]]);
+    sh.getRange(2, c + 1, vals.length, 1).setValues(vals);
+  });
+}
+
 function norm_(x) { return String(x || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim(); }
 
 /**
@@ -2266,4 +2467,65 @@ function spotifyControl_(op) {
   Utilities.sleep(350);
   const w = layout_().widgets.find(x => x.type === 'spotify');
   return { ok: true, id: w ? w.id : '', data: spotifyNow_() };
+}
+
+
+/* ============================================================ SHEET MENU */
+// A "🏠 Family Dashboard" menu in the Google Sheet: connect devices and check for updates without touching any code.
+
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
+    .addItem('Connect my screen and phones', 'menuConnect')
+    .addItem('Check for updates', 'menuUpdate')
+    .addSeparator()
+    .addItem('Repair the tabs (runs setup)', 'setup')
+    .addToUi();
+}
+function appsBase_() { return String(inst_('AppsAddress') || APPS_DEFAULT).replace(/\/?$/, '/'); }
+function myUrl_() {
+  const saved = PropertiesService.getScriptProperties().getProperty('execUrl');
+  if (saved) return saved;
+  const u = ScriptApp.getService().getUrl() || '';
+  return /\/exec$/.test(u) ? u : '';
+}
+function dialog_(title, html, h) {
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(
+    '<div style="font:15px/1.5 Arial,sans-serif;color:#222">' + html + '</div>').setWidth(520).setHeight(h || 360), title);
+}
+function menuConnect() {
+  setup();
+  const url = myUrl_();
+  if (!url) {
+    dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
+      '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
+      '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
+      '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
+      '<p>Then come back here and choose <b>🏠 Family Dashboard → Connect my screen and phones</b> again.</p>', 380);
+    return;
+  }
+  const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
+  dialog_('Connect your screen and phones', '<p>✅ Your Family Dashboard is published.</p>' +
+    '<p>Open the setup app to connect the screen and phones – it already knows your Sheet, so there’s nothing to type:</p>' +
+    '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Open the setup app</a></p>' +
+    '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
+}
+function menuUpdate() {
+  let latest = null;
+  try { latest = JSON.parse(UrlFetchApp.fetch(appsBase_() + 'version.json', { muteHttpExceptions: true }).getContentText()); } catch (err) { latest = null; }
+  if (!latest) { dialog_('Check for updates', '<p>Couldn’t check for updates just now. Try again later.</p>', 200); return; }
+  const url = myUrl_();
+  const link = appsBase_() + 'setup/#update' + (url ? '&api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) : '');
+  if (newer_(latest.script, SCRIPT_VERSION)) {
+    dialog_('Update available', '<p>A new version of the dashboard’s Google script is available: <b>' + clean_(latest.script) + '</b> (you have ' + SCRIPT_VERSION + ').</p>' +
+      (latest.notes ? '<ul>' + latest.notes.map(n => '<li>' + clean_(n) + '</li>').join('') + '</ul>' : '') +
+      '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Show me how to update</a></p>', 380);
+  } else {
+    dialog_('Up to date', '<p>✅ Your Google script is up to date (version ' + SCRIPT_VERSION + ').</p><p>The screen and phone apps update themselves.</p>', 200);
+  }
+}
+/** "2026.11.4" > "2026.11.3"? */
+function newer_(a, b) {
+  const x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); }
+  return false;
 }

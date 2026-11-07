@@ -2,24 +2,61 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Family Dashboard apps</title><meta name="theme-color" content="#0c0e12">
+<title>Family Dashboard</title><meta name="theme-color" content="#0c0e12">
+<link rel="icon" href="admin/icons/icon-192.png">
 <link rel="stylesheet" href="shared/base.css">
 <style>
- .wrap { max-width: 460px; margin: 0 auto; padding: 40px 18px; }
- h1 { font-size: 26px; margin-bottom: 6px; }
- a.app { display: flex; align-items: center; gap: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-top: 14px; color: var(--text); text-decoration: none; }
- a.app img { width: 60px; height: 60px; border-radius: 14px; }
- a.app b { font-size: 18px; display: block; }
- ol { margin: 10px 0 0 20px; color: var(--mute); } li { margin: 6px 0; }
+ body { min-height: 100vh; }
+ .wrap { max-width: 1060px; margin: 0 auto; padding: 36px 18px 50px; }
+ .hero { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+ .hero .logo { width: 56px; height: 56px; border-radius: 16px; background: var(--acc); display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; flex: none; }
+ h1 { font-size: 30px; margin: 0; }
+ .lead { color: #cdd5e1; font-size: 17px; margin: 6px 0 24px; }
+ .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; }
+ .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+ .tile.first { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc) inset; }
+ .tile .thead { display: flex; align-items: center; gap: 12px; }
+ .tile .ico { width: 52px; height: 52px; border-radius: 14px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 26px; background: var(--panel-2); }
+ .tile img.ico { padding: 0; }
+ .tile b { font-size: 18px; display: block; } .tile .who { color: var(--mute); font-size: 13px; }
+ .tile p { color: var(--mute); font-size: 14px; margin: 0; flex: 1; }
+ .qr { background: #fff; border-radius: 12px; padding: 8px; width: 150px; height: 150px; align-self: center; }
+ .qr svg { width: 100%; height: 100%; display: block; }
+ .tile .btn { text-align: center; text-decoration: none; }
+ .step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; margin-bottom: 2px; }
+ .foot { color: var(--mute); font-size: 13px; margin-top: 26px; }
+ .foot a { color: var(--acc); }
 </style>
 </head>
 <body><div class="wrap">
- <h1>Family Dashboard</h1><p class="mute">Two phone apps that work with the dashboard on the XENEON EDGE.</p>
- <a class="app" href="calendar/"><img src="calendar/icons/icon-192.png" alt=""><span><b>Family Calendar</b><span class="mute">For everyone – see and add entries</span></span></a>
- <a class="app" href="setup/"><span style="width:60px;height:60px;border-radius:14px;background:#3fa9f5;display:flex;align-items:center;justify-content:center;font-size:30px;color:#fff;flex:none">⚙</span><span><b>Set up a new dashboard</b><span class="mute">Step-by-step first-time setup</span></span></a>
- <a class="app" href="admin/"><img src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="mute">For parents – points, tasks, lists, settings</span></span></a>
- <div class="card" style="margin-top:22px"><h2>Install on your phone</h2>
-  <ol><li><b>iPhone:</b> open the app in Safari, tap Share, then <b>Add to Home Screen</b>.</li>
-      <li><b>Android:</b> open the app in Chrome, tap ⋮, then <b>Install app</b> (or Add to Home screen).</li>
-      <li>Open it from the new icon and paste your setup link when asked.</li></ol></div>
-</div></body></html>
+ <div class="hero"><span class="logo">▦</span><h1>Family Dashboard</h1></div>
+ <p class="lead">A touch-screen family dashboard with phone apps. New here? Start with <b>Setup</b> – it walks you through everything.</p>
+ <div class="tiles">
+  <div class="tile first"><span class="step">Start here</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>Setup</b><span class="who">First-time setup, step by step</span></span></div>
+   <p>Makes your own Google Sheet, connects the screen and phones, and checks everything works.</p>
+   <div class="qr" data-qr="setup/"></div><a class="btn" href="setup/">Open setup</a></div>
+  <div class="tile"><div class="thead"><span class="ico">🖥</span><span><b>Screen app</b><span class="who">Windows PC + Corsair XENEON EDGE</span></span></div>
+   <p>Download, unzip, and double-click the start file. It updates itself. (Raspberry Pi or tablet: setup gives you a link instead.)</p>
+   <div class="qr" data-qr="downloads/family-dashboard-windows.zip"></div><a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a></div>
+  <div class="tile"><div class="thead"><img class="ico" src="calendar/icons/icon-192.png" alt=""><span><b>Family Calendar</b><span class="who">Phone app – for everyone</span></span></div>
+   <p>See and add calendar entries. Scan with your phone’s camera, then add it to your home screen.</p>
+   <div class="qr" data-qr="calendar/"></div><a class="btn" href="calendar/">Open Family Calendar</a></div>
+  <div class="tile"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for parents</span></span></div>
+   <p>Points, tasks, reminders, widgets and settings. Scan, then add it to your home screen.</p>
+   <div class="qr" data-qr="admin/"></div><a class="btn" href="admin/">Open Family Admin</a></div>
+ </div>
+ <p class="foot">Add to home screen: iPhone – open in Safari → Share → <b>Add to Home Screen</b>. Android – open in Chrome → ⋮ → <b>Install app</b>.
+  The apps only connect to <b>your</b> family’s Google Sheet once you use the private links from Setup. · <a href="privacy.html">Privacy notice</a></p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+ (function () {
+   var base = location.href.replace(/[#?].*$/, '').replace(/index\.html$/, '');
+   document.querySelectorAll('[data-qr]').forEach(function (el) {
+     if (!window.qrcode) { el.style.display = 'none'; return; }
+     var q = qrcode(0, 'M'); q.addData(base + el.getAttribute('data-qr')); q.make();
+     el.innerHTML = q.createSvgTag({ cellSize: 4, margin: 1, scalable: true });
+   });
+ })();
+</script>
+</body></html>

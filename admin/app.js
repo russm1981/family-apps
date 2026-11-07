@@ -54,12 +54,48 @@
               '<button data-t="lists"><i>☰</i>Lists</button><button data-t="widgets"><i>▦</i>Widgets</button><button data-t="install"><i>⚙</i>Install</button></nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
         $('tabs').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { tab = b.getAttribute('data-t'); window.scrollTo(0, 0); render(); } };
+        document.addEventListener('click', function (e) { var g = e.target.closest('[data-goto]'); if (g) { tab = g.getAttribute('data-goto'); window.scrollTo(0, 0); render(); } });
         $('refresh').onclick = load;
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
     }
     function sheet(html) { $('sheet').innerHTML = '<div class="grab"></div>' + html; $('sheetBg').classList.add('on'); }
     function closeSheet() { $('sheetBg').classList.remove('on'); }
+
+    /* ------------------------------------------------------------ notices: privacy, weak code, updates */
+
+    var LATEST = null, privacyOpen = false;
+    function newer(a, b) {
+        var x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number);
+        for (var i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); }
+        return false;
+    }
+    fetch('../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) { LATEST = v; render(); }).catch(function () {});
+    function notices() {
+        if (!DATA || !('privacyAccepted' in DATA)) return '';
+        var out = '';
+        if (DATA.codeWeak) out += '<div class="banner warn"><b>Your access code is weak.</b> Make a strong one on the Install tab. <button class="link" data-goto="install">Fix it</button></div>';
+        if (LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion))
+            out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <a class="link" href="../setup/#update">How to update</a></div>';
+        return out;
+    }
+    function privacyCheck() {
+        var P = window.FD_PRIVACY;
+        if (!P || !DATA || !('privacyAccepted' in DATA) || DATA.privacyAccepted === P.version || privacyOpen) return;
+        privacyOpen = true;
+        sheet('<h2>' + (DATA.privacyAccepted ? 'The privacy notice has changed' : 'Privacy notice') + '</h2><ul class="pv">' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+            '<details class="adv"><summary>Read the full notice</summary><div class="pv-full">' + P.full + '</div></details>' +
+            '<p class="mute small">Version ' + esc(P.version) + ', ' + esc(P.updated) + '.</p>' +
+            '<div class="sheet-actions"><button class="btn good" id="pvOk">I accept</button></div>');
+        $('sheetBg').onclick = null;     // must be accepted
+        $('pvOk').onclick = function () {
+            act({ action: 'acceptPrivacy', version: P.version, who: 'Family Admin app' }, 'Thank you').then(function () {
+                DATA.privacyAccepted = P.version; privacyOpen = false;
+                $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
+                closeSheet(); load();
+            }, function () {});
+        };
+    }
 
     function render() {
         if (!$('body')) return;
@@ -68,6 +104,9 @@
         if (!DATA) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         if ((tab === 'widgets' || tab === 'install') && !DATA.widgets) { $('body').innerHTML = '<div class="empty">Update the Google Apps Script to the latest version to see this tab.</div>'; return; }
         ({ boys: renderBoys, tasks: renderTasks, lists: renderLists, widgets: renderWidgets, install: renderInstall })[tab]();
+        var n = notices();
+        if (n) $('body').insertAdjacentHTML('afterbegin', n);
+        privacyCheck();
     }
 
     /* ------------------------------------------------------------ boys */
@@ -490,8 +529,39 @@
                     (f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '');
             }).join('') + '</section>' +
             '<button class="btn wide" id="sSave">Save installation settings</button>' +
+            '<section class="card" style="margin-top:16px"><h2>Access code</h2>' +
+            '<p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'The code protects your dashboard: anyone with your links and code can use it. ' +
+            'After changing it, every other device needs its new link (setup app → Connect your devices) and the PC needs its new start file. This phone updates itself.</p>' +
+            '<button class="btn wide" id="cNew">Make a new strong code for me</button>' +
+            '<label>Or choose your own <span class="cnt">8+ characters, letters, numbers and a special character</span></label>' +
+            '<input id="cOwn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Garden-Gnome-42">' +
+            '<div class="mute small hint" id="cHint"></div><button class="btn ghost wide" id="cSet">Use this code</button>' +
+            '<div id="cDone"></div></section>' +
             '<section class="card" style="margin-top:16px"><h2>This phone</h2><p class="mute small">Connected to ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 14)) + '… ' +
-            'The access code can only be changed in the Google Sheet (Installation tab).</p><button class="btn ghost wide" id="sOut">Disconnect this phone</button></section>';
+            'To change the access code use the Access code section above.</p><button class="btn ghost wide" id="sOut">Disconnect this phone</button></section>';
+        function codeProblem(c) {
+            if (c.length < 8) return 'at least 8 characters';
+            if (/\s/.test(c)) return 'no spaces';
+            if (!/[A-Za-z]/.test(c) || !/[0-9]/.test(c)) return 'letters and numbers';
+            if (!/[^A-Za-z0-9]/.test(c)) return 'at least one special character, e.g. ! * - _ . ~';
+            return '';
+        }
+        $('cOwn').oninput = function () { var p = codeProblem($('cOwn').value); $('cHint').textContent = $('cOwn').value ? (p ? 'Needs ' + p : '✔ Good') : ''; };
+        function changeCode(newCode) {
+            if (!confirm('Change the access code? Other phones, tablets and the screen will need their new link.')) return;
+            act({ action: 'changeCode', newCode: newCode }).then(function (d) {
+                var c = FD.config();
+                FD.setConfig(c.url, d.code);
+                var base = location.href.replace(/admin\/.*$/, '');
+                var link = function (app) { return base + app + '/#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(d.code); };
+                $('cDone').innerHTML = '<p class="small"><b>✔ Changed.</b> New links (private):</p>' +
+                    ['admin', 'calendar', 'screen'].map(function (a) { return '<label>' + { admin: 'Family Admin', calendar: 'Family Calendar', screen: 'Screen' }[a] + '</label><textarea readonly rows="3">' + esc(link(a)) + '</textarea>'; }).join('') +
+                    '<p class="mute small">Or open the setup app on a computer → Connect your devices, for QR codes and the new start file.</p>';
+                DATA.codeWeak = false;
+            }, function () {});
+        }
+        $('cNew').onclick = function () { changeCode(''); };
+        $('cSet').onclick = function () { var v = $('cOwn').value.trim(), p = codeProblem(v); if (p) { FD.toast('The code needs ' + p, true); return; } changeCode(v); };
         $('sSave').onclick = function () {
             var values = {}; document.querySelectorAll('[data-set]').forEach(function (i) { values[i.getAttribute('data-set')] = i.value.trim(); });
             act({ action: 'saveInstall', values: values }, 'Installation settings saved');

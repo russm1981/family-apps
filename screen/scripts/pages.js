@@ -25,7 +25,7 @@
         Object.keys(instances).forEach(function (k) { try { if (instances[k].destroy) instances[k].destroy(); } catch (e) { /* ignore */ } });
         instances = {};
         Array.prototype.forEach.call(document.querySelectorAll('.screen.wpage'), function (s) { s.remove(); });
-        var pages = (layout ? layout.pages : []).filter(function (p) { return p.show; });
+        var pages = navPages();
         // Side bar
         $('railPages').innerHTML = pages.map(function (p) {
             return '<button class="nav-btn" data-page="' + esc(p.id) + '" data-type="' + esc(p.type) + '"><span class="ico">' + esc(p.icon) + '</span><span class="nt">' + esc(p.title) + '</span></button>';
@@ -81,9 +81,20 @@
         show(pageExists(current) ? current : firstPage(), true);
         return true;
     }
-    function pageExists(id) { return !!(layout && layout.pages.some(function (p) { return p.id === id && p.show; })); }
-    function firstPage() { var p = layout && layout.pages.filter(function (x) { return x.show; })[0]; return p ? p.id : 'home'; }
-    function page(id) { return layout && layout.pages.filter(function (p) { return p.id === id; })[0]; }
+    /** Pages as shown in the side bar: a children's page with 4–6 children becomes two buttons ("Boys 1", "Boys 2"). */
+    function navPages() {
+        var out = [];
+        (layout ? layout.pages : []).filter(function (p) { return p.show; }).forEach(function (p) {
+            if (p.type === 'boys' && (p.children || 0) > 3) {
+                out.push(Object.assign({}, p, { part: 0, title: p.title + ' 1' }));
+                out.push(Object.assign({}, p, { id: p.id + '~2', part: 1, title: p.title + ' 2' }));
+            } else out.push(p);
+        });
+        return out;
+    }
+    function pageExists(id) { return navPages().some(function (p) { return p.id === id; }); }
+    function firstPage() { var p = navPages()[0]; return p ? p.id : 'home'; }
+    function page(id) { return navPages().filter(function (p) { return p.id === id; })[0]; }
 
     /* --------------------------------------------------------------- show */
 
@@ -100,7 +111,7 @@
             layout.widgets.forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); });
             if (!quiet || !fetched[id] || Date.now() - fetched[id] > POLL_MS) refresh(id);
         } else if (p.type === 'boys') {
-            if (window.FDBoys) window.FDBoys.onShow();
+            if (window.FDBoys) window.FDBoys.onShow(p.part || 0);
         } else if (p.type === 'calendar') {
             if (window.FDScreens && window.FDScreens.calendar) window.FDScreens.calendar.onShow();
         }
@@ -110,8 +121,14 @@
         var sec = $('screen-' + id); if (!sec) return;
         var msg = sec.querySelector('.msg.overlay');
         if (!api().ready()) {
-            msg.innerHTML = '<b>Not connected yet.</b><br>Start the dashboard with the shortcut that has your web app address and access code.';
+            msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
+                '<p>On your computer, open the setup app \u2192 <b>Connect devices</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
+                '<div class="connect-row"><input id="connectIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
+                '<p class="foot">Or download your personal start file in the setup app \u2013 it connects by itself.</p></div>';
             msg.style.display = 'flex';
+            var go = function () { if (!api().connect(document.getElementById('connectIn').value)) api().toast('That isn\u2019t a Family Dashboard link', true); };
+            document.getElementById('connectGo').onclick = go;
+            document.getElementById('connectIn').onkeydown = function (e) { if (e.key === 'Enter') go(); };
         } else if (!fetched[id] && errors[id] && !load(DATA_KEY + id)) {
             msg.innerHTML = '<b>Can’t reach the Google Sheet.</b><br>' + esc(errors[id]);
             msg.style.display = 'flex';
@@ -126,6 +143,7 @@
         api().get('page', Object.assign({ page: id || current || '' }, force ? { refresh: '1' } : {})).then(function (d) {
             errors[d.page] = '';
             applyLayout(d.layout);
+            if (window.FDNotices) window.FDNotices.check(d.layout);
             fetched[d.page] = Date.now();
             store(DATA_KEY + d.page, JSON.stringify(d.data));
             feed(d.data);
@@ -159,7 +177,7 @@
             timer = setInterval(function () {
                 var p = page(current);
                 if (p && p.type === 'widgets') refresh(current);
-                else if (api().ready()) api().get('layout', {}).then(applyLayout).catch(function () { /* next time */ });
+                else if (api().ready()) api().get('layout', {}).then(function (L) { applyLayout(L); if (window.FDNotices) window.FDNotices.check(L); }).catch(function () { /* next time */ });
             }, POLL_MS);
         },
         show: show,

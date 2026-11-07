@@ -1,0 +1,12 @@
+FAMILY DASHBOARD FOR WINDOWS (Corsair XENEON EDGE)
+
+1. Put "Start Family Dashboard.bat" somewhere permanent, e.g. Documents\Family Dashboard.
+   Easiest: use the personal start file from the setup app (step "Connect your devices") -
+   it already knows your Google Sheet.
+2. Double-click it. The first time it asks whether to start automatically when the PC turns on.
+   (If Windows says "Windows protected your PC": More info > Run anyway.)
+3. The dashboard opens full screen. Close it with Alt+F4.
+   If it asks you to connect, paste your screen link from the setup app.
+
+The dashboard loads from the internet, so it updates itself: when there's a new version it
+shows "Update available" with Update now / Later.

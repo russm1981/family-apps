@@ -765,3 +765,22 @@ button.ag-more { font-size: 0.85rem; }
 .bs-note { font-size: 0.7rem; }
 .bs-time.late { color: #ffb020; } .bs-time s { color: var(--mute); font-weight: 400; font-size: 0.75rem; margin-left: 0.3rem; }
 .wd-u.cold { background: rgba(90, 180, 255, .14); color: #9fd3ff; } .wd-u small { font-size: 0.72rem; opacity: .8; }
+
+/* ============================================ connect, updates, privacy */
+.connect { max-width: 52rem; text-align: left; display: flex; flex-direction: column; gap: 0.6rem; }
+.connect b { font-size: 1.6rem; }
+.connect-row { display: flex; gap: 0.8rem; }
+.connect-row input { flex: 1; height: 3.2rem; font: inherit; font-size: 1.1rem; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 0.7rem; padding: 0 1rem; -webkit-user-select: text; user-select: text; }
+.connect-row button { height: 3.2rem; padding: 0 1.8rem; border-radius: 0.7rem; background: var(--acc); color: #fff; font-weight: 800; }
+.notice { position: fixed; right: 1rem; bottom: 1rem; z-index: 1500; display: none; align-items: center; gap: 0.9rem; max-width: 48rem;
+    background: #10233a; border: 1px solid var(--acc); border-radius: 0.9rem; padding: 0.7rem 0.9rem; box-shadow: 0 0.6rem 2rem rgba(0, 0, 0, .6); }
+#scrBanner { bottom: 5.6rem; background: #2a2210; border-color: #ffb020; }
+.n-ico { font-size: 1.6rem; } .n-text { display: flex; flex-direction: column; min-width: 0; } .n-text span { color: var(--mute); font-size: 0.85rem; }
+.n-btn { background: var(--acc); color: #fff; font-weight: 800; border-radius: 0.6rem; padding: 0.55rem 1.1rem; white-space: nowrap; }
+.n-btn.ghost { background: none; border: 1px solid var(--line); color: var(--text); }
+.privacy { position: fixed; inset: 0; z-index: 3000; background: rgba(5, 6, 9, .92); display: flex; align-items: center; justify-content: center; }
+.pv-card { width: min(70rem, 90vw); max-height: 92vh; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1.2rem 1.6rem; }
+.pv-card h2 { font-size: 1.6rem; margin-bottom: 0.6rem; }
+.pv-card ul { padding-left: 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; font-size: 1.02rem; line-height: 1.4; }
+.pv-full { margin-top: 0.8rem; font-size: 0.92rem; color: #cfd6e2; line-height: 1.45; } .pv-full h3 { margin: 0.7rem 0 0.2rem; color: var(--text); text-transform: none; letter-spacing: 0; font-size: 1rem; }
+.pv-btns { display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1rem; } .pv-btns .n-btn { padding: 0.8rem 1.6rem; font-size: 1.1rem; }
