@@ -482,7 +482,7 @@
             '  choice /C YN /M "Start the Family Dashboard automatically when this PC turns on"',
             '  if not errorlevel 2 powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Startup\')+\'\\Family Dashboard.lnk\'); $s.TargetPath=\'%~f0\'; $s.WorkingDirectory=\'%~dp0\'; $s.WindowStyle=7; $s.Save()"',
             ')', 'powershell -NoProfile -ExecutionPolicy Bypass -Command ^', ' "$u = if ($env:LINK) { $env:LINK } else { $env:SCREEN };" ^', ' "$q = [char]34;" ^',
-            ' "Start-Process \'msedge\' -ArgumentList @(\'--kiosk\', $u, \'--edge-kiosk-type=fullscreen\', \'--no-first-run\', \'--disable-pinch\', \'--overscroll-history-navigation=0\', (\'--user-data-dir=\' + $q + $env:FDPROFILE + $q))"', ''].join('\r\n');
+            ' "Start-Process \'msedge\' -ArgumentList @(\'--kiosk\', $u, \'--edge-kiosk-type=fullscreen\', \'--no-first-run\', \'--autoplay-policy=no-user-gesture-required\', \'--use-fake-ui-for-media-stream\', \'--disable-pinch\', \'--overscroll-history-navigation=0\', (\'--user-data-dir=\' + $q + $env:FDPROFILE + $q))"', ''].join('\r\n');
     }
 
     /** Show or hide every widget of the given types (used by "Skip"). */

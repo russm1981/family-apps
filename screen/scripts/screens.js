@@ -47,7 +47,7 @@
     function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
     function addMonths(d, n) { return new Date(d.getFullYear(), d.getMonth() + n, 1); }
 
-    var calView = '3m';           // '3m' (default), '1m' or 'week'
+    var calView = '3m';           // '3m' (default), '3ms' (3 months, scrolling), '1m' or 'week'
     var defaultView = '3m', touched = false;
     var calWeek = null;           // Monday of the week shown in week view
     var DAYNAME = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -121,11 +121,14 @@
         $('calRows').className = 'cal-rows view-' + calView;
         if (calView === 'week') renderWeek(data, today);
         else if (calView === '1m') renderMonth(data, today);
-        else render3m(data, today);
+        else render3m(data, today, calView === '3ms');
         renderKey();
     }
 
-    function render3m(data, today) {
+    var scrollFor = '', drag = null, dragged = false;
+    /** 3 months, or "3 months (scroll)": wider days (about 10 across) that you drag left and right. */
+    function render3m(data, today, scroll) {
+        var oldWrap = scroll ? $('calRows').querySelector('.cs-wrap') : null, oldLeft = oldWrap ? oldWrap.scrollLeft : 0;
         var last = addMonths(calStart, 2);
         $('calYear').textContent = calStart.getFullYear() === last.getFullYear() ? calStart.getFullYear() : calStart.getFullYear() + ' – ' + last.getFullYear();
         $('calRange').textContent = MON[calStart.getMonth()] + ' – ' + MON[last.getMonth()];
@@ -139,14 +142,42 @@
                 var dt = new Date(ms.getFullYear(), ms.getMonth(), d);
                 var ds = ymd(dt);
                 var evs = dayParts(data, ds).evs, hb = barHtml(data, dt);
-                var shown = evs.slice(0, 4).map(function (e) { return '<div class="ev" ' + evStyle(e) + '>' + esc(e.t) + '</div>'; }).join('');
-                if (evs.length > 4) shown += '<div class="ev more">+' + (evs.length - 4) + ' more</div>';
-                html += '<button class="cal-cell' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '"><span class="cd"><b>' + d + '</b><i>' + DOW[dt.getDay()].charAt(0) + '</i></span>' + shown + hb.html + '</button>';
+                var lim = scroll ? 5 : 4, cut = evs.length > lim ? lim - 1 : evs.length;
+                var shown = evs.slice(0, scroll ? cut : 4).map(function (e) {
+                    return '<div class="ev" ' + evStyle(e) + '>' + (scroll && e.time ? '<span class="et">' + esc(e.time) + '</span> ' : '') + esc(e.t) + '</div>';
+                }).join('');
+                if (scroll ? evs.length > cut : evs.length > 4) shown += '<div class="ev more">+' + (evs.length - (scroll ? cut : 4)) + ' more</div>';
+                html += '<button class="cal-cell' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '"><span class="cd"><b>' + d + '</b><i>' + (scroll ? DOW[dt.getDay()] : DOW[dt.getDay()].charAt(0)) + '</i></span>' + shown + hb.html + '</button>';
             }
             html += '</div>';
         }
-        $('calRows').innerHTML = html;
+        if (!scroll) { $('calRows').innerHTML = html; return; }
+        $('calRows').innerHTML = '<div class="cs-wrap"><div class="cs-inner">' + html + '</div></div>';
+        var wrap = $('calRows').querySelector('.cs-wrap');
+        // About 10 days across the screen.
+        var label = 4.2 * parseFloat(getComputedStyle(document.documentElement).fontSize), gap = 0.18 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+        var cw = Math.max(60, (wrap.clientWidth - label - 10 * gap) / 10);
+        wrap.style.setProperty('--cw', cw + 'px');
+        var key = ymd(calStart);
+        if (scrollFor !== key) {
+            scrollFor = key;
+            var t = new Date(), first = calStart.getFullYear() === t.getFullYear() && calStart.getMonth() === t.getMonth();
+            wrap.scrollLeft = first ? Math.max(0, (t.getDate() - 3) * (cw + gap)) : 0;
+        } else wrap.scrollLeft = oldLeft;
     }
+    /** Mouse dragging for the scroll view (fingers scroll it natively). */
+    function dragStart(e) {
+        if (calView !== '3ms' || e.pointerType === 'touch') return;
+        var wrap = e.target.closest('.cs-wrap'); if (!wrap) return;
+        drag = { wrap: wrap, x: e.clientX, left: wrap.scrollLeft, id: e.pointerId }; dragged = false;
+    }
+    function dragMove(e) {
+        if (!drag) return;
+        var dx = e.clientX - drag.x;
+        if (Math.abs(dx) > 8) dragged = true;
+        if (dragged) { drag.wrap.scrollLeft = drag.left - dx; e.preventDefault(); }
+    }
+    function dragEnd() { drag = null; setTimeout(function () { dragged = false; }, 0); }
 
     function renderMonth(data, today) {
         $('calYear').textContent = MONTHNAME[calStart.getMonth()];
@@ -301,6 +332,14 @@
                     var anchor = (t >= r.start && t < r.end) ? new Date() : (calView === 'week' ? calWeek : calStart);
                     setView(b.getAttribute('data-view'), anchor);
                 });
+                $('calRows').addEventListener('pointerdown', dragStart);
+                window.addEventListener('pointermove', dragMove);
+                window.addEventListener('pointerup', dragEnd);
+                // A drag isn't a tap on a day.
+                $('calRows').addEventListener('click', function (e) { if (dragged) { e.stopPropagation(); e.preventDefault(); } }, true);
+                // Scrolling by finger: a tiny scroll shouldn't open the day either.
+                $('calRows').addEventListener('scroll', function () { if (calView === '3ms') { dragged = true; clearTimeout(dragStart.t); dragStart.t = setTimeout(function () { dragged = false; }, 120); } }, true);
+                window.addEventListener('resize', function () { if (calView === '3ms' && visible('screen-calendar')) renderCalendar(); });
                 $('calRows').addEventListener('click', function (e) {
                     var mo = e.target.closest('[data-month]'); if (mo && !adding) { setView('1m', parseYmd(mo.getAttribute('data-month'))); return; }
                     var wk = e.target.closest('[data-week]'); if (wk && !adding) { setView('week', parseYmd(wk.getAttribute('data-week'))); return; }
@@ -325,7 +364,7 @@
             onShow: function () { loadCalendar(); },
             /** Admin setting "Opens on": 3 months, Month or Week. Used until someone picks a view on the screen. */
             setDefault: function (v) {
-                var view = { '3 months': '3m', 'Month': '1m', 'Week': 'week' }[v] || '3m';
+                var view = { '3 months': '3m', '3 months (scroll)': '3ms', 'Month': '1m', 'Week': 'week' }[v] || '3m';
                 if (defaultView === view) return;
                 defaultView = view;
                 if (!touched) setView(view, new Date());

@@ -183,6 +183,9 @@
         show: show,
         reset: function () { fetched = {}; layout = null; refresh(current, true); },
         current: function () { return page(current); },
+        pages: function () { return navPages(); },
+        layout: function () { return layout; },
+        refreshNow: function (force) { var p = page(current); if (p && p.type === 'widgets') refresh(current, force); },
         goType: function (type) { var p = layout && layout.pages.filter(function (x) { return x.type === type && x.show; })[0]; if (p) show(p.id); return !!p; },
     };
 })();

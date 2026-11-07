@@ -14,4 +14,4 @@ if not exist "%FDPROFILE%\asked-startup.txt" (
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
  "$u = if ($env:LINK) { $env:LINK } else { $env:SCREEN };" ^
  "$q = [char]34;" ^
- "Start-Process 'msedge' -ArgumentList @('--kiosk', $u, '--edge-kiosk-type=fullscreen', '--no-first-run', '--disable-pinch', '--overscroll-history-navigation=0', ('--user-data-dir=' + $q + $env:FDPROFILE + $q))"
+ "Start-Process 'msedge' -ArgumentList @('--kiosk', $u, '--edge-kiosk-type=fullscreen', '--no-first-run', '--autoplay-policy=no-user-gesture-required', '--use-fake-ui-for-media-stream', '--disable-pinch', '--overscroll-history-navigation=0', ('--user-data-dir=' + $q + $env:FDPROFILE + $q))"

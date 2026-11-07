@@ -24,7 +24,8 @@
     }
     function visible(el) { return !!(el && el.offsetParent); }
     var MAP_OPTS = { zoomControl: false, attributionControl: true, dragging: false, touchZoom: false,
-        scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false };
+        scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false,
+        zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false };   // no animations: nothing left running when a page is rebuilt
     /** Dark base map: TomTom when there's a key, otherwise CARTO's free dark map. */
     function baseTiles(key) {
         return key ? L.tileLayer('https://api.tomtom.com/map/1/tile/basic/night/{z}/{x}/{y}.png?key=' + encodeURIComponent(key), { maxZoom: 18, attribution: '\u00a9 TomTom' })
@@ -69,6 +70,7 @@
 
     T.weather = function (el, w) {
         var s = w.settings;
+        if (w.size === 'half') return weatherHalf(el, w);
         el.innerHTML = (s.ShowClock ? '<div class="when"><div class="clock">--:--</div><div class="date"></div></div>' : '') +
             '<div class="wx-now">' + loading() + '</div><div class="wx-hours" style="grid-template-columns:repeat(' + (s.Hours || 8) + ',minmax(0,1fr))"></div><div class="wx-days"></div>';
         var q = function (c) { return el.querySelector(c); };
@@ -103,6 +105,38 @@
         };
     };
 
+    /** Half height: now, the next few hours and the next few days, all in one compact card. */
+    function weatherHalf(el, w) {
+        var s = w.settings, hours = Math.min(s.Hours || 6, 6), days = Math.min(s.Days || 4, 4);
+        el.innerHTML = '<div class="wx-top">' + loading() + '</div>' +
+            '<div class="wx-hours" style="grid-template-columns:repeat(' + hours + ',minmax(0,1fr))"></div><div class="wx-dayrow" style="grid-template-columns:repeat(' + days + ',minmax(0,1fr))"></div>';
+        var q = function (c) { return el.querySelector(c); }, last = null;
+        function tick() { var c = q('.wx-top .clock'); if (c) c.textContent = hhmm(new Date()); }
+        var timer = setInterval(tick, 10000);
+        return {
+            update: function (d) {
+                last = d;
+                if (!d || d.error) { q('.wx-top').innerHTML = errBox(d ? d.error : 'No weather'); q('.wx-hours').innerHTML = ''; q('.wx-dayrow').innerHTML = ''; return; }
+                var n = wx(d.now.code, d.now.isDay), today = d.days[0] || {};
+                q('.wx-top').innerHTML = '<span class="wx-icon">' + n.icon + '</span><div class="wx-tl"><div class="wx-temp">' + d.now.temp + '\u00b0</div>' +
+                    '<div class="wx-label">' + esc(n.label) + '</div></div>' +
+                    '<div class="wx-meta"><span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') +
+                    ' \u00b7 ' + d.now.wind + ' mph</span></div>' + (s.ShowClock ? '<div class="clock">' + hhmm(new Date()) + '</div>' : '');
+                q('.wx-hours').innerHTML = d.hours.slice(0, hours).map(function (h) {
+                    var x = wx(h.code, h.isDay);
+                    return '<div class="hr"><span class="t">' + esc(h.time) + '</span><span class="i">' + x.icon + '</span><span class="v">' + h.temp + '\u00b0</span>' +
+                        '<span class="r' + (h.rain >= 50 ? ' wet' : '') + '">' + (h.rain || 0) + '%</span></div>';
+                }).join('');
+                q('.wx-dayrow').innerHTML = d.days.slice(1, 1 + days).map(function (x) {
+                    var ic = wx(x.code, true), dt = parseYmd(x.date);
+                    return '<div class="dd"><span class="n">' + DOW[dt.getDay()] + '</span><span class="i">' + ic.icon + '</span>' +
+                        '<span class="hl"><b>' + x.max + '\u00b0</b> ' + x.min + '\u00b0</span><span class="r' + (x.rain >= 50 ? ' wet' : '') + '">' + (x.rain || 0) + '%</span></div>';
+                }).join('');
+            },
+            destroy: function () { clearInterval(timer); },
+        };
+    }
+
     /* ============================================================ TRAFFIC */
 
     var STATUS = { green: 'Normal', amber: 'A bit slower', red: 'Much slower' };
@@ -115,7 +149,7 @@
         function flowUrl() {
             return 'https://api.tomtom.com/traffic/map/4/tile/flow/relative0-dark/{z}/{x}/{y}.png?key=' + encodeURIComponent(key) + '&t=' + Math.floor(Date.now() / 600000);
         }
-        function fit() { if (map) { map.invalidateSize(); if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { padding: [30, 30] }); } }
+        function fit() { if (!map || !mapEl.isConnected) return; try { map.invalidateSize(); if (bounds && mapEl.clientWidth) map.fitBounds(bounds, { padding: [30, 30] }); } catch (e) { /* page was rebuilt */ } }
         function draw(t) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return; }
             if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key on the Installation tab to see the traffic map</div>'; return; }
@@ -164,7 +198,7 @@
                 draw(t);
             },
             show: function () { setTimeout(fit, 60); },
-            destroy: function () { if (map) map.remove(); },
+            destroy: function () { if (map) { map.remove(); map = null; } },
         };
     };
 
@@ -269,23 +303,41 @@
 
     T.flights = function (el, w, ctx) {
         var s = w.settings, rows = s.ListRows == null ? 3 : s.ListRows;
-        el.innerHTML = '<div class="map fl-map"></div><div class="fl-badge"></div><div class="fl-key"><i style="--pc:#ff8a3d"></i>&lt;5k ft<i style="--pc:#ffd54a"></i>&lt;15k<i style="--pc:#7ee081"></i>&lt;30k<i style="--pc:#5ab4ff"></i>higher</div>' +
+        var MODE_KEY = 'familyDashboard.flMode.' + w.id, airlinesOnly = false, light = (s.Map || 'Light') !== 'Dark';
+        try { airlinesOnly = localStorage.getItem(MODE_KEY) === 'airlines'; } catch (e) { /* ignore */ }
+        if (light) el.classList.add('fl-light');
+        el.innerHTML = '<div class="map fl-map"></div><div class="fl-badge"></div><button class="fl-mode" type="button"></button><div class="fl-key"><i style="--pc:#ff8a3d"></i>&lt;5k ft<i style="--pc:#ffd54a"></i>&lt;15k<i style="--pc:#7ee081"></i>&lt;30k<i style="--pc:#5ab4ff"></i>higher</div>' +
             (rows ? '<div class="fl-list">' + loading() + '</div>' : '');
         var mapEl = el.querySelector('.fl-map'), listEl = el.querySelector('.fl-list'), badge = el.querySelector('.fl-badge');
-        var map = null, ring = null, home = null, markers = {}, planes = [], at = 0, selected = null, data = null;
+        var map = null, ring = null, rings = null, home = null, markers = {}, planes = [], all = [], at = 0, selected = null, data = null;
+        var modeBtn = el.querySelector('.fl-mode');
+        /** Airliners: a scheduled flight number (BAW123, EZY45AB), an airline, or a known route. */
+        function isAirline(p) { return !!(p.airline || (p.from && p.to) || /^[A-Z]{3}[0-9]/.test(String(p.cs || '').trim())); }
+        function filter() { planes = airlinesOnly ? all.filter(isAirline) : all.slice(); }
+        function showMode() { modeBtn.innerHTML = airlinesOnly ? '<b>Airlines</b> only' : '<b>All</b> planes'; modeBtn.classList.toggle('on', airlinesOnly); }
+        showMode();
+        modeBtn.addEventListener('click', function () {
+            airlinesOnly = !airlinesOnly;
+            try { localStorage.setItem(MODE_KEY, airlinesOnly ? 'airlines' : 'all'); } catch (e) { /* ignore */ }
+            showMode(); filter(); if (map) { draw(); list(); badgeText(); }
+        });
+        function badgeText() {
+            if (!data || data.error) return;
+            badge.innerHTML = '\u2708 <b>' + planes.length + '</b> ' + (airlinesOnly ? 'airliner' : 'plane') + (planes.length === 1 ? '' : 's') + ' within ' + data.radiusMiles + ' miles <span>' + hhmm(new Date()) + '</span>';
+        }
         function ensureMap(d) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return false; }
             if (map) return true;
             map = L.map(mapEl, MAP_OPTS);
             map.attributionControl.setPrefix('');
-            baseTiles(ctx.tomtomKey).addTo(map);
+            (light ? L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '\u00a9 OpenStreetMap \u00a9 CARTO' })
+                : baseTiles(ctx.tomtomKey)).addTo(map);
             map.setView(d.centre, 9);
             return true;
         }
         function fit() {
-            if (!map || !ring) return;
-            map.invalidateSize();
-            if (mapEl.clientWidth) map.fitBounds(ring.getBounds(), { padding: [8, 8] });
+            if (!map || !ring || !mapEl.isConnected) return;
+            try { map.invalidateSize(); if (mapEl.clientWidth) map.fitBounds(ring.getBounds(), { padding: [8, 8] }); } catch (e) { /* page was rebuilt */ }
         }
         function icon(p) {
             var c = altColour(p.alt), sel = selected === p.hex;
@@ -318,7 +370,7 @@
         function select(hex) { selected = selected === hex ? null : hex; draw(); list(); }
         function list() {
             if (!listEl) return;
-            if (!planes.length) { listEl.innerHTML = '<div class="empty">No planes within ' + s.RadiusMiles + ' miles right now</div>'; return; }
+            if (!planes.length) { listEl.innerHTML = '<div class="empty">No ' + (airlinesOnly ? 'airliners' : 'planes') + ' within ' + s.RadiusMiles + ' miles right now</div>'; return; }
             var order = planes.slice();
             if (selected) order.sort(function (a, b) { return (b.hex === selected) - (a.hex === selected); });
             listEl.innerHTML = order.slice(0, rows).map(function (p) {
@@ -335,16 +387,29 @@
             if (!d || d.error) { badge.innerHTML = '\u26A0 ' + esc(d ? d.error : 'No flight data'); if (listEl) listEl.innerHTML = ''; return; }
             if (!ensureMap(d)) return;
             at = Date.now();
-            planes = d.planes.map(function (p) { return Object.assign({}, p, { lat0: p.lat, lon0: p.lon }); });
+            all = d.planes.map(function (p) { return Object.assign({}, p, { lat0: p.lat, lon0: p.lon }); });
+            filter();
             if (!ring) {
-                ring = L.circle(d.centre, { radius: d.radiusMiles * 1609.34, color: '#3fa9f5', weight: 1.5, opacity: 0.6, dashArray: '6 8', fill: false, interactive: false }).addTo(map);
+                ring = L.circle(d.centre, { radius: d.radiusMiles * 1609.34, color: light ? '#1d6fb8' : '#3fa9f5', weight: 1.5, opacity: 0.7, dashArray: '6 8', fill: false, interactive: false }).addTo(map);
+                drawRings(d);
                 home = L.circleMarker(d.centre, { radius: 7, color: '#fff', weight: 2, fillColor: '#3fa9f5', fillOpacity: 1, interactive: false })
                     .bindTooltip('Home', { permanent: true, direction: 'bottom', className: 'map-label', offset: [0, 8] }).addTo(map);
                 setTimeout(fit, 30);    // once the list below has taken its space
-            } else { ring.setLatLng(d.centre).setRadius(d.radiusMiles * 1609.34); home.setLatLng(d.centre); }
+            } else { if (ring.getRadius() !== d.radiusMiles * 1609.34) { ring.setRadius(d.radiusMiles * 1609.34); drawRings(d); setTimeout(fit, 30); } ring.setLatLng(d.centre); home.setLatLng(d.centre); }
             if (selected && !planes.some(function (p) { return p.hex === selected; })) selected = null;
-            draw(); list();
-            badge.innerHTML = '\u2708 <b>' + planes.length + '</b> plane' + (planes.length === 1 ? '' : 's') + ' within ' + d.radiusMiles + ' miles <span>' + hhmm(new Date()) + '</span>';
+            draw(); list(); badgeText();
+        }
+        /** Distance rings (e.g. 5, 10, 20 miles), each labelled at the top. */
+        function drawRings(d) {
+            if (rings) map.removeLayer(rings);
+            rings = L.layerGroup().addTo(map);
+            var r = d.radiusMiles, steps = [r / 4, r / 2].map(function (x) { return x >= 10 ? Math.round(x / 5) * 5 : Math.max(1, Math.round(x)); })
+                .filter(function (x, i, a) { return x < r && a.indexOf(x) === i; }).concat([r]);
+            steps.forEach(function (m) {
+                if (m < r) L.circle(d.centre, { radius: m * 1609.34, color: light ? '#5f7f9f' : '#3fa9f5', weight: 1, opacity: 0.45, fill: false, interactive: false }).addTo(rings);
+                var top = [d.centre[0] - m * 1609.34 / 111320, d.centre[1]];     // labelled at the bottom, clear of the key
+                L.marker(top, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'fl-ringlab', iconSize: [0, 0], html: '<span>' + m + ' mi</span>' }) }).addTo(rings);
+            });
         }
         var g = setInterval(glide, 1000);
         // Planes move fast: ask for fresh positions every 20 seconds while this page is on screen.
@@ -353,15 +418,32 @@
             api().get('widget', { id: w.id }).then(function (r) { update(r.data); }).catch(function () { /* keep gliding */ });
         }, 20000);
         return { update: update, show: function () { setTimeout(fit, 60); },
-            destroy: function () { clearInterval(g); clearInterval(poll); if (map) map.remove(); } };
+            destroy: function () { clearInterval(g); clearInterval(poll); if (map) { map.remove(); map = null; } } };
     };
 
     /* =============================================================== NEWS */
 
     T.news = function (el, w) {
         var s = w.settings, full = w.size === 'full', items = [], lead = 0, data = null;
-        el.innerHTML = '<div class="nw-head"><h3 class="nw-title">News</h3><span class="foot nw-time"></span></div><div class="nw-body">' + loading() + '</div>';
-        var body = el.querySelector('.nw-body');
+        el.innerHTML = '<div class="nw-head"><h3 class="nw-title">News</h3><span class="foot nw-time"></span>' +
+            '<button class="nw-arrow" data-go="-1" aria-label="Previous">\u2039</button><button class="nw-arrow" data-go="1" aria-label="Next">\u203a</button></div><div class="nw-body">' + loading() + '</div>';
+        var body = el.querySelector('.nw-body'), swipe = null, swiped = false, lastMove = 0;
+        /** Next / previous page of stories: swipe left or right, or tap the arrows. */
+        function go(n) {
+            if (items.length < 2) return;
+            lead = (lead + n + items.length) % items.length; lastMove = Date.now();
+            render();
+            body.classList.remove('slide-l', 'slide-r'); void body.offsetWidth; body.classList.add(n > 0 ? 'slide-l' : 'slide-r');
+        }
+        el.querySelector('.nw-head').addEventListener('click', function (e) { var b = e.target.closest('[data-go]'); if (b) go(+b.getAttribute('data-go')); });
+        body.addEventListener('pointerdown', function (e) { swipe = { x: e.clientX, y: e.clientY }; swiped = false; });
+        body.addEventListener('pointermove', function (e) {
+            if (!swipe) return;
+            var dx = e.clientX - swipe.x;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - swipe.y)) { swiped = true; swipe = null; go(dx < 0 ? 1 : -1); }
+        });
+        window.addEventListener('pointerup', function () { swipe = null; });
+        body.addEventListener('click', function (e) { if (swiped) { e.stopPropagation(); e.preventDefault(); swiped = false; } }, true);
         function render() {
             if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No news'); return; }
             el.querySelector('.nw-title').textContent = data.title || 'News';
@@ -383,7 +465,8 @@
             pop(data.title || 'News', (it.img ? '<img class="pop-img" src="' + esc(it.img) + '" alt="" referrerpolicy="no-referrer">' : '') +
                 '<h2 class="pop-h">' + esc(it.title) + '</h2><p class="pop-p">' + esc(it.text) + '</p><p class="foot">' + esc(ago(it.at)) + '</p>');
         });
-        var rot = setInterval(function () { if (items.length > 1 && visible(el)) { lead = (lead + 1) % items.length; render(); } }, Math.max(5, s.Rotate || 20) * 1000);
+        // Moves on by itself, but waits a minute after someone has swiped.
+        var rot = setInterval(function () { if (items.length > 1 && visible(el) && Date.now() - lastMove > 60000) { lead = (lead + 1) % items.length; render(); } }, Math.max(5, s.Rotate || 20) * 1000);
         return {
             update: function (d) {
                 var before = items.length ? items[lead % items.length].title : '';
@@ -398,26 +481,38 @@
     /* ===================================================== KITCHEN TIMER */
 
     var alarm = { ctx: null, loop: null, until: 0 };
+    /** "Ding-ding-ding": three bell-like notes. */
     function beepOnce() {
         try {
             var a = alarm.ctx || (alarm.ctx = new (window.AudioContext || window.webkitAudioContext)());
-            [0, 0.18, 0.36].forEach(function (off) {
-                var o = a.createOscillator(), g = a.createGain();
-                o.type = 'square'; o.frequency.value = 1760;
-                g.gain.setValueAtTime(0.0001, a.currentTime + off);
-                g.gain.exponentialRampToValueAtTime(0.25, a.currentTime + off + 0.01);
-                g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + off + 0.14);
-                o.connect(g); g.connect(a.destination); o.start(a.currentTime + off); o.stop(a.currentTime + off + 0.15);
+            if (a.state === 'suspended') a.resume();
+            [[0, 1568], [0.32, 1318], [0.64, 1568]].forEach(function (n) {
+                var t = a.currentTime + n[0];
+                [1, 2.76].forEach(function (h, k) {          // a bell: the note plus a quieter overtone
+                    var o = a.createOscillator(), g = a.createGain();
+                    o.type = 'sine'; o.frequency.value = n[1] * h;
+                    g.gain.setValueAtTime(0.0001, t);
+                    g.gain.exponentialRampToValueAtTime(k ? 0.08 : 0.35, t + 0.008);
+                    g.gain.exponentialRampToValueAtTime(0.0001, t + (k ? 0.35 : 0.9));
+                    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + 1);
+                });
             });
         } catch (e) { /* no sound available */ }
     }
+    var SOUND_MS = 2 * 60000;      // the dings stop after 2 minutes; the screen keeps flashing until someone taps Stop
     function ring(label, sound, onStop) {
         var box = document.getElementById('alarm');
         document.getElementById('alarmText').textContent = label;
-        box.classList.add('on');
+        box.classList.add('on'); box.classList.remove('quiet');
         clearInterval(alarm.loop);
-        alarm.until = Date.now() + 120000;
-        if (sound) { beepOnce(); alarm.loop = setInterval(function () { if (Date.now() > alarm.until) stopRing(); else beepOnce(); }, 1200); }
+        alarm.until = Date.now() + SOUND_MS;
+        if (sound) {
+            beepOnce();
+            alarm.loop = setInterval(function () {
+                if (Date.now() > alarm.until) { clearInterval(alarm.loop); alarm.loop = null; box.classList.add('quiet'); }
+                else beepOnce();
+            }, 2000);
+        }
         alarm.onStop = onStop;
     }
     function stopRing() {
@@ -428,7 +523,7 @@
 
     T.timer = function (el, w) {
         var s = w.settings, KEY = 'familyDashboard.timer.' + w.id;
-        var presets = String(s.Presets || '1,3,5,10,15,20').split(',').map(function (x) { return Number(x.trim()); }).filter(function (x) { return x > 0; }).slice(0, 6);
+        var presets = String(s.Presets || '3,5,10,15,20,30').split(',').map(function (x) { return Number(x.trim()); }).filter(function (x) { return x > 0; }).slice(0, 6);
         // State: set = minutes chosen; end = finish time while running; left = ms left while paused.
         var st = { set: 0, end: 0, left: 0, done: false };
         try { var saved = JSON.parse(localStorage.getItem(KEY) || 'null'); if (saved) st = saved; } catch (e) { /* ignore */ }
@@ -482,7 +577,17 @@
         });
         paint();
         var tick = setInterval(paint, 250);
-        return { update: function () {}, destroy: function () { clearInterval(tick); } };
+        // The voice assistant: "timer 10 minutes", "stop the timer".
+        function onVoice(e) {
+            var d = e.detail || {};
+            if (d.op === 'start' && d.ms > 0) { if (st.done) stopRing(); st = { set: Math.ceil(d.ms / 60000), end: Date.now() + d.ms, left: 0, done: false }; }
+            else if (d.op === 'stop') { if (st.done) stopRing(); st = { set: 0, end: 0, left: 0, done: false }; }
+            else if (d.op === 'pause' && st.end) { st.left = leftMs(); st.end = 0; }
+            save(); paint();
+        }
+        window.addEventListener('fd-timer', onVoice);
+        window.FDW.hasTimer = true;
+        return { update: function () {}, destroy: function () { clearInterval(tick); window.removeEventListener('fd-timer', onVoice); window.FDW.hasTimer = false; } };
     };
 
     /* ============================================================= PHOTOS */
@@ -514,7 +619,16 @@
             img.src = p.src;
         }
         function restart() { clearInterval(timer); timer = setInterval(function () { if (visible(el)) next(1); }, secs * 1000); }
-        el.addEventListener('click', function () { next(1); restart(); });
+        // Swipe left for the next photo, right for the one before; a tap also moves on.
+        var sw = null, swiped = false;
+        el.addEventListener('pointerdown', function (e) { sw = { x: e.clientX, y: e.clientY }; swiped = false; });
+        el.addEventListener('pointermove', function (e) {
+            if (!sw) return;
+            var dx = e.clientX - sw.x;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(e.clientY - sw.y)) { swiped = true; sw = null; next(dx < 0 ? 1 : -1); restart(); }
+        });
+        window.addEventListener('pointerup', function () { sw = null; });
+        el.addEventListener('click', function () { if (swiped) { swiped = false; return; } next(1); restart(); });
         return {
             update: function (d) {
                 if (!d || d.error) { msg.innerHTML = errBox(d ? d.error : 'No photos'); msg.style.display = ''; return; }

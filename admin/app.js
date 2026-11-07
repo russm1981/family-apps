@@ -83,7 +83,7 @@
         var P = window.FD_PRIVACY;
         if (!P || !DATA || !('privacyAccepted' in DATA) || DATA.privacyAccepted === P.version || privacyOpen) return;
         privacyOpen = true;
-        sheet('<h2>' + (DATA.privacyAccepted ? 'The privacy notice has changed' : 'Privacy notice') + '</h2><ul class="pv">' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+        sheet('<h2>' + (DATA.privacyAccepted ? 'The privacy notice has changed' : 'Privacy notice') + '</h2><ul class="pvl">' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
             '<details class="adv"><summary>Read the full notice</summary><div class="pv-full">' + P.full + '</div></details>' +
             '<p class="mute small">Version ' + esc(P.version) + ', ' + esc(P.updated) + '.</p>' +
             '<div class="sheet-actions"><button class="btn good" id="pvOk">I accept</button></div>');
@@ -124,7 +124,7 @@
                 '<div class="boy-top"><h2>' + esc(b.name) + '</h2></div>' + reminders(b) +
                 '<div class="score"><b>' + b.balance + '</b><span>points</span><span class="to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' to £' + s.cashIn.value) + '</span></div>' +
                 '<div class="bar"><span style="width:' + pct + '%"></span></div>' +
-                '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') + '<a class="card link-card" href="' + setupLink('family') + '" target="_blank" rel="noopener"><b>Change children, family or calendar ›</b><span class="mute small">Add or rename children, rename this page, change the calendar groups, categories and colours.</span></a>' +
+                '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
                     '<button class="bonus" data-bonus="' + i + '">+ Bonus</button></div>' +
                 '<button class="btn wide cash' + (can ? '' : ' off') + '" data-cash="' + i + '"' + (can ? '' : ' disabled') + '>Cash in ' + target + ' for £' + s.cashIn.value + '</button>' +
                 '<h3>Tasks (' + (b.allTasks || b.tasks).length + ')</h3>' + ((b.allTasks || b.tasks).length ? (b.allTasks || b.tasks).map(function (t) {
@@ -136,7 +136,7 @@
                 '<h3>Statement <button class="link" data-stmt="' + i + '">See all</button></h3>' + b.statement.slice(0, 3).map(function (l) {
                     return '<div class="st"><span>' + esc(l.text) + '</span><b class="' + (l.points < 0 ? 'neg' : 'pos') + '">' + (l.points > 0 ? '+' : '') + l.points + '</b></div>';
                 }).join('') + '</section>';
-        }).join('');
+        }).join('') + '<a class="link-card" href="' + setupLink('family') + '" target="_blank" rel="noopener"><b>Change children, family or calendar ›</b><span class="mute small">Add or rename children, rename this page, change the calendar groups, categories and colours.</span></a>';
         $('body').onclick = boysClick;
     }
     /** Today's and tomorrow's reminders; from 5pm only tomorrow's. */

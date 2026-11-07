@@ -1,10 +1,10 @@
 {
-  "app": "2026.11.5",
-  "script": "2026.11.5",
+  "app": "2026.11.6",
+  "script": "2026.11.6",
   "date": "2026-11-07",
   "notes": [
-    "Set up your family in the setup app: adults, children, group names and calendar categories",
-    "The children's page can be renamed, and 4–6 children are split over two screens",
-    "One-click setup, stronger access codes, a privacy notice and update checks"
+    "Voice commands (microphone button), an on-screen keyboard and a scrolling 3-month calendar",
+    "Half-height weather and traffic, a new Home layout with notes and photos",
+    "Swipe news and photos, airlines-only switch and a light map for flights, a gentler timer chime"
   ]
 }

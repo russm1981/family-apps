@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.5';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.6';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -122,7 +122,7 @@ const PAGE_TYPES = {
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
   ] },
   calendar: { name: 'Calendar', single: true, settings: [
-    { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', 'Month', 'Week'] },
+    { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', '3 months (scroll)', 'Month', 'Week'] },
   ] },
 };
 
@@ -145,7 +145,7 @@ const NEWS_FEEDS = {
  * before asking the source again. data(settings, id) runs here on Google; widgets without it run on the screen only.
  */
 const WIDGET_TYPES = {
-  weather: { name: 'Weather', icon: '\u2600\uFE0F', sizes: ['full'], ttl: 20 * 60, about: 'Clock, current weather, the next hours and the next few days.',
+  weather: { name: 'Weather', icon: '\u2600\uFE0F', sizes: ['full', 'half'], ttl: 20 * 60, about: 'Clock, current weather, the next hours and the next few days.',
     settings: [
       { k: 'Location', label: 'Place', type: 'text', def: '', max: 150, help: 'Leave blank for home, or type a town or postcode.' },
       { k: 'ShowClock', label: 'Show the clock and date', type: 'bool', def: true },
@@ -153,7 +153,7 @@ const WIDGET_TYPES = {
       { k: 'Days', label: 'Days ahead', type: 'number', def: 4, min: 2, max: 4 },
     ],
     data: (s) => weather_(s.Location || inst_('HomeAddress')) },
-  traffic: { name: 'Traffic', icon: '\uD83D\uDE97', sizes: ['full'], ttl: 10 * 60, about: 'Live map and journey times compared with the usual time.',
+  traffic: { name: 'Traffic', icon: '\uD83D\uDE97', sizes: ['full', 'half'], ttl: 10 * 60, about: 'Live map and journey times compared with the usual time.',
     settings: [
       { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: 'Charfield School | Charfield Primary School, Charfield, Wotton-under-Edge\nBristol Parkway | Bristol Parkway Station, Stoke Gifford, Bristol',
         help: 'One per line: Label | address or postcode. Up to 3. Labels up to ' + LIMITS.destination + ' characters.' },
@@ -183,6 +183,7 @@ const WIDGET_TYPES = {
   flights: { name: 'Flights overhead', icon: '\u2708\uFE0F', sizes: ['full'], ttl: 25, about: 'Live map of planes near home, with where they\u2019re going (ADS-B).',
     settings: [
       { k: 'RadiusMiles', label: 'Distance from home (miles)', type: 'number', def: 20, min: 3, max: 60 },
+      { k: 'Map', label: 'Map', type: 'select', def: 'Light', options: ['Light', 'Dark'] },
       { k: 'MaxAltitude', label: 'Highest altitude (feet)', type: 'number', def: 45000, min: 1000, max: 60000, help: 'Lower it (e.g. 10000) to see only planes taking off and landing.' },
       { k: 'Routes', label: 'Look up where each flight is going', type: 'bool', def: true },
       { k: 'ListRows', label: 'Flights listed under the map', type: 'number', def: 3, min: 0, max: 5 },
@@ -200,7 +201,7 @@ const WIDGET_TYPES = {
     data: (s) => news_(s) },
   timer: { name: 'Kitchen timer', icon: '\u23F2\uFE0F', sizes: ['half'], about: 'Touch timer with quick buttons. Beeps on any page when it finishes.',
     settings: [
-      { k: 'Presets', label: 'Quick buttons (minutes)', type: 'text', def: '1,3,5,10,15,20', max: 30, help: 'Up to 6 numbers separated by commas.' },
+      { k: 'Presets', label: 'Quick buttons (minutes)', type: 'text', def: '3,5,10,15,20,30', max: 30, help: 'Up to 6 numbers separated by commas.' },
       { k: 'Sound', label: 'Beep when finished', type: 'bool', def: true },
     ] },
   photos: { name: 'Photo slideshow', icon: '\uD83D\uDDBC\uFE0F', sizes: ['full', 'half'], ttl: 30 * 60, about: 'Photos from a Google Drive folder or a shared Google Photos album.',
@@ -238,7 +239,7 @@ const WIDGET_TYPES = {
 /* Widgets added in November 2026 (layout version 2). */
 const QUOTE_CHANGE = ['Every day', 'Every hour', 'Every 10 minutes'];
 Object.assign(WIDGET_TYPES, {
-  countdown: { name: 'Holiday countdown', icon: '🏖️', sizes: ['half', 'full'], ttl: 3600, about: 'Days to go until the next holiday, from the calendar and your own dates.',
+  countdown: { name: 'Holiday countdown', icon: '🏖️', sizes: ['half', 'full'], ttl: 15 * 60, calendar: true, about: 'Days to go until the next holiday, from the calendar and your own dates.',
     settings: [
       { k: 'Categories', label: 'Calendar categories to count down to', type: 'text', def: 'Holiday', max: 80, help: 'Category names separated by commas, e.g. Holiday, School holiday. Blank = only the dates below.' },
       { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', help: 'One per line: Name | date, e.g. Orlando | 3/4/2027 or Christmas | 25 Dec.' },
@@ -307,7 +308,7 @@ Object.assign(WIDGET_TYPES, {
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '3';   // 3: TransportAPI keys added to Installation
+const LAYOUT_VER = '4';   // 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
@@ -318,12 +319,14 @@ const DEFAULT_PAGES = [
   ['discover', 'Discover', 'widgets', '\u2600', 6, 'Yes'],
 ];
 const DEFAULT_WIDGETS = [
-  ['weather1', 'home', 1, 'weather', 'full', 'Yes'],
-  ['traffic1', 'home', 2, 'traffic', 'full', 'Yes'],
-  ['trains1', 'home', 3, 'trains', 'half', 'Yes'],
-  ['agenda1', 'home', 4, 'agenda', 'half', 'Yes'],
-  ['bins1', 'home', 5, 'bins', 'half', 'Yes'],
-  ['countdown1', 'home', 6, 'countdown', 'half', 'Yes'],
+  ['weather1', 'home', 1, 'weather', 'half', 'Yes'],
+  ['memo2', 'home', 2, 'memo', 'half', 'Yes'],
+  ['traffic1', 'home', 3, 'traffic', 'half', 'Yes'],
+  ['trains1', 'home', 4, 'trains', 'half', 'Yes'],
+  ['agenda1', 'home', 5, 'agenda', 'half', 'Yes'],
+  ['bins1', 'home', 6, 'bins', 'half', 'Yes'],
+  ['countdown1', 'home', 7, 'countdown', 'half', 'Yes'],
+  ['photos2', 'home', 8, 'photos', 'half', 'Yes'],
   ['flights1', 'other', 1, 'flights', 'full', 'Yes'],
   ['photos1', 'other', 2, 'photos', 'full', 'Yes'],
   ['clock1', 'other', 3, 'clock', 'half', 'Yes'],
@@ -475,6 +478,23 @@ function upgradeLayout_() {
   let order = rows_('pages').reduce((m, p) => Math.max(m, Number(p.Order) || 0), 0);
   DEFAULT_PAGES.filter(p => pages.indexOf(p[0]) < 0).forEach(p => sheet_('pages').appendRow([p[0], p[1], p[2], p[3], ++order, p[5]]));
   DEFAULT_WIDGETS.filter(w => (w[1] === 'family' || w[1] === 'discover') && ids.indexOf(w[0]) < 0).forEach(w => sheet_('widgets').appendRow(w));
+  // Version 4 (Nov 2026): if Home is still the standard layout, make it eight half-height slots:
+  // weather, memo / traffic, trains / today & tomorrow, bins / countdown, (space).
+  const home = rows_('widgets').filter(w => String(w.Page).trim() === 'home').map(w => String(w.Widget).trim()).sort().join(',');
+  if (home === 'agenda1,bins1,countdown1,traffic1,trains1,weather1') {
+    const plan = { weather1: 1, traffic1: 3, trains1: 4, agenda1: 5, bins1: 6, countdown1: 7 };
+    setColumn_('widgets', 'Size', r => plan[String(r[0]).trim()] && String(r[1]).trim() === 'home' ? 'half' : undefined);
+    setColumn_('widgets', 'Order', r => plan[String(r[0]).trim()] && String(r[1]).trim() === 'home' ? plan[String(r[0]).trim()] : undefined);
+    if (rows_('widgets').every(w => String(w.Widget).trim() !== 'memo2')) sheet_('widgets').appendRow(['memo2', 'home', 2, 'memo', 'half', 'Yes']);
+    // …and a half-height photo slideshow in the last space, showing the same photos as the one on the Other page.
+    if (rows_('widgets').every(w => String(w.Widget).trim() !== 'photos2')) {
+      sheet_('widgets').appendRow(['photos2', 'home', 8, 'photos', 'half', 'Yes']);
+      const copy = rows_('wset').filter(r => String(r.Widget).trim() === 'photos1').map(r => ['photos2', r.Setting, r.Value]);
+      if (copy.length) sheet_('wset').getRange(sheet_('wset').getLastRow() + 1, 1, copy.length, 3).setValues(copy);
+    }
+  }
+  // Kitchen timer: the old standard buttons (1–20 minutes) become 3, 5, 10, 15, 20, 30.
+  setColumn_('wset', 'Value', r => String(r[1]).trim() === 'Presets' && String(r[2]).replace(/\s/g, '') === '1,3,5,10,15,20' ? '3,5,10,15,20,30' : undefined);
   renumber_('widgets');
 }
 
@@ -1062,7 +1082,8 @@ function widgetData_(w, force) {
   const T = WIDGET_TYPES[w.type];
   if (!T.data) return null;
   if (T.nocache) { try { return T.data(w.settings, w.id); } catch (err) { return { error: String(err && err.message || err) }; } }
-  const key = 'w:' + dataVer_() + ':' + w.id + ':' + hash_(JSON.stringify(w.settings));
+  // Widgets that read the calendar start again whenever the calendar is changed from the dashboard.
+  const key = 'w:' + dataVer_() + ':' + (T.calendar ? calVersion_() + ':' : '') + w.id + ':' + hash_(JSON.stringify(w.settings));
   return cached_(CacheService.getScriptCache(), key, T.ttl || 600, force, () => T.data(w.settings, w.id));
 }
 
@@ -2061,9 +2082,16 @@ function addEvent_(b) {
   const note = checkLen_('Notes', b.note, LIMITS.eventNote);
   const opts = note ? { description: note } : {};
   let ev;
+  const time = String(b.time || '').trim();
+  if (time && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error('Time should look like 14:30');
   if (norm_(cat.name) === 'birthday') {
     const title = /birthday/i.test(text) ? text : text + '’s birthday';
     ev = cal.createAllDayEventSeries(title, startDate, CalendarApp.newRecurrence().addYearlyRule(), opts);
+  } else if (time) {
+    // A timed entry (from the voice assistant: "Ben drums at 12 on Saturday"). One hour unless told otherwise.
+    const st = Utilities.parseDate(a + ' ' + time, tz, 'yyyy-MM-dd HH:mm');
+    const mins = Math.max(5, Math.min(24 * 60, Number(b.mins) || 60));
+    ev = cal.createEvent(cat.name + ' – ' + text, st, new Date(st.getTime() + mins * 60000), opts);
   } else {
     ev = cal.createAllDayEvent(cat.name + ' – ' + text, startDate, endExcl, opts);
   }

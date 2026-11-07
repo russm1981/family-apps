@@ -48,8 +48,8 @@
         var link = fromLink(location.href), saved = {};
         try { saved = JSON.parse(load(CFG_KEY) || '{}') || {}; } catch (e) { saved = {}; }
         // A link that was mangled on the way (e.g. by an old start file) isn't used: the screen asks to be connected instead.
-        if (saved.url && !/^https:\/\/[^/]+\//.test(saved.url)) saved = {};
-        if (link.api && link.code && /^https:\/\/[^/]+\//.test(link.api)) {
+        if (saved.url && !/^https?:\/\/[^/]+\//.test(saved.url)) saved = {};
+        if (link.api && link.code && /^https?:\/\/[^/]+\//.test(link.api)) {
             saved = { url: link.api, code: link.code };
             store(CFG_KEY, JSON.stringify(saved));
             if (/#/.test(location.href) && history.replaceState) history.replaceState(null, '', location.pathname + location.search.replace(/([?&])(api|code)=[^&]*/g, '$1').replace(/[?&]+$/, ''));
@@ -117,7 +117,8 @@
         var first = Math.ceil(n / 2);
         return part ? [first, n] : [0, first];
     }
-    window.FDBoys = { onShow: function (part) { boysPart = part || 0; renderBoys(); if (!busy) refresh(); }, range: boysRange };
+    window.FDBoys = { onShow: function (part) { boysPart = part || 0; renderBoys(); if (!busy) refresh(); }, range: boysRange,
+        state: function () { return state; }, refresh: function () { return refresh(); } };
 
     /* ---------------------------------------------------------- refresh */
 
