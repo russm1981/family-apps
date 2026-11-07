@@ -328,7 +328,8 @@
         function ensureMap(d) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return false; }
             if (map) return true;
-            map = L.map(mapEl, MAP_OPTS);
+            // Fractional zoom, so the outer ring can fill the box instead of jumping to the next zoom level down.
+            map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0, zoomDelta: 0.25 }));
             map.attributionControl.setPrefix('');
             (light ? L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '\u00a9 OpenStreetMap \u00a9 CARTO' })
                 : baseTiles(ctx.tomtomKey)).addTo(map);
@@ -337,7 +338,7 @@
         }
         function fit() {
             if (!map || !ring || !mapEl.isConnected) return;
-            try { map.invalidateSize(); if (mapEl.clientWidth) map.fitBounds(ring.getBounds(), { padding: [8, 8] }); } catch (e) { /* page was rebuilt */ }
+            try { map.invalidateSize(); if (mapEl.clientWidth) map.fitBounds(ring.getBounds(), { padding: [2, 2] }); } catch (e) { /* page was rebuilt */ }
         }
         function icon(p) {
             var c = altColour(p.alt), sel = selected === p.hex;
@@ -407,7 +408,7 @@
                 .filter(function (x, i, a) { return x < r && a.indexOf(x) === i; }).concat([r]);
             steps.forEach(function (m) {
                 if (m < r) L.circle(d.centre, { radius: m * 1609.34, color: light ? '#5f7f9f' : '#3fa9f5', weight: 1, opacity: 0.45, fill: false, interactive: false }).addTo(rings);
-                var top = [d.centre[0] - m * 1609.34 / 111320, d.centre[1]];     // labelled at the bottom, clear of the key
+                var top = [d.centre[0] - (m < r ? m : m * 0.93) * 1609.34 / 111320, d.centre[1]];     // labelled at the bottom (the outer one just inside the edge)
                 L.marker(top, { interactive: false, keyboard: false, icon: L.divIcon({ className: 'fl-ringlab', iconSize: [0, 0], html: '<span>' + m + ' mi</span>' }) }).addTo(rings);
             });
         }
