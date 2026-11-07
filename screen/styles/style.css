@@ -210,7 +210,7 @@ h3 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; color
 .cal-range { font-size: 1.1rem; color: var(--mute); }
 .cal-status { margin-left: auto; color: var(--mute); font-size: 0.9rem; }
 .cal-rows { flex: 1; min-height: 0; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
-.cal-row { display: grid; grid-template-columns: 4.2rem repeat(31, minmax(0, 1fr)); gap: 0.18rem; min-height: 0; }
+.cal-row { display: grid; grid-template-columns: 4.2rem repeat(37, minmax(0, 1fr)); gap: 0.14rem; min-height: 0; }
 .cal-month { display: flex; flex-direction: column; justify-content: center; padding-left: 0.2rem; }
 .cal-month b { font-size: 1.4rem; }
 .cal-month span { font-size: 0.8rem; color: var(--mute); }
@@ -839,13 +839,13 @@ body.osk-open .pop-card { max-height: 44vh; }
 .cs-wrap { height: 100%; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; scrollbar-width: none; overscroll-behavior-x: contain; cursor: grab; }
 .cs-wrap::-webkit-scrollbar { display: none; }
 .cs-inner { height: 100%; display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 0.5rem; width: max-content; }
-.view-3ms .cal-row { grid-template-columns: 4.2rem repeat(31, var(--cw, 8rem)); }
+.view-3ms .cal-row { grid-template-columns: 4.2rem repeat(37, var(--cw, 8rem)); gap: 0.18rem; }
 .view-3ms .cal-month { position: sticky; left: 0; z-index: 3; background: var(--bg); box-shadow: 0.4rem 0 0.6rem var(--bg); }
 .view-3ms .cal-cell { padding: 0.25rem 0.3rem; gap: 0.25rem; }
 .view-3ms .cd b { font-size: 1.15rem; } .view-3ms .cd i { font-size: 0.8rem; }
 .view-3ms .ev { font-size: 0.88rem; line-height: 1.25; padding: 0.1rem 0.35rem; border-radius: 0.3rem; }
 .view-3ms .ev .et { font-weight: 800; opacity: .85; }
-.view-3ms .cal-cell.none { display: none; }
+.view-3ms .cal-cell.none { visibility: hidden; }
 
 /* flights: airline/all switch, light map, distance rings */
 .fl-mode { position: absolute; top: 0.6rem; right: 0.6rem; z-index: 500; height: 2.3rem; padding: 0 0.8rem; border-radius: 999px; border: 1px solid var(--line);
@@ -889,3 +889,18 @@ body.osk-open .pop-card { max-height: 44vh; }
 .vc-b.do, .vc-b.again { background: var(--acc); border-color: var(--acc); color: #fff; }
 .vc-help { display: flex; flex-wrap: wrap; gap: 0.35rem 1.2rem; color: var(--mute); font-size: 0.95rem; }
 .vc-help b { width: 100%; color: var(--text); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* OpenStreetMap (no TomTom key) made dark for the dark map option */
+.osm-dark { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
+.fl-light .leaflet-tile-pane { filter: saturate(.75) brightness(1.03); }
+/* half weather: day cards fit (were cut off at the bottom) – icon and high/low side by side */
+.wg-weather.half { gap: 0.4rem; }
+.wg-weather.half .wx-hours { padding: 0.25rem 0.2rem; }
+.wg-weather.half .hr { gap: 0.05rem; font-size: 0.85rem; }
+.wg-weather.half .hr .i { font-size: 1.1rem; line-height: 1.15; }
+.wx-dayrow .dd { display: grid; grid-template-columns: auto auto; align-content: center; justify-content: center; gap: 0 0.4rem; padding: 0.2rem; }
+.wx-dayrow .n { grid-column: 1 / -1; text-align: center; font-size: 0.85rem; }
+.wx-dayrow .i { font-size: 1.25rem; }
+.wx-dayrow .hl { align-self: center; font-size: 0.9rem; }
+.wx-dayrow .r { display: none; }
+.wx-fog { display: inline-block; vertical-align: -0.2em; width: 1.2em; height: 1.2em; }

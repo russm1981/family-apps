@@ -1,10 +1,10 @@
 {
-  "app": "2026.11.6",
-  "script": "2026.11.6",
+  "app": "2026.11.7",
+  "script": "2026.11.7",
   "date": "2026-11-07",
   "notes": [
-    "Voice commands (microphone button), an on-screen keyboard and a scrolling 3-month calendar",
-    "Half-height weather and traffic, a new Home layout with notes and photos",
-    "Swipe news and photos, airlines-only switch and a light map for flights, a gentler timer chime"
+    "Pages and the calendar load in the background, so they appear straight away",
+    "Calendar months line up by weekday; flights map uses your TomTom key",
+    "Trains work with National Rail OpenLDBWS tokens; NASA picture from NASA Science"
   ]
 }

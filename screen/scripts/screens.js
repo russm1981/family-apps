@@ -82,23 +82,61 @@
     }
     function goToday() { setView(calView, new Date()); loadCalendar(true); }
 
+    /** Cached days covering a range (one fetched block covers the 3-month, month and week views together). */
+    try { var kept = JSON.parse(localStorage.getItem('familyDashboard.calBlock.v1') || 'null'); if (kept && kept.key) calCache[kept.key] = { at: 1, days: kept.days, bh: kept.bh }; } catch (e) { /* ignore */ }
+    function cover(r) {
+        var best = null;
+        Object.keys(calCache).forEach(function (k) {
+            var p = k.split(':');
+            if (p[0] <= r.start && p[1] >= r.end && (!best || calCache[k].at > best.at)) best = calCache[k];
+        });
+        return best;
+    }
+    /** The block to fetch for a range: from the Monday before its month starts to a week after three months. */
+    function block(r) {
+        var ms = monthStart(parseYmd(r.start));
+        var a = ymd(mondayOf(ms)), b = ymd(addDays(addMonths(ms, 3), 7));
+        return { start: a < r.start ? a : r.start, end: b > r.end ? b : r.end };
+    }
+    var fetching = {};
+    function fetchBlock(r, quiet) {
+        var b = block(r), key = b.start + ':' + b.end;
+        if (fetching[key]) return fetching[key];
+        fetching[key] = api().get('calendar', b).then(function (d) {
+            delete fetching[key];
+            if (d.error) throw new Error(d.error);
+            calCache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
+            // Remember the block with today in it, so the calendar appears straight away after a restart.
+            var t = ymd(new Date());
+            if (b.start <= t && b.end > t) { try { localStorage.setItem('familyDashboard.calBlock.v1', JSON.stringify({ key: key, days: calCache[key].days, bh: calCache[key].bh })); } catch (e) { /* full */ } }
+            if (d.categories && d.categories.length) {
+                calCats = d.categories; calAdd = d.addable || [];
+                try { localStorage.setItem('familyDashboard.cats.v2', JSON.stringify(calCats)); localStorage.setItem('familyDashboard.add.v2', JSON.stringify(calAdd)); } catch (e) { /* ignore */ }
+            }
+            return key;
+        }, function (e) { delete fetching[key]; throw e; });
+        return fetching[key];
+    }
+    /** Load the months after the ones on screen in the background, so ▶ is instant too. */
+    function warmNext() {
+        if (!api().ready() || !calStart) return;
+        var n = addMonths(calStart, 3), r = { start: ymd(n), end: ymd(addMonths(n, 3)) };
+        var c = cover(r); if (!c || Date.now() - c.at > 10 * 60000) fetchBlock(r, true).catch(function () { /* later */ });
+    }
+
     function loadCalendar(force) {
         if (!calStart) calStart = monthStart(new Date());
         if (!calWeek) calWeek = mondayOf(new Date());
         var r = calRange(), key = r.start + ':' + r.end;
         renderCalendar();
         if (!api().ready()) return;
-        if (calCache[key] && !force && Date.now() - calCache[key].at < 5 * 60000) return;
+        var have = cover(r);
+        if (have && !force && Date.now() - have.at < 5 * 60000) { warmNext(); return; }
         calLoading = key; calErr = '';
-        $('calStatus').textContent = 'Updating…';
-        api().get('calendar', r).then(function (d) {
-            if (d.error) throw new Error(d.error);
-            calCache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
-            if (d.categories && d.categories.length) {
-                calCats = d.categories; calAdd = d.addable || [];
-                try { localStorage.setItem('familyDashboard.cats.v2', JSON.stringify(calCats)); localStorage.setItem('familyDashboard.add.v2', JSON.stringify(calAdd)); } catch (e) { /* ignore */ }
-            }
+        $('calStatus').textContent = have ? '' : 'Updating…';
+        fetchBlock(r).then(function () {
             if (calLoading === key) { calLoading = ''; renderCalendar(); }
+            warmNext();
         }).catch(function (e) {
             if (calLoading === key) { calLoading = ''; calErr = e.message; renderCalendar(); }
         });
@@ -113,9 +151,9 @@
     function evStyle(e) { return 'style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '"'; }
 
     function renderCalendar() {
-        var r = calRange(), key = r.start + ':' + r.end;
-        var data = (calCache[key] || {}).days || {};
-        curBH = (calCache[key] || {}).bh || {};
+        var r = calRange(), c = cover(r) || {};
+        var data = c.days || {};
+        curBH = c.bh || {};
         var today = ymd(new Date());
         $('calStatus').textContent = !api().ready() ? 'Not connected' : calErr ? '⚠ ' + calErr : calLoading ? 'Updating…' : '';
         $('calRows').className = 'cal-rows view-' + calView;
@@ -137,8 +175,11 @@
             var ms = addMonths(calStart, m);
             var dim = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
             html += '<div class="cal-row"><button class="cal-month" data-month="' + ymd(ms) + '"><b>' + MON[ms.getMonth()] + '</b><span>' + ms.getFullYear() + '</span></button>';
-            for (var d = 1; d <= 31; d++) {
-                if (d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
+            // Each month starts under its own weekday, so Mondays (and weekends) line up down the page: 37 columns.
+            var off = (ms.getDay() + 6) % 7;
+            for (var col = 0; col < 37; col++) {
+                var d = col - off + 1;
+                if (d < 1 || d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
                 var dt = new Date(ms.getFullYear(), ms.getMonth(), d);
                 var ds = ymd(dt);
                 var evs = dayParts(data, ds).evs, hb = barHtml(data, dt);
@@ -162,7 +203,7 @@
         if (scrollFor !== key) {
             scrollFor = key;
             var t = new Date(), first = calStart.getFullYear() === t.getFullYear() && calStart.getMonth() === t.getMonth();
-            wrap.scrollLeft = first ? Math.max(0, (t.getDate() - 3) * (cw + gap)) : 0;
+            wrap.scrollLeft = first ? Math.max(0, (((calStart.getDay() + 6) % 7) + t.getDate() - 3) * (cw + gap)) : 0;
         } else wrap.scrollLeft = oldLeft;
     }
     /** Mouse dragging for the scroll view (fingers scroll it natively). */
@@ -283,12 +324,12 @@
     }
 
     function openDay(ds) {
-        var r = calRange(), data = ((calCache[r.start + ':' + r.end] || {}).days || {})[ds] || [];
+        var r = calRange(), data = ((cover(r) || {}).days || {})[ds] || [];
         var dt = parseYmd(ds);
         $('calDayTitle').textContent = dt.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         var bars = data.filter(function (e) { return e.bar; });
         data = data.filter(function (e) { return !e.bar; });
-        var bhName = ((calCache[r.start + ':' + r.end] || {}).bh || {})[ds];
+        var bhName = ((cover(r) || {}).bh || {})[ds];
         var top = (bhName ? '<div class="dl-bh">Bank holiday \u00b7 ' + esc(bhName) + '</div>' : '') + bars.map(function (e) { return '<div class="dl-bar" style="--hc:' + esc(e.c) + '"><span>' + esc(e.k) + '</span> ' + esc(e.t) + '</div>'; }).join('');
         $('calDayList').innerHTML = top + (data.length ? data.map(function (e) {
             return '<div class="dl-row" style="--ec:' + esc(e.c) + '"><span class="dl-time">' + (e.allDay ? 'All day' : esc(e.time || '')) + '</span>' +
@@ -309,7 +350,7 @@
         var tries = 0;
         (function wait() {
             var r = calRange();
-            if (calCache[r.start + ':' + r.end] && ds >= r.start && ds < r.end) { openDay(ds); return; }
+            if (cover(r) && ds >= r.start && ds < r.end) { openDay(ds); return; }
             if (tries++ < 40) setTimeout(wait, 150);
         })();
     }
@@ -360,6 +401,13 @@
                 $('calDay').addEventListener('click', function (e) { if (e.target === $('calDay') || e.target.closest('#calDayClose')) $('calDay').classList.remove('on'); });
                 renderCalendar();
                 setInterval(function () { if (visible('screen-calendar')) loadCalendar(true); }, 15 * 60000);
+                // Ready before anyone taps Calendar: fetch this block and the next in the background, and keep them fresh.
+                var warm = function () {
+                    if (!api().ready() || visible('screen-calendar')) return;
+                    var c = cover(calRange());
+                    if (!c || Date.now() - c.at > 10 * 60000) fetchBlock(calRange(), true).then(warmNext, function () { /* later */ }); else warmNext();
+                };
+                setTimeout(warm, 8000); setInterval(warm, 10 * 60000);
             },
             onShow: function () { loadCalendar(); },
             /** Admin setting "Opens on": 3 months, Month or Week. Used until someone picks a view on the screen. */
@@ -370,6 +418,14 @@
                 if (!touched) setView(view, new Date());
             },
             reset: function () { calCache = {}; if (visible('screen-calendar')) loadCalendar(true); },
+            /** Background: fetch the months on screen (and the next ones) before anyone opens the calendar. */
+            warm: function () {
+                if (!calStart) calStart = monthStart(new Date());
+                if (!calWeek) calWeek = mondayOf(new Date());
+                var r = calRange(), c = cover(r);
+                if (!c || Date.now() - c.at > 4 * 60000) fetchBlock(r, true).then(function () { if (visible('screen-calendar')) renderCalendar(); warmNext(); }).catch(function () { /* later */ });
+                else warmNext();
+            },
         },
     };
 })();

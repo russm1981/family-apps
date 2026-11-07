@@ -26,10 +26,10 @@
     var MAP_OPTS = { zoomControl: false, attributionControl: true, dragging: false, touchZoom: false,
         scrollWheelZoom: false, doubleClickZoom: false, boxZoom: false, keyboard: false, tap: false,
         zoomAnimation: false, fadeAnimation: false, markerZoomAnimation: false };   // no animations: nothing left running when a page is rebuilt
-    /** Dark base map: TomTom when there's a key, otherwise CARTO's free dark map. */
-    function baseTiles(key) {
-        return key ? L.tileLayer('https://api.tomtom.com/map/1/tile/basic/night/{z}/{x}/{y}.png?key=' + encodeURIComponent(key), { maxZoom: 18, attribution: '\u00a9 TomTom' })
-            : L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '\u00a9 OpenStreetMap \u00a9 CARTO' });
+    /** Base map: TomTom (dark, or light with `light`) when there's a key, otherwise OpenStreetMap. (CARTO's free tiles now need a key of their own.) */
+    function baseTiles(key, light) {
+        return key ? L.tileLayer('https://api.tomtom.com/map/1/tile/basic/' + (light ? 'main' : 'night') + '/{z}/{x}/{y}.png?key=' + encodeURIComponent(key), { maxZoom: 18, attribution: '\u00a9 TomTom' })
+            : L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '\u00a9 OpenStreetMap', className: light ? '' : 'osm-dark' });
     }
 
     /* --------------------------------------------------------- pop-up card */
@@ -50,10 +50,13 @@
 
     /* ============================================================ WEATHER */
 
+    /** Fog: a soft cloud over three misty lines, drawn so it looks the same on every screen. */
+    var FOG_SVG = '<svg class="wx-fog" viewBox="0 0 64 64" width="1em" height="1em" aria-label="Fog"><path d="M18 34a10 10 0 0 1 1.5-19.9A14 14 0 0 1 46 17a9 9 0 0 1 1 17.9z" fill="#c9d3df"/>' +
+        '<g stroke="#9fb0c3" stroke-width="4.5" stroke-linecap="round" fill="none"><path d="M10 42h36"/><path d="M18 50h38"/><path d="M8 58h30"/></g></svg>';
     var WX = {
         0: ['Clear', '\u2600\uFE0F', '\uD83C\uDF19'], 1: ['Mainly clear', '\uD83C\uDF24\uFE0F', '\uD83C\uDF19'],
         2: ['Partly cloudy', '\u26C5', '\u2601\uFE0F'], 3: ['Overcast', '\u2601\uFE0F'],
-        45: ['Fog', '\uD83C\uDF2B\uFE0F'], 48: ['Freezing fog', '\uD83C\uDF2B\uFE0F'],
+        45: ['Fog', FOG_SVG], 48: ['Freezing fog', FOG_SVG],     // drawn here: Windows has no fog emoji
         51: ['Light drizzle', '\uD83C\uDF26\uFE0F'], 53: ['Drizzle', '\uD83C\uDF26\uFE0F'], 55: ['Heavy drizzle', '\uD83C\uDF27\uFE0F'],
         56: ['Freezing drizzle', '\uD83C\uDF27\uFE0F'], 57: ['Freezing drizzle', '\uD83C\uDF27\uFE0F'],
         61: ['Light rain', '\uD83C\uDF26\uFE0F'], 63: ['Rain', '\uD83C\uDF27\uFE0F'], 65: ['Heavy rain', '\uD83C\uDF27\uFE0F'],
@@ -331,8 +334,7 @@
             // Fractional zoom, so the outer ring can fill the box instead of jumping to the next zoom level down.
             map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0, zoomDelta: 0.25 }));
             map.attributionControl.setPrefix('');
-            (light ? L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', { maxZoom: 18, subdomains: 'abcd', attribution: '\u00a9 OpenStreetMap \u00a9 CARTO' })
-                : baseTiles(ctx.tomtomKey)).addTo(map);
+            baseTiles(ctx.tomtomKey, light).addTo(map);
             map.setView(d.centre, 9);
             return true;
         }

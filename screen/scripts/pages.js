@@ -109,7 +109,8 @@
         if (p.type === 'widgets') {
             renderMsg(id);
             layout.widgets.forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); });
-            if (!quiet || !fetched[id] || Date.now() - fetched[id] > POLL_MS) refresh(id);
+            // Everything is already built and filled in the background, so switching is instant; only fetch if it's getting old.
+            if (!fetched[id] || Date.now() - fetched[id] > POLL_MS) refresh(id);
         } else if (p.type === 'boys') {
             if (window.FDBoys) window.FDBoys.onShow(p.part || 0);
         } else if (p.type === 'calendar') {
@@ -137,22 +138,38 @@
 
     /* ----------------------------------------------------------- refresh */
 
-    function refresh(id, force) {
-        if (!api().ready()) return;
-        api().sync('busy');
-        api().get('page', Object.assign({ page: id || current || '' }, force ? { refresh: '1' } : {})).then(function (d) {
+    function refresh(id, force, background) {
+        if (!api().ready()) return Promise.resolve();
+        if (!background) api().sync('busy');
+        return api().get('page', Object.assign({ page: id || current || '' }, force ? { refresh: '1' } : {})).then(function (d) {
             errors[d.page] = '';
             applyLayout(d.layout);
             if (window.FDNotices) window.FDNotices.check(d.layout);
             fetched[d.page] = Date.now();
             store(DATA_KEY + d.page, JSON.stringify(d.data));
             feed(d.data);
-            api().sync('ok');
+            if (!background) api().sync('ok');
             renderMsg(d.page);
         }).catch(function (e) {
-            errors[id] = e.message; api().sync('err', e.message);
+            errors[id] = e.message;
+            if (!background) api().sync('err', e.message);
             renderMsg(id);
         });
+    }
+    /** Fill every other page in the background, one at a time, so they're ready before anyone taps them. */
+    var warming = false;
+    function warmAll() {
+        if (warming || !api().ready() || !layout) return;
+        warming = true;
+        var ids = navPages().filter(function (p) { return p.type === 'widgets' && p.id !== current && (!fetched[p.id] || Date.now() - fetched[p.id] > 4 * 60000); })
+            .map(function (p) { return p.id; });
+        (function next() {
+            var id = ids.shift();
+            if (!id) { warming = false; return; }
+            refresh(id, false, true).then(function () { setTimeout(next, 1500); });
+        })();
+        // The calendar and the children's page too.
+        if (window.FDScreens && window.FDScreens.calendar && window.FDScreens.calendar.warm) window.FDScreens.calendar.warm();
     }
 
     function onRail(e) {
@@ -171,8 +188,10 @@
             var saved = load(SCREEN_KEY);
             current = pageExists(saved) ? saved : firstPage();
             show(current, true);
-            // First call also brings the latest pages and widgets from the Sheet.
+            // First call also brings the latest pages and widgets from the Sheet; then the other pages fill in behind.
             refresh(current);
+            setTimeout(warmAll, 6000);
+            setInterval(warmAll, 5 * 60000);
             clearInterval(timer);
             timer = setInterval(function () {
                 var p = page(current);

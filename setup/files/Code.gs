@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.6';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.7';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -101,7 +101,7 @@ const INSTALL = [
   { k: 'HomeAddress', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
   { k: 'TomTomKey', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
-  { k: 'RailDataKey', label: 'Rail Data key', help: 'Consumer key for "Live Departure Board" from raildata.org.uk.' },
+  { k: 'RailDataKey', label: 'National Rail key', help: 'Either an OpenLDBWS token (from realtime.nationalrail.co.uk/OpenLDBWSRegistration – the same one the Raspberry Pi departure boards use) or a Rail Data Marketplace key (raildata.org.uk).' },
   { k: 'CalendarIds', label: 'Calendars to show', def: 'default', help: 'default = your main calendar, all = every calendar, or calendar IDs separated by commas.' },
   { k: 'AddToCalendar', label: 'Calendar for new events', def: 'default', help: 'Where + Add saves events: default = your main calendar, or a calendar ID.' },
   { k: 'NasaKey', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA picture of the day. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
@@ -1451,15 +1451,24 @@ function thin_(pts, max) {
 }
 
 /** National Rail departures (Rail Data Marketplace, Live Departure Board). */
+/**
+ * Live departures. Works with either kind of National Rail key:
+ *  - an OpenLDBWS token (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, from realtime.nationalrail.co.uk/OpenLDBWSRegistration –
+ *    the one the Raspberry Pi "Train Departure Board" projects use), or
+ *  - a Rail Data Marketplace consumer key (raildata.org.uk, "Live Departure Board").
+ * If the first kind tried is refused, the other is tried.
+ */
 function trains_(fromCrs, toCrs) {
   const key = String(inst_('RailDataKey') || '').trim();
-  if (!key) throw new Error('Add a Rail Data key on the Installation tab of the admin app');
+  if (!key) throw new Error('Add a National Rail key on the Installation tab of the admin app');
   const from = String(fromCrs || 'BPW').toUpperCase(), to = String(toCrs || '').toUpperCase();
-  const url = 'https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120/GetDepBoardWithDetails/' +
-    from + '?numRows=10' + (to ? '&filterCrs=' + to + '&filterType=to' : '') + '&timeWindow=180';
-  const res = UrlFetchApp.fetch(url, { headers: { 'x-apikey': key }, muteHttpExceptions: true });
-  if (res.getResponseCode() !== 200) throw new Error('National Rail said ' + res.getResponseCode());
-  const d = JSON.parse(res.getContentText());
+  const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
+  const order = guid ? [ldbSoap_, ldbRest_] : [ldbRest_, ldbSoap_];
+  let d = null, first = null;
+  for (let i = 0; i < order.length && !d; i++) {
+    try { d = order[i](key, from, to); } catch (err) { if (!first) first = err; if (!err.auth) throw err; }
+  }
+  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it on the Installation tab.');
   const services = (d.trainServices || []).map(s => {
     let arrive = null, calls = [];
     (s.subsequentCallingPoints || []).forEach(list => (list.callingPoint || []).forEach(cp => {
@@ -1480,6 +1489,54 @@ function trains_(fromCrs, toCrs) {
   const messages = (d.nrccMessages || []).map(m => String(typeof m === 'string' ? m : (m.value || m.Value || m.message || ''))
     .replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
   return { from: d.locationName || from, to: d.filterLocationName || to, services: services, messages: messages };
+}
+function railErr_(msg, auth) { const e = new Error(msg); e.auth = !!auth; return e; }
+
+/** Rail Data Marketplace (JSON). */
+function ldbRest_(key, from, to) {
+  const url = 'https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120/GetDepBoardWithDetails/' +
+    from + '?numRows=10' + (to ? '&filterCrs=' + to + '&filterType=to' : '') + '&timeWindow=180';
+  const res = UrlFetchApp.fetch(url, { headers: { 'x-apikey': key }, muteHttpExceptions: true });
+  const code = res.getResponseCode();
+  if (code === 401 || code === 403) throw railErr_('Rail Data Marketplace said ' + code, true);
+  if (code !== 200) throw railErr_('National Rail said ' + code);
+  return JSON.parse(res.getContentText());
+}
+
+/** OpenLDBWS (SOAP) – the same service and token as the Raspberry Pi departure board projects. */
+function ldbSoap_(key, from, to) {
+  const x = v => String(v).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c]));
+  const body = '<?xml version="1.0" encoding="utf-8"?>' +
+    '<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:typ="http://thalesgroup.com/RTTI/2013-11-28/Token/types" xmlns:ldb="http://thalesgroup.com/RTTI/2021-11-01/ldb/">' +
+    '<soap:Header><typ:AccessToken><typ:TokenValue>' + x(key) + '</typ:TokenValue></typ:AccessToken></soap:Header>' +
+    '<soap:Body><ldb:GetDepBoardWithDetailsRequest><ldb:numRows>10</ldb:numRows><ldb:crs>' + x(from) + '</ldb:crs>' +
+    (to ? '<ldb:filterCrs>' + x(to) + '</ldb:filterCrs><ldb:filterType>to</ldb:filterType>' : '') +
+    '<ldb:timeOffset>0</ldb:timeOffset><ldb:timeWindow>120</ldb:timeWindow></ldb:GetDepBoardWithDetailsRequest></soap:Body></soap:Envelope>';
+  const res = UrlFetchApp.fetch('https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb12.asmx', {
+    method: 'post', contentType: 'text/xml; charset=utf-8', payload: body, muteHttpExceptions: true,
+    headers: { SOAPAction: 'http://thalesgroup.com/RTTI/2015-05-14/ldb/GetDepBoardWithDetails' } });
+  const code = res.getResponseCode(), text = res.getContentText();
+  if (code === 401 || code === 403 || /Unauthori[sz]ed|Invalid.{0,20}token|AccessToken/i.test(code === 200 ? '' : text)) throw railErr_('OpenLDBWS refused the token (' + code + ')', true);
+  if (code !== 200) throw railErr_('National Rail said ' + code + (/<faultstring>([^<]+)/.exec(text) ? ': ' + /<faultstring>([^<]+)/.exec(text)[1] : ''));
+  // Read the XML by element name, ignoring the many namespaces it uses.
+  const root = XmlService.parse(text).getRootElement();
+  const kids = (el, name) => el ? el.getChildren().filter(c => c.getName() === name) : [];
+  const kid = (el, name) => kids(el, name)[0] || null;
+  const txt = (el, name) => { const c = kid(el, name); return c ? c.getText() : ''; };
+  const find = (el, name) => { if (!el) return null; if (el.getName() === name) return el; for (const c of el.getChildren()) { const f = find(c, name); if (f) return f; } return null; };
+  const board = find(root, 'GetStationBoardResult');
+  if (!board) throw railErr_('Unexpected reply from National Rail');
+  const loc = l => ({ locationName: txt(l, 'locationName'), crs: txt(l, 'crs') });
+  const services = kids(kid(board, 'trainServices'), 'service').map(sv => ({
+    std: txt(sv, 'std'), etd: txt(sv, 'etd'), platform: txt(sv, 'platform'), operator: txt(sv, 'operator'),
+    isCancelled: txt(sv, 'isCancelled') === 'true', cancelReason: txt(sv, 'cancelReason'), delayReason: txt(sv, 'delayReason'),
+    destination: kids(kid(sv, 'destination'), 'location').map(loc),
+    subsequentCallingPoints: kids(kid(sv, 'subsequentCallingPoints'), 'callingPointList').map(list => ({
+      callingPoint: kids(list, 'callingPoint').map(cp => ({ locationName: txt(cp, 'locationName'), crs: txt(cp, 'crs'), st: txt(cp, 'st'), et: txt(cp, 'et'), at: txt(cp, 'at') })),
+    })),
+  }));
+  return { locationName: txt(board, 'locationName'), filterLocationName: txt(board, 'filterLocationName'), trainServices: services,
+    nrccMessages: kids(kid(board, 'nrccMessages'), 'message').map(m => m.getText()) };
 }
 function journeyMins_(a, b) {
   if (!/^\d\d:\d\d$/.test(a || '') || !/^\d\d:\d\d$/.test(b || '')) return null;
@@ -2380,16 +2437,79 @@ function zenQuotes_() {
   return { quotes: (JSON.parse(res.getContentText()) || []).filter(x => x.q && x.q.length < 160).map(x => ({ q: x.q, a: x.a })), credit: 'Quotes from zenquotes.io' };
 }
 
+/**
+ * NASA Astronomy Picture of the Day. NASA's API sometimes answers 500 (often around when the new picture goes up),
+ * so: try today, then without video thumbnails, then yesterday, then the APOD web page itself.
+ * The last good picture is kept and shown if NASA can't be reached at all.
+ */
 function apod_() {
   const key = String(inst_('NasaKey') || 'DEMO_KEY').trim();
-  const res = UrlFetchApp.fetch('https://api.nasa.gov/planetary/apod?thumbs=true&api_key=' + encodeURIComponent(key), { muteHttpExceptions: true });
-  if (res.getResponseCode() === 429) throw new Error('NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it on the Installation tab.');
-  if (res.getResponseCode() !== 200) throw new Error('NASA said ' + res.getResponseCode());
-  const d = JSON.parse(res.getContentText());
-  const img = d.media_type === 'image' ? d.url : (d.thumbnail_url || '');
-  if (!img) throw new Error('Today’s NASA picture is a ' + (d.media_type || 'video') + ' – have a look at apod.nasa.gov');
-  return { title: d.title, date: d.date, text: d.explanation, img: img, hd: d.hdurl || '', video: d.media_type !== 'image',
-    credit: d.copyright ? clean_(d.copyright) : 'NASA' };
+  const props = PropertiesService.getScriptProperties();
+  const yesterday = Utilities.formatDate(new Date(Date.now() - 86400000), 'America/New_York', 'yyyy-MM-dd');
+  const base = 'https://api.nasa.gov/planetary/apod?api_key=' + encodeURIComponent(key);
+  const tries = [base + '&thumbs=true', base, base + '&thumbs=true&date=' + yesterday];
+  let d = null, why = '';
+  for (let i = 0; i < tries.length && !d; i++) {
+    try {
+      const res = UrlFetchApp.fetch(tries[i], { muteHttpExceptions: true });
+      const code = res.getResponseCode();
+      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it on the Installation tab.'; break; }
+      if (code === 403) { why = 'NASA didn’t accept the key – check NasaKey on the Installation tab.'; break; }
+      if (code !== 200) { why = 'NASA said ' + code; if (code >= 500) break; continue; }   // API down: go straight to the website
+      const j = JSON.parse(res.getContentText());
+      if (j && (j.url || j.thumbnail_url)) d = j;
+    } catch (err) { why = String(err && err.message || err); }
+  }
+  if (!d) d = apodScience_();                    // APOD now lives on science.nasa.gov (apod.nasa.gov redirects there)
+  if (!d) d = apodPage_();                       // the old APOD web page
+  let out = null;
+  if (d) {
+    const img = d.media_type === 'image' ? d.url : (d.thumbnail_url || '');
+    if (img) out = { title: d.title, date: d.date, text: d.explanation, img: img, hd: d.hdurl || '', video: d.media_type !== 'image',
+      credit: d.copyright ? clean_(d.copyright) : 'NASA' };
+    else why = 'Today’s NASA picture is a ' + (d.media_type || 'video') + ' – have a look at apod.nasa.gov';
+  }
+  if (out) { props.setProperty('apodLast', JSON.stringify(out)); return out; }
+  const last = props.getProperty('apodLast');
+  if (last) return JSON.parse(last);             // yesterday's picture beats an error message
+  throw new Error(why || 'NASA isn’t answering just now');
+}
+/** Fallback: read today's picture from apod.nasa.gov/apod/astropix.html. */
+/** Today's APOD from NASA Science's site feed (no key needed). */
+function apodScience_() {
+  try {
+    const res = UrlFetchApp.fetch('https://science.nasa.gov/wp-json/wp/v2/image-article?categories=22766&per_page=1&_embed=1',
+      { muteHttpExceptions: true, headers: { Accept: 'application/json' } });
+    if (res.getResponseCode() !== 200) return null;
+    const p = (JSON.parse(res.getContentText()) || [])[0];
+    if (!p) return null;
+    const media = p._embedded && p._embedded['wp:featuredmedia'] && p._embedded['wp:featuredmedia'][0];
+    const src = media && media.source_url;
+    if (!src) return null;
+    const plain = h => String(h || '').replace(/<[^>]+>/g, ' ').replace(/&#8217;|&rsquo;/g, '’').replace(/&#8211;|&ndash;/g, '–').replace(/&#8220;|&#8221;/g, '"')
+      .replace(/&amp;/g, '&').replace(/&nbsp;|&#160;/g, ' ').replace(/&#\d+;/g, '').replace(/\s+/g, ' ').trim();
+    const title = plain(p.title && p.title.rendered).replace(/^APOD:\s*\d{4}\s+\w+\s+\d{1,2}\s*[–-]\s*/, '');
+    const body = plain(p.content && p.content.rendered), ex = /Explanation:\s*([\s\S]*?)(?:Tomorrow[’']s picture|Authors? & editors|$)/.exec(body);
+    const credit = /(?:Image|Video) Credit(?:\s*&\s*Copyright)?:\s*([^.]{2,80}?)(?:\s{2}|Explanation|$)/.exec(body);
+    return { media_type: 'image', url: src + (src.indexOf('?') < 0 ? '?w=1600' : ''), hdurl: src, title: title || 'Astronomy Picture of the Day',
+      date: String(p.date || '').slice(0, 10), explanation: ex ? ex[1].trim().slice(0, 1500) : plain(p.excerpt && p.excerpt.rendered),
+      copyright: credit ? credit[1].trim() : '', link: p.link };
+  } catch (err) { return null; }
+}
+
+function apodPage_() {
+  try {
+    const res = UrlFetchApp.fetch('https://apod.nasa.gov/apod/astropix.html', { muteHttpExceptions: true });
+    if (res.getResponseCode() !== 200) return null;
+    const h = res.getContentText();
+    const img = /<IMG\s+SRC="([^"]+)"/i.exec(h), big = /<a href="(image\/[^"]+)"/i.exec(h);
+    const title = /<center>\s*<b>\s*([^<]+?)\s*<\/b>/i.exec(h);
+    const expl = /<b>\s*Explanation:\s*<\/b>([\s\S]*?)<p>/i.exec(h);
+    if (!img) return null;
+    const abs = u => /^https?:/i.test(u) ? u : 'https://apod.nasa.gov/apod/' + u;
+    return { media_type: 'image', url: abs(img[1]), hdurl: big ? abs(big[1]) : '', title: title ? title[1] : 'Astronomy Picture of the Day',
+      date: fmt_(new Date(), 'yyyy-MM-dd'), explanation: expl ? expl[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '' };
+  } catch (err) { return null; }
 }
 
 function duolingo_(names) {
