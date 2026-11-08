@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.25';
+    var APP_VERSION = '2026.11.30';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
@@ -86,7 +86,7 @@
         banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Updating the Google script to ' + esc(latest.script) + '…</b></div>');
         api().post({ action: 'selfUpdate', why: 'screen' }).then(function (r) {
             scriptUpdating = false;
-            if (r && (r.updated || r.upToDate)) { lastLayout.scriptVersion = r.to || r.version || latest.script; banner('scrBanner', ''); return; }
+            if (r && (r.updated || r.upToDate)) { lastLayout.scriptVersion = r.to || r.version || latest.script; scriptDone(lastLayout.scriptVersion); if (window.FDHealth) FDHealth.note('script', ''); return; }
             banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc((r && r.message) || '') + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
         }).catch(function (err) {
             scriptUpdating = false;
@@ -96,8 +96,24 @@
         b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
         return true;
     }
+    /** The Google script's version, checked every minute: a problem until it's up to date, then a short "all done". */
+    var scriptWasBehind = false, scriptOkUntil = 0;
+    function scriptDone(v) {
+        scriptWasBehind = false; scriptOkUntil = Date.now() + 10 * 60000;
+        var b = banner('scrBanner', '<span class="n-ico">✔</span><div class="n-text"><b>The Google script has updated itself</b><span>It’s now version ' + esc(v) + ' – everything is up to date.</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
+        b.onclick = function (e) { if (e.target.closest('[data-s]')) { scriptOkUntil = 0; banner('scrBanner', ''); } };
+    }
     function showScript() {
         if (!latest || !lastLayout || !lastLayout.scriptVersion) return;
+        var behind = newer(latest.script, lastLayout.scriptVersion);
+        if (window.FDHealth) FDHealth.note('script', behind ? 'The Google script is version ' + lastLayout.scriptVersion + '; ' + latest.script + ' is available' +
+            (lastLayout.autoUpdate ? ' (it updates itself within a few minutes)' : ' – automatic updates are off') : '');
+        if (!behind) {
+            if (scriptWasBehind) scriptDone(lastLayout.scriptVersion);
+            else if (Date.now() > scriptOkUntil) banner('scrBanner', '');
+            return;
+        }
+        scriptWasBehind = true;
         if (lastLayout.autoUpdate && newer(latest.script, lastLayout.scriptVersion) && autoScript()) return;
         if (scriptUpdating) return;
         var nag = Number(api().load(SCRIPT_KEY) || 0);
@@ -143,6 +159,29 @@
     /** No licence: cover the screen with what to do. Free trial: a small reminder in the last week. */
     function showLicence(lic) {
         var el = document.getElementById('licLock');
+        if (lic && lic.screenBlocked) {
+            // One screen too many for the licence: take over from another screen, or get a bigger licence.
+            var sb = lic.screenBlocked, ago = function (t) { var m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 2 ? 'just now' : m < 120 ? m + ' minutes ago' : m < 2880 ? Math.round(m / 60) + ' hours ago' : Math.round(m / 1440) + ' days ago'; };
+            if (!el) { el = document.createElement('div'); el.id = 'licLock'; el.className = 'lic-lock'; document.body.appendChild(el); }
+            el.innerHTML = '<div class="lic-box"><div class="lic-ico">🖥</div><h2>Use this screen instead?</h2>' +
+                '<p>Your licence is for <b>' + sb.allowed + ' screen' + (sb.allowed > 1 ? 's' : '') + '</b>, and ' + (sb.allowed > 1 ? 'they’re' : 'it’s') + ' already in use. Phones don’t count.</p>' +
+                '<div class="scr-list">' + sb.screens.map(function (x) {
+                    return '<button class="n-btn" data-old="' + esc(x.id) + '"><span>Use this screen instead of <b>' + esc(x.name) + '</b></span><span class="lic-how">last used ' + ago(x.last) + '</span></button>'; }).join('') + '</div>' +
+                '<p class="lic-how">The other screen will then show this message instead. To use more screens at once, ask the seller for a licence with more screens. ' +
+                'Setting up a completely separate dashboard (another home)? That needs its own licence – start with the setup app.</p></div>';
+            el.style.display = 'flex';
+            el.onclick = function (e) {
+                var b = e.target.closest('[data-old]'); if (!b) return;
+                b.disabled = true;
+                var P = window.FDFormat ? FDFormat.params() : {};
+                api().post({ action: 'replaceScreen', old: b.getAttribute('data-old'), dev: P.dev, name: P.dn, fmt: P.fmt }).then(function () {
+                    el.style.display = 'none'; if (window.FDPages) FDPages.refreshNow(true);
+                }).catch(function (err) { b.disabled = false; api().toast(err.message, true); });
+            };
+            if (window.FDHealth) FDHealth.note('licence', 'This screen isn’t one of the licence’s screens');
+            return;
+        }
+        if (el) el.onclick = null;
         if (lic && lic.required && !lic.ok) {
             if (!el) { el = document.createElement('div'); el.id = 'licLock'; el.className = 'lic-lock'; document.body.appendChild(el); }
             el.innerHTML = '<div class="lic-box"><div class="lic-ico">🔑</div><h2>' + (lic.state === 'missing' ? 'Add your licence key' : 'Licence problem') + '</h2>' +
@@ -150,10 +189,14 @@
                 'This screen carries on by itself within a few minutes.</p></div>';
             el.style.display = 'flex';
         } else if (el) el.style.display = 'none';
+        if (window.FDHealth) FDHealth.note('licence', lic && lic.required && (!lic.ok || /hasn’t answered/.test(lic.message || '')) ? 'Licence: ' + lic.message : '');
         banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → Settings → Licence)</span>' : '');
     }
     window.FDNotices = {
         version: APP_VERSION,
+        layout: function () { return lastLayout; },
+        latest: function () { return latest; },
+        newer: newer,
         check: function (L) {
             if (!L) return;
             var first = !lastLayout;
@@ -165,6 +208,6 @@
             if (first) checkForUpdate(); else showScript();
         },
     };
-    setInterval(checkForUpdate, 10 * 60000);                                 // look for a new version every 10 minutes
+    setInterval(checkForUpdate, 5 * 60000);                                  // look for a new version every 5 minutes
     setInterval(function () { if (latest) showUpdate(); }, 60000);            // and update as soon as the screen is left alone
 })();

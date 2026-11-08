@@ -885,6 +885,8 @@
             card(Lc.key ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
                 '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
                 '<button class="btn wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
+            (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup app (not “Start afresh”, which moves your licence by itself), free your key here first. ' +
+                'You can then enter it in the new Sheet. This Sheet will ask for a key again.</p><button class="btn ghost wide" id="licFree">Free up my licence key</button><div id="licFreeOut"></div>') : '') +
             '<p class="mute small help">A key works on one dashboard at a time. If you move to a new Google Sheet or account, ask the seller to release it first. Once a day your Google script checks the key with the seller; if that can’t happen for 21 days, the screen asks for help.</p>';
         $('licGo').onclick = function () {
             var k = $('licKey').value.trim(); if (!k) { FD.toast('Type in your key', true); return; }
@@ -892,6 +894,13 @@
             FD.post({ action: 'setLicence', key: k }).then(function (d) { FD.toast(d.message || 'Saved'); DATA.licence = d.licence; load(); }, function (e) {
                 b.disabled = false; b.textContent = 'Check and save'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first (Settings → Updates)' : e.message, true);
             });
+        };
+        if ($('licFree')) $('licFree').onclick = function () {
+            if (!confirm('Free your licence key from this Sheet? This dashboard will ask for a key again.')) return;
+            FD.post({ action: 'releaseLicence' }).then(function (d) {
+                $('licFreeOut').innerHTML = '<p class="pos small"><b>✔ Freed.</b> Your key – write it down for the new Sheet:</p><p class="mono" style="user-select:all">' + esc(d.key) + '</p>';
+                DATA.licence = d.licence;
+            }, function (e) { FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
         };
         if ($('licRe')) $('licRe').onclick = function () {
             FD.post({ action: 'licence', recheck: true }).then(function (d) { DATA.licence = d.licence; FD.toast(d.licence.message, !d.licence.ok); render(); }, function (e) { FD.toast(e.message, true); });
@@ -999,6 +1008,8 @@
     /* ---- saved versions and starting afresh */
     function versionsCard() {
         var v = DATA.versions, mv = DATA.moving;
+        if (mv && mv.mode === 'account') return card('Moving to ' + esc(mv.email), '<p>The moving pack is ready. On a computer signed in as <b>' + esc(mv.email) + '</b>, open the setup app link from when you made it (or make a new pack below), set up, and press <b>Bring everything across</b>.</p>' +
+            '<p class="mute small">Until then everything carries on working from this Sheet.</p>') + card('Make a new moving pack', '<label>New Google account’s email</label><input id="mvEmail" type="email" value="' + esc(mv.email) + '"><button class="btn ghost wide" id="mvGo">Make a new moving pack</button><div id="mvOut"></div>');
         if (mv) return card('Finish moving to the new Sheet', '<p>The new Sheet is ready. Open it, wait for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b> – Google asks you to allow the script, as it did the first time.</p>' +
             '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
         var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
@@ -1008,9 +1019,27 @@
             (v && v.warn ? '<p class="neg"><b>Nearly full.</b> When it’s full the script can’t update. Start afresh below (easiest), or delete old versions in Apps Script → Project history.</p>' : '') +
             '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
             'The screen and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
-            '<button class="btn wide" id="afresh">Start afresh</button></details>');
+            '<button class="btn wide" id="afresh">Start afresh</button></details>' +
+            '<details class="adv"><summary>Move to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
+            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
+            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
+            '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
     }
     function wireAfresh() {
+        if ($('mvGo')) $('mvGo').onclick = function () {
+            var email = $('mvEmail').value.trim(); if (!email) { FD.toast('Type the new account’s email address', true); return; }
+            var b = this; b.disabled = true; b.textContent = 'Making the moving pack…';
+            FD.post({ action: 'packForAccount', email: email }).then(function (d) {
+                b.textContent = 'Moving pack made ✔';
+                $('mvOut').innerHTML = '<ol class="small"><li>On a <b>computer</b>, sign in to Google as <b>' + esc(d.email) + '</b> (or open a private window and sign in there).</li>' +
+                    '<li>Open this link – it’s the setup app, in “moving” mode:</li></ol><textarea readonly rows="3" id="mvLink">' + esc(d.setupLink) + '</textarea>' +
+                    '<button class="btn ghost wide" id="mvCopy">Copy the link</button>' + (navigator.share ? '<button class="btn ghost wide" id="mvShare">Send it to yourself</button>' : '') +
+                    '<ol class="small" start="3"><li>Follow the setup steps for the new account (make the Sheet, publish it). At “Publish &amp; connect” press <b>Bring everything across</b>.</li>' +
+                    '<li>That’s it – the screen, phones and licence switch over by themselves. This Sheet is kept as a backup.</li></ol>';
+                $('mvCopy').onclick = function () { try { navigator.clipboard.writeText(d.setupLink).then(function () { FD.toast('Copied'); }); } catch (e) { $('mvLink').select(); } };
+                if ($('mvShare')) $('mvShare').onclick = function () { navigator.share({ title: 'Move Family Dashboard', text: 'Open on a computer, signed in as ' + d.email + ':', url: d.setupLink }).catch(function () {}); };
+            }, function (e) { b.disabled = false; b.textContent = 'Make a moving pack'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
+        };
         if (!$('afresh')) return;
         $('afresh').onclick = function () {
             if (!confirm('Make a new Sheet and copy everything into it?')) return;
@@ -1020,11 +1049,40 @@
         };
     }
 
+    /* ---- screens counted by the licence */
+    function screensCard() {
+        var list = DATA.screens || [], allowed = DATA.screensAllowed;
+        var ago = function (t) { var m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 2 ? 'just now' : m < 120 ? m + ' min ago' : m < 2880 ? Math.round(m / 60) + ' hours ago' : Math.round(m / 1440) + ' days ago'; };
+        return card('Screens', '<p class="mute small">' + (allowed ? 'Your licence allows <b>' + allowed + ' screen' + (allowed > 1 ? 's' : '') + '</b> (Corsair, tablet or computer). Phones don’t count. ' +
+                'A screen not used for 30 days frees its place by itself; a new screen over the limit offers to take over from another.' : 'Every screen that shows the dashboard.') + '</p>' +
+            (list.length ? '<div class="rows" id="scrRows">' + list.map(function (x) {
+                return '<div class="r"><span class="r-l"><b>' + esc(x.name) + '</b><small>' + esc(x.fmt === 'standard' ? 'Tablet / computer layout' : 'Wide layout') + ' · last used ' + ago(x.last) + '</small></span>' +
+                    '<button class="btn ghost sm" data-sren="' + esc(x.id) + '">Rename</button><button class="btn ghost sm" data-sdel="' + esc(x.id) + '">Disconnect</button></div>';
+            }).join('') + '</div>' : '<p class="mute small">No screens yet.</p>'));
+    }
+    function wireScreens() {
+        var box = $('scrRows'); if (!box) return;
+        box.onclick = function (e) {
+            var b = e.target.closest('[data-sdel],[data-sren]'); if (!b) return;
+            var id = b.getAttribute('data-sdel') || b.getAttribute('data-sren');
+            if (b.hasAttribute('data-sdel')) {
+                if (!confirm('Disconnect this screen? It frees its place on the licence; if it’s still switched on it will offer to take a place back.')) return;
+                FD.post({ action: 'forgetScreen', id: id }).then(function (d) { DATA.screens = d.screens; render(); FD.toast('Disconnected'); }, function (e2) { FD.toast(e2.message, true); });
+            } else {
+                var n = prompt('Name for this screen (e.g. Kitchen, Lounge tablet):'); if (!n) return;
+                FD.post({ action: 'renameScreen', id: id, name: n }).then(function (d) { DATA.screens = d.screens; render(); }, function (e2) { FD.toast(e2.message, true); });
+            }
+        };
+    }
+
     /* ---- access code & devices */
     function secAccess() {
         var c = FD.config();
         $('body').innerHTML = card('Connect phones and the screen', '<p class="mute small">QR codes, links and the Windows start file are in the setup app.</p>' +
                 '<a class="setup-link" href="' + setupLink('devices') + '" target="_blank" rel="noopener"><b>Connect your devices</b><span>QR codes, links and the PC start file</span><i>›</i></a>') +
+            card('Connect a screen', '<p class="mute small">A new screen (Raspberry Pi, tablet, computer) that isn’t connected shows a QR code and a code like <b>K7Q2-M9XD</b>. Scan the QR code, or type the code here:</p>' +
+                '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn wide" id="prGo">Connect the screen</button><div id="prOut"></div>') +
+            screensCard() +
             card('Access code', '<p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'The code protects your dashboard: anyone with your links and code can use it. ' +
                 'After changing it, every other device needs its new link and the PC needs its new start file. This phone updates itself.</p>' +
                 '<button class="btn wide" id="cNew">Make a new strong code for me</button>' +
@@ -1039,6 +1097,12 @@
             if (!/[^A-Za-z0-9]/.test(v)) return 'at least one special character, e.g. ! * - _ . ~';
             return '';
         }
+        wireScreens();
+        $('prGo').onclick = function () {
+            var b = this; b.disabled = true;
+            FDPairSend.send($('prCode').value, FD.config()).then(function (c) { $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> Screen ' + esc(c) + ' connects within a few seconds.</p>'; b.disabled = false; $('prCode').value = ''; },
+                function (e) { b.disabled = false; FD.toast(e.message, true); });
+        };
         $('cOwn').oninput = function () { var p = codeProblem($('cOwn').value); $('cHint').textContent = $('cOwn').value ? (p ? 'Needs ' + p : '✔ Good') : ''; };
         function changeCode(newCode) {
             if (!confirm('Change the access code? Other phones, tablets and the screen will need their new link.')) return;

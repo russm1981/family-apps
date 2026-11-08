@@ -18,11 +18,12 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.4';
+const LS_VERSION = '2026.11.9';
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
 const APPS_BASE = 'https://russm1981.github.io/family-apps/';
 const TABS = { lic: 'Licences', log: 'Activity' };
-const COLS = ['Key', 'Status', 'Name', 'Email', 'Order', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes'];
+const COLS = ['Key', 'Status', 'Name', 'Email', 'Order', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes', 'Screens'];
+// Screens: how many screens (Corsair, tablet, computer…) may show this family's dashboard at once. Phones don't count.
 const LOGCOLS = ['When', 'Key', 'Event', 'Install', 'Detail'];
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';     // no 0/O, 1/I – easy to read out and type
 const DEFAULTS = {
@@ -72,9 +73,9 @@ function setup() {
     msg += '\n\nA first key has been made for your own dashboard:\n\n' + k;
   }
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'updateTick').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(10).create();
-  PropertiesService.getScriptProperties().setProperty('tickEvery', '10');
-  msg += '\n\nAutomatic updates: on (checks every 10 minutes).';
+  ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(5).create();
+  PropertiesService.getScriptProperties().setProperty('tickEvery', '5');
+  msg += '\n\nAutomatic updates: on (checks every 5 minutes).';
   msg += '\n\nNext (first time only): Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone. Then 🔑 Licences > Show the web addresses.';
   try { SpreadsheetApp.getUi().alert('Licence server', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) { console.log(msg); }
 }
@@ -119,12 +120,29 @@ function json_(fn) {
 
 /** The public part: what dashboards call. */
 function api_(b) {
+  if (b.action === 'check' || b.action === 'activate') ensureCols_();
   switch (b.action) {
     case 'ping': return { ok: true, app: 'family-dashboard-licences', version: LS_VERSION };
     // The public half of the support key: dashboards lock the private parts of a diagnostics report with it.
     case 'supportKey': { const k = PropertiesService.getScriptProperties().getProperty('supportPublic'); return { ok: true, publicKey: k ? JSON.parse(k) : null }; }
+    // Connecting a new screen from a phone: the phone leaves the family's link here, locked with the code shown on
+    // the screen (this server can't read it); the screen collects it. Kept for 10 minutes, collected once.
+    case 'pairPut': {
+      const id = String(b.id || ''), box = String(b.box || '');
+      if (!/^[0-9a-f]{24}$/.test(id) || box.length > 4000 || !/^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$/.test(box)) throw new Error('Bad pairing request');
+      CacheService.getScriptCache().put('pair:' + id, box, 600);
+      return { ok: true };
+    }
+    case 'pairGet': {
+      const id = String(b.id || ''), c = CacheService.getScriptCache();
+      if (!/^[0-9a-f]{24}$/.test(id)) throw new Error('Bad pairing request');
+      const box = c.get('pair:' + id);
+      if (box) c.remove('pair:' + id);
+      return { ok: true, box: box || '' };
+    }
     case 'check': case 'activate': return withLock_(() => verify_(b));
     case 'move': return withLock_(() => move_(b));
+    case 'release': return withLock_(() => selfRelease_(b));
     default: throw new Error('Unknown action');
   }
 }
@@ -155,7 +173,8 @@ function verify_(b) {
   }
   rec[C['Last check']] = now; rec[C.Version] = version; rec[C.Checks] = (Number(rec[C.Checks]) || 0) + 1;
   sh.getRange(row, 1, 1, COLS.length).setValues([rec]);
-  return { ok: true, state: 'active', name: String(rec[C.Name] || ''), message: 'Licensed' + (rec[C.Name] ? ' to ' + rec[C.Name] : '') };
+  const screens = Math.max(1, Number(rec[C.Screens]) || 1);
+  return { ok: true, state: 'active', screens: screens, name: String(rec[C.Name] || ''), message: 'Licensed' + (rec[C.Name] ? ' to ' + rec[C.Name] : '') + ' · ' + screens + ' screen' + (screens > 1 ? 's' : '') };
 }
 
 /** A dashboard moving to a fresh Sheet ("Start afresh") hands its key to the new installation. Only the dashboard the key is on can do this. */
@@ -171,6 +190,19 @@ function move_(b) {
   sh.getRange(row, 1, 1, COLS.length).setValues([rec]);
   log_(key, 'Moved to a new Sheet', to, 'from ' + from);
   return { ok: true, state: 'active' };
+}
+
+/** A dashboard frees its own key (the family is starting again from scratch). Only the dashboard the key is on can do this. */
+function selfRelease_(b) {
+  const key = normKey_(b.key), from = String(b.install || '');
+  const row = key && findRow_(key);
+  if (!row) return { ok: false, message: 'Unknown key' };
+  const C = colIndex_(), sh = sheet_(TABS.lic);
+  if (String(sh.getRange(row, C.Install + 1).getValue()) !== from) return { ok: false, message: 'This key isn’t in use on the dashboard that asked' };
+  sh.getRange(row, C.Install + 1).setValue('');
+  if (sh.getRange(row, C.Status + 1).getValue() === 'Active') sh.getRange(row, C.Status + 1).setValue('Issued');
+  log_(key, 'Released by its dashboard', from, 'starting again');
+  return { ok: true };
 }
 
 /* ================================================================ keys */
@@ -209,6 +241,7 @@ function issue_(opts) {
     r[C.Key] = k; r[C.Status] = 'Issued'; r[C.Name] = clip_(opts.name, 60); r[C.Email] = clip_(opts.email, 120);
     r[C.Order] = clip_(opts.order, 60); r[C.Source] = clip_(opts.source || 'Issued by hand', 80); r[C.Issued] = now; r[C.Checks] = 0;
     r[C.Notes] = clip_(opts.notes, 200);
+    r[C.Screens] = Math.max(1, Math.min(20, Number(opts.screens) || 1));
     rows.push(r);
   }
   sh.getRange(sh.getLastRow() + 1, 1, rows.length, COLS.length).setValues(rows);
@@ -225,14 +258,15 @@ function issue_(opts) {
  */
 function admin(password, op, args) {
   adminAuth_(password);
+  ensureCols_();
   args = args || {};
   switch (op) {
     case 'hello': return { ok: true };
     case 'summary': return summary_();
     case 'list': return { ok: true, rows: allRows_() };
-    case 'issue': return withLock_(() => ({ ok: true, keys: issue_({ count: args.count, name: args.name, email: args.email, order: args.order, notes: args.notes, source: 'Issued by hand' }),
+    case 'issue': return withLock_(() => ({ ok: true, keys: issue_({ count: args.count, name: args.name, email: args.email, order: args.order, notes: args.notes, screens: args.screens, source: 'Issued by hand' }),
       emailed: args.email && args.send ? emailKeys_(args.email) : 0 }));
-    case 'import': return withLock_(() => import_(args.rows || [], args.source, !!args.send));
+    case 'import': return withLock_(() => import_(args.rows || [], args.source, !!args.send, args.screens));
     case 'update': return withLock_(() => update_(args.key, args.fields || {}));
     case 'revoke': return withLock_(() => setStatus_(args.key, 'Revoked', args.reason));
     case 'reinstate': return withLock_(() => setStatus_(args.key, 'reinstate', args.reason));
@@ -322,7 +356,7 @@ function allRows_() {
  * Import buyers from a shop's CSV. rows: [{ name, email, order, qty }]. A row whose order (or, with no order
  * number, whose email) already has its keys is skipped, so the same file can be imported twice safely.
  */
-function import_(rows, source, send) {
+function import_(rows, source, send, defScreens) {
   if (!rows.length) throw new Error('Nothing to import');
   if (rows.length > 500) throw new Error('Up to 500 rows at a time');
   const have = {};
@@ -334,7 +368,7 @@ function import_(rows, source, send) {
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { skipped.push({ row: i + 1, why: 'email doesn’t look right: ' + email }); return; }
     const id = idOf_(order, email), already = have[id] || 0;
     if (already >= qty) { skipped.push({ row: i + 1, why: 'already has ' + (already === 1 ? 'a key' : already + ' keys') + ' (' + (order || email) + ')' }); return; }
-    const keys = issue_({ count: qty - already, name: r.name, email: email, order: order, source: src, notes: r.notes });
+    const keys = issue_({ count: qty - already, name: r.name, email: email, order: order, source: src, notes: r.notes, screens: r.screens || defScreens });
     have[id] = qty;
     keys.forEach(k => made.push({ key: k, name: r.name || '', email: email, order: order }));
   });
@@ -351,6 +385,7 @@ function update_(key, f) {
   if ('email' in f) { const e = String(f.email || '').trim(); if (e && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) throw new Error('That email doesn’t look right'); rec[C.Email] = e; }
   if ('order' in f) rec[C.Order] = clip_(f.order, 60);
   if ('notes' in f) rec[C.Notes] = clip_(f.notes, 200);
+  if ('screens' in f) rec[C.Screens] = Math.max(1, Math.min(20, Number(f.screens) || 1));
   sh.getRange(row, 1, 1, COLS.length).setValues([rec]);
   log_(normKey_(key), 'Edited', '', '');
   return { ok: true };
@@ -402,7 +437,9 @@ function emailKeys_(toEmail, keys, unsentOnly) {
   emails.forEach(email => {
     const list = byEmail[email], name = (list[0].name || '').split(' ')[0] || 'there';
     const keyText = list.map(x => x.key).join('\n    ');
-    const fill = t => String(t).replace(/\{name\}/g, name).replace(/\{key\}/g, keyText).replace(/\{setup\}/g, S.setupLink).replace(/\{seller\}/g, S.sellerName);
+    // One key: the setup link carries it, so setup fills it in by itself.
+    const link = S.setupLink + (list.length === 1 ? '#key=' + encodeURIComponent(list[0].key) : '');
+    const fill = t => String(t).replace(/\{name\}/g, name).replace(/\{key\}/g, keyText).replace(/\{setup\}/g, link).replace(/\{seller\}/g, S.sellerName);
     MailApp.sendEmail({ to: email, subject: fill(S.subject), body: fill(S.body), name: S.sellerName });
     const now = new Date();
     list.forEach(x => { sh.getRange(x.i + 2, C.Emailed + 1).setValue(now); log_(String(x.key), 'Emailed', '', email); });
@@ -429,6 +466,14 @@ function sheet_(name) {
   const sh = SpreadsheetApp.getActive().getSheetByName(name);
   if (!sh) throw new Error('Missing tab "' + name + '" – run setup from the 🔑 Licences menu');
   return sh;
+}
+/** Older registers lack newer columns (e.g. Screens): add the headings, once. */
+function ensureCols_() {
+  const sh = sheet_(TABS.lic);
+  if (sh.getLastColumn() >= COLS.length) return;
+  sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold').setBackground('#1f2937').setFontColor('#ffffff');
+  const last = sh.getLastRow();
+  if (last > 1) sh.getRange(2, COLS.indexOf('Screens') + 1, last - 1, 1).setValues(Array.from({ length: last - 1 }, () => [1]));
 }
 function colIndex_() { const o = {}; COLS.forEach((h, i) => { o[h] = i; }); return o; }
 function keysCol_() { const sh = sheet_(TABS.lic), last = sh.getLastRow(); return last < 2 ? [] : sh.getRange(2, 1, last - 1, 1).getValues().map(r => String(r[0])); }
@@ -461,9 +506,9 @@ const LS_FILES = [['Code', 'SERVER_JS', 'Code.gs'], ['Admin', 'HTML', 'Admin.htm
 
 function updateTick() {
   const P = PropertiesService.getScriptProperties();
-  if (P.getProperty('tickEvery') !== '10') {     // was hourly: switch to every 10 minutes
+  if (P.getProperty('tickEvery') !== '5') {     // checked less often: switch to every 5 minutes
     try { ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'updateTick').forEach(t => ScriptApp.deleteTrigger(t));
-      ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(10).create(); P.setProperty('tickEvery', '10'); } catch (e) { /* next time */ }
+      ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(5).create(); P.setProperty('tickEvery', '5'); } catch (e) { /* next time */ }
   }
   try { selfUpdate_('timer'); } catch (err) { console.warn('Licence server update: ' + err.message); } }
 function menuUpdate() {

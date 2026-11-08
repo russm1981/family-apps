@@ -1,0 +1,126 @@
+[
+  {
+    "version": "2026.11.30",
+    "date": "2026-11-08",
+    "notes": [
+      "New screens (Raspberry Pi, tablet) show a QR code to connect them from a phone – no keyboard needed; new families are taken through setup first",
+      "Family Admin → Settings → Access code & devices → Connect a screen, by its code",
+      "Windows start file asks two questions in normal Windows Yes/No boxes: start automatically, and keep the screen switched on",
+      "Raspberry Pi set-up script, and help for Raspberry Pi and tablets"
+    ]
+  },
+  {
+    "version": "2026.11.29",
+    "date": "2026-11-08",
+    "notes": [
+      "Tablets and computers: a two-column layout (swipe for the other two); other screen shapes get a warning and an orange dot",
+      "Licences can cover more than one screen; a new screen can take over from an old one (phones don’t count)",
+      "Move the whole dashboard to a different Google account in a few steps",
+      "Status page on the screen: QR codes for the phone apps, a tablet screen and the home page",
+      "Voice: keeps listening through short pauses, with a Done button",
+      "Simpler setup: the Sheet menu publishes the dashboard by itself; the licence key comes from the order email’s link; the PC start file starts with Windows and keeps the display on without asking"
+    ]
+  },
+  {
+    "version": "2026.11.28",
+    "date": "2026-11-08",
+    "notes": [
+      "New help pages, written in plain English, with step-by-step fixes",
+      "Front page: three clear choices – first-time setup, connect a device, or start again",
+      "Licence: “Free up my licence key” for starting again from scratch",
+      "A page with the full history of changes"
+    ]
+  },
+  {
+    "version": "2026.11.27",
+    "date": "2026-11-08",
+    "notes": [
+      "Screen: the dot by the microphone is green (all fine), orange (something needs a look) or red (no connection)",
+      "Screen: tap the version number for a status page – problems, every widget, versions, a full check and a diagnostics report",
+      "The “Google script needs updating” message now changes to “updated” by itself"
+    ]
+  },
+  {
+    "version": "2026.11.26",
+    "date": "2026-11-08",
+    "notes": [
+      "The Google scripts and the screen check for updates every 5 minutes"
+    ]
+  },
+  {
+    "version": "2026.11.25",
+    "date": "2026-11-08",
+    "notes": [
+      "Family Admin → Settings → Versions & diagnostics: every version number in one place",
+      "Diagnostics report, with private details encrypted so only support can read them"
+    ]
+  },
+  {
+    "version": "2026.11.24",
+    "date": "2026-11-08",
+    "notes": [
+      "Start afresh: move everything to a brand-new Google Sheet in one go",
+      "Counter for Google’s 200 saved versions, with a warning from 190",
+      "Automatic updates are on by default for new dashboards"
+    ]
+  },
+  {
+    "version": "2026.11.23",
+    "date": "2026-11-08",
+    "notes": [
+      "Weather (half height): the clock leads, then the weather, then the symbol and temperature",
+      "Trains: a disruption message no longer crowds the board",
+      "The licence server updates itself too"
+    ]
+  },
+  {
+    "version": "2026.11.22",
+    "date": "2026-11-08",
+    "notes": [
+      "Screen: a clear warning when it can’t get new information, saying why",
+      "Word of the day: French, or “Same as Duolingo”"
+    ]
+  },
+  {
+    "version": "2026.11.21",
+    "date": "2026-11-08",
+    "notes": [
+      "Family Admin reorganised: a Home page with everything on it, a page for each widget, all API keys in one place, family editable in the app",
+      "Licence keys, with a 14-day free trial",
+      "Updated privacy notice"
+    ]
+  },
+  {
+    "version": "2026.11.20",
+    "date": "2026-11-07",
+    "notes": [
+      "To-do: ticked tasks stay, crossed out, with a “Show done” switch",
+      "Choose which children are on the points page, one by one"
+    ]
+  },
+  {
+    "version": "2026.11.19",
+    "date": "2026-11-07",
+    "notes": [
+      "Sleep screen after 30 minutes, and night hours",
+      "The Google script can update itself",
+      "To-do: priority stars",
+      "Half-height weather: now, then every 2 hours"
+    ]
+  },
+  {
+    "version": "Earlier in November",
+    "date": "2026-11",
+    "notes": [
+      "Voice commands and an on-screen keyboard",
+      "New Home page layout, half and full-height weather and traffic",
+      "Calendar: “3 months (scroll)” view, weekends lined up, delete entries from the screen and the phone app",
+      "Planes: light map with towns and roads; airlines-only switch",
+      "Kitchen timer chime, quick buttons 3–30 minutes",
+      "Traffic: tap a route to zoom in",
+      "Calmer train board; holiday countdown title",
+      "Screen updates itself, with its version number at the bottom of the side bar",
+      "One front page for everything"
+    ]
+  }
+]

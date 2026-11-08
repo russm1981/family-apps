@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.21';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.26';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -553,10 +553,10 @@ function doGet(e) {
       movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
-      if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v);
+      if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v, p);
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
-      if (p.action === 'layout') return Object.assign({ ok: true }, layout_(), { licence: licencePublic_() });
+      if (p.action === 'layout') { const blocked = screenCheck_(p); return Object.assign({ ok: true }, layout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) }); }
       if (p.action === 'calendar') return getCalendar_(p.start, p.end);
       // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Ben&place=School  or  &lat=..&lon=..
       if (p.action === 'where') return withLock_(() => setWhere_(p));
@@ -605,7 +605,14 @@ function dispatch_(b) {
     case 'versions': return { ok: true, versions: versionsUsed_(true) };
     case 'startAfresh': return startAfresh_();
     case 'moveDone': return moveDone_(b);
+    case 'packForAccount': return packForAccount_(b.email);
+    case 'importPack': return importPack_(b.pack);
     case 'setLicence': return setLicence_(b.key);
+    case 'releaseLicence': return releaseLicence_();
+    case 'screens': return { ok: true, screens: screenList_(), allowed: screensAllowed_() };
+    case 'replaceScreen': return replaceScreen_(b);
+    case 'forgetScreen': { const r = screensReg_(); delete r[String(b.id)]; screensSave_(r); return { ok: true, screens: screenList_(), allowed: screensAllowed_() }; }
+    case 'renameScreen': { const r = screensReg_(); if (r[b.id]) r[b.id].name = String(b.name || '').trim().slice(0, 30) || r[b.id].name; screensSave_(r); return { ok: true, screens: screenList_(), allowed: screensAllowed_() }; }
     case 'saveTask': return saveTask_(b.task);
     case 'deleteTask': return deleteRowById_('tasks', b.id);
     case 'saveList': return saveList_(b.list, b.rows);
@@ -794,6 +801,7 @@ function getAdmin_() {
     install: INSTALL.filter(f => !f.hidden).map(f => ({ k: f.k, label: f.label, help: f.help, group: f.group || 'other', uses: f.uses || '', value: String(inst_(f.k)) })),
     licence: licencePublic_(),
     versions: versionsUsed_(false),
+    screens: screenList_(), screensAllowed: screensAllowed_(),
     screenSeen: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('screenSeen') || 'null'); } catch (e) { return null; } })(),
     licenceServerVersion: licenceServerVersion_(),
     moving: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('moving') || 'null'); } catch (e) { return null; } })(),
@@ -1114,12 +1122,13 @@ function layout_() {
 }
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
-function getPage_(pageId, force, screenVer) {
+function getPage_(pageId, force, screenVer, p) {
   if (screenVer) seen_('screenSeen', screenVer);
-  const L = Object.assign({}, layout_(), { licence: licencePublic_() });
+  const blocked = screenCheck_(p || {});
+  const L = Object.assign({}, layout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) });
   const page = L.pages.find(p => p.id === pageId) || L.pages.find(p => p.type === 'widgets' && p.show);
   const data = {};
-  if (page && page.type === 'widgets' && L.licence.ok) {      // no licence: the screen shows how to add one instead
+  if (page && page.type === 'widgets' && L.licence.ok && !blocked) {      // no licence: the screen shows how to add one instead
     L.widgets.filter(w => w.page === page.id && w.show).forEach(w => { data[w.id] = widgetData_(w, force); });
   }
   return { ok: true, layout: L, page: page ? page.id : '', data: data, serverTime: new Date().toISOString() };
@@ -2716,7 +2725,7 @@ function spotifyControl_(op) {
 
 function onOpen() {
   const m = SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
-    .addItem('Connect my screen and phones', 'menuConnect')
+    .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
     .addItem('Update the Google script now', 'menuUpdate')
     .addItem('Turn automatic updates on / off', 'menuAutoUpdate')
@@ -2737,9 +2746,31 @@ function dialog_(title, html, h) {
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(
     '<div style="font:15px/1.5 Arial,sans-serif;color:#222">' + html + '</div>').setWidth(520).setHeight(h || 360), title);
 }
+/** Publish the web app without the Deploy screens (needs the Apps Script API switch, once per Google account). */
+function autoPublish_() {
+  const list = (scriptApi_('get', '/deployments').deployments || []).filter(d => d.deploymentConfig && d.deploymentConfig.versionNumber &&
+    (d.entryPoints || []).some(e => e.entryPointType === 'WEB_APP'));
+  let url = '';
+  if (list.length) url = ((list[0].entryPoints || []).filter(e => e.webApp)[0] || {}).webApp.url || '';
+  else {
+    const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + SCRIPT_VERSION });
+    const dep = scriptApi_('post', '/deployments', { versionNumber: ver.versionNumber, manifestFileName: 'appsscript', description: 'Family Dashboard' });
+    url = ((dep.entryPoints || []).filter(e => e.webApp)[0] || {}).webApp.url || '';
+  }
+  if (url) PropertiesService.getScriptProperties().setProperty('execUrl', url);
+  return url;
+}
 function menuConnect() {
   setup();
-  const url = myUrl_();
+  let url = myUrl_(), apiErr = '';
+  if (!url) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; } }
+  if (!url && /Apps Script API/.test(apiErr)) {
+    dialog_('One switch, then try again', '<p>To publish your dashboard by itself, Google needs one switch turned on (once for your Google account):</p><ol>' +
+      '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a></li>' +
+      '<li>Turn <b>Google Apps Script API</b> on</li><li>Come back here and choose <b>🏠 Family Dashboard → Connect my screen and phones</b> again</li></ol>' +
+      '<p style="color:#888;font-size:13px">The same switch lets your dashboard keep itself up to date.</p>', 300);
+    return;
+  }
   if (!url) {
     dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
       '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
@@ -2807,16 +2838,16 @@ function setAutoUpdate_(on) {
   setInst_('AutoUpdate', on ? 'Yes' : 'No');
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'autoUpdateTick').forEach(t => ScriptApp.deleteTrigger(t));
   if (!on) return { ok: true, autoUpdate: false };
-  ScriptApp.newTrigger('autoUpdateTick').timeBased().everyMinutes(10).create();
-  PropertiesService.getScriptProperties().setProperty('tickEvery', '10');
+  ScriptApp.newTrigger('autoUpdateTick').timeBased().everyMinutes(5).create();
+  PropertiesService.getScriptProperties().setProperty('tickEvery', '5');
   let warning = '';
   try { scriptApi_('get', '/content'); } catch (err) { warning = err.message; }    // can it reach the Apps Script API?
   return { ok: true, autoUpdate: true, warning: warning };
 }
 /** Hourly (when automatic updates are on). */
 function autoUpdateTick() {
-  // Older installs checked hourly: switch them to every 10 minutes.
-  if (PropertiesService.getScriptProperties().getProperty('tickEvery') !== '10' && autoUpdateOn_()) { try { setAutoUpdate_(true); } catch (e) { /* next time */ } }
+  // Older installs checked less often: switch them to every 5 minutes.
+  if (PropertiesService.getScriptProperties().getProperty('tickEvery') !== '5' && autoUpdateOn_()) { try { setAutoUpdate_(true); } catch (e) { /* next time */ } }
   try { licencePublic_(); } catch (e) { /* next time */ } if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
 
 function scriptApi_(method, path, body) { return scriptApiAt_(ScriptApp.getScriptId(), method, path, body); }
@@ -3073,7 +3104,8 @@ function finishMove() {
 function moveDone_(b) {
   const P = PropertiesService.getScriptProperties();
   let mv = null; try { mv = JSON.parse(P.getProperty('moving') || 'null'); } catch (e) { mv = null; }
-  if (!mv || mv.url !== b.to || mv.install !== b.install) throw new Error('Not expecting this move');
+  const okMove = mv && mv.install === b.install && (mv.mode === 'account' ? !!b.token && b.token === mv.token && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(b.to)) : mv.url === b.to);
+  if (!okMove) throw new Error('Not expecting this move');
   let licenceNote = '';
   const key = String(inst_('LicenceKey') || ''), server = licenceServer_();
   if (key && server) {
@@ -3091,6 +3123,69 @@ function moveDone_(b) {
   P.deleteProperty('moving');
   return { ok: true, licenceNote: licenceNote };
 }
+/* ---------- moving to a different Google account */
+/**
+ * Step 1, in the old account: a "moving pack" – a Sheet with a copy of every tab and the script's settings – shared
+ * with the new account. Returns the setup link to open while signed in to the new account.
+ */
+function packForAccount_(email) {
+  email = String(email || '').trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Type the new Google account’s email address');
+  const me = String(Session.getEffectiveUser().getEmail() || '').toLowerCase();
+  if (email === me) throw new Error('That’s the account the dashboard is in now – use “Start afresh” instead');
+  if (inst_('MovedTo')) throw new Error('This dashboard has already moved');
+  const from = myUrl_();
+  if (!from) throw new Error('Open the web app address once first, so the script knows its own address');
+  const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
+  const pack = SpreadsheetApp.create('Family Dashboard – moving pack (' + Utilities.formatDate(new Date(), TZ, 'd MMM yyyy') + ')');
+  const blank = pack.getSheets()[0];
+  ss.getSheets().forEach(sh => { const c = sh.copyTo(pack); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet(); });
+  pack.deleteSheet(blank);
+  const all = P.getProperties(), props = {};
+  Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
+  const token = Utilities.getUuid(), install = Utilities.getUuid();
+  const cs = pack.insertSheet('_move');
+  cs.getRange(1, 1).setValue('Moving pack – open the setup link from the Family Admin app while signed in to ' + email + '. Delete this Sheet once the move is finished.');
+  cs.getRange(2, 1).setValue(JSON.stringify({ props: props, install: install, token: token, from: from, autoUpdate: autoUpdateOn_(), at: new Date().toISOString() }));
+  pack.addEditor(email);
+  P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, sheetUrl: pack.getUrl(), packId: pack.getId(), token: token, install: install, at: new Date().toISOString() }));
+  return { ok: true, packId: pack.getId(), email: email, setupLink: appsBase_() + 'setup/#go=import&pack=' + encodeURIComponent(pack.getId()) };
+}
+/**
+ * Step 2, in the new account's new dashboard (from the setup app): bring every tab and setting across, take over the
+ * licence, switch automatic updates back on, and tell the old dashboard to point everyone here.
+ */
+function importPack_(id) {
+  id = String(id || '').replace(/[^\w-]/g, '');
+  let src;
+  try { src = SpreadsheetApp.openById(id); } catch (e) { throw new Error('Can’t open the moving pack – are you signed in to the account it was shared with?'); }
+  const cs = src.getSheetByName('_move');
+  if (!cs) throw new Error('That isn’t a Family Dashboard moving pack');
+  const carry = JSON.parse(String(cs.getRange(2, 1).getValue()));
+  const ss = SpreadsheetApp.getActive(), P = PropertiesService.getScriptProperties();
+  const tmp = ss.insertSheet('_tmp' + Date.now());
+  src.getSheets().filter(sh => sh.getName() !== '_move').forEach(sh => {
+    const old = ss.getSheetByName(sh.getName()); if (old) ss.deleteSheet(old);
+    const c = sh.copyTo(ss); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet();
+  });
+  ss.deleteSheet(tmp);
+  P.setProperties(carry.props);
+  P.setProperty('installId', carry.install);
+  P.deleteProperty('licence');
+  setup();
+  if (carry.autoUpdate) { try { setAutoUpdate_(true); } catch (e) { /* the user can switch it on */ } }
+  const to = myUrl_();
+  let note = '';
+  try {
+    const r = UrlFetchApp.fetch(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
+      payload: JSON.stringify({ action: 'moveDone', code: inst_('AccessCode'), to: to, install: carry.install, token: carry.token }) });
+    const d = JSON.parse(r.getContentText());
+    if (!d.ok) note = d.error || 'the old dashboard didn’t answer'; else if (d.licenceNote) note = d.licenceNote;
+  } catch (err) { note = 'The old dashboard couldn’t be reached (' + err.message + ') – your screen and phones may need their new links.'; }
+  bumpVersions_();
+  return { ok: true, code: String(inst_('AccessCode')), note: note };
+}
+
 function menuStartAfresh() {
   const ui = SpreadsheetApp.getUi();
   if (ui.alert('Start afresh in a new Sheet', 'This makes a brand-new Google Sheet with its own script, copies every tab and setting into it, moves your licence, and switches automatic updates back on. The screen and phones follow by themselves.\n\nThis Sheet is kept as a backup. Go ahead?', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
@@ -3112,7 +3207,7 @@ function menuStartAfresh() {
  */
 const LICENCE = { trialDays: 14, graceDays: 21, recheckHours: 24 };
 // What still works without a licence: enough to see the problem and put a key in.
-const LICENCE_FREE = ['admin', 'licence', 'setLicence', 'acceptPrivacy', 'selfUpdate', 'autoUpdate', 'changeCode', 'family', 'saveInstall', 'versions', 'startAfresh', 'moveDone'];
+const LICENCE_FREE = ['admin', 'licence', 'setLicence', 'acceptPrivacy', 'selfUpdate', 'autoUpdate', 'changeCode', 'family', 'saveInstall', 'versions', 'startAfresh', 'moveDone', 'releaseLicence', 'packForAccount', 'importPack', 'screens', 'replaceScreen', 'forgetScreen', 'renameScreen'];
 
 function licenceServer_() {
   const P = PropertiesService.getScriptProperties();
@@ -3150,13 +3245,13 @@ function licencePublic_(recheck) {
   if (!st.since) { st.since = Date.now(); P.setProperty('licence', JSON.stringify(st)); }
   if (!key) {
     const left = Math.ceil(LICENCE.trialDays - (Date.now() - st.since) / 864e5);
-    return left > 0 ? { required: true, ok: true, state: 'trial', daysLeft: left, message: 'Free trial: ' + left + ' day' + (left === 1 ? '' : 's') + ' left. Add your licence key to keep using the dashboard.' }
+    return left > 0 ? { required: true, ok: true, state: 'trial', daysLeft: left, screens: 1, message: 'Free trial: ' + left + ' day' + (left === 1 ? '' : 's') + ' left. Add your licence key to keep using the dashboard.' }
       : { required: true, ok: false, state: 'missing', message: 'The free trial has ended. Add your licence key to carry on.' };
   }
   if (recheck || st.key !== key || Date.now() - (st.checked || 0) > LICENCE.recheckHours * 3600e3) {
     try {
       const d = askLicenceServer_(server, key);
-      Object.assign(st, { key: key, state: d.state, message: d.message || '', name: d.name || '', checked: Date.now(), offline: '' });
+      Object.assign(st, { key: key, state: d.state, message: d.message || '', name: d.name || '', screens: d.screens || 1, checked: Date.now(), offline: '' });
       if (d.ok) st.lastOk = Date.now();
     } catch (err) {
       st.checked = Date.now() - (LICENCE.recheckHours - 1) * 3600e3;    // try again in an hour
@@ -3168,7 +3263,7 @@ function licencePublic_(recheck) {
   const tail = key.slice(-5);
   if (st.state === 'active') {
     const left = Math.ceil(LICENCE.graceDays - (Date.now() - (st.lastOk || 0)) / 864e5);
-    if (left > 0) return { required: true, ok: true, state: 'active', name: st.name, key: tail, message: st.offline && left < LICENCE.graceDays - 2
+    if (left > 0) return { required: true, ok: true, state: 'active', name: st.name, key: tail, screens: st.screens || 1, message: st.offline && left < LICENCE.graceDays - 2
       ? 'Licensed. The licence server hasn’t answered for a while – it needs to within ' + left + ' days.' : 'Licensed' + (st.name ? ' to ' + st.name : '') };
     return { required: true, ok: false, state: 'offline', key: tail, message: 'The licence couldn’t be checked for ' + LICENCE.graceDays + ' days. Check the internet connection, or contact the seller.' };
   }
@@ -3191,10 +3286,65 @@ function setLicence_(key) {
   setInst_('LicenceKey', key);
   const P = PropertiesService.getScriptProperties();
   let st = {}; try { st = JSON.parse(P.getProperty('licence') || '{}'); } catch (e) { st = {}; }
-  Object.assign(st, { key: key, state: 'active', message: d.message, name: d.name || '', checked: Date.now(), lastOk: Date.now(), offline: '', since: st.since || Date.now() });
+  Object.assign(st, { key: key, state: 'active', message: d.message, name: d.name || '', screens: d.screens || 1, checked: Date.now(), lastOk: Date.now(), offline: '', since: st.since || Date.now() });
   P.setProperty('licence', JSON.stringify(st));
   bumpVersions_();
   return { ok: true, licence: licencePublic_(), message: d.message || 'Licensed' };
+}
+
+/** Free this dashboard's key so it can be entered in a new one (starting again from scratch). This dashboard then goes back to asking for a key. */
+function releaseLicence_() {
+  const key = String(inst_('LicenceKey') || ''), server = licenceServer_();
+  if (!key) throw new Error('This dashboard has no licence key');
+  if (server) {
+    const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      payload: JSON.stringify({ action: 'release', key: key, install: installId_() }) });
+    const d = JSON.parse(r.getContentText());
+    if (!d.ok) throw new Error(d.message || d.error || 'The licence server said no');
+  }
+  setInst_('LicenceKey', '');
+  PropertiesService.getScriptProperties().deleteProperty('licence');
+  return { ok: true, key: key, licence: licencePublic_() };
+}
+
+/* ---------- screens: how many screens may show the dashboard (from the licence; phones don't count) */
+function screensAllowed_() { const L = licencePublic_(); return L.required ? Math.max(1, Number(L.screens) || 1) : 0; }   // 0 = no limit
+function screensReg_() { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('screens') || '{}') || {}; } catch (e) { return {}; } }
+function screensSave_(r) { PropertiesService.getScriptProperties().setProperty('screens', JSON.stringify(r)); }
+function screenList_() {
+  const r = screensReg_();
+  return Object.keys(r).map(k => ({ id: k, name: r[k].name, fmt: r[k].fmt || '', first: new Date(r[k].first).toISOString(), last: new Date(r[k].last).toISOString() }))
+    .sort((a, b) => b.last.localeCompare(a.last));
+}
+/**
+ * A screen asking for its page. Known screens carry on; a new one joins if the licence has room. Screens not seen
+ * for 30 days make room automatically. Otherwise it gets the list of screens it could take over from.
+ */
+function screenCheck_(p) {
+  const dev = String(p.dev || '').replace(/[^\w-]/g, '').slice(0, 40);
+  if (!dev) return null;                                   // older screens: not counted
+  const reg = screensReg_(), now = Date.now(), name = String(p.dn || '').slice(0, 30) || 'Screen', fmt = String(p.fmt || '').slice(0, 10);
+  if (reg[dev]) {
+    if (now - reg[dev].last > 10 * 60000 || reg[dev].fmt !== fmt) { reg[dev].last = now; reg[dev].fmt = fmt; screensSave_(reg); }
+    return null;
+  }
+  let changed = false;
+  Object.keys(reg).forEach(k => { if (now - reg[k].last > 30 * 864e5) { delete reg[k]; changed = true; } });
+  const allowed = screensAllowed_();
+  if (!allowed || Object.keys(reg).length < allowed) { reg[dev] = { name: name, fmt: fmt, first: now, last: now }; screensSave_(reg); return null; }
+  if (changed) screensSave_(reg);
+  return { allowed: allowed, screens: screenList_() };
+}
+/** This screen takes the place of another one (single-screen licence, new screen). */
+function replaceScreen_(b) {
+  const dev = String(b.dev || '').replace(/[^\w-]/g, '').slice(0, 40), reg = screensReg_();
+  if (!dev) throw new Error('No screen id');
+  if (b.old) delete reg[String(b.old)];
+  const allowed = screensAllowed_();
+  if (allowed && Object.keys(reg).length >= allowed) throw new Error('Choose a screen to take over from');
+  reg[dev] = { name: String(b.name || '').slice(0, 30) || 'Screen', fmt: String(b.fmt || '').slice(0, 10), first: Date.now(), last: Date.now() };
+  screensSave_(reg);
+  return { ok: true };
 }
 
 /** "2026.11.4" > "2026.11.3"? */

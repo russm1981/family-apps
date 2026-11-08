@@ -76,7 +76,7 @@
     }
     function fetchJson(url, opts) {
         var ctl = new AbortController();
-        var t = setTimeout(function () { ctl.abort(); }, 20000);
+        var t = setTimeout(function () { ctl.abort(); }, opts.timeout || 20000);
         opts.signal = ctl.signal; opts.cache = 'no-store'; opts.redirect = 'follow';
         return fetch(url, opts).then(function (r) {
             if (!r.ok) throw new Error('Server said ' + r.status);
@@ -113,10 +113,10 @@
             return true;
         },
         forget: function () { try { localStorage.removeItem(CFG_KEY); } catch (e) { /* ignore */ } location.replace(location.pathname); },
-        get: function (action, params) {
+        get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
-            return fetchJson(cfg.url + (cfg.url.indexOf('?') >= 0 ? '&' : '?') + q, { method: 'GET' });
+            return fetchJson(cfg.url + (cfg.url.indexOf('?') >= 0 ? '&' : '?') + q, { method: 'GET', timeout: timeout });
         },
         post: function (body) { return apiPost(body); },
         sync: function (kind, msg) { setSync(kind, msg); },
@@ -156,8 +156,7 @@
     }
     var lastSyncError = '';
     function setSync(kind, msg) {
-        var el = $('sync');
-        el.className = 'sync ' + kind;
+        if (window.FDHealth) window.FDHealth.sync(kind, msg); else $('sync').className = 'sync ' + kind;
         lastSyncError = kind === 'err' ? (msg || 'Offline') : '';
     }
 

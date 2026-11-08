@@ -40,8 +40,8 @@
             sec.setAttribute('data-page', p.id);
             var ws = layout.widgets.filter(function (w) { return w.page === p.id && w.show; });
             var cols = window.FDW.pack(ws);
-            var html = cols.slice(0, COLS).map(function (col) {
-                return '<div class="wcol">' + col.map(function (w) {
+            var html = cols.slice(0, COLS).map(function (col, ci) {
+                return '<div class="wcol" data-c="' + ci + '">' + col.map(function (w) {
                     return '<div class="panel wg wg-' + esc(w.type) + ' ' + esc(w.size) + '" data-wid="' + esc(w.id) + '"></div>';
                 }).join('') + '</div>';
             }).join('');
@@ -57,6 +57,7 @@
                     catch (e) { el.innerHTML = '<div class="err">' + esc(w.type) + ': ' + esc(e.message) + '</div>'; instances[w.id] = { update: function () {} }; }
                 });
             });
+            if (window.FDFormat) FDFormat.pager(sec);
             // Show the last data we had straight away, then refresh.
             try { var cached = JSON.parse(load(DATA_KEY + p.id) || 'null'); if (cached) feed(cached); } catch (e) { /* ignore */ }
         });
@@ -121,7 +122,9 @@
     function renderMsg(id) {
         var sec = $('screen-' + id); if (!sec) return;
         var msg = sec.querySelector('.msg.overlay');
-        if (!api().ready()) {
+        if (!api().ready() && window.FDPair && FDPair.show()) {
+            msg.style.display = 'none';
+        } else if (!api().ready()) {
             msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
                 '<p>On your computer, open the setup app \u2192 <b>Connect devices</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
                 '<div class="connect-row"><input id="connectIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
@@ -141,12 +144,13 @@
     function refresh(id, force, background) {
         if (!api().ready()) return Promise.resolve();
         if (!background) api().sync('busy');
-        return api().get('page', Object.assign({ page: id || current || '', v: (window.FDNotices && FDNotices.version) || '' }, force ? { refresh: '1' } : {})).then(function (d) {
+        return api().get('page', Object.assign({ page: id || current || '', v: (window.FDNotices && FDNotices.version) || '' }, window.FDFormat ? FDFormat.params() : {}, force ? { refresh: '1' } : {})).then(function (d) {
             errors[d.page] = '';
             applyLayout(d.layout);
             if (window.FDNotices) window.FDNotices.check(d.layout);
             fetched[d.page] = Date.now();
             store(DATA_KEY + d.page, JSON.stringify(d.data));
+            if (window.FDHealth) window.FDHealth.data(d.data);
             feed(d.data);
             if (!background) api().sync('ok');
             lastOk = Date.now(); stale('');
@@ -211,10 +215,12 @@
             timer = setInterval(function () {
                 var p = page(current);
                 if (p && p.type === 'widgets') refresh(current);
-                else if (api().ready()) api().get('layout', {}).then(function (L) { applyLayout(L); if (window.FDNotices) window.FDNotices.check(L); }).catch(function () { /* next time */ });
+                else if (api().ready()) api().get('layout', window.FDFormat ? FDFormat.params() : {}).then(function (L) { applyLayout(L); if (window.FDNotices) window.FDNotices.check(L); }).catch(function () { /* next time */ });
             }, POLL_MS);
         },
         show: show,
+        /** A page's other half came into view (tablet layout): let its maps etc. redraw. */
+        shown: function (id) { (layout ? layout.widgets : []).forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); }); },
         reset: function () { fetched = {}; layout = null; refresh(current, true); },
         current: function () { return page(current); },
         pages: function () { return navPages(); },

@@ -166,13 +166,13 @@ function licences() {
     '<select id="st" style="width:auto">' + [['', 'Every status'], ['Active', 'In use'], ['Issued', 'Not used yet'], ['Revoked', 'Revoked']].map(function (o) {
       return '<option value="' + o[0] + '"' + (o[0] === FILTER.status ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
     '<button class="btn ghost" id="csv">Download CSV</button></div>' +
-    '<div class="scroll" style="margin-top:12px"><table><thead><tr><th>Key</th><th>Status</th><th>Name</th><th>Email</th><th>Order</th><th>Last check</th><th>Version</th></tr></thead><tbody id="tb"><tr><td colspan="7" class="mute">Loading…</td></tr></tbody></table></div>' +
+    '<div class="scroll" style="margin-top:12px"><table><thead><tr><th>Key</th><th>Status</th><th>Name</th><th>Email</th><th>Order</th><th>Screens</th><th>Last check</th><th>Version</th></tr></thead><tbody id="tb"><tr><td colspan="8" class="mute">Loading…</td></tr></tbody></table></div>' +
     '<p class="mute small" id="cnt"></p></div>';
   $('q').oninput = function () { FILTER.q = this.value; table(); };
   $('st').onchange = function () { FILTER.status = this.value; table(); };
-  $('csv').onclick = function () { download('licences.csv', toCsv(filtered(), ['Key', 'Status', 'Name', 'Email', 'Order', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes'])); };
+  $('csv').onclick = function () { download('licences.csv', toCsv(filtered(), ['Key', 'Status', 'Name', 'Email', 'Order', 'Screens', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes'])); };
   $('tb').onclick = function (e) { var tr = e.target.closest('[data-k]'); if (tr) openKey(tr.getAttribute('data-k')); };
-  loadRows().then(table, function (e) { $('tb').innerHTML = '<tr><td colspan="7" class="err">' + esc(e.message) + '</td></tr>'; });
+  loadRows().then(table, function (e) { $('tb').innerHTML = '<tr><td colspan="8" class="err">' + esc(e.message) + '</td></tr>'; });
 }
 function filtered() {
   var q = FILTER.q.trim().toLowerCase();
@@ -185,9 +185,9 @@ function table() {
   var list = filtered();
   $('tb').innerHTML = list.length ? list.slice(0, 500).map(function (r) {
     return '<tr data-k="' + esc(r.Key) + '"><td class="key">' + esc(r.Key) + '</td><td><span class="pill ' + esc(r.Status) + '">' + esc(r.Status === 'Active' ? 'In use' : r.Status === 'Issued' ? 'Not used yet' : r.Status) + '</span></td>' +
-      '<td>' + esc(r.Name) + '</td><td>' + esc(r.Email) + (r.Email && !r.Emailed && r.Status !== 'Revoked' ? ' <span class="tag dup">not sent</span>' : '') + '</td><td>' + esc(r.Order) + '</td>' +
+      '<td>' + esc(r.Name) + '</td><td>' + esc(r.Email) + (r.Email && !r.Emailed && r.Status !== 'Revoked' ? ' <span class="tag dup">not sent</span>' : '') + '</td><td>' + esc(r.Order) + '</td><td>' + esc(r.Screens || 1) + '</td>' +
       '<td>' + esc(ago(r['Last check'])) + '</td><td>' + esc(r.Version) + '</td></tr>';
-  }).join('') : '<tr><td colspan="7" class="mute">No licences match.</td></tr>';
+  }).join('') : '<tr><td colspan="8" class="mute">No licences match.</td></tr>';
   $('cnt').textContent = list.length + ' of ' + (ROWS || []).length + ' licences' + (list.length > 500 ? ' (first 500 shown – search to narrow down)' : '');
 }
 function openDrawer(html) { $('drawer').innerHTML = html; $('drawerBg').classList.add('on'); }
@@ -205,7 +205,7 @@ function openKey(key) {
     '<span>Version</span><span>' + esc(r.Version || '–') + '</span>' +
     '<span>Dashboard</span><span class="small">' + esc(r.Install || 'not in use') + '</span></div>' +
     '<label>Name</label><input id="dName" value="' + esc(r.Name) + '"><label>Email</label><input id="dEmail" value="' + esc(r.Email) + '">' +
-    '<label>Order</label><input id="dOrder" value="' + esc(r.Order) + '"><label>Notes</label><input id="dNotes" value="' + esc(r.Notes) + '">' +
+    '<label>Order</label><input id="dOrder" value="' + esc(r.Order) + '"><label>Screens allowed (Corsair, tablet, computer… – phones don’t count)</label><input id="dScreens" type="number" min="1" max="20" value="' + esc(r.Screens || 1) + '"><label>Notes</label><input id="dNotes" value="' + esc(r.Notes) + '">' +
     '<div class="row" style="margin-top:12px"><button class="btn" id="dSave">Save</button>' + (r.Email && r.Status !== 'Revoked' ? '<button class="btn ghost" id="dMail">' + (r.Emailed ? 'Email the key again' : 'Email the key') + '</button>' : '') + '</div>' +
     '<h3 style="margin-top:22px">Actions</h3><div class="row">' +
     (r.Install ? '<button class="btn ghost" id="dRel" title="Let it be used on a different dashboard">Release (moving dashboard)</button>' : '') +
@@ -217,7 +217,7 @@ function openKey(key) {
   var fail = function (e) { toast(e.message, true); };
   $('dx').onclick = closeDrawer;
   $('dCopy').onclick = function () { copy(r.Key); };
-  $('dSave').onclick = function () { call('update', { key: key, fields: { name: $('dName').value, email: $('dEmail').value, order: $('dOrder').value, notes: $('dNotes').value } }).then(after('Saved'), fail); };
+  $('dSave').onclick = function () { call('update', { key: key, fields: { name: $('dName').value, email: $('dEmail').value, order: $('dOrder').value, notes: $('dNotes').value, screens: $('dScreens').value } }).then(after('Saved'), fail); };
   if ($('dMail')) $('dMail').onclick = function () { this.disabled = true; call('email', { key: key }).then(after('Email sent'), fail); };
   if ($('dRel')) $('dRel').onclick = function () { if (confirm('Release this key so it can be used on another dashboard?')) call('release', { key: key }).then(after('Released'), fail); };
   if ($('dRev')) $('dRev').onclick = function () { var why = prompt('Revoke this key? Its dashboard locks at its next daily check.\n\nReason (optional, e.g. refund):', ''); if (why !== null) call('revoke', { key: key, reason: why }).then(after('Revoked'), fail); };
@@ -230,13 +230,14 @@ function openKey(key) {
 function issuePage() {
   $('main').innerHTML = '<div class="card"><h2>Issue keys by hand</h2><p class="mute small">For a sale outside the shop, a gift, or spare keys. Leave the name and email blank for unassigned keys.</p>' +
     '<div class="grid2"><div><label>Name</label><input id="iName"></div><div><label>Email</label><input id="iEmail" type="email"></div>' +
-    '<div><label>Order / reference</label><input id="iOrder"></div><div><label>How many keys</label><input id="iCount" type="number" min="1" max="500" value="1"></div></div>' +
+    '<div><label>Order / reference</label><input id="iOrder"></div><div><label>How many keys</label><input id="iCount" type="number" min="1" max="500" value="1"></div>' +
+    '<div><label>Screens allowed per key</label><select id="iScreens"><option value="1">1 screen (single)</option><option value="2">2 screens</option><option value="3">3 screens</option><option value="5">5 screens</option></select></div></div>' +
     '<label>Notes</label><input id="iNotes">' +
     '<label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" id="iSend" style="width:auto"> Email the key(s) to them now</label>' +
     '<div class="row" style="margin-top:12px"><button class="btn" id="iGo">Issue</button></div><div id="iOut" class="status"></div></div>';
   $('iGo').onclick = function () {
     var b = this; b.disabled = true; $('iOut').textContent = 'Working…';
-    call('issue', { name: $('iName').value, email: $('iEmail').value, order: $('iOrder').value, count: $('iCount').value, notes: $('iNotes').value, send: $('iSend').checked }).then(function (d) {
+    call('issue', { name: $('iName').value, email: $('iEmail').value, order: $('iOrder').value, count: $('iCount').value, screens: $('iScreens').value, notes: $('iNotes').value, send: $('iSend').checked }).then(function (d) {
       b.disabled = false; ROWS = null;
       $('iOut').innerHTML = '<p class="ok">✔ ' + d.keys.length + ' key' + (d.keys.length > 1 ? 's' : '') + ' issued' + (d.emailed ? ' and emailed' : '') + '.</p><div class="keys">' + esc(d.keys.join('\n')) + '</div>' +
         '<div class="row" style="margin-top:8px"><button class="btn ghost" id="iCopy">Copy</button></div>';
@@ -286,7 +287,7 @@ function useCsv(csv, name) {
   if (!csv.head.length || !csv.rows.length) { toast('No rows found – the first line should be the column names', true); return; }
   CSV = { head: csv.head, rows: csv.rows, name: name,
     map: { name: guess(csv.head, ['name', 'full name', 'customer name', 'buyer', 'billing name', 'customer']), email: guess(csv.head, ['email', 'e mail', 'buyer email', 'customer email']),
-      order: guess(csv.head, ['order', 'order id', 'order number', 'order no', 'transaction id', 'reference', 'id']), qty: guess(csv.head, ['quantity', 'qty']),
+      order: guess(csv.head, ['order', 'order id', 'order number', 'order no', 'transaction id', 'reference', 'id']), qty: guess(csv.head, ['quantity', 'qty']), screens: guess(csv.head, ['screens', 'devices']),
       first: -1, last: -1 }, only: { col: -1, text: '' } };
   if (CSV.map.name < 0) { CSV.map.first = guess(csv.head, ['first name', 'firstname', 'forename']); CSV.map.last = guess(csv.head, ['last name', 'lastname', 'surname']); }
   (ROWS ? Promise.resolve() : loadRows()).then(drawMap, drawMap);
@@ -294,7 +295,7 @@ function useCsv(csv, name) {
 function mapped() {
   var m = CSV.map, get = function (r, i) { return i >= 0 ? String(r[i] || '').trim() : ''; };
   return CSV.rows.filter(function (r) { return CSV.only.col < 0 || !CSV.only.text || get(r, CSV.only.col).toLowerCase().indexOf(CSV.only.text.toLowerCase()) >= 0; })
-    .map(function (r) { return { name: get(r, m.name) || [get(r, m.first), get(r, m.last)].join(' ').trim(), email: get(r, m.email), order: get(r, m.order), qty: Number(get(r, m.qty)) || 1 }; });
+    .map(function (r) { return { name: get(r, m.name) || [get(r, m.first), get(r, m.last)].join(' ').trim(), email: get(r, m.email), order: get(r, m.order), qty: Number(get(r, m.qty)) || 1, screens: m.screens >= 0 ? Number(get(r, m.screens)) || 0 : 0 }; });
 }
 function drawMap() {
   var opts = function (sel) { return '<option value="-1">(none)</option>' + CSV.head.map(function (h, i) { return '<option value="' + i + '"' + (i === sel ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join(''); };
@@ -313,7 +314,9 @@ function drawMap() {
     '<div class="grid4"><div><label>Name</label><select data-m="name">' + opts(CSV.map.name) + '</select></div><div><label>Email</label><select data-m="email">' + opts(CSV.map.email) + '</select></div>' +
     '<div><label>Order number</label><select data-m="order">' + opts(CSV.map.order) + '</select></div><div><label>Quantity (optional)</label><select data-m="qty">' + opts(CSV.map.qty) + '</select></div></div>' +
     (CSV.map.name < 0 ? '<div class="grid4"><div><label>…or first name</label><select data-m="first">' + opts(CSV.map.first) + '</select></div><div><label>and last name</label><select data-m="last">' + opts(CSV.map.last) + '</select></div></div>' : '') +
-    '<div class="grid4"><div><label>Only rows where column…</label><select id="onlyCol">' + opts(CSV.only.col) + '</select></div><div><label>…contains (e.g. the product name)</label><input id="onlyText" value="' + esc(CSV.only.text) + '"></div></div>' +
+    '<div class="grid4"><div><label>Only rows where column…</label><select id="onlyCol">' + opts(CSV.only.col) + '</select></div><div><label>…contains (e.g. the product name)</label><input id="onlyText" value="' + esc(CSV.only.text) + '"></div>' +
+    '<div><label>Screens column (optional)</label><select data-m="screens">' + opts(CSV.map.screens == null ? -1 : CSV.map.screens) + '</select></div>' +
+    '<div><label>…otherwise screens per key</label><select id="defScreens">' + [1, 2, 3, 5].map(function (n) { return '<option' + (n === (CSV.defScreens || 1) ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select></div></div>' +
     '<div class="scroll" style="margin-top:14px;max-height:40vh"><table><thead><tr><th>Name</th><th>Email</th><th>Order</th><th>Qty</th><th>What happens</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
     (list.length > 200 ? '<p class="mute small">First 200 of ' + list.length + ' rows shown.</p>' : '') +
     '<label style="display:flex;gap:8px;align-items:center;color:var(--text);margin-top:14px"><input type="checkbox" id="send" style="width:auto" checked> Email each buyer their key straight away</label>' +
@@ -321,9 +324,10 @@ function drawMap() {
   Array.prototype.forEach.call(document.querySelectorAll('[data-m]'), function (s) { s.onchange = function () { CSV.map[s.getAttribute('data-m')] = Number(s.value); drawMap(); }; });
   $('onlyCol').onchange = function () { CSV.only.col = Number(this.value); drawMap(); };
   $('onlyText').onchange = function () { CSV.only.text = this.value; drawMap(); };
+  $('defScreens').onchange = function () { CSV.defScreens = Number(this.value); };
   $('imp').onclick = function () {
     var b = this; b.disabled = true; $('impOut').textContent = 'Issuing keys' + ($('send').checked ? ' and sending emails' : '') + '…';
-    call('import', { rows: mapped(), source: CSV.name, send: $('send').checked }).then(function (d) {
+    call('import', { rows: mapped(), source: CSV.name, send: $('send').checked, screens: CSV.defScreens || 1 }).then(function (d) {
       ROWS = null;
       $('impOut').innerHTML = '<p class="ok">✔ ' + d.made.length + ' key' + (d.made.length === 1 ? '' : 's') + ' issued' + (d.sent ? ', ' + d.sent + ' emailed' : '') + '. ' + (d.skipped.length ? d.skipped.length + ' row' + (d.skipped.length > 1 ? 's' : '') + ' skipped.' : '') + '</p>' +
         (d.skipped.length ? '<details><summary class="small">Skipped rows</summary><div class="small mute">' + d.skipped.map(function (s) { return 'Row ' + s.row + ': ' + esc(s.why); }).join('<br>') + '</div></details>' : '') +

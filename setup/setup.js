@@ -159,21 +159,28 @@
         } },
 
         { id: 'publish', title: 'Publish & connect', render: function () {
-            return '<h1>3. Publish it and connect</h1><div class="card big"><ol class="howto">' +
-                '<li>In your new Sheet: <b>Extensions → Apps Script</b>.</li>' +
-                '<li><b>Deploy → New deployment</b> → ⚙ next to "Select type" → <b>Web app</b>.</li>' +
-                '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>.</li>' +
-                '<li>Google asks for permission: <b>Authorise access</b> → your account → "Google hasn’t verified this app" is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' +
-                '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
+            var perms = '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
                 '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
-                '<li><b>Manage your Apps Script projects and deployments</b> – only used if you turn on automatic updates (Updates step); it lets the script install new versions of itself.</li>' +
-                '<li>It all runs as you, inside your own Google account.</li></ul></details></li>' +
-                '<li><b>Click the Web app URL</b> it shows (a page opens – close it), then <b>Done</b>.</li>' +
-                '<li>Back in your Sheet, <b>reload the page</b>. A new menu appears: <b>🏠 Family Dashboard → Connect my screen and phones → Open the setup app</b>. ' +
-                'This page reopens already connected – nothing to type.</li></ol>' +
+                '<li><b>Manage your Apps Script projects and deployments</b> – lets the script publish itself and install new versions of itself.</li>' +
+                '<li>It all runs as you, inside your own Google account.</li></ul></details>';
+            return '<h1>3. Publish it and connect</h1><div class="card big"><ol class="howto">' +
+                '<li><b>Once for your Google account:</b> open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> and switch <b>Google Apps Script API</b> on. ' +
+                '<span class="mute">(It lets the dashboard publish and update itself.)</span></li>' +
+                '<li>In your new Sheet, wait a few seconds for the <b>🏠 Family Dashboard</b> menu, then choose <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                '<li>Google asks for permission the first time: <b>Continue</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' +
+                'If nothing else happens, choose the menu item again. ' + perms + '</li>' +
+                '<li>A box says your dashboard is published: press <b>Open the setup app</b>. This page reopens already connected – nothing to type.</li></ol>' +
+                '<details><summary>The menu doesn’t publish it? Do it by hand</summary><ol class="howto"><li><b>Extensions → Apps Script</b>.</li>' +
+                '<li><b>Deploy → New deployment</b> → ⚙ next to "Select type" → <b>Web app</b>.</li><li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access).</li>' +
+                '<li><b>Click the Web app URL</b> once (a page opens – close it), then back in the Sheet choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect</b>.</li></ol></details>' +
                 '<div id="connStatus">' + (connected() ? okLine(true, 'Connected to your Family Dashboard Sheet.') : '') + '</div></div>' +
+                (connected() && S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
+                    '<p>The screen showing <b>' + esc(S.pairCode) + '</b> is waiting. Connect it to this family now?</p><button class="btn" id="pairSend">Connect the screen</button><div id="pairStatus" class="mute"></div></div>' : '') +
+                (connected() && S.pack ? '<div class="card big" id="packCard" style="border-color:var(--acc)"><h3>📦 Bring your family’s information across</h3>' +
+                    '<p>This copies everything from your old Google account’s dashboard – people, points, tasks, lists, notes, settings and your licence – into this new one. ' +
+                    'Your screen and phones then switch over by themselves.</p><button class="btn" id="packGo">Bring everything across</button><div id="packStatus" class="mute"></div></div>' : '') +
                 (connected() ? '<div class="card big" id="licCard"><h3>🔑 Your licence key</h3><p class="mute">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
-                    '<div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
+                    '<div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
                     '<button class="btn" id="licGo">Check and save</button></div><div id="licStatus" class="mute">Checking…</div></div>' : '') +
                 '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>Or paste the Web app URL here instead</summary>' +
                 '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
@@ -187,15 +194,33 @@
                 connect(false);
             };
             $('useCode').onclick = function () { S.code = $('code').value.trim(); save(); $('connect').onclick(); };
+            if ($('pairSend')) $('pairSend').onclick = function () {
+                var b = this; b.disabled = true;
+                FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
+                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Settings → Access code & devices.)'); });
+            };
+            if ($('packGo')) $('packGo').onclick = function () {
+                var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';
+                post({ action: 'importPack', pack: S.pack }).then(function (d) {
+                    if (d.code) { S.code = d.code; }          // the family's own access code comes across too
+                    S.pack = ''; save();
+                    $('packStatus').innerHTML = okLine(true, 'Everything is here.' + (d.note ? ' Note: ' + d.note : ' Your screen and phones will switch over within a few minutes.'));
+                    toast('Moved ✅'); setTimeout(render, 2500);
+                }, function (e) { b.disabled = false; $('packStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'This new dashboard’s script is out of date – update it first (Updates step).' : e.message); });
+            };
             if ($('licCard')) {
                 var show = function (L) {
                     $('licStatus').innerHTML = !L || !L.required ? '<span class="mute">Licence keys aren’t needed yet.</span>' : okLine(L.ok, L.message + (L.key ? ' (key …' + L.key + ')' : ''));
                 };
-                post({ action: 'licence' }).then(function (d) { show(d.licence); }, function (e) { $('licStatus').textContent = /Unknown action/.test(e.message) ? 'Update your Google script to use licence keys.' : e.message; });
+                post({ action: 'licence' }).then(function (d) {
+                    show(d.licence);
+                    // Key from the order email's link: check and save it by itself.
+                    if (S.licKey && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
+                }, function (e) { $('licStatus').textContent = /Unknown action/.test(e.message) ? 'Update your Google script to use licence keys.' : e.message; });
                 $('licGo').onclick = function () {
                     var k = $('licKey').value.trim(); if (!k) return;
                     $('licStatus').textContent = 'Checking…'; $('licGo').disabled = true;
-                    post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; $('licKey').value = ''; show(d.licence); S.licensed = true; save(); },
+                    post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; $('licKey').value = ''; show(d.licence); S.licensed = true; S.licKey = ''; save(); },
                         function (e) { $('licGo').disabled = false; $('licStatus').innerHTML = okLine(false, e.message); });
                 };
             }
@@ -531,14 +556,24 @@
             'rem PRIVATE: this file contains your access code. Don\'t share it.',
             'set "SCREEN=' + appsBase + 'screen/"', 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', 'set "FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk"',
             'if not exist "%FDPROFILE%" mkdir "%FDPROFILE%"',
-            'rem Start with Windows? Asked once; the answer is remembered. If Yes, the startup shortcut is (re)made every time, pointing at this file.',
+            'rem Start with Windows? Asked once, in a normal Windows Yes/No box; the answer is remembered.',
+            'rem If Yes, the startup shortcut is (re)made every time. To be asked again, delete %LOCALAPPDATA%\\FamilyDashboardKiosk\\startup-answer.txt.',
             'set "ANS="',
             'if exist "%FDPROFILE%\\startup-answer.txt" set /p ANS=<"%FDPROFILE%\\startup-answer.txt"',
-            'if not defined ANS (',
-            '  choice /C YN /M "Start the Family Dashboard automatically when this PC turns on"',
-            '  if errorlevel 2 (set "ANS=N") else (set "ANS=Y")',
-            ')',
+            'if not defined ANS for /f %%A in (\'powershell -NoProfile -Command "Add-Type -AssemblyName PresentationFramework; $r=[System.Windows.MessageBox]::Show(\\"Start the Family Dashboard automatically whenever this PC is switched on?\\",\\"Family Dashboard\\",\\"YesNo\\",\\"Question\\"); if ($r -eq \\"Yes\\") {\\"Y\\"} else {\\"N\\"}"\') do set "ANS=%%A"',
+            'if not defined ANS set "ANS=Y"',
             '>"%FDPROFILE%\\startup-answer.txt" echo %ANS%',
+            'rem Keep the display on? Asked once, separately; the answer is remembered. The dashboard dims itself (its own sleep screen),',
+            'rem and if Windows switches the display off a touch may not wake it. To be asked again, delete screen-answer.txt in the same folder.',
+            'set "SCR="',
+            'if exist "%FDPROFILE%\\screen-answer.txt" set /p SCR=<"%FDPROFILE%\\screen-answer.txt"',
+            'if not defined SCR for /f %%A in (\'powershell -NoProfile -Command "Add-Type -AssemblyName PresentationFramework; $r=[System.Windows.MessageBox]::Show(\\"Change Windows to keep this screen switched on?`n`nThe dashboard dims itself when nobody is using it, and wakes with a touch. If Windows switches the screen off instead, a touch may not wake it.\\",\\"Family Dashboard\\",\\"YesNo\\",\\"Question\\"); if ($r -eq \\"Yes\\") {\\"Y\\"} else {\\"N\\"}"\') do set "SCR=%%A"',
+            'if not defined SCR set "SCR=N"',
+            '>"%FDPROFILE%\\screen-answer.txt" echo %SCR%',
+            'if /i "%SCR%"=="Y" (',
+            '  powercfg /change monitor-timeout-ac 0 >nul 2>&1',
+            '  powercfg /change standby-timeout-ac 0 >nul 2>&1',
+            ')',
             'if /i "%ANS%"=="Y" powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Startup\')+\'\\Family Dashboard.lnk\'); $s.TargetPath=\'%~f0\'; $s.WorkingDirectory=\'%~dp0\'; $s.WindowStyle=7; $s.Save()"',
             'rem Wait (up to a minute) for the internet after the PC starts, so the dashboard doesn\'t open on an error page.',
             'powershell -NoProfile -ExecutionPolicy Bypass -Command "for ($i = 0; $i -lt 30; $i++) { try { $null = Invoke-WebRequest -UseBasicParsing -Method Head -TimeoutSec 3 $env:SCREEN; break } catch { Start-Sleep -Seconds 2 } }"',
@@ -669,6 +704,12 @@
         h.split('&').forEach(function (kv) { var x = kv.split('='); if (x[0]) { try { p[x[0]] = decodeURIComponent(x.slice(1).join('=')); } catch (e) { /* skip */ } } });
         if (location.hash && history.replaceState) history.replaceState(null, '', location.pathname);
         var wantUpdate = 'update' in p, goTo = p.go || '';
+        // Moving from another Google account: remember the moving pack until the new dashboard is connected.
+        // A licence key from the order email's link: filled in (and checked) once the Sheet is connected.
+        if (p.key) { S.licKey = p.key; save(); }
+        // Started from a new screen's QR code: connect that screen once this family is set up.
+        if (p.pair) { S.pairCode = p.pair; save(); }
+        if (p.pack) { S.pack = p.pack.replace(/[^\w-]/g, ''); save(); setTimeout(function () { toast('Moving your dashboard: set up this new one as usual – at “Publish & connect” you’ll bring everything across'); }, 600); }
         if (p.api && p.code) {
             var changed = p.api !== S.url || p.code !== S.code;
             S.url = p.api; S.code = p.code; if (changed) S.connected = false; save();

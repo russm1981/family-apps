@@ -17,7 +17,7 @@
     var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
     var EXAMPLES = ['“Ben add 15 points”', '“Take 10 points off Josh”', '“Alex has done make your bed”', '“Calendar add Ben drums at 12 on Saturday”',
         '“Memo dentist moved to Thursday”', '“Add milk to the shopping list”', '“Timer 10 minutes”', '“Go to calendar”'];
-    var rec = null, listening = false, panel = null, countdown = null, closeT = null;
+    var rec = null, listening = false, panel = null, countdown = null, closeT = null, stopListening = function () { if (rec) try { rec.stop(); } catch (e) { /* ignore */ } };
 
     /* ------------------------------------------------------------ sounds */
     var actx = null;
@@ -60,7 +60,14 @@
         t = t.replace(/(\d)\.(\d\d)\b/g, '$1:$2').replace(/\.(\s|$)/g, ' ').replace(/\s+/g, ' ').trim();
         return wordsToNumbers(t);
     }
-    function cap(s) { s = String(s || '').trim(); return s.charAt(0).toUpperCase() + s.slice(1); }
+    function cap(s) {
+        s = String(s || '').trim();
+        // Names keep their capital letters ("speak to Ben"): the children and the calendar's people and groups.
+        var names = children().map(function (b) { return b.name; }).concat(categories().map(function (c) { return c && (c.name || c.k || c); }))
+            .filter(function (n) { return typeof n === 'string' && n.length > 1; });
+        names.forEach(function (n) { s = s.replace(new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi'), n); });
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
     function near(a, b) {   // a spoken word is "near" a name: same, or one letter different for longer names
         a = a.toLowerCase(); b = b.toLowerCase();
         if (a === b || a === b + 's' || a === b + "'s") return true;
@@ -297,7 +304,7 @@
             panel.addEventListener('click', function (e) {
                 var b = e.target.closest('[data-v]'); if (!b) { if (e.target === panel) close(); return; }
                 var a = b.getAttribute('data-v');
-                if (a === 'cancel') close(); else if (a === 'again') start(); else if (a === 'do' && panel.pending) go(panel.pending);
+                if (a === 'cancel') close(); else if (a === 'done') stopListening(); else if (a === 'again') start(); else if (a === 'do' && panel.pending) go(panel.pending);
             });
         }
         clearTimeout(closeT);
@@ -351,18 +358,30 @@
     function start() {
         if (!SR) { show('<div class="vc-state bad">Voice needs Microsoft Edge or Google Chrome.</div>' + btns(['cancel', 'Close']), 'fail'); return; }
         if (!api() || !api().ready()) { show('<div class="vc-state bad">Connect the screen to your Google Sheet first.</div>' + btns(['cancel', 'Close']), 'fail'); return; }
-        if (listening) { try { rec.stop(); } catch (e) { /* ignore */ } return; }
+        if (listening) { stopListening(); return; }
         clearInterval(countdown);
         rec = new SR();
-        rec.lang = 'en-GB'; rec.interimResults = true; rec.maxAlternatives = 4; rec.continuous = false;
-        var finalAlts = null, interim = '';
-        rec.onstart = function () { listening = true; setMic(true); };
+        // Keep listening through short pauses ("memo … speak to Ben"): finish 2.5 seconds after the last word,
+        // after 8 seconds if nothing is said, after 25 seconds at most, or when Done (or the microphone) is tapped.
+        rec.lang = 'en-GB'; rec.interimResults = true; rec.maxAlternatives = 4; rec.continuous = true;
+        var finals = [], lastAlts = null, interim = '', quiet = null, cap = null;
+        var stopNow = function () { clearTimeout(quiet); clearTimeout(cap); try { rec.stop(); } catch (e) { /* ignore */ } };
+        var wait = function (ms) { clearTimeout(quiet); quiet = setTimeout(stopNow, ms); };
+        var heardText = function () { return (finals.join(' ') + ' ' + interim).replace(/\s+/g, ' ').trim(); };
+        rec.onstart = function () { listening = true; setMic(true); wait(8000); cap = setTimeout(stopNow, 25000); };
         rec.onresult = function (e) {
-            var res = e.results[e.results.length - 1];
-            if (res.isFinal) { finalAlts = Array.prototype.map.call(res, function (a) { return a.transcript; }); }
-            else { interim = res[0].transcript; var h = panel && panel.querySelector('.vc-heard'); if (h) h.textContent = '“' + interim + '…”'; }
+            finals = []; interim = ''; lastAlts = null;
+            for (var i = 0; i < e.results.length; i++) {
+                var r = e.results[i];
+                if (r.isFinal) { finals.push(r[0].transcript.trim()); lastAlts = Array.prototype.map.call(r, function (a) { return a.transcript.trim(); }); }
+                else interim += r[0].transcript;
+            }
+            var h = panel && panel.querySelector('.vc-heard'); if (h) h.textContent = '“' + heardText() + '…”';
+            wait(2500);
         };
         rec.onerror = function (e) {
+            clearTimeout(quiet); clearTimeout(cap);
+            if (e.error === 'no-speech' && heardText()) return;           // a pause after speaking – onend handles what was said
             listening = false; setMic(false);
             var msg = { 'no-speech': 'I didn’t hear anything.', 'not-allowed': 'The microphone is blocked. Allow it for this page (see the update notes).',
                 'service-not-allowed': 'Speech recognition isn’t allowed in this browser.', 'audio-capture': 'No microphone found – is it plugged in?',
@@ -371,12 +390,19 @@
             show('<div class="vc-state bad">🎤 ' + esc(msg) + '</div>' + btns(['again', 'Try again'], ['cancel', 'Close']), 'fail');
         };
         rec.onend = function () {
+            clearTimeout(quiet); clearTimeout(cap);
             listening = false; setMic(false);
-            if (finalAlts) handle(finalAlts);
-            else if (interim) handle([interim]);
-            else if (panel && /listening/.test(panel.className)) show('<div class="vc-state bad">🎤 I didn’t hear anything.</div>' + helpHtml() + btns(['again', 'Try again'], ['cancel', 'Close']), 'fail');
+            var text = heardText();
+            if (text) {
+                // Alternatives for the last stretch of speech, with what came before it in front.
+                var before = (lastAlts && !interim ? finals.slice(0, -1).join(' ') : '');
+                var alts = lastAlts && !interim ? lastAlts.map(function (a) { return (before + ' ' + a).trim(); }) : [text];
+                if (alts.indexOf(text) < 0) alts.unshift(text);
+                handle(alts);
+            } else if (panel && /listening/.test(panel.className)) show('<div class="vc-state bad">🎤 I didn’t hear anything.</div>' + helpHtml() + btns(['again', 'Try again'], ['cancel', 'Close']), 'fail');
         };
-        show('<div class="vc-state"><span class="vc-dot"></span>Listening…</div><div class="vc-heard">Speak after the beep</div>' + btns(['cancel', 'Cancel']), 'listening');
+        stopListening = stopNow;
+        show('<div class="vc-state"><span class="vc-dot"></span>Listening… take your time</div><div class="vc-heard">Speak after the beep</div>' + btns(['done', 'Done'], ['cancel', 'Cancel']), 'listening');
         tone([660, 990], 0.12);
         setTimeout(function () { try { rec.start(); } catch (e) { show('<div class="vc-state bad">' + esc(e.message) + '</div>' + btns(['cancel', 'Close']), 'fail'); } }, 260);
     }

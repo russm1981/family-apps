@@ -1,16 +1,13 @@
 {
-  "app": "2026.11.25",
-  "script": "2026.11.21",
+  "app": "2026.11.30",
+  "script": "2026.11.26",
   "date": "2026-11-08",
   "notes": [
-    "Family Admin → Settings → Versions & diagnostics: every version number, and a diagnostics report with private details locked for support",
-    "Google scripts check for updates every 10 minutes (was hourly)",
-    "Start afresh: move everything to a brand-new Sheet in one go (Family Admin → Settings → Updates)",
-    "Saved-versions counter, with a warning from 190 of 200",
-    "Automatic updates are on by default for new dashboards",
-    "Weather (half height): the clock leads, then the weather, then the symbol and temperature on the right",
-    "Trains: a disruption message no longer crowds the board"
+    "New screens (Raspberry Pi, tablet) show a QR code to connect them from a phone – no keyboard needed; new families are taken through setup first",
+    "Family Admin → Settings → Access code & devices → Connect a screen, by its code",
+    "Windows start file asks two questions in normal Windows Yes/No boxes: start automatically, and keep the screen switched on",
+    "Raspberry Pi set-up script, and help for Raspberry Pi and tablets"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.4"
+  "licenceServer": "2026.11.9"
 }

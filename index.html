@@ -45,6 +45,15 @@
  .foot { color: var(--mute); font-size: 13px; margin-top: 30px; }
  .foot a, .sub a, details a { color: var(--acc); }
  [hidden] { display: none !important; }
+ .tiles.three { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+ .step.grey { background: var(--panel-2); color: #cdd5e1; }
+ .more { color: var(--acc); font-size: 14px; text-decoration: none; }
+ .two-btns { display: flex; gap: 8px; } .two-btns .btn { flex: 1; }
+ a.news { display: block; color: inherit; text-decoration: none; } a.news:hover { border-color: var(--acc); }
+ .tiles.help { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+ .tiles.help .tile p { font-size: 14px; }
+ .tile p b { display: inline; font-size: inherit; color: #e6ebf2; }
+ .tiles.help .btn { align-self: flex-start; padding: 7px 14px; }
 </style>
 </head>
 <body><div class="wrap">
@@ -59,19 +68,20 @@
  </section>
 
  <section>
-  <h2>New here? Start with Setup</h2>
-  <p class="sub">Setup walks you through everything step by step, about 20–30 minutes the first time.</p>
-  <div class="tiles">
-   <a class="tile first" href="setup/"><span class="step">Start here</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>Setup</b><span class="who">First time, or a new family</span></span></div>
-    <p>Accept the privacy notice, install the apps, make your own Google Sheet, connect the screen and phones, add your family and free API keys, and check it all works.</p>
-    <span class="btn">Open Setup</span></a>
-   <a class="tile" id="copyTile" href="setup/"><div class="thead"><span class="ico">📄</span><span><b>Make my copy of the Sheet</b><span class="who">Step 3 of Setup, on its own</span></span></div>
-    <p>Copies the ready-made Family Dashboard Google Sheet (with all the code inside) into your Google account. Each family’s copy is completely separate.</p>
-    <span class="btn">Make my copy</span></a>
-   <div class="tile"><div class="thead"><span class="ico">🔗</span><span><b>Already set up?</b><span class="who">Connect this device</span></span></div>
-    <p>Paste the private link from Setup (step “Connect your devices”), or from your Sheet: 🏠 Family Dashboard → Connect my screen and phones.</p>
+  <h2>Get started</h2>
+  <p class="sub">Choose the one that fits.</p>
+  <div class="tiles three">
+   <a class="tile first" href="setup/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used Family Dashboard before</span></span></div>
+    <p>Setup takes you through everything, one step at a time: it makes your family’s own private Google Sheet, connects your screen and phones, and adds your family, calendars and the free keys. About 30 minutes.</p>
+    <span class="btn">Start setup</span></a>
+   <div class="tile"><span class="step grey">Already set up</span><div class="thead"><span class="ico">🔗</span><span><b>Connect this device, or another</b><span class="who">Add a phone, tablet or screen to your family</span></span></div>
+    <p><b>Easiest:</b> on a phone that’s already connected, open Family Admin → Settings → Access code &amp; devices → <b>Connect your devices</b> and scan the QR code. Or paste your private link here:</p>
     <div class="paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div>
-    <span class="who" id="pasteMsg"></span></div>
+    <span class="who" id="pasteMsg"></span><span class="who">Phones don’t count towards your licence; screens do – a new screen can take over from an old one.</span><a class="more" href="help/#connect">How to connect devices ›</a></div>
+   <div class="tile"><span class="step grey">Start again</span><div class="thead"><span class="ico">🔄</span><span><b>Start again</b><span class="who">Same apps, a fresh Google Sheet</span></span></div>
+    <p><b>Keep everything:</b> “Start afresh” moves all your family’s information into a brand-new Sheet (Family Admin → Settings → Updates).<br><b>From scratch:</b> set up a new family from nothing – your old Sheet stays in Google Drive as a backup.<br><b>Another Google account:</b> move everything to, say, a Gmail account just for the dashboard.</p>
+    <div class="two-btns"><a class="btn ghost" href="help/#afresh">Keep everything</a><a class="btn ghost" href="help/#afresh">From scratch</a></div>
+    <a class="more" href="help/#afresh">Which should I choose? ›</a><a class="more" href="help/#account">Moving to another Google account ›</a></div>
   </div>
  </section>
 
@@ -88,36 +98,26 @@
     <a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a>
     <span class="who">Tip: Setup’s “Connect your devices” step gives you a start file that’s already connected.</span></div>
    <div class="tile"><div class="thead"><span class="ico">🍓</span><span><b>Screen – Raspberry Pi or tablet</b><span class="who">Any browser, full-screen</span></span></div>
-    <p>Open the screen in the browser (Fully Kiosk Browser on Android / Fire tablets; Chromium kiosk on a Pi). Use the private screen link from Setup so it connects.</p>
+    <p>Open the screen in the browser (Fully Kiosk Browser on Android / Fire tablets). It shows a QR code – scan it with your phone to connect it. A ready-made Raspberry Pi does this by itself when switched on. <a class="more" href="help/#pi">Raspberry Pi and tablets ›</a></p>
     <div class="qr" data-qr="screen/"></div><a class="btn" href="screen/">Open the screen</a></div>
   </div>
  </section>
 
  <section>
   <h2>What’s new</h2>
-  <div class="news" id="news"><span class="who">Loading…</span></div>
+  <a class="news" id="news" href="whatsnew.html"><span class="who">Loading…</span></a>
  </section>
 
  <section>
   <h2>Help</h2>
-  <details><summary>The screen says “Can’t reach the Google Sheet”</summary>
-   <p>Usually the screen is using an old or mistyped link. Open Setup → “Connect your devices” (or your Sheet → 🏠 Family Dashboard → Connect my screen and phones) and use the new start file or screen link. If it says “Wrong access code”, the code was changed – use the new links.</p></details>
-  <details><summary>“Your Google script needs updating”</summary>
-   <p>Open your Sheet → Extensions → Apps Script, paste in the new Code.gs, Save, then Deploy → Manage deployments → pencil → Version: <b>New version</b> → Deploy. Saving alone isn’t enough – the new version has to be deployed. Setup’s “Updates” step shows the details.</p></details>
-  <details><summary>How updates work</summary>
-   <ul><li><b>Screen:</b> checks every 10 minutes and updates itself when nobody is using it (or offers “Update now”). The version number is at the bottom of its side bar.</li>
-    <li><b>Phone apps:</b> update themselves next time they’re opened.</li>
-    <li><b>Google script:</b> the only part updated by hand (see above).</li></ul></details>
-  <details><summary>Free API keys (maps, trains, buses, NASA, Spotify)</summary>
-   <p>Setup’s “Free API keys” step has a short guide for each one. Keys go in Family Admin → Install.</p>
-   <p><a href="setup/#go=keys" id="keysLink">Open the API key guides</a></p></details>
-  <details><summary>Voice commands</summary>
-   <p>Tap the microphone at the bottom of the screen’s side bar, wait for the beep, then say for example “Ben add 15 points”, “calendar add Ben drums at 12 on Saturday”, “memo dentist moved to Thursday”, “add milk to the shopping list”, “timer 10 minutes” or “go to calendar”. Say “help” for more.</p></details>
+  <p class="sub">Short answers here – press <b>Read more</b> for step-by-step help. <a href="help/">All help topics ›</a></p>
+  <div class="tiles help" id="helpTiles"></div>
  </section>
 
  <p class="foot"><a href="privacy.html">Privacy notice</a> · Your family’s information stays in your own Google account – these pages hold no family data.</p>
 </div>
 <script src="setup/config.js"></script>
+<script src="help/topics.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
  (function () {
@@ -132,15 +132,16 @@
    }
    document.querySelectorAll('[data-qr]').forEach(function (el) { qr(el, base + el.getAttribute('data-qr')); });
 
-   // One-click copy of the template Sheet, if this site has one.
-   var tid = window.FD_SETUP && window.FD_SETUP.templateId;
-   if (tid) $('copyTile').href = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tid) + '/copy';
-   else $('copyTile').hidden = true;
+   // Help: one or two sentences each, and a link to the full page.
+   $('helpTiles').innerHTML = (window.FD_HELP || []).map(function (t) {
+     return '<div class="tile"><div class="thead"><span class="ico">' + t.icon + '</span><span><b>' + esc(t.title) + '</b></span></div><p>' + esc(t.summary) + '</p>' +
+       '<a class="btn ghost" href="help/#' + t.id + '">Read more</a></div>';
+   }).join('');
 
    // Version and what's new.
    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
      $('ver').textContent = 'Version ' + v.app + (v.date ? ' · ' + v.date : '');
-     $('news').innerHTML = '<b>Version ' + esc(v.app) + '</b><ul>' + (v.notes || []).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+     $('news').innerHTML = '<b>Version ' + esc(v.app) + '</b><ul>' + (v.notes || []).slice(0, 4).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><span class="more">See every change ›</span>';
    }).catch(function () { $('news').textContent = ''; });
 
    // Is this device already connected? (The phone apps, setup and the screen keep their link on the device.)
@@ -157,6 +158,10 @@
      if (m && c) return { url: decodeURIComponent(m[1]), code: decodeURIComponent(c[1]) };
      return null;
    }
+   // From the order email: …/#key=FD-…  – Setup fills the licence key in by itself.
+   var km = /[#&]key=([^&#\s]+)/.exec(location.hash);
+   if (km) { var key = decodeURIComponent(km[1]); document.querySelector('.tile.first').href = 'setup/#key=' + encodeURIComponent(key);
+     var kn = document.createElement('p'); kn.className = 'sub'; kn.innerHTML = '🔑 Your licence key <b>' + esc(key) + '</b> is ready – Setup will fill it in for you.'; document.querySelector('.tiles.three').before(kn); }
    // A link straight to this page (…/#api=…&code=…) connects it too.
    var fromLink = parse(location.hash);
    if (fromLink) { try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(fromLink)); } catch (e) { /* ignore */ } history.replaceState(null, '', location.pathname); }
@@ -173,12 +178,12 @@
      var items = [
        ['admin/' + hash, 'admin/icons/icon-192.png', 'Family Admin', 'Points, lists, widgets, settings'],
        ['calendar/' + hash, 'calendar/icons/icon-192.png', 'Family Calendar', 'See and add entries'],
-       [c.url, '🌐', 'Web admin', 'The same settings, on a computer'],
        ['setup/' + hash + '&go=family', '👪', 'Family & calendar', 'People, groups, categories, children’s page'],
        ['setup/' + hash + '&go=devices', '📱', 'Connect devices', 'QR codes, links and the PC start file'],
        ['setup/' + hash + '&go=keys', '🔑', 'Free API keys', 'Maps, trains, buses, NASA, Spotify'],
        ['setup/' + hash + '&go=check', '✅', 'Check everything', 'Tests every widget'],
        ['setup/' + hash + '&go=update', '⬆', 'Updates', 'Is your Google script up to date?'],
+       ['help/', '❓', 'Help', 'Step-by-step answers'],
        ['screen/' + hash, '🖥', 'Open the screen', 'The dashboard, on this device'],
      ];
      $('mineTiles').innerHTML = items.map(function (x) {
