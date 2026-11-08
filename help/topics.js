@@ -46,7 +46,7 @@ window.FD_HELP = [
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
-<dt>“This dashboard has moved to a new Google Sheet”</dt><dd>Someone used “Start afresh”. The screen should follow automatically; if not, make a new start file as above.</dd>
+<dt>“This dashboard has moved to a new Google Sheet”</dt><dd>Someone moved it (another Google account, or “Start afresh” on an older Sheet). The screen should follow automatically; if not, make a new start file as above.</dd>
 </dl>
 `
   },
@@ -280,16 +280,13 @@ window.FD_HELP = [
   },
   {
     id: 'afresh', icon: '🔄', title: 'Starting again: a fresh Sheet, or from scratch',
-    summary: 'There are two ways to start again. “Start afresh” moves everything into a brand-new Sheet. “From scratch” sets up a new family from nothing, and your old Sheet is kept as a backup.',
+    summary: 'Want a clean start? Set up a new family from scratch – your old Sheet is kept as a backup. (Moving everything to another Google account is a separate option.)',
     body: `
-<h2>Start afresh – keep everything (recommended)</h2>
-<p>Use this if Google’s limit of 200 saved versions is nearly reached, or the Sheet has got into a muddle. It makes a new Google Sheet and copies <b>everything</b> into it – people, points, tasks, lists, notes, settings, your licence – and the screen and phones switch over by themselves.</p>
-<ol><li><b>Family Admin → Settings → My data (Google) → Start afresh in a new Sheet</b>.</li>
-<li>When it says the new Sheet is ready, open it on a computer, wait for the <b>🏠 Family Dashboard</b> menu and choose <b>Finish moving here</b>. Press <b>Allow</b> on Google’s screens.</li>
-<li>Your old Sheet is kept and renamed “(old – moved …)”. Keep it for a few weeks – it points older links to the new one.</li></ol>
+<h2>Start afresh – only for older Sheets</h2>
+<p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>Family Admin → Settings → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
-<ol><li>Free your licence key first: <b>Family Admin → Settings → Licence → Free up my licence key</b>. Note the key.</li>
+<ol><li>Free your licence key first: <b>Family Admin → Settings → System → Licence → Free up my licence key</b>. Note the key.</li>
 <li>Run the <a href="../setup/">setup app</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup app shows how).</li></ol>`
   },

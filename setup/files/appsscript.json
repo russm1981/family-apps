@@ -2,7 +2,11 @@
   "timeZone": "Europe/London",
   "dependencies": {
     "enabledAdvancedServices": [
-      { "userSymbol": "Tasks", "version": "v1", "serviceId": "tasks" }
+      {
+        "userSymbol": "Tasks",
+        "version": "v1",
+        "serviceId": "tasks"
+      }
     ]
   },
   "oauthScopes": [
@@ -13,9 +17,7 @@
     "https://www.googleapis.com/auth/tasks",
     "https://www.googleapis.com/auth/script.external_request",
     "https://www.googleapis.com/auth/script.container.ui",
-    "https://www.googleapis.com/auth/script.scriptapp",
-    "https://www.googleapis.com/auth/script.projects",
-    "https://www.googleapis.com/auth/script.deployments"
+    "https://www.googleapis.com/auth/script.scriptapp"
   ],
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",

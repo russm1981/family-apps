@@ -235,11 +235,11 @@
         title(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
         var cal = location.href.replace(/admin\/.*$/, '') + 'calendar/', cp = calPage();
         var fam = distinct(function (w) { return FAMILY_W[w.type]; });
-        $('body').innerHTML = (pp && pp.show !== false ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
-            '<h3 class="sec">Calendar</h3><div class="tiles">' +
+        $('body').innerHTML = '<h3 class="sec">Calendar</h3><div class="tiles">' +
             '<a class="tile" href="' + esc(cal) + '"><span class="t-ico">📅</span><b>Family Calendar</b><small>Opens the calendar app – see and add events</small></a>' +
             (cp ? '<button class="tile" id="calSet"><span class="t-ico">⚙</span><b>Calendar page</b><small>' + esc((cp.settings || {}).DefaultView || 'Which view it opens on') + '</small></button>' : '') +
             fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') + '</div>' +
+            (pp && pp.show !== false ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
             '<a class="link-card" data-go="s/family" href="#"><b>👪 Family & calendar settings ›</b><span class="mute small">Who’s in the family, who’s on the points page, groups, colours and which Google calendars.</span></a>';
         if ($('calSet')) $('calSet').onclick = function () { pageSheet(cp); };
         if (pp && pp.show !== false) $('body').onclick = pointsClick;
@@ -417,7 +417,7 @@
         return s.boys.map(function (b, i) {
             var pct = Math.min(100, b.balance / target * 100), can = b.balance >= target;
             return '<section class="card boy" style="--c:' + esc(b.colour) + '">' +
-                '<div class="boy-top"><h2>' + esc(b.name) + '</h2></div>' + reminders(b) +
+                '<div class="boy-top"><h2>' + esc(b.name) + '</h2><button class="link" data-go="points">Set up points ›</button></div>' + reminders(b) +
                 '<div class="score"><b>' + b.balance + '</b><span>points</span><span class="to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' to £' + s.cashIn.value) + '</span></div>' +
                 '<div class="bar"><span style="width:' + pct + '%"></span></div>' +
                 '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
@@ -954,7 +954,7 @@
                 }).join('')) +
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
-                'To keep your people, points and lists, use <b>Start afresh</b> above instead.</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
+                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup app for a new family</a>') +
             accessCard() +
             card('Where the apps are hosted', installFields('advanced') + saveInstallBtn('aSave'));
@@ -966,13 +966,15 @@
         var Lc = DATA.licence || {};
         $('body').innerHTML = card('Your licence', !Lc.required ? '<p class="mute">Licence keys aren’t being checked yet. You can still add yours now.</p>'
                 : '<p class="' + (Lc.ok ? (Lc.state === 'trial' ? '' : 'pos') : 'neg') + '"><b>' + (Lc.ok ? (Lc.state === 'trial' ? '⏳ ' : '✔ ') : '⚠ ') + esc(Lc.message) + '</b></p>' +
-                  (Lc.key ? '<p class="mute small">Key ending …' + esc(Lc.key) + '</p>' : '')) +
-            card(Lc.key ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
-                '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
+                  (DATA.licenceKey ? '<label>Your key</label><div class="row-between"><b class="mono" style="user-select:all">' + esc(DATA.licenceKey) + '</b><button class="btn ghost sm" id="licCopy">Copy</button></div>'
+                    : Lc.key ? '<p class="mute small">Key ending …' + esc(Lc.key) + '</p>' : '')) +
+            card(Lc.key || DATA.licenceKey ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
+                '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(DATA.licenceKey || '') + '" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
                 '<button class="btn wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
-            (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup app (not “Start afresh”, which moves your licence by itself), free your key here first. ' +
+            (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup app (not moving, which takes your licence by itself), free your key here first. ' +
                 'You can then enter it in the new Sheet. This Sheet will ask for a key again.</p><button class="btn ghost wide" id="licFree">Free up my licence key</button><div id="licFreeOut"></div>') : '') +
             '<p class="mute small help">A key works on one dashboard at a time. If you move to a new Google Sheet or account, ask the seller to release it first. Once a day your Google script checks the key with the seller; if that can’t happen for 21 days, the screen asks for help.</p>';
+        if ($('licCopy')) $('licCopy').onclick = function () { try { navigator.clipboard.writeText(DATA.licenceKey).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
         $('licGo').onclick = function () {
             var k = $('licKey').value.trim(); if (!k) { FD.toast('Type in your key', true); return; }
             var b = this; b.disabled = true; b.textContent = 'Checking…';

@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.30';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.32';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -827,7 +827,7 @@ function getAdmin_() {
     family: family_(),
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
-    scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
+    scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
     autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '',
     setupBase: appsBase_() + 'setup/',
@@ -2869,11 +2869,11 @@ function onOpen() {
   const m = SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
     .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
-    .addItem('Update the Google script now', 'menuUpdate')
-    .addItem('Turn automatic updates on / off', 'menuAutoUpdate')
-    .addSeparator()
-    .addItem('Repair the tabs (runs setup)', 'setup')
-    .addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
+    .addItem(LOADED ? 'Load the newest program now' : 'Update the Google script now', 'menuUpdate');
+  // With the loader, updates need no switch and use no saved versions, so these two aren't needed.
+  if (!LOADED) m.addItem('Turn automatic updates on / off', 'menuAutoUpdate');
+  m.addSeparator().addItem('Repair the tabs (runs setup)', 'setup');
+  if (!LOADED) m.addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
   if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
   m.addToUi();
 }
@@ -2909,7 +2909,8 @@ function autoPublish_() {
 function menuConnect() {
   setup();
   let url = myUrl_(), apiErr = '';
-  if (!url) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; } }
+  // Publishing by itself needs Google's Apps Script API; with the loader we don't ask for that, so it's the Deploy screen.
+  if (!url && !LOADED) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; } }
   if (!url && /Apps Script API/.test(apiErr)) {
     dialog_('One switch, then try again', '<p>To publish your dashboard by itself, Google needs one switch turned on (once for your Google account):</p><ol>' +
       '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a></li>' +
@@ -2921,8 +2922,9 @@ function menuConnect() {
     dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
       '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
       '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
+      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b></li>' +
       '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
-      '<p>Then come back here and choose <b>🏠 Family Dashboard → Connect my screen and phones</b> again.</p>', 380);
+      '<p>Then come back here and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
     return;
   }
   const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';

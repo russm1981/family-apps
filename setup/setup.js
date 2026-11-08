@@ -161,18 +161,15 @@
         { id: 'publish', title: 'Publish & connect', render: function () {
             var perms = '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
                 '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
-                '<li><b>Manage your Apps Script projects and deployments</b> – lets the script publish itself and install new versions of itself.</li>' +
+                '<li><b>Run when you’re not there, and connect to external services</b> – the 5-minute timer, and fetching its own newest program from these apps.</li>' +
                 '<li>It all runs as you, inside your own Google account.</li></ul></details>';
             return '<h1>3. Publish it and connect</h1><div class="card big"><ol class="howto">' +
-                '<li><b>Once for your Google account:</b> open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> and switch <b>Google Apps Script API</b> on. ' +
-                '<span class="mute">(It lets the dashboard publish and update itself.)</span></li>' +
-                '<li>In your new Sheet, wait a few seconds for the <b>🏠 Family Dashboard</b> menu, then choose <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
-                '<li>Google asks for permission the first time: <b>Continue</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' +
-                'If nothing else happens, choose the menu item again. ' + perms + '</li>' +
-                '<li>A box says your dashboard is published: press <b>Open the setup app</b>. This page reopens already connected – nothing to type.</li></ol>' +
-                '<details><summary>The menu doesn’t publish it? Do it by hand</summary><ol class="howto"><li><b>Extensions → Apps Script</b>.</li>' +
-                '<li><b>Deploy → New deployment</b> → ⚙ next to "Select type" → <b>Web app</b>.</li><li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access).</li>' +
-                '<li><b>Click the Web app URL</b> once (a page opens – close it), then back in the Sheet choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect</b>.</li></ol></details>' +
+                '<li>In your new Sheet: <b>Extensions → Apps Script</b>.</li>' +
+                '<li><b>Deploy → New deployment</b> → ⚙ next to “Select type” → <b>Web app</b>. Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>.</li>' +
+                '<li>Google asks for permission (once): <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' + perms + '</li>' +
+                '<li><b>Click the Web app URL</b> it shows (a page opens – you can close it).</li>' +
+                '<li>Back in the Sheet (reload it if the menu isn’t there): <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>, then press <b>Open the setup app</b>. This page reopens already connected – nothing to type.</li></ol>' +
+                '<p class="mute">That’s the only setting there is: the script keeps itself up to date from now on.</p>' +
                 '<div id="connStatus">' + (connected() ? okLine(true, 'Connected to your Family Dashboard Sheet.') : '') + '</div></div>' +
                 (connected() && S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
                     '<p>The screen showing <b>' + esc(S.pairCode) + '</b> is waiting. Connect it to this family now?</p><button class="btn" id="pairSend">Connect the screen</button><div id="pairStatus" class="mute"></div></div>' : '') +
