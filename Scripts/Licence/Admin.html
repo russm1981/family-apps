@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Dashboard licences</title>
+<style>
+:root { --bg: #0f1115; --panel: #171a21; --panel2: #1e222b; --line: #2a2f3a; --text: #e8ecf2; --mute: #8b93a3; --acc: #3fa9f5; --good: #34c759; --bad: #ff5b5b; --warn: #ffb020; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+button, input, select, textarea { font: inherit; color: inherit; }
+header { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
+header h1 { font-size: 18px; margin: 0 auto 0 0; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav button { background: none; border: 0; padding: 8px 12px; border-radius: 9px; color: var(--mute); font-weight: 600; cursor: pointer; }
+nav button.on { background: var(--panel2); color: var(--text); }
+main { max-width: 1150px; margin: 0 auto; padding: 20px 16px 60px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
+.card h2 { margin: 0 0 10px; font-size: 17px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.stat b { display: block; font-size: 30px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--mute); font-size: 13px; }
+.mute { color: var(--mute); } .small { font-size: 13px; }
+label { display: block; font-size: 13px; color: var(--mute); margin: 12px 0 4px; }
+input, select, textarea { width: 100%; background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; outline: none; }
+input:focus, select:focus, textarea:focus { border-color: var(--acc); }
+textarea { min-height: 120px; resize: vertical; }
+.btn { background: var(--acc); color: #fff; border: 0; border-radius: 10px; padding: 9px 16px; font-weight: 700; cursor: pointer; }
+.btn.ghost { background: none; border: 1px solid var(--line); color: var(--text); }
+.btn.bad { background: none; border: 1px solid rgba(255,91,91,.6); color: var(--bad); }
+.btn.good { background: var(--good); }
+.btn:disabled { opacity: .45; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+.grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 14px; }
+@media (max-width: 720px) { .grid2, .grid4 { grid-template-columns: 1fr; } header { padding: 12px; } main { padding: 14px 10px 60px; } }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; color: var(--mute); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--panel); }
+td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tbody tr { cursor: pointer; } tbody tr:hover { background: var(--panel2); }
+.scroll { overflow: auto; max-height: 62vh; }
+.key { font-family: "Roboto Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 13px; letter-spacing: .02em; white-space: nowrap; }
+.pill { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: 99px; border: 1px solid; white-space: nowrap; }
+.pill.Active { color: var(--good); border-color: rgba(52,199,89,.5); }
+.pill.Issued { color: var(--acc); border-color: rgba(63,169,245,.5); }
+.pill.Revoked { color: var(--bad); border-color: rgba(255,91,91,.5); }
+.err { color: var(--bad); } .ok { color: var(--good); }
+.status { margin-top: 12px; font-size: 14px; }
+.keys { font-family: "Roboto Mono", ui-monospace, monospace; background: var(--panel2); border-radius: 10px; padding: 12px; white-space: pre-wrap; user-select: all; }
+.drawer-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none; z-index: 20; }
+.drawer-bg.on { display: block; }
+.drawer { position: absolute; right: 0; top: 0; bottom: 0; width: min(480px, 100%); background: var(--panel); border-left: 1px solid var(--line); padding: 20px; overflow: auto; }
+.drawer h2 { margin: 0 0 6px; font-size: 18px; }
+.kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; font-size: 14px; margin: 10px 0; }
+.kv span:nth-child(odd) { color: var(--mute); }
+.log { font-size: 13px; border-top: 1px solid var(--line); padding: 7px 0; }
+.log b { font-weight: 600; }
+.login { max-width: 380px; margin: 12vh auto; }
+.drop { border: 2px dashed var(--line); border-radius: 14px; padding: 22px; text-align: center; color: var(--mute); }
+.drop.over { border-color: var(--acc); color: var(--text); }
+.tag { font-size: 12px; color: var(--mute); }
+.dup { color: var(--warn); }
+.toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: #222836; border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px; display: none; z-index: 30; }
+.toast.on { display: block; } .toast.bad { border-color: var(--bad); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="drawer-bg" id="drawerBg"><div class="drawer" id="drawer"></div></div>
+<div class="toast" id="toast"></div>
+<script>
+var IN_SHEET = <?= !!inSheet ?>;
+var PW = '', TAB = 'overview', ROWS = null, FILTER = { q: '', status: '' }, CSV = null;
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function toast(t, bad) { var el = $('toast'); el.textContent = t; el.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(toast.t); toast.t = setTimeout(function () { el.className = 'toast'; }, 3500); }
+function call(op, args) {
+  return new Promise(function (res, rej) {
+    google.script.run.withSuccessHandler(res).withFailureHandler(function (e) { rej(new Error(e && e.message || String(e))); }).admin(PW, op, args || {});
+  });
+}
+function copy(text) {
+  try { navigator.clipboard.writeText(text).then(function () { toast('Copied'); }, fallback); } catch (e) { fallback(); }
+  function fallback() { var t = document.createElement('textarea'); t.value = text; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); toast('Copied'); }
+}
+function day(s) { return s ? String(s).slice(0, 10) : ''; }
+function ago(s) {
+  if (!s) return ''; var d = (Date.now() - Date.parse(s)) / 864e5;
+  return d < 1 ? 'today' : d < 2 ? 'yesterday' : Math.floor(d) + ' days ago';
+}
+
+/* ---------------------------------------------------------------- sign in */
+function start() {
+  if (!IN_SHEET) { try { PW = sessionStorage.getItem('lsPw') || ''; } catch (e) { PW = ''; } }
+  call('hello').then(frame, function (e) { if (IN_SHEET) { $('app').innerHTML = '<div class="card login"><p class="err">' + esc(e.message) + '</p></div>'; } else login(PW ? e.message : ''); });
+}
+function login(msg) {
+  $('app').innerHTML = '<div class="card login"><h2>🔑 Licence admin</h2><p class="mute small">Enter the admin password (from setup, or 🔑 Licences › Make a new admin password in the Sheet).</p>' +
+    '<label>Admin password</label><input id="pw" type="password" autocomplete="current-password">' +
+    '<div class="row" style="margin-top:14px"><button class="btn" id="go">Sign in</button></div><p class="err small" id="lerr">' + esc(msg || '') + '</p></div>';
+  $('pw').focus();
+  var go = function () {
+    PW = $('pw').value.trim(); $('lerr').textContent = '';
+    call('hello').then(function () { try { sessionStorage.setItem('lsPw', PW); } catch (e) { } frame(); }, function (e) { $('lerr').textContent = e.message; });
+  };
+  $('go').onclick = go; $('pw').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+}
+
+/* ---------------------------------------------------------------- frame */
+function frame() {
+  $('app').innerHTML = '<header><h1>🔑 Family Dashboard licences</h1><nav id="nav">' +
+    [['overview', 'Overview'], ['licences', 'Licences'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['settings', 'Settings']].map(function (t) {
+      return '<button data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') +
+    (IN_SHEET ? '' : '<button id="out">Sign out</button>') + '</nav></header><main id="main"></main>';
+  $('nav').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { TAB = b.getAttribute('data-t'); render(); } };
+  if ($('out')) $('out').onclick = function () { try { sessionStorage.removeItem('lsPw'); } catch (e) { } PW = ''; login(''); };
+  $('drawerBg').onclick = function (e) { if (e.target === $('drawerBg')) closeDrawer(); };
+  render();
+}
+function render() {
+  Array.prototype.forEach.call(document.querySelectorAll('#nav [data-t]'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === TAB); });
+  ({ overview: overview, licences: licences, issue: issuePage, import: importPage, settings: settingsPage })[TAB]();
+}
+function loadRows() { return call('list').then(function (d) { ROWS = d.rows; return ROWS; }); }
+
+/* ---------------------------------------------------------------- overview */
+function overview() {
+  $('main').innerHTML = '<p class="mute">Loading…</p>';
+  call('summary').then(function (d) {
+    var c = d.counts;
+    var vs = Object.keys(d.versions).sort().reverse().map(function (v) { return esc(v) + ': ' + d.versions[v]; }).join(' · ');
+    $('main').innerHTML = '<div class="stats">' +
+      stat(c.active, 'in use') + stat(c.issued, 'issued, not used yet') + stat(c.revoked, 'revoked') + stat(c.seenWeek, 'checked in this week') +
+      stat(c.unsent, 'not emailed yet') + stat(c.total, 'keys altogether') + '</div>' +
+      (c.unsent ? '<div class="card"><div class="row"><span style="flex:1"><b>' + c.unsent + ' key' + (c.unsent > 1 ? 's have' : ' has') + ' an email address but hasn’t been sent.</b></span><button class="btn" id="sendUnsent">Email them now</button></div></div>' : '') +
+      (c.quiet ? '<div class="card"><b>' + c.quiet + '</b> <span class="mute">dashboard' + (c.quiet > 1 ? 's haven’t' : ' hasn’t') + ' checked in for a month (switched off, or moved).</span></div>' : '') +
+      '<div class="card"><h2>Recent activity</h2>' + (d.recent.length ? d.recent.map(logLine).join('') : '<p class="mute">Nothing yet.</p>') + '</div>' +
+      '<div class="card small"><span class="mute">Dashboard versions in use: ' + (vs || '–') + '.</span><br>Licence server <b>' + esc(d.version) + '</b> · automatic updates <b>' + (d.autoUpdate ? 'on' : 'off – run Set up from the 🔑 Licences menu') + '</b>' +
+        (d.lastUpdate && d.lastUpdate.at ? '<br><span class="' + (d.lastUpdate.result === 'updated' ? 'mute' : 'err') + '">Last update ' + esc(String(d.lastUpdate.at).slice(0, 16).replace('T', ' ')) + ': ' + esc(d.lastUpdate.result) +
+          (d.lastUpdate.to ? ' (' + esc(d.lastUpdate.to) + ')' : '') + (d.lastUpdate.message ? ' – ' + esc(d.lastUpdate.message) : '') + '</span>' : '') +
+        (d.saved ? '<br><span class="' + (d.saved.warn ? 'err' : 'mute') + '">Saved versions: <b>' + d.saved.used + ' of ' + d.saved.max + '</b>' +
+          (d.saved.warn ? ' – nearly full. In the licence Apps Script open Project history and delete old versions (the web address stays the same).' : '') + '</span>' : '') +
+        ' <button class="btn ghost" id="lsUpd" style="margin-left:8px;padding:4px 10px">Check for an update</button></div>';
+    $('lsUpd').onclick = function () {
+      this.disabled = true; this.textContent = 'Checking…';
+      call('selfUpdate').then(function (r) { toast(r.updated ? 'Updated to ' + r.to + ' – reload this page' : r.upToDate ? 'Up to date' : (r.message || 'Done'), !!r.approval); overview(); },
+        function (e) { toast(e.message, true); overview(); });
+    };
+    if ($('sendUnsent')) $('sendUnsent').onclick = function () {
+      this.disabled = true; call('emailUnsent').then(function (r) { toast(r.sent + ' sent'); overview(); }, function (e) { toast(e.message, true); overview(); });
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-key]'), function (a) { a.onclick = function () { openKey(a.getAttribute('data-key')); }; });
+  }, function (e) { $('main').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+}
+function stat(n, label) { return '<div class="stat"><b>' + n + '</b><span>' + label + '</span></div>'; }
+function logLine(l) {
+  return '<div class="log"><span class="mute">' + esc(l.when) + '</span> · <b>' + esc(l.event) + '</b> ' +
+    (l.key ? '<a href="#" class="key" data-key="' + esc(l.key) + '" style="color:var(--acc)">' + esc(l.key) + '</a>' : '') + (l.detail ? ' <span class="mute">' + esc(l.detail) + '</span>' : '') + '</div>';
+}
+
+/* ---------------------------------------------------------------- licences */
+function licences() {
+  $('main').innerHTML = '<div class="card"><div class="row"><input id="q" placeholder="Search key, name, email, order…" value="' + esc(FILTER.q) + '" style="flex:1;min-width:200px">' +
+    '<select id="st" style="width:auto">' + [['', 'Every status'], ['Active', 'In use'], ['Issued', 'Not used yet'], ['Revoked', 'Revoked']].map(function (o) {
+      return '<option value="' + o[0] + '"' + (o[0] === FILTER.status ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+    '<button class="btn ghost" id="csv">Download CSV</button></div>' +
+    '<div class="scroll" style="margin-top:12px"><table><thead><tr><th>Key</th><th>Status</th><th>Name</th><th>Email</th><th>Order</th><th>Last check</th><th>Version</th></tr></thead><tbody id="tb"><tr><td colspan="7" class="mute">Loading…</td></tr></tbody></table></div>' +
+    '<p class="mute small" id="cnt"></p></div>';
+  $('q').oninput = function () { FILTER.q = this.value; table(); };
+  $('st').onchange = function () { FILTER.status = this.value; table(); };
+  $('csv').onclick = function () { download('licences.csv', toCsv(filtered(), ['Key', 'Status', 'Name', 'Email', 'Order', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes'])); };
+  $('tb').onclick = function (e) { var tr = e.target.closest('[data-k]'); if (tr) openKey(tr.getAttribute('data-k')); };
+  loadRows().then(table, function (e) { $('tb').innerHTML = '<tr><td colspan="7" class="err">' + esc(e.message) + '</td></tr>'; });
+}
+function filtered() {
+  var q = FILTER.q.trim().toLowerCase();
+  return (ROWS || []).filter(function (r) {
+    if (FILTER.status && r.Status !== FILTER.status) return false;
+    return !q || [r.Key, r.Name, r.Email, r.Order, r.Notes, r.Source].join(' ').toLowerCase().indexOf(q) >= 0;
+  }).slice().reverse();
+}
+function table() {
+  var list = filtered();
+  $('tb').innerHTML = list.length ? list.slice(0, 500).map(function (r) {
+    return '<tr data-k="' + esc(r.Key) + '"><td class="key">' + esc(r.Key) + '</td><td><span class="pill ' + esc(r.Status) + '">' + esc(r.Status === 'Active' ? 'In use' : r.Status === 'Issued' ? 'Not used yet' : r.Status) + '</span></td>' +
+      '<td>' + esc(r.Name) + '</td><td>' + esc(r.Email) + (r.Email && !r.Emailed && r.Status !== 'Revoked' ? ' <span class="tag dup">not sent</span>' : '') + '</td><td>' + esc(r.Order) + '</td>' +
+      '<td>' + esc(ago(r['Last check'])) + '</td><td>' + esc(r.Version) + '</td></tr>';
+  }).join('') : '<tr><td colspan="7" class="mute">No licences match.</td></tr>';
+  $('cnt').textContent = list.length + ' of ' + (ROWS || []).length + ' licences' + (list.length > 500 ? ' (first 500 shown – search to narrow down)' : '');
+}
+function openDrawer(html) { $('drawer').innerHTML = html; $('drawerBg').classList.add('on'); }
+function closeDrawer() { $('drawerBg').classList.remove('on'); }
+function openKey(key) {
+  var r = (ROWS || []).filter(function (x) { return x.Key === key; })[0];
+  if (!r) { loadRows().then(function () { if ((ROWS || []).some(function (x) { return x.Key === key; })) openKey(key); else toast('Not found', true); }); return; }
+  openDrawer('<div class="row"><h2 style="flex:1">Licence</h2><button class="btn ghost" id="dx">Close</button></div>' +
+    '<div class="row"><span class="key" style="font-size:16px">' + esc(r.Key) + '</span><button class="btn ghost" id="dCopy">Copy</button></div>' +
+    '<div class="kv"><span>Status</span><span><span class="pill ' + esc(r.Status) + '">' + esc(r.Status) + '</span></span>' +
+    '<span>Issued</span><span>' + esc(day(r.Issued)) + ' · ' + esc(r.Source) + '</span>' +
+    '<span>Emailed</span><span>' + esc(day(r.Emailed) || '–') + '</span>' +
+    '<span>Activated</span><span>' + esc(day(r.Activated) || '–') + '</span>' +
+    '<span>Last check</span><span>' + esc(r['Last check'] ? day(r['Last check']) + ' (' + ago(r['Last check']) + ')' : '–') + '</span>' +
+    '<span>Version</span><span>' + esc(r.Version || '–') + '</span>' +
+    '<span>Dashboard</span><span class="small">' + esc(r.Install || 'not in use') + '</span></div>' +
+    '<label>Name</label><input id="dName" value="' + esc(r.Name) + '"><label>Email</label><input id="dEmail" value="' + esc(r.Email) + '">' +
+    '<label>Order</label><input id="dOrder" value="' + esc(r.Order) + '"><label>Notes</label><input id="dNotes" value="' + esc(r.Notes) + '">' +
+    '<div class="row" style="margin-top:12px"><button class="btn" id="dSave">Save</button>' + (r.Email && r.Status !== 'Revoked' ? '<button class="btn ghost" id="dMail">' + (r.Emailed ? 'Email the key again' : 'Email the key') + '</button>' : '') + '</div>' +
+    '<h3 style="margin-top:22px">Actions</h3><div class="row">' +
+    (r.Install ? '<button class="btn ghost" id="dRel" title="Let it be used on a different dashboard">Release (moving dashboard)</button>' : '') +
+    (r.Status === 'Revoked' ? '<button class="btn good" id="dRein">Reinstate</button>' : '<button class="btn bad" id="dRev">Revoke</button>') +
+    (r.Install ? '' : '<button class="btn bad" id="dDel">Delete</button>') + '</div>' +
+    '<p class="mute small">Release: the key can be activated on another dashboard; the old one locks at its next daily check. Revoke: the dashboard locks at its next daily check.</p>' +
+    '<h3 style="margin-top:22px">History</h3><div id="dLog" class="mute small">Loading…</div>');
+  var after = function (msg) { return function () { toast(msg); loadRows().then(function () { if (TAB === 'licences') table(); openKey(key); }); }; };
+  var fail = function (e) { toast(e.message, true); };
+  $('dx').onclick = closeDrawer;
+  $('dCopy').onclick = function () { copy(r.Key); };
+  $('dSave').onclick = function () { call('update', { key: key, fields: { name: $('dName').value, email: $('dEmail').value, order: $('dOrder').value, notes: $('dNotes').value } }).then(after('Saved'), fail); };
+  if ($('dMail')) $('dMail').onclick = function () { this.disabled = true; call('email', { key: key }).then(after('Email sent'), fail); };
+  if ($('dRel')) $('dRel').onclick = function () { if (confirm('Release this key so it can be used on another dashboard?')) call('release', { key: key }).then(after('Released'), fail); };
+  if ($('dRev')) $('dRev').onclick = function () { var why = prompt('Revoke this key? Its dashboard locks at its next daily check.\n\nReason (optional, e.g. refund):', ''); if (why !== null) call('revoke', { key: key, reason: why }).then(after('Revoked'), fail); };
+  if ($('dRein')) $('dRein').onclick = function () { call('reinstate', { key: key }).then(after('Reinstated'), fail); };
+  if ($('dDel')) $('dDel').onclick = function () { if (confirm('Delete this key completely?')) call('delete', { key: key }).then(function () { toast('Deleted'); closeDrawer(); loadRows().then(function () { if (TAB === 'licences') table(); }); }, fail); };
+  call('log', { key: key }).then(function (d) { $('dLog').innerHTML = d.rows.length ? d.rows.map(logLine).join('') : 'Nothing yet.'; }, function (e) { $('dLog').textContent = e.message; });
+}
+
+/* ---------------------------------------------------------------- issue by hand */
+function issuePage() {
+  $('main').innerHTML = '<div class="card"><h2>Issue keys by hand</h2><p class="mute small">For a sale outside the shop, a gift, or spare keys. Leave the name and email blank for unassigned keys.</p>' +
+    '<div class="grid2"><div><label>Name</label><input id="iName"></div><div><label>Email</label><input id="iEmail" type="email"></div>' +
+    '<div><label>Order / reference</label><input id="iOrder"></div><div><label>How many keys</label><input id="iCount" type="number" min="1" max="500" value="1"></div></div>' +
+    '<label>Notes</label><input id="iNotes">' +
+    '<label style="display:flex;gap:8px;align-items:center;color:var(--text)"><input type="checkbox" id="iSend" style="width:auto"> Email the key(s) to them now</label>' +
+    '<div class="row" style="margin-top:12px"><button class="btn" id="iGo">Issue</button></div><div id="iOut" class="status"></div></div>';
+  $('iGo').onclick = function () {
+    var b = this; b.disabled = true; $('iOut').textContent = 'Working…';
+    call('issue', { name: $('iName').value, email: $('iEmail').value, order: $('iOrder').value, count: $('iCount').value, notes: $('iNotes').value, send: $('iSend').checked }).then(function (d) {
+      b.disabled = false; ROWS = null;
+      $('iOut').innerHTML = '<p class="ok">✔ ' + d.keys.length + ' key' + (d.keys.length > 1 ? 's' : '') + ' issued' + (d.emailed ? ' and emailed' : '') + '.</p><div class="keys">' + esc(d.keys.join('\n')) + '</div>' +
+        '<div class="row" style="margin-top:8px"><button class="btn ghost" id="iCopy">Copy</button></div>';
+      $('iCopy').onclick = function () { copy(d.keys.join('\n')); };
+    }, function (e) { b.disabled = false; $('iOut').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+  };
+}
+
+/* ---------------------------------------------------------------- CSV import */
+function parseCsv(text) {
+  text = String(text || '').replace(/^﻿/, '');
+  var first = text.split(/\r?\n/)[0] || '', sep = (first.split(';').length > first.split(',').length) ? ';' : (first.split('\t').length > first.split(',').length ? '\t' : ',');
+  var rows = [], row = [], cell = '', q = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text[i];
+    if (q) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; } else cell += c; }
+    else if (c === '"') q = true;
+    else if (c === sep) { row.push(cell); cell = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  rows = rows.filter(function (r) { return r.some(function (x) { return String(x).trim(); }); });
+  return { head: (rows.shift() || []).map(function (h) { return String(h).trim(); }), rows: rows };
+}
+function guess(head, words) {
+  for (var w = 0; w < words.length; w++) for (var i = 0; i < head.length; i++) if (head[i].toLowerCase().replace(/[^a-z]/g, ' ').trim() === words[w]) return i;
+  for (w = 0; w < words.length; w++) for (i = 0; i < head.length; i++) if (head[i].toLowerCase().indexOf(words[w]) >= 0) return i;
+  return -1;
+}
+function importPage() {
+  $('main').innerHTML = '<div class="card"><h2>Import buyers from a CSV file</h2>' +
+    '<p class="mute small">Export your orders from the shop (Etsy, Shopify, Lemon Squeezy, PayPal, a spreadsheet…) as CSV. Each row gets a new key – or as many as its quantity. ' +
+    'Rows whose order number (or email, if there’s no order number) already has its keys are skipped, so importing the same file twice is safe.</p>' +
+    '<div class="drop" id="drop">Drop a CSV file here, or <label style="display:inline;color:var(--acc);cursor:pointer;margin:0">choose one<input type="file" id="file" accept=".csv,text/csv,text/plain" style="display:none"></label>' +
+    '<div class="small" style="margin-top:8px">…or paste it below</div></div><textarea id="paste" placeholder="Name,Email,Order&#10;Jane Smith,jane@example.com,1001" style="margin-top:10px;min-height:90px"></textarea>' +
+    '<div class="row" style="margin-top:8px"><button class="btn ghost" id="readPaste">Use the pasted text</button></div></div><div id="map"></div>';
+  var drop = $('drop');
+  ['dragenter', 'dragover'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { drop.addEventListener(t, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
+  drop.addEventListener('drop', function (e) { var f = e.dataTransfer.files[0]; if (f) readFile(f); });
+  $('file').onchange = function () { if (this.files[0]) readFile(this.files[0]); };
+  $('readPaste').onclick = function () { useCsv(parseCsv($('paste').value), 'Pasted list'); };
+  function readFile(f) { var r = new FileReader(); r.onload = function () { useCsv(parseCsv(r.result), f.name); }; r.readAsText(f); }
+}
+function useCsv(csv, name) {
+  if (!csv.head.length || !csv.rows.length) { toast('No rows found – the first line should be the column names', true); return; }
+  CSV = { head: csv.head, rows: csv.rows, name: name,
+    map: { name: guess(csv.head, ['name', 'full name', 'customer name', 'buyer', 'billing name', 'customer']), email: guess(csv.head, ['email', 'e mail', 'buyer email', 'customer email']),
+      order: guess(csv.head, ['order', 'order id', 'order number', 'order no', 'transaction id', 'reference', 'id']), qty: guess(csv.head, ['quantity', 'qty']),
+      first: -1, last: -1 }, only: { col: -1, text: '' } };
+  if (CSV.map.name < 0) { CSV.map.first = guess(csv.head, ['first name', 'firstname', 'forename']); CSV.map.last = guess(csv.head, ['last name', 'lastname', 'surname']); }
+  (ROWS ? Promise.resolve() : loadRows()).then(drawMap, drawMap);
+}
+function mapped() {
+  var m = CSV.map, get = function (r, i) { return i >= 0 ? String(r[i] || '').trim() : ''; };
+  return CSV.rows.filter(function (r) { return CSV.only.col < 0 || !CSV.only.text || get(r, CSV.only.col).toLowerCase().indexOf(CSV.only.text.toLowerCase()) >= 0; })
+    .map(function (r) { return { name: get(r, m.name) || [get(r, m.first), get(r, m.last)].join(' ').trim(), email: get(r, m.email), order: get(r, m.order), qty: Number(get(r, m.qty)) || 1 }; });
+}
+function drawMap() {
+  var opts = function (sel) { return '<option value="-1">(none)</option>' + CSV.head.map(function (h, i) { return '<option value="' + i + '"' + (i === sel ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join(''); };
+  var have = {};
+  (ROWS || []).forEach(function (r) { var id = r.Order ? 'o:' + String(r.Order).toLowerCase() : r.Email ? 'e:' + String(r.Email).toLowerCase() : ''; if (id) have[id] = (have[id] || 0) + 1; });
+  var list = mapped(), fresh = 0, keys = 0;
+  var body = list.slice(0, 200).map(function (r) {
+    var id = r.order ? 'o:' + r.order.toLowerCase() : r.email ? 'e:' + r.email.toLowerCase() : '', got = have[id] || 0, need = Math.max(0, r.qty - got);
+    if (id) have[id] = Math.max(got, r.qty);           // the same order twice in one file only counts once
+    var note = !id ? '<span class="err">no email or order</span>' : need ? '<span class="ok">new: ' + need + ' key' + (need > 1 ? 's' : '') + '</span>' : '<span class="dup">already has its key' + (got > 1 ? 's' : '') + '</span>';
+    if (id && need) { fresh++; keys += need; }
+    return '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.email) + '</td><td>' + esc(r.order) + '</td><td>' + r.qty + '</td><td>' + note + '</td></tr>';
+  }).join('');
+  list.slice(200).forEach(function (r) { var id = r.order ? 'o:' + r.order.toLowerCase() : r.email ? 'e:' + r.email.toLowerCase() : ''; var need = Math.max(0, r.qty - (have[id] || 0)); if (id) have[id] = Math.max(have[id] || 0, r.qty); if (id && need) { fresh++; keys += need; } });
+  $('map').innerHTML = '<div class="card"><h2>' + esc(CSV.name) + ' – ' + CSV.rows.length + ' rows</h2><p class="mute small">Check which column is which.</p>' +
+    '<div class="grid4"><div><label>Name</label><select data-m="name">' + opts(CSV.map.name) + '</select></div><div><label>Email</label><select data-m="email">' + opts(CSV.map.email) + '</select></div>' +
+    '<div><label>Order number</label><select data-m="order">' + opts(CSV.map.order) + '</select></div><div><label>Quantity (optional)</label><select data-m="qty">' + opts(CSV.map.qty) + '</select></div></div>' +
+    (CSV.map.name < 0 ? '<div class="grid4"><div><label>…or first name</label><select data-m="first">' + opts(CSV.map.first) + '</select></div><div><label>and last name</label><select data-m="last">' + opts(CSV.map.last) + '</select></div></div>' : '') +
+    '<div class="grid4"><div><label>Only rows where column…</label><select id="onlyCol">' + opts(CSV.only.col) + '</select></div><div><label>…contains (e.g. the product name)</label><input id="onlyText" value="' + esc(CSV.only.text) + '"></div></div>' +
+    '<div class="scroll" style="margin-top:14px;max-height:40vh"><table><thead><tr><th>Name</th><th>Email</th><th>Order</th><th>Qty</th><th>What happens</th></tr></thead><tbody>' + body + '</tbody></table></div>' +
+    (list.length > 200 ? '<p class="mute small">First 200 of ' + list.length + ' rows shown.</p>' : '') +
+    '<label style="display:flex;gap:8px;align-items:center;color:var(--text);margin-top:14px"><input type="checkbox" id="send" style="width:auto" checked> Email each buyer their key straight away</label>' +
+    '<div class="row" style="margin-top:12px"><button class="btn" id="imp"' + (keys ? '' : ' disabled') + '>Issue ' + keys + ' key' + (keys === 1 ? '' : 's') + ' for ' + fresh + ' buyer' + (fresh === 1 ? '' : 's') + '</button></div><div id="impOut" class="status"></div></div>';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-m]'), function (s) { s.onchange = function () { CSV.map[s.getAttribute('data-m')] = Number(s.value); drawMap(); }; });
+  $('onlyCol').onchange = function () { CSV.only.col = Number(this.value); drawMap(); };
+  $('onlyText').onchange = function () { CSV.only.text = this.value; drawMap(); };
+  $('imp').onclick = function () {
+    var b = this; b.disabled = true; $('impOut').textContent = 'Issuing keys' + ($('send').checked ? ' and sending emails' : '') + '…';
+    call('import', { rows: mapped(), source: CSV.name, send: $('send').checked }).then(function (d) {
+      ROWS = null;
+      $('impOut').innerHTML = '<p class="ok">✔ ' + d.made.length + ' key' + (d.made.length === 1 ? '' : 's') + ' issued' + (d.sent ? ', ' + d.sent + ' emailed' : '') + '. ' + (d.skipped.length ? d.skipped.length + ' row' + (d.skipped.length > 1 ? 's' : '') + ' skipped.' : '') + '</p>' +
+        (d.skipped.length ? '<details><summary class="small">Skipped rows</summary><div class="small mute">' + d.skipped.map(function (s) { return 'Row ' + s.row + ': ' + esc(s.why); }).join('<br>') + '</div></details>' : '') +
+        (d.made.length ? '<div class="row" style="margin-top:8px"><button class="btn ghost" id="impCsv">Download the new keys (CSV)</button></div>' : '');
+      if ($('impCsv')) $('impCsv').onclick = function () { download('new-keys.csv', toCsv(d.made.map(function (m) { return { Key: m.key, Name: m.name, Email: m.email, Order: m.order }; }), ['Key', 'Name', 'Email', 'Order'])); };
+    }, function (e) { b.disabled = false; $('impOut').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+  };
+}
+function toCsv(rows, cols) {
+  var q = function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  return [cols.join(',')].concat(rows.map(function (r) { return cols.map(function (c) { return q(r[c]); }).join(','); })).join('\r\n');
+}
+function download(name, text) {
+  var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + text], { type: 'text/csv' })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------------------------------------------------------------- settings */
+function settingsPage() {
+  $('main').innerHTML = '<p class="mute">Loading…</p>';
+  call('settings').then(function (d) {
+    var s = d.settings;
+    $('main').innerHTML = '<div class="card"><h2>Licence server address</h2><p class="mute small">Dashboards check their key here. It goes in <b>version.json</b> on GitHub as <code>"licence"</code>.</p>' +
+      '<div class="row"><span class="key" style="flex:1;overflow:auto">' + esc(d.url || 'Not deployed yet') + '</span>' + (d.url ? '<button class="btn ghost" id="cpUrl">Copy</button>' : '') + '</div></div>' +
+      '<div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
+      '<div class="grid2"><div><label>From (name)</label><input id="sSeller" value="' + esc(s.sellerName) + '"></div><div><label>Setup link</label><input id="sSetup" value="' + esc(s.setupLink) + '"></div></div>' +
+      '<label>Subject</label><input id="sSubj" value="' + esc(s.subject) + '"><label>Message</label><textarea id="sBody" style="min-height:240px">' + esc(s.body) + '</textarea>' +
+      '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button></div><div id="sOut" class="status"></div></div>' +
+      '<div class="card"><h2>Admin password</h2><div class="grid2"><div><label>New password (12+ characters)</label><input id="p1" type="password" autocomplete="new-password"></div>' +
+      '<div><label>Again</label><input id="p2" type="password" autocomplete="new-password"></div></div><div class="row" style="margin-top:12px"><button class="btn ghost" id="pSave">Change password</button></div><div id="pOut" class="status"></div></div>';
+    if ($('cpUrl')) $('cpUrl').onclick = function () { copy(d.url); };
+    $('sSave').onclick = function () {
+      call('saveSettings', { sellerName: $('sSeller').value, setupLink: $('sSetup').value, subject: $('sSubj').value, body: $('sBody').value })
+        .then(function () { $('sOut').innerHTML = '<span class="ok">✔ Saved</span>'; }, function (e) { $('sOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+    };
+    $('pSave').onclick = function () {
+      if ($('p1').value !== $('p2').value) { $('pOut').innerHTML = '<span class="err">The two passwords are different</span>'; return; }
+      call('password', { password: $('p1').value }).then(function () {
+        PW = $('p1').value; try { if (!IN_SHEET) sessionStorage.setItem('lsPw', PW); } catch (e) { }
+        $('pOut').innerHTML = '<span class="ok">✔ Changed</span>'; $('p1').value = $('p2').value = '';
+      }, function (e) { $('pOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+    };
+  }, function (e) { $('main').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+}
+start();
+</script>
+</body>
+</html>

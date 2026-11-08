@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.19';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.20';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -98,6 +98,7 @@ const INSTALL = [
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
   { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
+  { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
   { k: 'HomeAddress', group: 'home', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
@@ -389,6 +390,8 @@ function setup() {
   else upgradeCategories_();
   migrate_();
   applySheetRules_();
+  // Automatic updates are on unless someone has switched them off.
+  if (String(inst_('AutoUpdate') || '').trim() === '') { try { setAutoUpdate_(true); } catch (err) { console.warn('Automatic updates: ' + err.message); } }
   // For the next 2 hours the setup wizard may collect the access code once (action=claim), so it needn't be typed in.
   PropertiesService.getScriptProperties().setProperty('claimUntil', String(Date.now() + 2 * 3600000));
   PropertiesService.getScriptProperties().deleteProperty('claimed');
@@ -534,6 +537,7 @@ function doGet(e) {
       if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_() };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
+      movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1');
@@ -566,6 +570,7 @@ function doPost(e) {
     ensureMigrated_();
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     checkCode_(body.code);
+    if (body.action !== 'moveDone') movedCheck_();
     return withLock_(() => dispatch_(body));
   });
 }
@@ -583,6 +588,9 @@ function dispatch_(b) {
     case 'state': return getState_();
     case 'admin': return getAdmin_();
     case 'licence': return { ok: true, licence: licencePublic_(!!b.recheck) };
+    case 'versions': return { ok: true, versions: versionsUsed_(true) };
+    case 'startAfresh': return startAfresh_();
+    case 'moveDone': return moveDone_(b);
     case 'setLicence': return setLicence_(b.key);
     case 'saveTask': return saveTask_(b.task);
     case 'deleteTask': return deleteRowById_('tasks', b.id);
@@ -771,6 +779,8 @@ function getAdmin_() {
     state: getState_(),
     install: INSTALL.filter(f => !f.hidden).map(f => ({ k: f.k, label: f.label, help: f.help, group: f.group || 'other', uses: f.uses || '', value: String(inst_(f.k)) })),
     licence: licencePublic_(),
+    versions: versionsUsed_(false),
+    moving: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('moving') || 'null'); } catch (e) { return null; } })(),
     pages: L.pages, widgets: L.widgets, lists: lists,
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
@@ -1010,7 +1020,7 @@ function withLock_(fn) {
 
 function json_(fn) {
   let out;
-  try { out = fn(); } catch (err) { out = { ok: false, error: String(err && err.message || err) }; }
+  try { out = fn(); } catch (err) { out = { ok: false, error: String(err && err.message || err) }; if (err && err.moved) out.moved = err.moved; }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -2688,14 +2698,16 @@ function spotifyControl_(op) {
 // A "🏠 Family Dashboard" menu in the Google Sheet: connect devices and check for updates without touching any code.
 
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
+  const m = SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
     .addItem('Connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
     .addItem('Update the Google script now', 'menuUpdate')
     .addItem('Turn automatic updates on / off', 'menuAutoUpdate')
     .addSeparator()
     .addItem('Repair the tabs (runs setup)', 'setup')
-    .addToUi();
+    .addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
+  if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
+  m.addToUi();
 }
 function appsBase_() { return String(inst_('AppsAddress') || APPS_DEFAULT).replace(/\/?$/, '/'); }
 function myUrl_() {
@@ -2786,8 +2798,9 @@ function setAutoUpdate_(on) {
 /** Hourly (when automatic updates are on). */
 function autoUpdateTick() { try { licencePublic_(); } catch (e) { /* next hour */ } if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
 
-function scriptApi_(method, path, body) {
-  const res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects/' + ScriptApp.getScriptId() + path, {
+function scriptApi_(method, path, body) { return scriptApiAt_(ScriptApp.getScriptId(), method, path, body); }
+function scriptApiAt_(projectId, method, path, body) {
+  const res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects' + (projectId ? '/' + projectId : '') + path, {
     method: method, contentType: 'application/json', muteHttpExceptions: true,
     headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, payload: body ? JSON.stringify(body) : undefined });
   const code = res.getResponseCode(), text = res.getContentText();
@@ -2836,12 +2849,15 @@ function selfUpdate_(why) {
       const msg = 'This update needs a new permission. In the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve.';
       return { ok: false, approval: true, message: msg, error: msg };
     }
+    const vu = versionsUsed_(true);
+    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (Family Admin → Settings → Updates), or delete old versions in Apps Script → Project history.');
     const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
     scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
     const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });
     scriptApi_('put', '/deployments/' + dep, { deploymentConfig: { scriptId: ScriptApp.getScriptId(), versionNumber: ver.versionNumber,
       manifestFileName: 'appsscript', description: 'Family Dashboard ' + latest.script } });
     P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'updated', from: SCRIPT_VERSION, to: latest.script, how: why }));
+    if (vu) P.setProperty('versionsUsed', JSON.stringify({ used: vu.used + 1, at: Date.now() }));
     try { CacheService.getScriptCache().removeAll(['layout']); } catch (e) { /* fine */ }
     return { ok: true, updated: true, from: SCRIPT_VERSION, to: latest.script, version: ver.versionNumber, approve: newScopes.length > 0 };
   } catch (err) {
@@ -2849,6 +2865,137 @@ function selfUpdate_(why) {
     if (why === 'app' || why === 'menu') throw err;
     return { ok: false, message: err.message, error: err.message };
   } finally { P.deleteProperty('updating'); }
+}
+
+/* ============================================================== SAVED VERSIONS AND STARTING AFRESH */
+/*
+ * Google keeps at most 200 saved versions of a script, and every automatic update uses one. The admin app shows
+ * how many are used and warns from 190. Two ways out:
+ *  - delete old versions in Apps Script → Project history (keeps everything as it is), or
+ *  - Start afresh: a brand-new Sheet with a new script (0 versions used). Every tab is copied across with all its
+ *    data, the script's own settings come too, the licence moves with it, automatic updates are switched back on,
+ *    and the old web address tells the screen and phones the new one, so they switch over by themselves.
+ */
+const VERSION_MAX = 200, VERSION_WARN = 190;
+function versionsUsed_(force) {
+  const P = PropertiesService.getScriptProperties();
+  let c = null; try { c = JSON.parse(P.getProperty('versionsUsed') || 'null'); } catch (e) { c = null; }
+  if (!force && c && Date.now() - c.at < 12 * 3600e3) return { used: c.used, max: VERSION_MAX, warn: c.used >= VERSION_WARN };
+  try {
+    let used = 0, token = '';
+    do {
+      const r = scriptApi_('get', '/versions?pageSize=50' + (token ? '&pageToken=' + encodeURIComponent(token) : ''));
+      used += (r.versions || []).length; token = r.nextPageToken || '';
+    } while (token);
+    P.setProperty('versionsUsed', JSON.stringify({ used: used, at: Date.now() }));
+    return { used: used, max: VERSION_MAX, warn: used >= VERSION_WARN };
+  } catch (err) {
+    return c ? { used: c.used, max: VERSION_MAX, warn: c.used >= VERSION_WARN, stale: true } : null;   // Apps Script API off: unknown
+  }
+}
+/** Old Sheet after a move: tell the screen and apps where the dashboard is now. */
+function movedCheck_() {
+  const to = String(inst_('MovedTo') || '');
+  if (to) { const e = new Error('This dashboard has moved to a new Google Sheet'); e.moved = to; throw e; }
+}
+// Script settings that belong to this copy only (everything else is carried to the new Sheet).
+const MOVE_SKIP = ['installId', 'licence', 'licenceServerAt', 'updating', 'claimUntil', 'claimed', 'execUrl', 'lastUpdate', 'moving', 'versionsUsed', 'dataVer', 'calVer'];
+
+/** Step 1, in the old Sheet: make the new Sheet and script, copy everything, publish the new web app. */
+function startAfresh_() {
+  const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
+  if (inst_('MovedTo')) throw new Error('This dashboard has already moved to a new Sheet');
+  const from = myUrl_();
+  if (!from) throw new Error('Open the web app address once first, so the script knows its own address');
+  const cur = scriptApi_('get', '/content');                    // also checks the Apps Script API is on
+  // 1. New Sheet with a copy of every tab (data, formatting, hidden or not).
+  const name = ss.getName().replace(/\s*\((old|new)[^)]*\)\s*$/i, '');
+  const ns = SpreadsheetApp.create(name + ' (new)');
+  const blank = ns.getSheets()[0];
+  ss.getSheets().forEach(sh => { const c = sh.copyTo(ns); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet(); });
+  ns.deleteSheet(blank);
+  ns.setSpreadsheetTimeZone(ss.getSpreadsheetTimeZone());
+  // 2. A new script in it: the same files as this one, published as a web app.
+  const proj = scriptApiAt_('', 'post', '', { title: 'Family Dashboard', parentId: ns.getId() });
+  scriptApiAt_(proj.scriptId, 'put', '/content', { files: (cur.files || []).map(f => ({ name: f.name, type: f.type, source: f.source })) });
+  const ver = scriptApiAt_(proj.scriptId, 'post', '/versions', { description: 'Family Dashboard ' + SCRIPT_VERSION + ' (moved)' });
+  const dep = scriptApiAt_(proj.scriptId, 'post', '/deployments', { versionNumber: ver.versionNumber, manifestFileName: 'appsscript', description: 'Family Dashboard' });
+  const web = (dep.entryPoints || []).map(e => e.webApp && e.webApp.url).filter(Boolean)[0] || '';
+  if (!web) throw new Error('The new web app was made but its address wasn’t returned – open the new Sheet and use Deploy → Manage deployments');
+  // 3. What the new script needs to carry on where this one is: its settings, a new installation number for the licence, where it came from.
+  const all = P.getProperties(), props = {};
+  Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
+  const carry = { props: props, install: Utilities.getUuid(), from: from, to: web, fromSheet: ss.getUrl(), autoUpdate: autoUpdateOn_(), at: new Date().toISOString() };
+  const cs = ns.insertSheet('_move');
+  cs.getRange(1, 1).setValue('Moving in progress – open the 🏠 Family Dashboard menu and choose “Finish moving here”. This tab disappears afterwards.');
+  cs.getRange(2, 1).setValue(JSON.stringify(carry));
+  ns.setActiveSheet(cs);
+  const moving = { sheetUrl: ns.getUrl(), sheetId: ns.getId(), url: web, install: carry.install, at: carry.at };
+  P.setProperty('moving', JSON.stringify(moving));
+  return { ok: true, sheetUrl: ns.getUrl(), url: web, message: 'New Sheet made. Open it, wait for the 🏠 Family Dashboard menu, and choose “Finish moving here”.' };
+}
+
+/** Step 2, in the new Sheet (from its menu, so Google can ask for permission once). */
+function finishMove() {
+  const ui = SpreadsheetApp.getUi(), ss = SpreadsheetApp.getActive(), cs = ss.getSheetByName('_move');
+  if (!cs) { ui.alert('Nothing to finish – this Sheet isn’t part of a move.'); return; }
+  const carry = JSON.parse(String(cs.getRange(2, 1).getValue()));
+  const P = PropertiesService.getScriptProperties();
+  P.setProperties(carry.props);
+  P.setProperty('installId', carry.install);
+  P.setProperty('execUrl', carry.to);
+  setup();
+  if (carry.autoUpdate) setAutoUpdate_(true);
+  // Tell the old Sheet: it hands over the licence and points everyone here.
+  let note = '';
+  try {
+    const r = UrlFetchApp.fetch(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
+      payload: JSON.stringify({ action: 'moveDone', code: inst_('AccessCode'), to: carry.to, install: carry.install }) });
+    const d = JSON.parse(r.getContentText());
+    if (!d.ok) note = d.error || 'the old Sheet didn’t answer';
+    else if (d.licenceNote) note = d.licenceNote;
+  } catch (err) { note = String(err.message || err); }
+  ss.deleteSheet(cs);
+  ss.rename(ss.getName().replace(/\s*\(new\)\s*$/i, ''));
+  versionsUsed_(true);
+  bumpVersions_();
+  ui.alert('Moved', 'Everything is in this Sheet now.' + (carry.autoUpdate ? ' Automatic updates are on.' : '') +
+    '\n\nThe screen and phones switch over by themselves within a few minutes (the old Sheet tells them the new address).' +
+    '\n\nThe old Sheet is kept as a backup, renamed “(old)”. Keep it for a few weeks: it’s what points older links to here.' +
+    (note ? '\n\nNote: ' + note : ''), ui.ButtonSet.OK);
+}
+
+/** Step 3, back in the old Sheet (called by the new one): move the licence, point everyone to the new address, stop working. */
+function moveDone_(b) {
+  const P = PropertiesService.getScriptProperties();
+  let mv = null; try { mv = JSON.parse(P.getProperty('moving') || 'null'); } catch (e) { mv = null; }
+  if (!mv || mv.url !== b.to || mv.install !== b.install) throw new Error('Not expecting this move');
+  let licenceNote = '';
+  const key = String(inst_('LicenceKey') || ''), server = licenceServer_();
+  if (key && server) {
+    try {
+      const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+        payload: JSON.stringify({ action: 'move', key: key, install: installId_(), to: b.install, version: SCRIPT_VERSION }) });
+      const d = JSON.parse(r.getContentText());
+      if (!d.ok) licenceNote = 'The licence couldn’t be moved (' + (d.message || d.error || 'refused') + ') – ask the seller to release it, then enter it again.';
+    } catch (err) { licenceNote = 'The licence server couldn’t be reached – if the new Sheet asks for the key, enter it again.'; }
+  }
+  setInst_('MovedTo', b.to);
+  ScriptApp.getProjectTriggers().forEach(t => ScriptApp.deleteTrigger(t));
+  setInst_('AutoUpdate', 'No');
+  try { const ss = SpreadsheetApp.getActive(); ss.rename(ss.getName().replace(/\s*\((old|new)[^)]*\)\s*$/i, '') + ' (old – moved ' + Utilities.formatDate(new Date(), TZ, 'd MMM yyyy') + ')'); } catch (e) { /* fine */ }
+  P.deleteProperty('moving');
+  return { ok: true, licenceNote: licenceNote };
+}
+function menuStartAfresh() {
+  const ui = SpreadsheetApp.getUi();
+  if (ui.alert('Start afresh in a new Sheet', 'This makes a brand-new Google Sheet with its own script, copies every tab and setting into it, moves your licence, and switches automatic updates back on. The screen and phones follow by themselves.\n\nThis Sheet is kept as a backup. Go ahead?', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  try {
+    const r = startAfresh_();
+    dialog_('Nearly done', '<p>✅ The new Sheet is ready.</p><p><b><a href="' + r.sheetUrl + '" target="_blank">Open the new Sheet</a></b>, wait a few seconds for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b>. Google will ask you to allow the script, as it did the first time.</p>', 260);
+  } catch (err) {
+    dialog_('Couldn’t start afresh', '<p>' + clean_(err.message) + '</p>' + (/Apps Script API/.test(err.message) ? '<p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a> and try again.</p>' : ''), 240);
+  }
 }
 
 /* ============================================================== LICENCE */
@@ -2861,7 +3008,7 @@ function selfUpdate_(why) {
  */
 const LICENCE = { trialDays: 14, graceDays: 21, recheckHours: 24 };
 // What still works without a licence: enough to see the problem and put a key in.
-const LICENCE_FREE = ['admin', 'licence', 'setLicence', 'acceptPrivacy', 'selfUpdate', 'autoUpdate', 'changeCode', 'family', 'saveInstall'];
+const LICENCE_FREE = ['admin', 'licence', 'setLicence', 'acceptPrivacy', 'selfUpdate', 'autoUpdate', 'changeCode', 'family', 'saveInstall', 'versions', 'startAfresh', 'moveDone'];
 
 function licenceServer_() {
   const P = PropertiesService.getScriptProperties();

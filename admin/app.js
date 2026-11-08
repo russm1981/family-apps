@@ -134,6 +134,8 @@
         var out = '', L = DATA.licence, r = route();
         if (L && L.required && !L.ok && r.s !== 'licence') out += '<div class="banner warn"><b>🎫 ' + esc(L.message) + '</b> <button class="link" data-go="s/licence">Add your key</button></div>';
         else if (L && L.state === 'trial' && r.tab === 'home' && !r.w) out += '<div class="banner">' + esc(L.message) + ' <button class="link" data-go="s/licence">Add your key</button></div>';
+        if (DATA.moving && r.s !== 'updates') out += '<div class="banner warn"><b>Moving to a new Sheet isn’t finished.</b> <button class="link" data-go="s/updates">What to do</button></div>';
+        else if (DATA.versions && DATA.versions.warn && r.s !== 'updates' && !r.w) out += '<div class="banner warn"><b>The Google script has used ' + DATA.versions.used + ' of its ' + DATA.versions.max + ' saved versions.</b> <button class="link" data-go="s/updates">Sort it out</button></div>';
         if (DATA.codeWeak && r.tab === 'home' && !r.w) out += '<div class="banner warn"><b>Your access code is weak.</b> <button class="link" data-go="s/access">Fix it</button></div>';
         if (LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion) && r.s !== 'updates' && !r.w && (r.tab === 'home' || r.tab === 'settings'))
             out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <button class="link" data-go="s/updates">Update now</button></div>';
@@ -906,8 +908,10 @@
             '<details class="adv"><summary>What automatic updates need</summary><p class="small">Once per Google account, switch on <b>Google Apps Script API</b> at ' +
             '<a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>. ' +
             'Your script then downloads new versions from ' + esc(DATA.appsAddress || '') + ' – only turn this on if you trust whoever publishes that site.</p></details>') +
+            versionsCard() +
             (LATEST && LATEST.notes ? card('What’s new', '<ul class="pvl">' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') : '') +
             '<p class="mute small help">The screen and these phone apps update themselves.</p>';
+        wireAfresh();
         $('suNow').onclick = function () {
             var b = $('suNow'); b.disabled = true; b.textContent = 'Updating… (up to a minute)';
             FD.post({ action: 'selfUpdate', why: 'app' }).then(function (r) {
@@ -924,6 +928,30 @@
                 if (r.warning) sheet('<h2>Automatic updates are on, but…</h2><p>' + esc(r.warning) + '</p><p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>.</p>');
                 load();
             }, function () {});
+        };
+    }
+
+    /* ---- saved versions and starting afresh */
+    function versionsCard() {
+        var v = DATA.versions, mv = DATA.moving;
+        if (mv) return card('Finish moving to the new Sheet', '<p>The new Sheet is ready. Open it, wait for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b> – Google asks you to allow the script, as it did the first time.</p>' +
+            '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
+        var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
+        return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
+                '<div class="bar' + (v.warn ? ' warnbar' : '') + '"><span style="width:' + pct + '%"></span></div>'
+                : '<p class="mute">Not known – switch on the Google Apps Script API (see Automatic updates above).</p>') +
+            (v && v.warn ? '<p class="neg"><b>Nearly full.</b> When it’s full the script can’t update. Start afresh below (easiest), or delete old versions in Apps Script → Project history.</p>' : '') +
+            '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
+            'The screen and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
+            '<button class="btn wide" id="afresh">Start afresh</button></details>');
+    }
+    function wireAfresh() {
+        if (!$('afresh')) return;
+        $('afresh').onclick = function () {
+            if (!confirm('Make a new Sheet and copy everything into it?')) return;
+            var b = this; b.disabled = true; b.textContent = 'Copying everything… (up to a minute)';
+            FD.post({ action: 'startAfresh' }).then(function (d) { FD.toast('New Sheet ready'); DATA.moving = { sheetUrl: d.sheetUrl, url: d.url }; render(); load(); },
+                function (e) { b.disabled = false; b.textContent = 'Start afresh'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
         };
     }
 

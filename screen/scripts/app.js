@@ -88,6 +88,13 @@
             // A Google error page (e.g. "authorisation required") has no CORS headers, so the browser just says "Failed to fetch".
             throw new Error(navigator.onLine === false ? 'This PC is offline' : 'Can’t reach the Google script – check the internet, or open the Family Admin app to see if the script needs approving again');
         }).then(function (d) {
+            // The dashboard has moved to a new Sheet ("Start afresh"): remember the new address and ask again there.
+            if (d && d.moved && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(d.moved) && url.indexOf(cfg.url) === 0 && !opts.moved) {
+                var old = cfg.url; cfg.url = d.moved;
+                store(CFG_KEY, JSON.stringify({ url: cfg.url, code: cfg.code }));
+                opts.moved = true;
+                return fetchJson(d.moved + url.slice(old.length), opts);
+            }
             if (d && d.ok === false) throw new Error(d.error || 'Request failed');
             return d;
         }).finally(function () { clearTimeout(t); });

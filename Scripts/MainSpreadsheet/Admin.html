@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<style>
+  :root { --bg:#0f1115; --card:#191c22; --line:#2a2f38; --text:#e9edf3; --mute:#8a93a3; --acc:#3fa9f5; --bad:#ff5b5b; --good:#4cd964; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  header { padding:16px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0; flex:1; }
+  nav { display:flex; gap:6px; padding:10px 16px; overflow-x:auto; border-bottom:1px solid var(--line); }
+  nav button { background:none; border:1px solid var(--line); color:var(--mute); padding:8px 14px; border-radius:999px; white-space:nowrap; cursor:pointer; font:inherit; }
+  nav button.on { background:var(--acc); border-color:var(--acc); color:#fff; }
+  main { padding:16px; max-width:900px; margin:0 auto; }
+  section { display:none; } section.on { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  h2 { font-size:16px; margin:0 0 10px; }
+  label { display:block; font-size:12px; color:var(--mute); margin-bottom:4px; }
+  input, select { width:100%; background:#0b0d11; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:9px 10px; font:inherit; }
+  .grid { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); }
+  .btn { background:var(--acc); color:#fff; border:0; border-radius:8px; padding:10px 14px; font:inherit; font-weight:600; cursor:pointer; }
+  .btn.ghost { background:none; border:1px solid var(--line); color:var(--text); }
+  .btn.bad { background:var(--bad); }
+  .btn.sm { padding:6px 10px; font-size:13px; }
+  .row { display:flex; gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line); }
+  .row:last-child { border-bottom:0; }
+  .grow { flex:1; min-width:0; }
+  .pts { font-weight:700; font-variant-numeric:tabular-nums; }
+  .pts.neg { color:var(--bad); } .pts.pos { color:var(--good); }
+  .mute { color:var(--mute); font-size:13px; }
+  .pill { display:inline-block; font-size:11px; padding:2px 8px; border-radius:999px; border:1px solid var(--line); color:var(--mute); margin-left:6px; }
+  .bal { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); }
+  .bal div { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px; }
+  .bal b { display:block; font-size:28px; }
+  table.edit { width:100%; border-collapse:collapse; }
+  table.edit td { padding:4px; }
+  #toast { position:fixed; left:50%; bottom:20px; transform:translateX(-50%); background:#000; border:1px solid var(--line); padding:10px 16px; border-radius:10px; display:none; }
+  #login { max-width:380px; margin:60px auto; }
+  textarea { width:100%; background:#0b0d11; color:var(--text); border:1px solid var(--line); border-radius:8px; padding:9px 10px; font:inherit; }
+  .pv { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; height:90px; background:#07080b; border-radius:10px; padding:6px; margin:10px 0; }
+  .pv-col { display:flex; flex-direction:column; gap:6px; min-width:0; } .pv-col.over { outline:2px dashed var(--bad); }
+  .pv-w { flex:1; min-height:0; border-radius:7px; background:#222731; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; color:var(--mute); overflow:hidden; white-space:nowrap; cursor:pointer; }
+  .pv-w.half { flex:0 0 calc(50% - 3px); } .pv-empty { margin:auto; font-size:11px; color:#444; }
+  .hint { margin:3px 0 10px; } .tog { display:flex; gap:8px; align-items:center; color:var(--text); font-size:15px; margin:8px 0; } .tog input { width:auto; }
+  details { margin-top:8px; } summary { color:var(--acc); cursor:pointer; font-weight:600; margin-bottom:8px; }
+</style>
+</head>
+<body>
+<div id="login" class="card" style="display:none">
+  <h2>Family Dashboard – Admin</h2>
+  <p class="mute">Enter the access code from the Installation tab of the Google Sheet.</p>
+  <input id="codeIn" placeholder="Access code" autocomplete="off">
+  <p><button class="btn" onclick="login()">Open</button></p>
+  <p id="loginErr" class="mute" style="color:var(--bad)"></p>
+</div>
+
+<div id="app" style="display:none">
+  <header><h1>Family Dashboard – Admin</h1><button class="btn ghost sm" onclick="load()">Refresh</button><button class="btn ghost sm" onclick="logout()">Sign out</button></header>
+  <nav>
+    <button data-tab="tasks" class="on">Tasks</button>
+    <button data-tab="statement">Points &amp; statement</button>
+    <button data-tab="todos">Morning to-dos</button>
+    <button data-tab="timetable">Weekly reminders</button>
+    <button data-tab="boys">Family</button>
+    <button data-tab="widgets">Pages &amp; widgets</button>
+    <button data-tab="install">Installation</button>
+  </nav>
+  <main>
+    <section id="tasks" class="on">
+      <div class="card">
+        <h2 id="taskFormTitle">Add a task</h2>
+        <input type="hidden" id="tID">
+        <div class="grid">
+          <div style="grid-column:1/-1"><label>Task</label><input id="tTask" maxlength="22" placeholder="e.g. Tidy your bedroom"></div>
+          <div><label>Points</label><input id="tPoints" type="number" min="1" max="999" placeholder="20"></div>
+          <div><label>For</label><select id="tBoy"></select></div>
+          <div><label>Repeats</label><select id="tRepeat">
+            <option value="once">Once (gone when done)</option>
+            <option value="daily">Daily (back tomorrow)</option>
+            <option value="always">Always available</option>
+          </select></div>
+          <div><label>Order (lower shows first)</label><input id="tOrder" type="number" placeholder="10"></div>
+        </div>
+        <p style="display:flex;gap:8px;margin-bottom:0">
+          <button class="btn" onclick="saveTask()">Save task</button>
+          <button class="btn ghost" onclick="clearTask()">Clear</button>
+        </p>
+      </div>
+      <div class="card"><h2>All tasks</h2><div id="taskList"></div>
+        <p class="mute">Each child sees their next three open tasks on the screen, in order.</p></div>
+    </section>
+
+    <section id="statement">
+      <div class="bal" id="balances"></div>
+      <div class="card" style="margin-top:14px">
+        <h2>Manual adjustment</h2>
+        <div class="grid">
+          <div><label>Child</label><select id="aBoy"></select></div>
+          <div><label>Points (+ or −)</label><input id="aPoints" type="number" min="-999" max="999" placeholder="-20 or 30"></div>
+          <div style="grid-column:span 2"><label>Reason</label><input id="aReason" maxlength="30" placeholder="e.g. Rude to brother"></div>
+        </div>
+        <p style="margin-bottom:0"><button class="btn" onclick="adjust()">Apply</button></p>
+      </div>
+      <div class="card">
+        <h2 style="display:flex;gap:10px;align-items:center">Statement <select id="sBoy" style="width:auto" onchange="renderStatement()"></select></h2>
+        <div id="ledger"></div>
+      </div>
+    </section>
+
+    <section id="todos">
+      <div class="card">
+        <h2>Morning to-do list</h2>
+        <p class="mute">For: a name, several names separated by commas, or All. Days: Mon-Fri, Mon,Wed, Weekends, Daily…</p>
+        <table class="edit" id="todoTable"></table>
+        <p style="display:flex;gap:8px;margin-bottom:0"><button class="btn ghost" onclick="addRow('todos')">Add item</button><button class="btn" onclick="saveList('todos')">Save</button></p>
+      </div>
+    </section>
+
+    <section id="timetable">
+      <div class="card">
+        <h2>Weekly reminders (PE, clubs, kit…)</h2>
+        <p class="mute">Shown on the Boys screen on the matching day, and the evening before. Day can be Tue, Mon,Thu, Mon-Fri… or a date for a one-off, e.g. 23/09 or 23/09/2027.</p>
+        <table class="edit" id="ttTable"></table>
+        <p style="display:flex;gap:8px;margin-bottom:0"><button class="btn ghost" onclick="addRow('timetable')">Add reminder</button><button class="btn" onclick="saveList('timetable')">Save</button></p>
+      </div>
+    </section>
+
+    <section id="boys">
+      <div class="card">
+        <h2>Children, family &amp; calendar</h2>
+        <p class="mute">Children, the adults, the calendar groups and categories, and the name of the children’s page are all changed in one place, so renaming a child keeps their points and calendar entries.</p>
+        <table class="edit" id="boysTable" style="display:none"></table>
+        <p style="margin-bottom:0"><button class="btn" onclick="openSetup('family')">Change family &amp; calendar</button></p>
+      </div>
+    </section>
+    <section id="widgets">
+      <div class="card" id="wEdit" style="display:none"></div>
+      <p class="mute">Each widget is a quarter of the screen wide and full or half height; two half-height widgets share a column. Changes show on the screen within a minute.</p>
+      <div id="pageList"></div>
+      <div class="card"><h2>New widget page</h2><div style="display:flex;gap:8px"><input id="npTitle" maxlength="10" placeholder="e.g. Kitchen"><button class="btn" onclick="addPage()">Add page</button></div></div>
+    </section>
+
+    <section id="install">
+      <div class="card">
+        <h2>Installation settings</h2>
+        <p class="mute">Set once: keys for the map, trains and calendar. Each widget&rsquo;s own settings are on the Pages &amp; widgets tab. The access code can only be changed in the Sheet (Installation tab).</p>
+        <div id="installForm"></div>
+        <p style="margin-bottom:0"><button class="btn" onclick="saveInstall()">Save installation settings</button></p>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast"></div>
+
+<script>
+let CODE = '', DATA = null;
+const LISTS = {
+  todos: { table: 'todoTable', cols: [['Boy','For'],['Item','Item'],['Days','Days'],['Order','Order']] },
+  timetable: { table: 'ttTable', cols: [['Boy','For'],['Day','Day'],['Reminder','Reminder']] },
+  boys: { table: 'boysTable', cols: [['Name','Name'],['Colour','Colour (hex)']] },
+};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = id => document.getElementById(id);
+
+function toast(msg, bad) {
+  const t = $('toast'); t.textContent = msg; t.style.color = bad ? 'var(--bad)' : 'var(--text)';
+  t.style.display = 'block'; clearTimeout(toast.h); toast.h = setTimeout(() => t.style.display = 'none', 2600);
+}
+function call(body) {
+  return new Promise((res, rej) => google.script.run
+    .withSuccessHandler(res).withFailureHandler(e => rej(e))
+    .api(Object.assign({ code: CODE }, body)));
+}
+function store(k, v) { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) {} }
+function read(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
+
+function login() {
+  CODE = $('codeIn').value.trim();
+  $('loginErr').textContent = '';
+  load(true);
+}
+function openSetup(step) {
+  if (!DATA || !DATA.execUrl) return;
+  const base = DATA.setupBase || ((DATA.appsAddress || '').replace(/\/?$/, '/') + 'setup/');
+  window.open(base + '#api=' + encodeURIComponent(DATA.execUrl) + '&code=' + encodeURIComponent(CODE) + '&go=' + step, '_blank');
+}
+function logout() { store('brCode', null); CODE = ''; $('app').style.display = 'none'; $('login').style.display = 'block'; }
+
+function load(fromLogin) {
+  call({ action: 'admin' }).then(d => {
+    store('brCode', CODE);
+    $('login').style.display = 'none'; $('app').style.display = 'block';
+    render(d);
+  }).catch(e => {
+    if (fromLogin || /access code/i.test(e.message)) { $('app').style.display = 'none'; $('login').style.display = 'block'; $('loginErr').textContent = e.message; }
+    else toast(e.message, true);
+  });
+}
+
+function render(d) {
+  DATA = d;
+  const names = d.boys.map(b => b.Name).filter(Boolean);
+  $('tBoy').innerHTML = ['All'].concat(names).map(n => `<option>${esc(n)}</option>`).join('');
+  $('aBoy').innerHTML = names.map(n => `<option>${esc(n)}</option>`).join('');
+  const keep = $('sBoy').value;
+  $('sBoy').innerHTML = ['All'].concat(names).map(n => `<option>${esc(n)}</option>`).join('');
+  if (keep) $('sBoy').value = keep;
+  renderTasks(); renderStatement(); renderInstall(); renderPages();
+  Object.keys(LISTS).forEach(renderList);
+}
+
+/* ---------------------------------------------------------------- installation */
+function renderInstall() {
+  $('installForm').innerHTML = (DATA.install || []).map(f => `<div style="margin-bottom:12px"><label>${esc(f.label)}</label>
+    <input data-inst="${esc(f.k)}" value="${esc(f.value)}" autocomplete="off" spellcheck="false"><div class="mute hint">${esc(f.help || '')}</div></div>`).join('');
+}
+function saveInstall() {
+  const values = {}; document.querySelectorAll('[data-inst]').forEach(i => values[i.dataset.inst] = i.value.trim());
+  call({ action: 'saveInstall', values }).then(d => { render(d); toast('Installation settings saved'); }).catch(e => toast(e.message, true));
+}
+
+/* ---------------------------------------------------------------- pages & widgets */
+const typeOf = t => (DATA.types || []).find(x => x.type === t) || { name: t, icon: '', settings: [], sizes: ['full'] };
+const pageTypeOf = t => (DATA.pageTypes || []).find(x => x.type === t) || { name: t, settings: [] };
+const widgetsOn = pid => (DATA.widgets || []).filter(w => w.page === pid);
+function pack(ws) {
+  const cols = [];
+  ws.filter(w => w.show).forEach(w => { const last = cols[cols.length - 1];
+    if (w.size === 'half' && last && last.length === 1 && last[0].size === 'half') last.push(w); else cols.push([w]); });
+  return cols;
+}
+function renderPages() {
+  if (!DATA.pages) { $('pageList').innerHTML = '<p class="mute">Update the Apps Script code to see this tab.</p>'; return; }
+  const n = (DATA.limits && DATA.limits.columns) || 4;
+  $('pageList').innerHTML = DATA.pages.map((p, i) => {
+    const ws = widgetsOn(p.id), isW = p.type === 'widgets', cols = pack(ws);
+    let pv = '';
+    for (let c = 0; c < Math.max(n, cols.length); c++) {
+      const col = cols[c] || [];
+      pv += `<div class="pv-col${c >= n ? ' over' : ''}">` + (col.length ? col.map(w => `<div class="pv-w ${w.size}" onclick="editWidget('${esc(w.id)}')">${esc(typeOf(w.type).icon)} ${esc(typeOf(w.type).name)}</div>`).join('') : '<span class="pv-empty">empty</span>') + '</div>';
+    }
+    return `<div class="card" style="${p.show ? '' : 'opacity:.6'}">
+      <h2 style="display:flex;gap:8px;align-items:center"><span>${esc(p.icon)}</span><span style="flex:1">${esc(p.title)} <span class="pill">${esc(pageTypeOf(p.type).name)}</span>${p.show ? '' : '<span class="pill">hidden</span>'}</span>
+        <button class="btn ghost sm" onclick="movePage('${esc(p.id)}',-1)" ${i ? '' : 'disabled'}>▲</button><button class="btn ghost sm" onclick="movePage('${esc(p.id)}',1)" ${i < DATA.pages.length - 1 ? '' : 'disabled'}>▼</button>
+        <button class="btn ghost sm" onclick="editPage('${esc(p.id)}')">Edit page</button></h2>` +
+      (isW ? `<div class="pv">${pv}</div>` + (cols.length > n ? `<p class="mute" style="color:var(--bad)">${cols.length - n} column(s) won’t fit – make widgets half height, move or hide some.</p>` : '') +
+        ws.map((w, j) => `<div class="row" style="${w.show ? '' : 'opacity:.55'}"><div class="grow"><div>${esc(typeOf(w.type).icon)} ${esc(typeOf(w.type).name)}<span class="pill">${w.show ? esc(w.size) : 'hidden'}</span></div><div class="mute">${esc(typeOf(w.type).about)}</div></div>
+          <button class="btn ghost sm" onclick="moveWidget('${esc(w.id)}',-1)" ${j ? '' : 'disabled'}>▲</button><button class="btn ghost sm" onclick="moveWidget('${esc(w.id)}',1)" ${j < ws.length - 1 ? '' : 'disabled'}>▼</button>
+          <button class="btn ghost sm" onclick="editWidget('${esc(w.id)}')">Edit</button></div>`).join('') +
+        `<p style="display:flex;gap:8px;margin-bottom:0"><select id="add_${esc(p.id)}" style="width:auto">${DATA.types.map(T => `<option value="${esc(T.type)}">${esc(T.icon)} ${esc(T.name)} (${T.sizes.join('/')})</option>`).join('')}</select>
+          <button class="btn ghost" onclick="addWidget('${esc(p.id)}')">+ Add widget</button></p>` : '') + '</div>';
+  }).join('');
+}
+function fieldHtml(f, v) {
+  const help = f.help ? `<div class="mute hint">${esc(f.help)}</div>` : '';
+  if (f.type === 'bool') return `<label class="tog"><input type="checkbox" data-f="${esc(f.k)}" ${v ? 'checked' : ''}>${esc(f.label)}</label>${help}`;
+  let input;
+  if (f.type === 'select') input = `<select data-f="${esc(f.k)}">${f.options.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+  else if (f.type === 'lines') input = `<textarea data-f="${esc(f.k)}" rows="${f.maxLines || 3}">${esc(v)}</textarea>`;
+  else input = `<input data-f="${esc(f.k)}" value="${esc(v)}" autocomplete="off"${f.type === 'number' ? ` type="number" min="${f.min}" max="${f.max}"` : f.type === 'time' ? ' type="time"' : f.max ? ` maxlength="${f.max}"` : ''}>`;
+  return `<div style="margin-top:10px"><label>${esc(f.label)}</label>${input}${help}</div>`;
+}
+function fieldsHtml(defs, vals) {
+  const adv = defs.filter(f => f.advanced);
+  return defs.filter(f => !f.advanced).map(f => fieldHtml(f, vals[f.k])).join('') +
+    (adv.length ? '<details><summary>More settings</summary>' + adv.map(f => fieldHtml(f, vals[f.k])).join('') + '</details>' : '');
+}
+function readFields() { const o = {}; document.querySelectorAll('#wEdit [data-f]').forEach(i => o[i.dataset.f] = i.type === 'checkbox' ? i.checked : i.value.trim()); return o; }
+function closeEdit() { $('wEdit').style.display = 'none'; $('wEdit').innerHTML = ''; }
+function editWidget(id) {
+  const w = DATA.widgets.find(x => x.id === id); if (!w) return;
+  const T = typeOf(w.type), pages = DATA.pages.filter(p => p.type === 'widgets');
+  const list = (DATA.lists || {})[w.id];
+  $('wEdit').innerHTML = `<h2>${esc(T.icon)} ${esc(T.name)}</h2><p class="mute">${esc(T.about)}</p>
+    <div class="grid"><div><label>Page</label><select id="wPage">${pages.map(p => `<option value="${esc(p.id)}" ${p.id === w.page ? 'selected' : ''}>${esc(p.title)}</option>`).join('')}</select></div>
+    <div><label>Height</label><select id="wSize" ${T.sizes.length < 2 ? 'disabled' : ''}>${T.sizes.map(z => `<option value="${z}" ${z === w.size ? 'selected' : ''}>${z === 'full' ? 'Full height' : 'Half height'}</option>`).join('')}</select></div></div>
+    <label class="tog"><input type="checkbox" id="wShow" ${w.show ? 'checked' : ''}>Show on the screen</label>
+    ${fieldsHtml(T.settings, w.settings)}
+    ${w.type === 'memo' ? `<h2 style="margin-top:16px">Notes</h2>` + (DATA.memos || []).slice().reverse().map(m => `<div class="row"><div class="grow">${esc(m.text)}<div class="mute">${esc(m.from)} ${esc(m.added)}</div></div>
+      <button class="btn ghost sm" onclick="memoOp('${esc(w.id)}','remove','${esc(m.id)}')">✕</button></div>`).join('') +
+      `<div style="display:flex;gap:8px;margin-top:8px"><input id="mmNew" maxlength="80" placeholder="Write a note"><input id="mmFrom" maxlength="12" placeholder="From" style="width:140px"><button class="btn ghost" onclick="memoOp('${esc(w.id)}','add')">Add</button></div>` : ''}
+    ${w.type === 'spotify' ? `<h2 style="margin-top:16px">Spotify account</h2><p class="mute">${DATA.spotifyConnected ? '✅ Connected.' : 'Not connected yet.'} Add the Client ID and secret on the Installation tab first. In your Spotify app, the Redirect URI must be: <code>${esc(DATA.execUrl || '')}</code></p>
+      <p><a class="btn" target="_blank" href="${esc((DATA.execUrl || '') + '?spotify=login&key=' + encodeURIComponent(CODE))}">${DATA.spotifyConnected ? 'Reconnect' : 'Connect'} Spotify</a></p>` : ''}
+    ${w.type === 'list' || w.type === 'todo' ? `<h2 style="margin-top:16px">Items</h2>` + (list && !list.error ? list.items.map(i => `<div class="row"><div class="grow" style="${i.done ? 'text-decoration:line-through;color:var(--mute)' : ''}">${esc(i.text)}</div>
+      <button class="btn ghost sm" onclick="listOp('${esc(w.id)}','toggle','${esc(i.id)}')">${i.done ? 'Untick' : 'Tick'}</button><button class="btn ghost sm" onclick="listOp('${esc(w.id)}','remove','${esc(i.id)}')">✕</button></div>`).join('') +
+      `<div style="display:flex;gap:8px;margin-top:8px"><input id="lsNew" maxlength="${DATA.limits.listItem || 30}" placeholder="Add an item"><button class="btn ghost" onclick="listOp('${esc(w.id)}','add')">Add</button><button class="btn ghost" onclick="listOp('${esc(w.id)}','clearDone')">Clear ticked</button></div>`
+      : `<p class="mute">${esc(list ? list.error : 'Save first')}</p>`) : ''}
+    <p style="display:flex;gap:8px;margin-bottom:0;margin-top:14px"><button class="btn" onclick="saveWidget('${esc(w.id)}')">Save</button><button class="btn ghost" onclick="closeEdit()">Close</button>
+      <span style="flex:1"></span><button class="btn bad" onclick="deleteWidget('${esc(w.id)}')">Remove widget</button></p>`;
+  $('wEdit').style.display = 'block'; window.scrollTo(0, 0);
+}
+function saveWidget(id) {
+  call({ action: 'saveWidget', widget: { id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked, settings: readFields() } })
+    .then(d => { render(d); editWidget(id); toast('Saved'); }).catch(e => toast(e.message, true));
+}
+function deleteWidget(id) { if (!confirm('Remove this widget and its settings?')) return; call({ action: 'deleteWidget', id }).then(d => { closeEdit(); render(d); toast('Removed'); }).catch(e => toast(e.message, true)); }
+function addWidget(pid) { call({ action: 'addWidget', page: pid, type: $('add_' + pid).value }).then(d => { render(d); toast('Added'); }).catch(e => toast(e.message, true)); }
+function moveWidget(id, dir) { call({ action: 'moveWidget', id, dir }).then(render).catch(e => toast(e.message, true)); }
+function movePage(id, dir) { call({ action: 'movePage', id, dir }).then(render).catch(e => toast(e.message, true)); }
+function addPage() { call({ action: 'addPage', title: $('npTitle').value.trim() }).then(d => { $('npTitle').value = ''; render(d); toast('Page added'); }).catch(e => toast(e.message, true)); }
+function listOp(wid, op, id) {
+  const body = { action: 'listItem', widget: wid, op, id };
+  if (op === 'add') { body.text = $('lsNew').value.trim(); if (!body.text) return; }
+  call(body).then(r => { DATA.lists[wid] = r.data; editWidget(wid); }).catch(e => toast(e.message, true));
+}
+function memoOp(wid, op, id) {
+  const body = { action: 'memo', op, id };
+  if (op === 'add') { body.text = $('mmNew').value.trim(); body.from = $('mmFrom').value.trim(); if (!body.text) return; }
+  call(body).then(() => load()).then(() => setTimeout(() => editWidget(wid), 400)).catch(e => toast(e.message, true));
+}
+function editPage(id) {
+  const p = DATA.pages.find(x => x.id === id), PT = pageTypeOf(p.type);
+  $('wEdit').innerHTML = `<h2>${esc(p.title)} page</h2><p class="mute">${esc(PT.name)}</p>
+    <div class="grid"><div><label>Name (max ${DATA.limits.pageTitle || 10})</label><input id="pTitle" maxlength="${DATA.limits.pageTitle || 10}" value="${esc(p.title)}"></div>
+    <div><label>Icon (one character)</label><input id="pIcon" maxlength="2" value="${esc(p.icon)}"></div></div>
+    <label class="tog"><input type="checkbox" id="pShow" ${p.show ? 'checked' : ''}>Show this page</label>
+    ${fieldsHtml(PT.settings, p.settings || {})}
+    <p style="display:flex;gap:8px;margin-bottom:0;margin-top:14px"><button class="btn" onclick="savePage('${esc(p.id)}')">Save</button><button class="btn ghost" onclick="closeEdit()">Close</button>
+    <span style="flex:1"></span>${p.type === 'widgets' ? `<button class="btn bad" onclick="deletePage('${esc(p.id)}')">Delete page</button>` : ''}</p>`;
+  $('wEdit').style.display = 'block'; window.scrollTo(0, 0);
+}
+function savePage(id) {
+  call({ action: 'savePage', page: { id, title: $('pTitle').value.trim(), icon: $('pIcon').value.trim(), show: $('pShow').checked, settings: readFields() } })
+    .then(d => { closeEdit(); render(d); toast('Saved'); }).catch(e => toast(e.message, true));
+}
+function deletePage(id) { if (!confirm('Delete this page?')) return; call({ action: 'deletePage', id }).then(d => { closeEdit(); render(d); toast('Deleted'); }).catch(e => toast(e.message, true)); }
+
+/** Longest text that fits on the screen, from the script (falls back to the same numbers). */
+function maxAttr(list, col) {
+  const L = (DATA && DATA.limits) || { reminder: 12, boyName: 10, todo: 22, destination: 16 };
+  const m = { todos: { Item: L.todo }, timetable: { Reminder: L.reminder }, boys: { Name: L.boyName } }[list];
+  const n = m && m[col];
+  return n ? ` maxlength="${n}" placeholder="max ${n} characters"` : '';
+}
+
+function renderTasks() {
+  const tasks = DATA.tasks.slice().sort((a, b) => (+a.Order || 999) - (+b.Order || 999));
+  $('taskList').innerHTML = tasks.length ? tasks.map(t => `
+    <div class="row" style="${t.Active ? '' : 'opacity:.5'}">
+      <div class="grow"><div>${esc(t.Task)}<span class="pill">${esc(t.Boy || 'All')}</span><span class="pill">${esc(t.Repeat || 'once')}</span>${t.Active ? '' : '<span class="pill">paused</span>'}</div></div>
+      <div class="pts pos">+${esc(t.Points)}</div>
+      <button class="btn ghost sm" onclick="editTask('${esc(t.ID)}')">Edit</button>
+      <button class="btn ghost sm" onclick="toggleTask('${esc(t.ID)}')">${t.Active ? 'Pause' : 'Resume'}</button>
+      <button class="btn bad sm" onclick="delTask('${esc(t.ID)}')">Delete</button>
+    </div>`).join('') : '<p class="mute">No tasks yet.</p>';
+}
+function editTask(id) {
+  const t = DATA.tasks.find(x => x.ID === id); if (!t) return;
+  $('tID').value = t.ID; $('tTask').value = t.Task; $('tPoints').value = t.Points;
+  $('tBoy').value = t.Boy || 'All'; $('tRepeat').value = t.Repeat || 'once'; $('tOrder').value = t.Order;
+  $('taskFormTitle').textContent = 'Edit task'; window.scrollTo(0, 0);
+}
+function clearTask() {
+  ['tID','tTask','tPoints','tOrder'].forEach(i => $(i).value = '');
+  $('tBoy').value = 'All'; $('tRepeat').value = 'once'; $('taskFormTitle').textContent = 'Add a task';
+}
+function saveTask() {
+  const existing = DATA.tasks.find(x => x.ID === $('tID').value);
+  const task = { ID: $('tID').value, Task: $('tTask').value.trim(), Points: $('tPoints').value, Boy: $('tBoy').value,
+    Repeat: $('tRepeat').value, Order: $('tOrder').value, Active: existing ? existing.Active : true };
+  call({ action: 'saveTask', task }).then(d => { render(d); clearTask(); toast('Task saved'); }).catch(e => toast(e.message, true));
+}
+function toggleTask(id) {
+  const t = Object.assign({}, DATA.tasks.find(x => x.ID === id)); t.Active = !t.Active;
+  call({ action: 'saveTask', task: t }).then(render).catch(e => toast(e.message, true));
+}
+function delTask(id) {
+  if (!confirm('Delete this task? Points already earned stay on the statement.')) return;
+  call({ action: 'deleteTask', id }).then(d => { render(d); toast('Deleted'); }).catch(e => toast(e.message, true));
+}
+
+function renderStatement() {
+  const st = DATA.state;
+  $('balances').innerHTML = st.boys.map(b => `<div style="border-left:4px solid ${esc(b.colour)}">
+    <span class="mute">${esc(b.name)}</span><b>${b.balance}</b>
+    <span class="mute">${b.balance >= st.cashIn.points ? 'Can cash in £' + st.cashIn.value : (st.cashIn.points - b.balance) + ' to £' + st.cashIn.value}</span></div>`).join('');
+  const who = $('sBoy').value || 'All';
+  const rows = DATA.ledger.filter(l => who === 'All' || l.Boy === who);
+  $('ledger').innerHTML = rows.length ? rows.map(l => `
+    <div class="row">
+      <div class="grow"><div>${esc(l.Description)}${who === 'All' ? `<span class="pill">${esc(l.Boy)}</span>` : ''}</div>
+      <div class="mute">${esc(l.Timestamp)} · ${esc(l.Type)}</div></div>
+      <div class="pts ${l.Points < 0 ? 'neg' : 'pos'}">${l.Points > 0 ? '+' : ''}${esc(l.Points)}</div>
+      <button class="btn ghost sm" onclick="undo('${esc(l.ID)}')">Remove</button>
+    </div>`).join('') : '<p class="mute">Nothing yet.</p>';
+}
+function adjust() {
+  const pts = Number($('aPoints').value);
+  if (!pts) return toast('Enter a number of points', true);
+  call({ action: 'adjust', boy: $('aBoy').value, points: pts, reason: $('aReason').value.trim() || (pts > 0 ? 'Bonus' : 'Penalty') })
+    .then(() => { $('aPoints').value = ''; $('aReason').value = ''; toast('Applied'); load(); }).catch(e => toast(e.message, true));
+}
+function undo(id) {
+  if (!confirm('Remove this entry from the statement?')) return;
+  call({ action: 'undo', id }).then(() => { toast('Removed'); load(); }).catch(e => toast(e.message, true));
+}
+
+function renderList(key) {
+  const cfg = LISTS[key];
+  const rows = DATA[key].length ? DATA[key] : [{}];
+  $(cfg.table).innerHTML = '<tr>' + cfg.cols.map(c => `<td class="mute">${c[1]}</td>`).join('') + '<td></td></tr>' +
+    rows.map((r, i) => '<tr>' + cfg.cols.map(c => `<td><input data-k="${c[0]}" value="${esc(r[c[0]])}"${maxAttr(key, c[0])}></td>`).join('') +
+      (key === 'boys' ? '<td></td>' : `<td><button class="btn ghost sm" onclick="this.closest('tr').remove()">✕</button></td>`) + '</tr>').join('');
+}
+function addRow(key) {
+  const cfg = LISTS[key];
+  const tr = document.createElement('tr');
+  tr.innerHTML = cfg.cols.map(c => `<td><input data-k="${c[0]}"${maxAttr(key, c[0])}></td>`).join('') + `<td><button class="btn ghost sm" onclick="this.closest('tr').remove()">✕</button></td>`;
+  $(cfg.table).appendChild(tr);
+}
+function saveList(key) {
+  const rows = [...$(LISTS[key].table).querySelectorAll('tr')].slice(1).map(tr => {
+    const o = {}; tr.querySelectorAll('input').forEach(inp => o[inp.dataset.k] = inp.value.trim()); return o;
+  });
+  call({ action: 'saveList', list: key, rows }).then(d => { render(d); toast('Saved'); }).catch(e => toast(e.message, true));
+}
+
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button, section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); $(b.dataset.tab).classList.add('on');
+});
+$('codeIn').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+CODE = read('brCode');
+if (CODE) load(true); else $('login').style.display = 'block';
+</script>
+</body>
+</html>

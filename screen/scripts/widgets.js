@@ -114,17 +114,26 @@
         el.innerHTML = '<div class="wx-top">' + loading() + '</div>' +
             '<div class="wx-hours" style="grid-template-columns:repeat(' + hours + ',minmax(0,1fr))"></div><div class="wx-dayrow" style="grid-template-columns:repeat(' + days + ',minmax(0,1fr))"></div>';
         var q = function (c) { return el.querySelector(c); }, last = null;
-        function tick() { var c = q('.wx-top .clock'); if (c) c.textContent = hhmm(new Date()); }
+        function tick() {
+            var c = q('.wx-top .clock'), dt = q('.wx-top .wx-date'), now = new Date();
+            if (c) c.textContent = hhmm(now);
+            if (dt) dt.textContent = DOW[now.getDay()] + ' ' + now.getDate() + ' ' + MON[now.getMonth()];
+        }
         var timer = setInterval(tick, 10000);
         return {
             update: function (d) {
                 last = d;
                 if (!d || d.error) { q('.wx-top').innerHTML = errBox(d ? d.error : 'No weather'); q('.wx-hours').innerHTML = ''; q('.wx-dayrow').innerHTML = ''; return; }
                 var n = wx(d.now.code, d.now.isDay), today = d.days[0] || {};
-                q('.wx-top').innerHTML = '<span class="wx-icon">' + n.icon + '</span><div class="wx-tl"><div class="wx-temp">' + d.now.temp + '\u00b0</div>' +
-                    '<div class="wx-label">' + esc(n.label) + '</div></div>' +
-                    '<div class="wx-meta"><span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') +
-                    ' \u00b7 ' + d.now.wind + ' mph</span></div>' + (s.ShowClock ? '<div class="clock">' + hhmm(new Date()) + '</div>' : '');
+                var meta = '<span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') + ' \u00b7 ' + d.now.wind + ' mph</span>';
+                // With the clock: the time leads (biggest), then the weather in words, then the symbol and temperature on the right.
+                q('.wx-top').className = 'wx-top' + (s.ShowClock ? ' with-clock' : '');
+                q('.wx-top').innerHTML = s.ShowClock
+                    ? '<div class="wx-cl"><div class="clock">' + hhmm(new Date()) + '</div><div class="wx-date">' + DOW[new Date().getDay()] + ' ' + new Date().getDate() + ' ' + MON[new Date().getMonth()] + '</div></div>' +
+                      '<div class="wx-meta"><span class="wx-label">' + esc(n.label) + '</span>' + meta + '</div>' +
+                      '<div class="wx-nowr"><span class="wx-icon">' + n.icon + '</span><span class="wx-temp">' + d.now.temp + '\u00b0</span></div>'
+                    : '<span class="wx-icon">' + n.icon + '</span><div class="wx-tl"><div class="wx-temp">' + d.now.temp + '\u00b0</div>' +
+                      '<div class="wx-label">' + esc(n.label) + '</div></div><div class="wx-meta">' + meta + '</div>';
                 // Now, then every 2 hours: +2, +4, +6, +8, +10 (the list starts at the next hour).
                 var slots = [{ time: 'Now', temp: d.now.temp, code: d.now.code, isDay: d.now.isDay, rain: (d.hours[0] || {}).rain }];
                 for (var k = 1; slots.length < hours && k < d.hours.length; k += 2) slots.push(d.hours[k]);
@@ -279,8 +288,13 @@
                         '<span class="d-plat">' + (s.platform ? 'Plat <b>' + esc(s.platform) + '</b>' : '') + '</span>' +
                         '<span class="d-exp ' + cls + '">' + esc(exp) + '</span></div>';
                 }).join('');
-                html += (tr.messages || []).slice(0, 1).map(function (m) { return '<div class="nrcc">\u26A0 ' + esc(m) + '</div>'; }).join('');
+                var msg = (tr.messages || [])[0];
+                if (msg) html += '<div class="nrcc"><span>\u26A0 ' + esc(msg) + '</span></div>';
                 box.innerHTML = html;
+                // A disruption message tightens the rows; if they still don't fit, the last train makes way for it.
+                box.classList.toggle('has-msg', !!msg);
+                var deps = box.querySelectorAll('.dep');
+                for (var i = deps.length - 1; i > 0 && box.scrollHeight > box.clientHeight + 1; i--) deps[i].remove();
             },
         };
     };

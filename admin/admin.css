@@ -179,3 +179,5 @@ details.fold[open] { padding-bottom: 14px; }
 .fixed-c input[type=color] { width: 48px; height: 40px; padding: 3px; }
 .tog.sm { font-size: 13.5px; margin-top: 8px; }
 .open-w { margin: 4px 0 6px; }
+.bar.warnbar span { background: var(--bad); }
+.card:not(.boy) .bar span { background: var(--acc); } .card:not(.boy) .bar.warnbar span { background: var(--bad); }
