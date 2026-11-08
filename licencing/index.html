@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Family Dashboard licences</title>
+<style>
+  body { margin: 0; background: #0c0e12; color: #eef1f6; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; display: grid; place-items: center; min-height: 100vh; }
+  main { max-width: 520px; padding: 24px 16px; text-align: center; }
+  a { color: #3fa9f5; } .btn { display: inline-block; background: #3fa9f5; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; margin-top: 12px; }
+  .mute { color: #9aa4b2; font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Family Dashboard licences</h1>
+  <p id="msg">Opening the licence portal…</p>
+  <p id="go"></p>
+  <p class="mute">The portal runs in the seller’s Google account and asks for the admin password. This page only forwards you to it.</p>
+</main>
+<script>
+  // The portal's address is the licence server named in version.json, so this page never goes out of date.
+  fetch('../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
+    if (!v.licence) throw new Error('none');
+    document.getElementById('go').innerHTML = '<a class="btn" href="' + v.licence + '">Open the licence portal</a>';
+    location.replace(v.licence);
+  }).catch(function () {
+    document.getElementById('msg').textContent = 'Couldn’t find the licence portal’s address – check the internet connection and try again.';
+  });
+</script>
+</body>
+</html>

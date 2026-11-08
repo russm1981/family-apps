@@ -108,3 +108,5 @@ label.tick.sm { margin: 0; font-weight: 600; font-size: 14px; white-space: nowra
 .ptb.on { background: rgba(250, 204, 21, .16); border-color: #facc15; color: inherit; opacity: 1; }
 .prow.adult .ptb { visibility: hidden; }
 @media (max-width: 760px) { .prow { grid-template-columns: minmax(0, 1fr) 54px 40px; } .prow .ptb { grid-column: 1 / -1; grid-row: 2; justify-self: end; } }
+
+.status.warn { color: #ffd27a; font-weight: 600; }

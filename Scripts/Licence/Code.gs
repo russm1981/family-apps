@@ -18,7 +18,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.9';
+const LS_VERSION = '2026.11.10';
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
 const APPS_BASE = 'https://russm1981.github.io/family-apps/';
 const TABS = { lic: 'Licences', log: 'Activity' };
@@ -104,7 +104,14 @@ function menuPassword() {
 function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action) return json_(() => api_(p));
-  const t = HtmlService.createTemplateFromFile('Admin');
+  let t;
+  try { t = HtmlService.createTemplateFromFile('Admin'); } catch (err) {
+    return HtmlService.createHtmlOutput('<div style="font:16px system-ui;max-width:560px;margin:60px auto;line-height:1.5"><h2>The licence portal page is missing</h2>' +
+      '<p>This script has no HTML file called exactly <b>Admin</b>. To fix it: open your licence Google Sheet and choose ' +
+      '<b>🔑 Licences → Update the licence server now</b>. That puts every file back from GitHub and republishes this page.</p>' +
+      '<p>Or by hand: Extensions → Apps Script, add an HTML file named <b>Admin</b> (or rename the one that’s there), paste in ' +
+      'Scripts/Licence/Admin.html from GitHub, then Deploy → Manage deployments → Edit → New version → Deploy.</p></div>').setTitle('Family Dashboard licences');
+  }
   t.inSheet = false;
   return t.evaluate().setTitle('Family Dashboard licences').addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.DEFAULT);
@@ -514,7 +521,9 @@ function updateTick() {
 function menuUpdate() {
   const ui = SpreadsheetApp.getUi();
   try {
-    const r = selfUpdate_('menu');
+    // The portal page (the HTML file "Admin") missing or misnamed? Put every file back from GitHub, even if up to date.
+    let missing = false; try { HtmlService.createTemplateFromFile('Admin'); } catch (e) { missing = true; }
+    const r = selfUpdate_('menu', missing);
     ui.alert('Licence server', r.updated ? 'Updated from ' + r.from + ' to ' + r.to + '.' : r.upToDate ? 'Already up to date (' + LS_VERSION + ').' : (r.message || 'Done'), ui.ButtonSet.OK);
   } catch (err) { ui.alert('Licence server', 'The update didn’t work: ' + err.message, ui.ButtonSet.OK); }
 }
@@ -552,13 +561,13 @@ function lsNewer_(a, b) {
   for (let i = 0; i < Math.max(x.length, y.length); i++) if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0);
   return false;
 }
-function selfUpdate_(why) {
+function selfUpdate_(why, force) {
   const P = PropertiesService.getScriptProperties();
   if (Date.now() - Number(P.getProperty('updating') || 0) < 3 * 60000) return { busy: true, message: 'An update is already running' };
   const bust = '?t=' + Date.now();
   const get = u => { const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true }); if (r.getResponseCode() !== 200) throw new Error('Couldn’t download ' + u.replace(/\?.*/, '') + ' (' + r.getResponseCode() + ')'); return r.getContentText(); };
   const latest = JSON.parse(get(APPS_BASE + 'version.json' + bust));
-  if (!latest.licenceServer || !lsNewer_(latest.licenceServer, LS_VERSION)) return { upToDate: true, version: LS_VERSION };
+  if (!force && (!latest.licenceServer || !lsNewer_(latest.licenceServer, LS_VERSION))) return { upToDate: true, version: LS_VERSION };
   P.setProperty('updating', String(Date.now()));
   const note = o => P.setProperty('lastUpdate', JSON.stringify(Object.assign({ at: new Date().toISOString(), to: latest.licenceServer }, o)));
   try {

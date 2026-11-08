@@ -47,7 +47,7 @@
     function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
     function addMonths(d, n) { return new Date(d.getFullYear(), d.getMonth() + n, 1); }
 
-    var calView = '3m';           // '3m' (default), '3ms' (3 months, scrolling), '1m' or 'week'
+    var calView = '3m';           // '3m' (default), '3ms' (3 months, scrolling), '1m', 'week' or 'year' (computer: 12 months, whole window; tablet: 6)
     var defaultView = '3m', touched = false;
     var calWeek = null;           // Monday of the week shown in week view
     var DAYNAME = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -61,7 +61,12 @@
         return { first: first, weeks: weeks };
     }
 
+    /** Year view: a computer shows the whole year (January–December); a tablet half a year (January–June or July–December). */
+    function yearMonths() { var F = window.FDFormat && FDFormat.get(); return F && F.kind === 'standard' ? 6 : 12; }
+    function yearAvailable() { var F = window.FDFormat && FDFormat.get(); return !!F && (F.kind === 'computer' || F.kind === 'standard'); }
+    function yearStart(d) { var n = yearMonths(); return new Date(d.getFullYear(), n === 12 ? 0 : Math.floor(d.getMonth() / n) * n, 1); }
     function calRange() {
+        if (calView === 'year') return { start: ymd(calStart), end: ymd(addMonths(calStart, yearMonths())) };
         if (calView === 'week') return { start: ymd(calWeek), end: ymd(addDays(calWeek, 7)) };
         if (calView === '1m') { var g = monthGrid(); return { start: ymd(g.first), end: ymd(addDays(g.first, g.weeks * 7)) }; }
         return { start: ymd(calStart), end: ymd(addMonths(calStart, 3)) };
@@ -70,13 +75,17 @@
     function setView(v, anchor) {
         calView = v;
         var a = anchor || new Date();
+        if (v === 'year' && !yearAvailable()) v = calView = '3m';
         if (v === 'week') calWeek = mondayOf(a);
+        else if (v === 'year') calStart = yearStart(a);
         else calStart = monthStart(a);
+        fullWindow();
         Array.prototype.forEach.call(document.querySelectorAll('.vw-btn'), function (b) { b.classList.toggle('on', b.getAttribute('data-view') === v); });
         loadCalendar();
     }
     function step(dir) {
         if (calView === 'week') calWeek = addDays(calWeek, 7 * dir);
+        else if (calView === 'year') calStart = addMonths(calStart, yearMonths() * dir);
         else calStart = addMonths(calStart, dir);   // 3-month and month views both move one month at a time
         loadCalendar();
     }
@@ -84,7 +93,24 @@
 
     /** Cached days covering a range (one fetched block covers the 3-month, month and week views together). */
     try { var kept = JSON.parse(localStorage.getItem('familyDashboard.calBlock.v1') || 'null'); if (kept && kept.key) calCache[kept.key] = { at: 1, days: kept.days, bh: kept.bh }; } catch (e) { /* ignore */ }
+    /** A range longer than one block (the year view): split into 3-month pieces. */
+    function pieces(r) {
+        var out = [], s0 = monthStart(parseYmd(r.start));
+        while (ymd(s0) < r.end) { var e0 = addMonths(s0, 3); out.push({ start: ymd(s0), end: ymd(e0) < r.end ? ymd(e0) : r.end }); s0 = e0; }
+        return out;
+    }
+    function long(r) { return parseYmd(r.end) - parseYmd(r.start) > 100 * 86400000; }
     function cover(r) {
+        if (long(r)) {
+            var parts = pieces(r).map(cover1);
+            if (parts.some(function (x) { return !x; })) return null;
+            var m = { at: Infinity, days: {}, bh: {} };
+            parts.forEach(function (x) { m.at = Math.min(m.at, x.at); Object.assign(m.days, x.days); Object.assign(m.bh, x.bh); });
+            return m;
+        }
+        return cover1(r);
+    }
+    function cover1(r) {
         var best = null;
         Object.keys(calCache).forEach(function (k) {
             var p = k.split(':');
@@ -100,6 +126,7 @@
     }
     var fetching = {};
     function fetchBlock(r, quiet) {
+        if (long(r)) return Promise.all(pieces(r).map(function (x) { return fetchBlock(x, quiet); }));
         var b = block(r), key = b.start + ':' + b.end;
         if (fetching[key]) return fetching[key];
         fetching[key] = api().get('calendar', b).then(function (d) {
@@ -120,7 +147,8 @@
     /** Load the months after the ones on screen in the background, so ▶ is instant too. */
     function warmNext() {
         if (!api().ready() || !calStart) return;
-        var n = addMonths(calStart, 3), r = { start: ymd(n), end: ymd(addMonths(n, 3)) };
+        var k = calView === 'year' ? yearMonths() : 3;
+        var n = addMonths(calStart, k), r = { start: ymd(n), end: ymd(addMonths(n, k)) };
         var c = cover(r); if (!c || Date.now() - c.at > 10 * 60000) fetchBlock(r, true).catch(function () { /* later */ });
     }
 
@@ -158,6 +186,7 @@
         $('calStatus').textContent = !api().ready() ? 'Not connected' : calErr ? '⚠ ' + calErr : calLoading ? 'Updating…' : '';
         $('calRows').className = 'cal-rows view-' + calView + (alignDays ? '' : ' no-align');
         if (calView === 'week') renderWeek(data, today);
+        else if (calView === 'year') renderYear(data, today);
         else if (calView === '1m') renderMonth(data, today);
         else render3m(data, today, calView === '3ms');
         renderKey();
@@ -245,6 +274,34 @@
             }
         }
         $('calRows').innerHTML = html + '</div>';
+    }
+
+    /** Year view: little month calendars (4 × 3 on a computer, 3 × 2 on a tablet). Each day shows its first entries as
+     *  coloured lines and holidays as a coloured band; tap a day for everything on it, or a month's name to open it. */
+    function renderYear(data, today) {
+        var n = yearMonths(), last = addMonths(calStart, n - 1);
+        $('calYear').textContent = calStart.getFullYear();
+        $('calRange').textContent = n === 12 ? 'Whole year' : MON[calStart.getMonth()] + ' – ' + MON[last.getMonth()];
+        var html = '<div class="yv yv-' + n + '">';
+        for (var m = 0; m < n; m++) {
+            var ms = addMonths(calStart, m), first = mondayOf(ms), mon = ms.getMonth();
+            html += '<div class="yv-m"><button class="yv-t" data-month="' + ymd(ms) + '">' + MONTHNAME[mon] + '</button><div class="yv-g">' +
+                ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(function (x, i) { return '<b class="' + (i > 4 ? 'we' : '') + '">' + x + '</b>'; }).join('');
+            for (var i = 0; i < 42; i++) {
+                var dt = addDays(first, i), ds = ymd(dt);
+                if (dt.getMonth() !== mon) { html += '<span class="yv-x"></span>'; continue; }
+                var evs = dayParts(data, ds).evs, hb = barHtml(data, dt);
+                var lines = evs.slice(0, 2).map(function (e) { return '<i ' + evStyle(e) + '>' + esc(e.t) + '</i>'; }).join('') + (evs.length > 2 ? '<i class="yv-more">+' + (evs.length - 2) + '</i>' : '');
+                var tip = evs.map(function (e) { return e.t; }).join(', ');
+                html += '<button class="cal-cell yv-d' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '><span class="yv-n">' + dt.getDate() + '</span>' + lines + hb.html + '</button>';
+            }
+            html += '</div></div>';
+        }
+        $('calRows').innerHTML = html + '</div>';
+    }
+    /** On a computer the year uses the whole window; everything else stays at the Corsair's shape. */
+    function fullWindow() {
+        if (window.FDFormat && FDFormat.full) FDFormat.full(calView === 'year' && visible('screen-calendar') && FDFormat.get().kind === 'computer');
     }
 
     function renderWeek(data, today) {
@@ -402,6 +459,13 @@
                     var anchor = (t >= r.start && t < r.end) ? new Date() : (calView === 'week' ? calWeek : calStart);
                     setView(b.getAttribute('data-view'), anchor);
                 });
+                // The Year button only where there's room for it (a computer or a tablet, not the Corsair).
+                var yb = document.querySelector('.vw-btn[data-view="year"]');
+                var showYear = function () { if (yb) yb.style.display = yearAvailable() ? '' : 'none'; if (calView === 'year' && !yearAvailable()) setView('3m'); };
+                showYear(); window.addEventListener('fdbox', showYear);
+                // Leaving the calendar page: back to the Corsair shape. Coming back to the year: the whole window again.
+                if (window.MutationObserver) new MutationObserver(fullWindow).observe($('screen-calendar'), { attributes: true, attributeFilter: ['class'] });
+                window.addEventListener('fdbox', function () { if (visible('screen-calendar')) renderCalendar(); });
                 $('calRows').addEventListener('pointerdown', dragStart);
                 window.addEventListener('pointermove', dragMove);
                 window.addEventListener('pointerup', dragEnd);
@@ -444,7 +508,8 @@
             setDefault: function (v, align) {
                 align = align !== false;
                 if (align !== alignDays) { alignDays = align; if (visible('screen-calendar')) renderCalendar(); }
-                var view = { '3 months': '3m', '3 months (scroll)': '3ms', 'Month': '1m', 'Week': 'week' }[v] || '3m';
+                var view = { '3 months': '3m', '3 months (scroll)': '3ms', 'Month': '1m', 'Week': 'week', 'Year': 'year' }[v] || '3m';
+                if (view === 'year' && !yearAvailable()) view = '3m';
                 if (defaultView === view) return;
                 defaultView = view;
                 if (!touched) setView(view, new Date());

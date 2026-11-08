@@ -20,16 +20,108 @@
         return null;
     }
 
+    // iPhone / iPad: there is no "Install" button in Safari – the app is added with Share → Add to Home Screen, and the
+    // home-screen app keeps its own storage, separate from Safari's. So in Safari the family's link stays in the address
+    // (and in the app's start address) for Add to Home Screen to carry across; the home-screen app then tidies it away.
+    var IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
+    var STANDALONE = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
+    var KEEP_LINK = IOS && !STANDALONE;
+
     // A setup link opened in the browser configures this phone, then the details are removed from the address bar.
     function fromHash() {
         var s = parseSetup(location.hash);
-        if (s) { write(s); history.replaceState(null, '', location.pathname + location.search); return true; }
+        if (s) { write(s); if (!KEEP_LINK) history.replaceState(null, '', location.pathname + location.search); return true; }
         return false;
     }
     fromHash();
     window.addEventListener('hashchange', function () { if (fromHash()) location.reload(); });
 
     var cfg = read();
+
+    /** iPhone Safari: put the link back in the address and the app's start address, and explain how to install. */
+    function iosInstall() {
+        if (!KEEP_LINK || !cfg.url || !cfg.code) return;
+        var hash = '#api=' + encodeURIComponent(cfg.url) + '&code=' + encodeURIComponent(cfg.code);
+        if (location.hash !== hash) history.replaceState(null, '', location.pathname + location.search + hash);
+        var link = document.querySelector('link[rel=manifest]');
+        if (link && !link.dataset.fdIos) {
+            fetch(link.href).then(function (r) { return r.json(); }).then(function (m) {
+                var base = new URL(link.href, location.href);
+                m.start_url = location.href; m.scope = new URL(m.scope || './', base).href; m.id = new URL(m.id || './', base).href;
+                (m.icons || []).forEach(function (i) { i.src = new URL(i.src, base).href; });
+                link.dataset.fdIos = '1';
+                link.href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(m));
+            }).catch(function () { /* the address bar still has the link */ });
+        }
+        var seen = 0; try { seen = Number(localStorage.getItem('fdapp.iosHint') || 0); } catch (e) { /* fine */ }
+        if (Date.now() - seen < 3 * 86400000) return;
+        var b = document.createElement('div');
+        b.className = 'fd-ios-hint';
+        b.setAttribute('style', 'position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:9999;background:#1d2533;color:#eef1f6;' +
+            'border:1px solid #3fa9f5;border-radius:14px;padding:12px 14px;font:15px/1.4 -apple-system,system-ui,sans-serif;box-shadow:0 8px 30px rgba(0,0,0,.5);display:flex;gap:10px;align-items:flex-start');
+        b.innerHTML = '<div style="flex:1"><b>Install this app on your iPhone</b><br>Tap <b>Share</b> <span style="display:inline-block;border:1.5px solid currentColor;border-radius:3px;padding:0 4px;font-size:12px">↑</span> ' +
+            'at the bottom of Safari (iPad: top right), scroll down and choose <b>Add to Home Screen</b>, then <b>Add</b>. ' +
+            'Open it from the new icon – it’s already connected to your family.</div><button style="background:none;border:0;color:#9fb3c8;font-size:20px;padding:0 4px" aria-label="Close">✕</button>';
+        b.querySelector('button').onclick = function () { b.remove(); try { localStorage.setItem('fdapp.iosHint', String(Date.now())); } catch (e) { /* fine */ } };
+        document.body.appendChild(b);
+    }
+    if (document.body) iosInstall(); else document.addEventListener('DOMContentLoaded', iosInstall);
+
+    /* ---- Keeping an app that's left open for days up to date.
+     * Checks version.json when the app opens, whenever it comes back to the front, and every 15 minutes while it's
+     * showing. A newer version: fetch fresh copies of the files and restart – straight away if nobody's in the middle of
+     * something, otherwise a "Restart to update" bar (and it restarts by itself next time the app is opened). */
+    var updTried = '';
+    function newerVer(a, b) {
+        var x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number);
+        for (var i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); }
+        return false;
+    }
+    function midTask() {
+        var a = document.activeElement;
+        if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && a.value) return true;
+        return !!document.querySelector('.sheet-bg.on, .ov.on, dialog[open]');
+    }
+    function restart(ver) {
+        try { sessionStorage.setItem('fdUpdTo', ver + '|' + Date.now()); } catch (e) { /* fine */ }
+        var files = [location.pathname];
+        Array.prototype.forEach.call(document.querySelectorAll('script[src], link[rel=stylesheet]'), function (el) { files.push(el.getAttribute('src') || el.getAttribute('href')); });
+        var gone = false, done = function () { if (!gone) { gone = true; location.reload(); } };
+        setTimeout(done, 5000);   // never wait longer than this
+        Promise.all(files.map(function (f) { return fetch(f, { cache: 'reload' }).catch(function () { /* offline */ }); }))
+            .then(function () { return navigator.serviceWorker && navigator.serviceWorker.getRegistration ? navigator.serviceWorker.getRegistration().then(function (r) { return r && r.update(); }) : null; })
+            .then(done, done);
+    }
+    function checkUpdate(opening) {
+        if (document.hidden || !/^https?:/.test(location.protocol)) return;
+        fetch(new URL('../version.json', location.href).href + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) {
+            if (!v || !newerVer(v.app, FD.VERSION)) { var b0 = document.getElementById('fdUpd'); if (b0) b0.remove(); return; }
+            // Just restarted for this version but GitHub still served the old files: don't loop – try again in 10 minutes.
+            var last = ''; try { last = sessionStorage.getItem('fdUpdTo') || ''; } catch (e) { /* fine */ }
+            var lp = last.split('|'); if (lp[0] === v.app && Date.now() - Number(lp[1] || 0) < 10 * 60000) return;
+            if (opening || !midTask()) { restart(v.app); return; }
+            if (document.getElementById('fdUpd') || updTried === v.app) return;
+            updTried = v.app;
+            var bar = document.createElement('div'); bar.id = 'fdUpd';
+            bar.setAttribute('style', 'position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top));z-index:9998;background:#1d2533;color:#eef1f6;border:1px solid #3fa9f5;' +
+                'border-radius:14px;padding:10px 12px;font:15px/1.35 -apple-system,system-ui,sans-serif;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px rgba(0,0,0,.5)');
+            bar.innerHTML = '<span style="flex:1"><b>Update ready</b> (' + String(v.app).replace(/[<>&"]/g, '') + ')</span><button style="background:#3fa9f5;color:#fff;border:0;border-radius:10px;padding:8px 12px;font-weight:700">Restart</button>';
+            bar.querySelector('button').onclick = function () { restart(v.app); };
+            document.body.appendChild(bar);
+        }).catch(function () { /* offline – next time */ });
+    }
+    var autoUpdateOn = false;
+    function autoUpdate() {
+        if (autoUpdateOn) return; autoUpdateOn = true;
+        setTimeout(function () { checkUpdate(true); }, 3000);
+        setInterval(function () { checkUpdate(false); }, 15 * 60000);
+        var hiddenAt = 0;
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) { hiddenAt = Date.now(); return; }
+            // Back to the front after a while away counts as opening the app: safe to restart straight away.
+            checkUpdate(Date.now() - hiddenAt > 5 * 60000);
+        });
+    }
 
     function fetchJson(url, opts) {
         var ctl = new AbortController();
@@ -56,11 +148,11 @@
     var FD = window.FD = {
         configured: function () { return !!(cfg.url && cfg.code); },
         config: function () { return { url: cfg.url || '', code: cfg.code || '' }; },
-        setConfig: function (url, code) { cfg = { url: String(url || '').trim(), code: String(code || '').trim() }; write(cfg); },
+        setConfig: function (url, code) { cfg = { url: String(url || '').trim(), code: String(code || '').trim() }; write(cfg); iosInstall(); },
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.30',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.36',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -135,6 +227,7 @@
 
         registerSW: function () {
             if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { /* fine without */ });
+            autoUpdate();
         },
     };
 })();

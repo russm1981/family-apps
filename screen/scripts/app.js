@@ -124,13 +124,14 @@
         esc: esc, store: store, load: load,
     };
     function screens() { return window.FDScreens || {}; }
-    var boysPart = 0;
-    function boysRange(n, part) {
-        if (n <= 3) return [0, n];
-        var first = Math.ceil(n / 2);
-        return part ? [first, n] : [0, first];
+    var boysPart = 0, boysParts = 1;
+    /** Which children are on screen "part" of "parts": shared out evenly (5 over 2 screens = 3 + 2). */
+    function boysRange(n, part, parts) {
+        parts = parts || boysParts || 1; part = Math.min(part || 0, parts - 1);
+        var base = Math.floor(n / parts), extra = n % parts, start = part * base + Math.min(part, extra);
+        return [start, start + base + (part < extra ? 1 : 0)];
     }
-    window.FDBoys = { onShow: function (part) { boysPart = part || 0; renderBoys(); if (!busy) refresh(); }, range: boysRange,
+    window.FDBoys = { onShow: function (part, parts) { boysPart = part || 0; boysParts = parts || 1; renderBoys(); if (!busy) refresh(); }, range: boysRange,
         state: function () { return state; }, refresh: function () { return refresh(); } };
 
     /* ---------------------------------------------------------- refresh */

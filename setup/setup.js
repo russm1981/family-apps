@@ -197,7 +197,7 @@
             if ($('pairSend')) $('pairSend').onclick = function () {
                 var b = this; b.disabled = true;
                 FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
-                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Settings → Access code & devices.)'); });
+                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Settings → Devices.)'); });
             };
             if ($('packGo')) $('packGo').onclick = function () {
                 var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';
@@ -261,7 +261,7 @@
             var F = S.fam, LM = F.limits;
             return '<h1>5. Your family and calendar</h1>' +
                 '<p class="lead">Who’s in the family, and how the calendar groups and colours them. Change it any time by coming back to this step.</p>' +
-                '<div class="card big"><label style="margin-top:0">Home address or postcode</label><input id="home" value="' + esc(S.home || '') + '" placeholder="e.g. 12 High Street, Falfield, GL12 8DQ">' +
+                '<div class="card big"><label style="margin-top:0">Home address or postcode</label><input id="home" value="' + esc(S.home || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ">' +
                 '<p class="mute">Used for the weather, traffic, the nearest bus stop and the flights map.</p></div>' +
 
                 '<div class="card big"><h3>1. Everyone in the family</h3><p class="mute">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Names up to ' + LM.name + ' letters. Tap ⭐ Points to put a child on the points page, or take them off.</p>' +
@@ -349,6 +349,12 @@
                 }).then(function (d) {
                     S.fam = fromServer(d.family); S.familyDone = true; save();
                     render(); $('famStatus').innerHTML = okLine(true, 'Saved. The screen and calendar app pick it up within a minute.');
+                    // Bin days: say straight away whether this postcode's council can be read automatically.
+                    var pc = /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);
+                    if (pc) get('binCouncil', { postcode: pc[1] }).then(function (b) {
+                        $('famStatus').insertAdjacentHTML('beforeend', b.automatic ? okLine(true, 'Bins: ' + b.message + '.')
+                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(b.message) + ' You can do that later in Family Admin → the Bins widget.</div>');
+                    }, function () { /* older Google script – the Check step will say */ });
                 }).catch(function (e) { $('famStatus').innerHTML = okLine(false, e.message); });
             };
 
@@ -551,34 +557,9 @@
         a.download = name; document.body.appendChild(a); a.click(); a.remove();
     }
     function batFile(link) {
-        return ['@echo off', 'rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.',
-            'rem The dashboard is loaded from the internet each time, so it is always the latest version.',
-            'rem PRIVATE: this file contains your access code. Don\'t share it.',
-            'set "SCREEN=' + appsBase + 'screen/"', 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', 'set "FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk"',
-            'if not exist "%FDPROFILE%" mkdir "%FDPROFILE%"',
-            'rem Start with Windows? Asked once, in a normal Windows Yes/No box; the answer is remembered.',
-            'rem If Yes, the startup shortcut is (re)made every time. To be asked again, delete %LOCALAPPDATA%\\FamilyDashboardKiosk\\startup-answer.txt.',
-            'set "ANS="',
-            'if exist "%FDPROFILE%\\startup-answer.txt" set /p ANS=<"%FDPROFILE%\\startup-answer.txt"',
-            'if not defined ANS for /f %%A in (\'powershell -NoProfile -Command "Add-Type -AssemblyName PresentationFramework; $r=[System.Windows.MessageBox]::Show(\\"Start the Family Dashboard automatically whenever this PC is switched on?\\",\\"Family Dashboard\\",\\"YesNo\\",\\"Question\\"); if ($r -eq \\"Yes\\") {\\"Y\\"} else {\\"N\\"}"\') do set "ANS=%%A"',
-            'if not defined ANS set "ANS=Y"',
-            '>"%FDPROFILE%\\startup-answer.txt" echo %ANS%',
-            'rem Keep the display on? Asked once, separately; the answer is remembered. The dashboard dims itself (its own sleep screen),',
-            'rem and if Windows switches the display off a touch may not wake it. To be asked again, delete screen-answer.txt in the same folder.',
-            'set "SCR="',
-            'if exist "%FDPROFILE%\\screen-answer.txt" set /p SCR=<"%FDPROFILE%\\screen-answer.txt"',
-            'if not defined SCR for /f %%A in (\'powershell -NoProfile -Command "Add-Type -AssemblyName PresentationFramework; $r=[System.Windows.MessageBox]::Show(\\"Change Windows to keep this screen switched on?`n`nThe dashboard dims itself when nobody is using it, and wakes with a touch. If Windows switches the screen off instead, a touch may not wake it.\\",\\"Family Dashboard\\",\\"YesNo\\",\\"Question\\"); if ($r -eq \\"Yes\\") {\\"Y\\"} else {\\"N\\"}"\') do set "SCR=%%A"',
-            'if not defined SCR set "SCR=N"',
-            '>"%FDPROFILE%\\screen-answer.txt" echo %SCR%',
-            'if /i "%SCR%"=="Y" (',
-            '  powercfg /change monitor-timeout-ac 0 >nul 2>&1',
-            '  powercfg /change standby-timeout-ac 0 >nul 2>&1',
-            ')',
-            'if /i "%ANS%"=="Y" powershell -NoProfile -ExecutionPolicy Bypass -Command "$s=(New-Object -ComObject WScript.Shell).CreateShortcut([Environment]::GetFolderPath(\'Startup\')+\'\\Family Dashboard.lnk\'); $s.TargetPath=\'%~f0\'; $s.WorkingDirectory=\'%~dp0\'; $s.WindowStyle=7; $s.Save()"',
-            'rem Wait (up to a minute) for the internet after the PC starts, so the dashboard doesn\'t open on an error page.',
-            'powershell -NoProfile -ExecutionPolicy Bypass -Command "for ($i = 0; $i -lt 30; $i++) { try { $null = Invoke-WebRequest -UseBasicParsing -Method Head -TimeoutSec 3 $env:SCREEN; break } catch { Start-Sleep -Seconds 2 } }"',
-            'powershell -NoProfile -ExecutionPolicy Bypass -Command ^', ' "$u = if ($env:LINK) { $env:LINK } else { $env:SCREEN };" ^', ' "$q = [char]34;" ^',
-            ' "Start-Process \'msedge\' -ArgumentList @(\'--kiosk\', $u, \'--edge-kiosk-type=fullscreen\', \'--no-first-run\', \'--autoplay-policy=no-user-gesture-required\', \'--use-fake-ui-for-media-stream\', \'--disable-pinch\', \'--overscroll-history-navigation=0\', (\'--user-data-dir=\' + $q + $env:FDPROFILE + $q))"', ''].join('\r\n');
+        // A small start file: it holds only the private link; the real work is in downloads/windows/launcher.ps1,
+        // fetched fresh from GitHub every time it starts, so the start file never needs replacing.
+        return ["@echo off", "rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.", "rem This file only holds your screen link. Each time it starts it fetches the latest launcher from the internet", "rem (so it never needs replacing), keeping a copy for when the internet is down. The dashboard itself also loads", "rem from the internet each time, so it is always the latest version. Nothing else needs to be on this PC.", "rem PRIVATE: this file contains your access code. Don't share it.", 'set "APPS=' + appsBase + '"', "set \"SCREEN=%APPS%screen/\"", 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', "set \"FDBAT=%~f0\"", "set \"FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk\"", "if not exist \"%FDPROFILE%\" mkdir \"%FDPROFILE%\"", "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$f = Join-Path $env:FDPROFILE 'launcher.ps1'; [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12; for ($i = 0; $i -lt 30; $i++) { try { $w = New-Object Net.WebClient; $w.Encoding = [Text.Encoding]::UTF8; $t = $w.DownloadString($env:APPS + 'downloads/windows/launcher.ps1?t=' + [DateTime]::Now.Ticks); if ($t -match 'FAMILY-DASHBOARD-LAUNCHER') { Set-Content -Path $f -Value $t -Encoding UTF8 }; break } catch { if (Test-Path $f) { break }; Start-Sleep -Seconds 2 } }; if (Test-Path $f) { & $f } else { Start-Process 'msedge' -ArgumentList @('--kiosk', $(if ($env:LINK) { $env:LINK } else { $env:SCREEN }), '--edge-kiosk-type=fullscreen') }\"", ""].join('\r\n');
     }
 
     /** Show or hide every widget of the given types (used by "Skip"). */
@@ -633,7 +614,7 @@
             case 'weather': return v.now ? v.now.temp + '° and ' + (v.days || []).length + ' days of forecast' : '';
             case 'traffic': return (v.routes || []).map(function (r) { return r.name + (r.error ? ' ⚠ ' + r.error : ' ' + r.mins + ' min'); }).join(' · ');
             case 'trains': return v.from + ' → ' + v.to + ': ' + (v.services || []).length + ' trains';
-            case 'bins': return (v.upcoming || []).length ? 'Next collection ' + v.upcoming[0].date : 'No collections found – check postcode and house name';
+            case 'bins': return (v.upcoming || []).length ? 'Next collection ' + v.upcoming[0].date : 'No collections found – check the Bins settings';
             case 'flights': return (v.planes || []).length + ' planes within ' + v.radiusMiles + ' miles right now';
             case 'news': return (v.items || []).length + ' headlines';
             case 'photos': return v.warning || (v.photos || []).length + ' photos in "' + v.title + '"';

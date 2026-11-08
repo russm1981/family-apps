@@ -1,15 +1,16 @@
 /* Family Dashboard – update checks and the privacy notice on the screen.
- * - Every 10 minutes the screen reads version.json from where the apps are hosted (GitHub Pages). If there's a newer
- *   screen version it offers "Update now / Later". (Restarting the PC also picks up the new version.)
+ * - Every 5 minutes the screen reads version.json from where the apps are hosted (GitHub Pages). If there's a newer
+ *   screen version it offers "Update now / Later" (Later = ask again in an hour). (Restarting the PC also picks up the new version.)
  * - If the family's Google script is older than the version the apps need, it says how to update it.
  * - If the privacy notice hasn't been accepted (or has changed since), it must be accepted before carrying on.
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.30';
+    var APP_VERSION = '2026.11.36';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
-    var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
+    var IDLE_MS = 3 * 60000;
+    var LATER_MS = 60 * 60000;     // "Later" on the update banner: ask again in an hour (it still updates itself once nobody's using the screen)       // nobody has touched the screen for 3 minutes → update by itself
     document.addEventListener('pointerdown', function () { lastTouch = Date.now(); }, true);
     /** Something on screen that an automatic reload would interrupt: an alarm, a pop-up, the keyboard, voice, adding to the calendar. */
     function busyScreen() {
@@ -27,8 +28,18 @@
         var b = document.getElementById(id);
         if (!b) { b = document.createElement('div'); b.id = id; b.className = 'notice'; document.body.appendChild(b); }
         b.innerHTML = html; b.style.display = html ? 'flex' : 'none';
+        stack();
         return b;
     }
+    /** More than one notice at once: pile them up from the bottom so none covers another's buttons. */
+    function stack() {
+        var y = 16;
+        Array.prototype.forEach.call(document.querySelectorAll('.notice:not(.stale)'), function (n) {
+            if (n.style.display === 'none' || !n.offsetHeight) return;
+            n.style.bottom = y + 'px'; y += n.offsetHeight + 10;
+        });
+    }
+    window.addEventListener('resize', function () { setTimeout(stack, 500); });
     function versionUrl() {
         // Hosted: …/family-apps/screen/ → …/family-apps/version.json. Running from files on the PC: ask the hosted copy.
         if (/^https?:/.test(location.protocol)) return new URL('../version.json', location.href).href;
@@ -40,7 +51,7 @@
         fetch(u + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) {
             if (!v) return;
             latest = v;
-            showUpdate(); showScript();
+            showUpdate(); showScript(); if (window.FDHealth) FDHealth.redraw();
         }).catch(function () { /* offline or running from files – try later */ });
     }
     function showUpdate() {
@@ -60,7 +71,7 @@
             '<button class="n-btn" data-u="now">Update now</button><button class="n-btn ghost" data-u="later">Later</button>');
         b.onclick = function (e) {
             var x = e.target.closest('[data-u]'); if (!x) return;
-            if (x.getAttribute('data-u') === 'later') { api().store(SNOOZE_KEY, String(Date.now() + 24 * 3600000)); banner('updBanner', ''); return; }
+            if (x.getAttribute('data-u') === 'later') { api().store(SNOOZE_KEY, String(Date.now() + LATER_MS)); banner('updBanner', ''); if (window.FDHealth) FDHealth.redraw(); return; }
             b.innerHTML = '<span class="n-ico">⏳</span><div class="n-text"><b>Updating…</b></div>';
             update();
         };
@@ -120,7 +131,7 @@
         if (!newer(latest.script, lastLayout.scriptVersion) || Date.now() < nag) { banner('scrBanner', ''); return; }
         var b = banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Your Google script needs updating</b>' +
             '<span>You have version ' + esc(lastLayout.scriptVersion) + '; the apps now need ' + esc(latest.script) +
-            '. Update it from the Family Admin app (Install tab), or in your Google Sheet → 🏠 Family Dashboard → Update the Google script now.</span></div>' +
+            '. Tap the version number (bottom left) → Update the Google script now, or Family Admin → Settings → System → Updates.</span></div>' +
             '<button class="n-btn ghost" data-s="ok">OK</button>');
         b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
     }
@@ -197,6 +208,25 @@
         layout: function () { return lastLayout; },
         latest: function () { return latest; },
         newer: newer,
+        /** For the status panel: whether the screen / script are behind, when "Later" ends, and buttons to update now. */
+        snoozedUntil: function () { var t = Number(api().load(SNOOZE_KEY) || 0); return t > Date.now() ? t : 0; },
+        updateNow: function () { api().store(SNOOZE_KEY, '0'); update(); },
+        updateScript: function () {
+            if (!latest || !lastLayout) return Promise.reject(new Error('Not checked yet – try again in a minute'));
+            api().store(SCRIPT_KEY, '0'); api().store('familyDashboard.scriptAuto', '');
+            return api().post({ action: 'selfUpdate', why: 'screen' }).then(function (r) {
+                if (r && (r.updated || r.upToDate)) { lastLayout.scriptVersion = r.to || r.version || latest.script; scriptDone(lastLayout.scriptVersion); if (window.FDHealth) FDHealth.note('script', ''); }
+                else throw new Error((r && r.message) || 'The Google script couldn’t update itself');
+                return r;
+            });
+        },
+        autoOn: function () {
+            return api().post({ action: 'autoUpdate', on: true }).then(function (r) {
+                if (lastLayout) lastLayout.autoUpdate = !!(r && r.autoUpdate);
+                showScript(); return r;
+            });
+        },
+        recheck: checkForUpdate, stack: stack,
         check: function (L) {
             if (!L) return;
             var first = !lastLayout;

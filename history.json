@@ -1,5 +1,62 @@
 [
   {
+    "version": "2026.11.36",
+    "date": "2026-11-09",
+    "notes": [
+      "Children’s page: 3 children a screen everywhere – on a tablet each child’s card is stacked (thinner and taller) and fills the screen; more children get more buttons (Boys 1, Boys 2)"
+    ]
+  },
+  {
+    "version": "2026.11.35",
+    "date": "2026-11-09",
+    "notes": [
+      "Tablets: each widget page with more than two columns gets two buttons in the side bar (e.g. Home 1, Home 2) instead of swiping and turning over by itself",
+      "Children’s page: 3 children a screen on the Corsair and computers, 2 on a tablet, with as many buttons as needed (Boys 1, Boys 2…); on a tablet it now fills the screen's height"
+    ]
+  },
+  {
+    "version": "2026.11.34",
+    "date": "2026-11-09",
+    "notes": [
+      "Family Admin tabs: Family (points with your controls, calendar, today & tomorrow, holidays) · Lists · Other (information first: bins, weather, trains, buses, traffic) · Screen (where widgets go and how tall) · Settings",
+      "Each widget’s settings are on its own page; the Screen tab is only for layout – one layout for the Corsair, tablets and computers",
+      "Phone apps left open check for updates (on opening, when brought back to the front, and every 15 minutes) and restart themselves – or show “Update ready – Restart” if you’re in the middle of something",
+      "Google script 2026.11.29: when it can’t update itself, it says which Google account and which switch is the problem"
+    ]
+  },
+  {
+    "version": "2026.11.33",
+    "date": "2026-11-08",
+    "notes": [
+      "Family Admin settings reorganised: Family & calendar · Locations & home · External data (API) keys · System · My data (Google) · Devices · About & diagnostics · Help",
+      "Devices: add another person’s phone with a QR code (Calendar or Admin), add another screen by its code, disconnect this phone",
+      "My data (Google): go through setup again with everything filled in, start afresh, start from scratch, move to another Google account, access code",
+      "Bins work anywhere in the UK: from your council where connected, your council’s calendar (iCal) link, or a repeating schedule – with a clear message if your council isn’t connected",
+      "Licence portal at …/family-apps/licencing/",
+      "Google script 2026.11.28: UK-wide bins"
+    ]
+  },
+  {
+    "version": "2026.11.32",
+    "date": "2026-11-08",
+    "notes": [
+      "iPhone: the Calendar and Admin apps explain how to add them to the Home Screen (Share → Add to Home Screen), and the installed app arrives already connected"
+    ]
+  },
+  {
+    "version": "2026.11.31",
+    "date": "2026-11-08",
+    "notes": [
+      "Computer browsers show the Corsair layout at its own shape, scaled to fit the window",
+      "Calendar: new Year view – the whole year using the full window on a computer, six months on a tablet",
+      "Status page (tap the version number): shows any update waiting, when “Later” asks again, and Update now / Update the Google script now / Turn automatic updates on buttons",
+      "“Later” on the update banner now asks again after an hour",
+      "Windows start file now updates itself: it fetches the latest launcher each time it starts",
+      "Google script 2026.11.27: switches automatic updates on (unless someone turned them off on purpose); new families start with a blank home address",
+      "Licence server 2026.11.10: a missing portal page is put back by “Update the licence server now”"
+    ]
+  },
+  {
     "version": "2026.11.30",
     "date": "2026-11-08",
     "notes": [

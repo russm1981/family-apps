@@ -2,9 +2,10 @@
  *
  * Two layouts, chosen from the shape of the screen:
  *   wide      the Corsair XENEON EDGE (2560×720, 32:9) and similar very wide screens: four columns of widgets.
- *   standard  tablets (benchmark: Amazon Fire HD 10, 1920×1200 = 16:10) and computer browsers (16:9 / 16:10):
- *             two columns at a time – the page's other two columns are a swipe (or a tap on the arrows) away,
- *             and it turns over by itself every 30 seconds when nobody is touching it.
+ *   standard  tablets (benchmark: Amazon Fire HD 10, 1920×1200 = 16:10): two columns at a time – each page with more
+ *             than two columns gets two buttons in the side bar ("Home 1", "Home 2"); the children's page 2 a screen.
+ *   computer  a computer browser (mouse, not touch): the Corsair layout, kept at its 32:9 shape and scaled to fit the
+ *             window with black bars. The calendar's Year view uses the whole window (FDFormat.full).
  * Anything else (a phone, a tablet held upright, a very odd window) gets the nearer layout, a warning and an orange dot.
  *
  * Also gives this screen a name and a random id, so the licence can count screens (phones don't count).
@@ -15,14 +16,35 @@
     var RANGES = { wide: [2.8, 4.3], standard: [1.3, 2.15] };
     var F = { kind: 'wide', supported: true, ratio: WIDE };
 
+    /** A computer: the main pointer is a mouse or trackpad (tablets and the Corsair's touch screen report "coarse"). */
+    function isComputer() {
+        try { return matchMedia('(pointer: fine)').matches && !/Android|iPad|iPhone|Silk|KF[A-Z]{2,4}|Mobile/.test(navigator.userAgent); } catch (e) { return false; }
+    }
+    var fullWin = false;
+    /** Computer: size the page to 32:9 inside the window (or the whole window while fullWin), via CSS variables. */
+    function box() {
+        var root = document.documentElement, w = window.innerWidth, h = window.innerHeight;
+        var on = F.kind === 'computer';
+        root.classList.toggle('fmt-computer', on);
+        root.classList.toggle('fmt-full', on && fullWin);
+        if (!on) { ['--vh', '--vw', '--appW', '--appH'].forEach(function (k) { root.style.removeProperty(k); }); return; }
+        var bw = w, bh = h;
+        if (!fullWin) { bw = Math.min(w, h * WIDE); bh = bw / WIDE; }
+        bw = Math.floor(bw); bh = Math.floor(bh);
+        root.style.setProperty('--appW', bw + 'px'); root.style.setProperty('--appH', bh + 'px');
+        root.style.setProperty('--vh', (bh / 100) + 'px'); root.style.setProperty('--vw', (bw / 100) + 'px');
+    }
     function detect() {
         var w = window.innerWidth, h = window.innerHeight, r = w / Math.max(1, h);
-        var forced = /[?&#]format=(wide|standard)/.exec(location.href);
-        var kind = forced ? forced[1] : (Math.abs(Math.log(r / WIDE)) < Math.abs(Math.log(r / STD)) ? 'wide' : 'standard');
+        var forced = /[?&#]format=(wide|standard|computer)/.exec(location.href);
+        var nearer = Math.abs(Math.log(r / WIDE)) < Math.abs(Math.log(r / STD)) ? 'wide' : 'standard';
+        var kind = forced ? forced[1] : (nearer === 'standard' || r < RANGES.wide[0]) && isComputer() && r >= 1 ? 'computer' : nearer;
         var rg = RANGES[kind];
-        F = { kind: kind, ratio: r, width: w, height: h, supported: !!forced || (r >= rg[0] && r <= rg[1]), portrait: r < 1 };
-        document.body.classList.toggle('fmt-wide', kind === 'wide');
+        F = { kind: kind, ratio: r, width: w, height: h, supported: !!forced || kind === 'computer' || (r >= rg[0] && r <= rg[1]), portrait: r < 1 };
+        document.body.classList.toggle('fmt-wide', kind === 'wide' || kind === 'computer');   // a computer shows the Corsair layout
+        document.body.classList.toggle('fmt-computer', kind === 'computer');
         document.body.classList.toggle('fmt-standard', kind === 'standard');
+        box();
         var msg = F.supported ? '' : 'This screen is ' + w + '×' + h + (F.portrait ? ' and upright' : '') + '. The dashboard is made for the Corsair XENEON EDGE (very wide), a tablet such as the Fire HD 10 held sideways, or a computer browser – it’s showing the ' +
             (kind === 'wide' ? 'wide' : 'tablet') + ' layout, but some things may not fit.' + (F.portrait ? ' Turn the tablet sideways.' : '');
         if (window.FDHealth) FDHealth.note('format', msg);
@@ -36,6 +58,7 @@
         if (!b) { b = document.createElement('div'); b.id = 'fmtNote'; b.className = 'notice'; document.body.appendChild(b); }
         b.innerHTML = '<span class="n-ico">▭</span><div class="n-text"><b>This screen is an unusual shape</b><span>' + msg + '</span></div><button class="n-btn ghost" data-f="ok">OK</button>';
         b.style.display = 'flex';
+        if (window.FDNotices && FDNotices.stack) FDNotices.stack();
         b.onclick = function (e) { if (e.target.closest('[data-f]')) { b.style.display = 'none'; try { sessionStorage.setItem('fdFmtSeen', msg); } catch (x) { /* fine */ } } };
     }
 
@@ -52,57 +75,34 @@
     }
     function deviceName() {
         var ua = navigator.userAgent;
-        var what = F.kind === 'wide' ? (Math.abs(F.ratio - WIDE) < 0.15 && F.width >= 2400 ? 'Corsair screen' : 'Wide screen')
+        var what = F.kind === 'computer' ? 'Computer' : F.kind === 'wide' ? (Math.abs(F.ratio - WIDE) < 0.15 && F.width >= 2400 ? 'Corsair screen' : 'Wide screen')
             : /Silk|KF[A-Z]{2,4}/.test(ua) ? 'Fire tablet' : /iPad|Android(?!.*Mobile)/.test(ua) ? 'Tablet' : /Mobile/.test(ua) ? 'Phone' : 'Computer';
         return what + ' ' + deviceId().slice(-4);
     }
 
-    /* ---- standard layout: two columns at a time */
-    var flipTimer = null, lastTouch = Date.now();
-    document.addEventListener('pointerdown', function () { lastTouch = Date.now(); }, true);
+    /* ---- standard layout (tablets): two columns at a time. Each half of a page has its own button in the side bar
+     * ("Home 1", "Home 2" – pages.js); this just tidies up after the old on-page pager. */
     function pager(sec) {
-        var cols = sec.querySelectorAll(':scope > .wcol').length;
-        var pg = sec.querySelector('.half-pager');
-        if (F.kind !== 'standard' || cols <= 2) { sec.removeAttribute('data-half'); if (pg) pg.remove(); return; }
-        if (!sec.hasAttribute('data-half')) sec.setAttribute('data-half', '0');
-        if (!pg) {
-            pg = document.createElement('div'); pg.className = 'half-pager';
-            pg.innerHTML = '<button data-hp="-1" aria-label="Previous">‹</button><span></span><button data-hp="1" aria-label="Next">›</button>';
-            sec.appendChild(pg);
-            pg.addEventListener('click', function (e) { var b = e.target.closest('[data-hp]'); if (b) turn(sec, +b.getAttribute('data-hp')); });
-            // Swipe left / right on the page.
-            var x0 = null;
-            sec.addEventListener('pointerdown', function (e) { x0 = e.clientX; }, true);
-            sec.addEventListener('pointerup', function (e) { if (x0 != null && Math.abs(e.clientX - x0) > 80 && !e.target.closest('.leaflet-container')) turn(sec, e.clientX < x0 ? 1 : -1); x0 = null; }, true);
-        }
-        label(sec);
+        var pg = sec.querySelector('.half-pager'); if (pg) pg.remove();
+        if (F.kind !== 'standard') sec.removeAttribute('data-half');
     }
-    function label(sec) { var s = sec.querySelector('.half-pager span'); if (s) s.textContent = (+sec.getAttribute('data-half') + 1) + ' / 2'; }
-    function turn(sec, dir) {
-        var h = (+sec.getAttribute('data-half') + (dir > 0 ? 1 : 1)) % 2;     // only two halves: either way flips
-        sec.setAttribute('data-half', String(h)); label(sec);
-        if (window.FDPages && FDPages.shown) FDPages.shown(sec.getAttribute('data-page'));
-    }
-    function autoFlip() {
-        clearInterval(flipTimer);
-        flipTimer = setInterval(function () {
-            if (F.kind !== 'standard' || Date.now() - lastTouch < 2 * 60000) return;
-            var sec = document.querySelector('.screen.wpage.on[data-half]');
-            if (sec && !document.querySelector('.pop.on, #health.on')) turn(sec, 1);
-        }, 30000);
-    }
-
     var rt = null;
     window.addEventListener('resize', function () {
         clearTimeout(rt);
-        rt = setTimeout(function () { var was = F.kind; detect(); if (was !== F.kind) location.reload(); else Array.prototype.forEach.call(document.querySelectorAll('.screen.wpage'), pager); }, 400);
+        rt = setTimeout(function () { var was = F.kind; detect(); window.dispatchEvent(new Event('fdbox')); if (was !== F.kind) location.reload(); else Array.prototype.forEach.call(document.querySelectorAll('.screen.wpage'), pager); }, 400);
     });
-    function start() { detect(); autoFlip(); }
+    function start() { detect(); }
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 
     window.FDFormat = {
         get: function () { return F; },
         detect: detect, pager: pager,
+        /** Year view on a computer: use the whole window (true) or go back to the 32:9 shape (false). */
+        full: function (on) {
+            on = !!on; if (on === fullWin) return;
+            fullWin = on; box();
+            window.dispatchEvent(new Event('fdbox'));
+        },
         deviceId: deviceId, deviceName: deviceName,
         /** Sent with the screen's page requests. */
         params: function () { return { dev: deviceId(), dn: deviceName(), fmt: F.kind }; },

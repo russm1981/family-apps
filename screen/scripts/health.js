@@ -60,6 +60,10 @@
                 else if (a === 'check') fullCheck();
                 else if (a === 'save') saveReport(b);
                 else if (a === 'retry') { if (window.FDPages) FDPages.refreshNow(true); }
+                else if (a === 'updApp') { b.disabled = true; b.textContent = 'Updating…'; FDNotices.updateNow(); }
+                else if (a === 'updScript') busyBtn(b, 'Updating the Google script…', FDNotices.updateScript().then(function (r) { api().toast(r.upToDate ? 'Already up to date' : 'Google script updated'); }));
+                else if (a === 'autoOn') busyBtn(b, 'Turning on…', FDNotices.autoOn().then(function (r) { api().toast(r.autoUpdate ? 'Automatic updates are on' + (r.warning ? ' – but: ' + r.warning : '') : 'Couldn’t turn them on', !r.autoUpdate || !!r.warning); }));
+                else if (a === 'recheck') { FDNotices.recheck(); api().toast('Checking…'); }
             });
         }
         el.classList.add('on'); draw();
@@ -83,9 +87,9 @@
         body.innerHTML = '<div class="hl-sum hl-' + lv + '"><i class="sync ' + lv + '"></i><span>' + headline + '</span></div>' +
             (probs.length ? '<ul class="hl-probs">' + probs.map(function (p) { return '<li>' + esc(p.text) + '</li>'; }).join('') + '</ul>' : '') +
             '<div class="hl-cols"><div><h3>Widgets</h3><table class="hl-t">' + rows + '</table></div>' +
-            '<div><h3>Versions</h3><table class="hl-t">' +
-                vrow('Screen', (N && N.version) + (behind(N && N.version, latest.app) ? ' (newer: ' + latest.app + ')' : ''), behind(N && N.version, latest.app)) +
-                vrow('Google script', (L.scriptVersion || '?') + (behind(L.scriptVersion, latest.script) ? ' (newer: ' + latest.script + ')' : ''), behind(L.scriptVersion, latest.script)) +
+            '<div>' + updBlock(N, L, latest) + '<h3>Versions</h3><table class="hl-t">' +
+                vrow('Screen', (N && N.version) + (behind(N && N.version, latest.app) ? ' (newer: ' + latest.app + ')' : ' – up to date'), behind(N && N.version, latest.app)) +
+                vrow('Google script', (L.scriptVersion || '?') + (behind(L.scriptVersion, latest.script) ? ' (newer: ' + latest.script + ')' : L.scriptVersion && latest.script ? ' – up to date' : ''), behind(L.scriptVersion, latest.script)) +
                 vrow('Newest available', latest.app ? 'apps ' + latest.app + ', script ' + latest.script : '?') +
                 vrow('Automatic updates', L.autoUpdate ? 'On' : 'Off', !L.autoUpdate) +
                 vrow('Licence', lic.required ? lic.message : 'Not needed', lic.required && !lic.ok) +
@@ -96,6 +100,32 @@
             '</div></div>' + qrBlock() + '<div><div>' +
             '<p class="hl-foot">To email a report to support, use Family Admin on your phone → Settings → Versions & diagnostics. ' +
             'Private details (access code, keys, addresses, names) are locked so only support can read them.</p></div></div>';
+    }
+    /** Updates: what's waiting, what's been put off, and buttons to do it now. */
+    function updBlock(N, L, latest) {
+        if (!N) return '';
+        var t = function (ms) { return new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
+        var appBehind = latest.app && N.newer(latest.app, N.version), scrBehind = latest.script && L.scriptVersion && N.newer(latest.script, L.scriptVersion);
+        var items = [];
+        if (appBehind) {
+            var sz = N.snoozedUntil();
+            items.push('<li><b>Screen update ' + esc(latest.app) + ' is available</b> – not installed yet. ' +
+                (sz ? 'You chose “Later”: it asks again at ' + t(sz) + ', or updates by itself once nobody has touched the screen for 3 minutes.' : 'It installs itself once nobody has touched the screen for 3 minutes.') +
+                ' <button class="n-btn" data-h="updApp">Update the screen now</button></li>');
+        }
+        if (scrBehind) items.push('<li><b>Google script ' + esc(latest.script) + ' is available</b> – you have ' + esc(L.scriptVersion) + '. ' +
+            (L.autoUpdate ? 'It should update itself within a few minutes.' : 'Automatic updates are off, so it won’t update by itself.') +
+            ' <button class="n-btn" data-h="updScript">Update the Google script now</button></li>');
+        if (!L.autoUpdate) items.push('<li><b>Automatic updates are off.</b> Turn them on and the Google script keeps itself up to date (it checks every 5 minutes). ' +
+            '<button class="n-btn" data-h="autoOn">Turn automatic updates on</button></li>');
+        var head = '<h3>Updates</h3>';
+        if (!latest.app) return head + '<p class="hl-upd-ok">Not checked yet. <button class="n-btn ghost" data-h="recheck">Check for updates</button></p>';
+        if (!items.length) return head + '<p class="hl-upd-ok">✔ Everything is up to date and installed. <button class="n-btn ghost" data-h="recheck">Check again</button></p>';
+        return head + '<ul class="hl-upd">' + items.join('') + '</ul>';
+    }
+    function busyBtn(b, text, p) {
+        b.disabled = true; b.textContent = text;
+        p.then(function () { draw(); }, function (e) { api().toast(e.message, true); draw(); });
     }
     /** QR codes: the phone apps (already connected to this family), this screen for a tablet, and the Family Dashboard home page. */
     function appsBase() {
@@ -156,6 +186,7 @@
     document.addEventListener('click', function (e) { if (e.target.closest('#appVer') || e.target.closest('.rail-foot .sync')) open(); });
 
     window.FDHealth = {
+        redraw: function () { if ($('health') && $('health').classList.contains('on')) draw(); },
         /** From the connection: 'busy', 'ok' or 'err' (+ message). */
         sync: function (kind, msg) {
             if (kind === 'busy') H.busy = true;

@@ -42,7 +42,7 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed. Make a new start file: on your phone, <b>Family Admin → Settings → Access code &amp; devices → Connect your devices</b>, and on the PC replace the old start file with the new one.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → Settings → Devices → Add another screen</b>. For the Windows PC, make a new start file in the setup app (<b>Settings → My data (Google) → Go through setup again</b>, step “Connect your devices”) and replace the old one.</dd>
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
@@ -81,12 +81,12 @@ window.FD_HELP = [
 <h2>“Your Google script needs updating”</h2>
 <p>If automatic updates are on, this message changes to “✔ The Google script has updated itself” within a few minutes – there’s nothing to do. If it stays:</p>
 <ol>
-<li>On your phone: <b>Family Admin → Settings → Updates → Update the Google script now</b>.</li>
+<li>On your phone: <b>Family Admin → Settings → System → Updates → Update the Google script now</b>.</li>
 <li>If it says “The Google Apps Script API is switched off”: on a computer, signed in to the Google account that owns the Sheet, open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> and switch <b>Google Apps Script API</b> on. Then try step 1 again.</li>
 <li>If it says the update “needs a new permission”: open your Google Sheet on a computer → <b>🏠 Family Dashboard → Update the Google script now</b>, and press <b>Allow</b> on Google’s screens.</li>
 </ol>
 <h2>Saved versions (Google’s limit of 200)</h2>
-<p>Google keeps up to 200 saved versions of a script, and each update uses one. The Family Admin app (<b>Settings → Updates</b>) shows how many are left and warns you from 190. When it does, use <a href="#afresh">Start afresh</a> – it takes a couple of minutes and resets the count.</p>`
+<p>Google keeps up to 200 saved versions of a script, and each update uses one. The Family Admin app (<b>Settings → System → Updates</b>) shows how many are left and warns you from 190. When it does, use <a href="#afresh">Start afresh</a> – it takes a couple of minutes and resets the count.</p>`
   },
   {
     id: 'connect', icon: '📱', title: 'Connect a new phone, tablet or screen',
@@ -95,7 +95,7 @@ window.FD_HELP = [
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
 <h2>A new phone (Family Admin or Family Calendar)</h2>
 <ol>
-<li>On a phone that’s <b>already connected</b>: <b>Family Admin → Settings → Access code &amp; devices → Connect your devices</b>. This shows QR codes.</li>
+<li>On a phone that’s <b>already connected</b>: <b>Family Admin → Settings → Devices</b>. This shows QR codes.</li>
 <li>On the new phone, point the camera at the right QR code and open the link.</li>
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
@@ -107,7 +107,7 @@ window.FD_HELP = [
 <h2>A tablet or Raspberry Pi</h2>
 <p>Open the <b>screen link</b> from the same page in the device’s browser (or scan the “Tablet or Pi screen” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
 <h2>How many screens?</h2>
-<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones with Family Admin or Family Calendar don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → Settings → Access code &amp; devices</b>.</p>
+<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones with Family Admin or Family Calendar don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → Settings → Devices</b>.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
   },
@@ -120,7 +120,7 @@ window.FD_HELP = [
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
 <li><b>New to Family Dashboard?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → Settings → Access code &amp; devices → <b>Connect a screen</b> and type the code.)</li>
+<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → Settings → Devices → <b>Add another screen</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
@@ -138,7 +138,8 @@ window.FD_HELP = [
     body: `
 <table class="t">
 <tr><td><b>Wide</b></td><td>The Corsair XENEON EDGE (2560×720) and similar very wide screens. Four columns of widgets side by side.</td></tr>
-<tr><td><b>Tablet / computer</b></td><td>A tablet held sideways – we test on the Amazon Fire HD 10 (1920×1200) – or a computer’s web browser. Two columns at a time: <b>swipe</b>, or tap the ‹ › at the bottom, to see the other two. It turns over by itself every 30 seconds when nobody is touching it.</td></tr>
+<tr><td><b>Tablet</b></td><td>A tablet held sideways – we test on the Amazon Fire HD 10 (1920×1200). Two columns at a time: a page with more than two columns gets two buttons in the side bar, e.g. <b>Home 1</b> and <b>Home 2</b>. The children’s page shows 3 children a screen, each card stacked to fit, with more buttons if needed.</td></tr>
+<tr><td><b>Computer</b></td><td>A computer’s web browser shows the Corsair layout at its own shape, scaled to fit the window. The calendar’s <b>Year</b> view uses the whole window (a tablet shows six months).</td></tr>
 </table>
 <p>On a different shape – a phone, a tablet held upright, or a strangely sized window – the dashboard uses the nearer layout and shows <i>“This screen is an unusual shape”</i>. It will still work, but some things may not fit. On a tablet, turn it sideways; on a computer, make the browser window full-screen (F11).</p>
 <p>The children’s page and the calendar are drawn a little smaller on tablets so everything fits.</p>`
@@ -150,7 +151,7 @@ window.FD_HELP = [
 <p>Some families prefer the dashboard’s permissions (calendar, Gmail for parcels…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
 <ol>
 <li>If you haven’t got one, make the new Google account (e.g. at gmail.com).</li>
-<li>On your phone: <b>Family Admin → Settings → Updates → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
+<li>On your phone: <b>Family Admin → Settings → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
 <li>On a <b>computer</b>, sign in to Google as the new account (a private/incognito window is easiest) and open the link. It’s the setup app, in “moving” mode.</li>
 <li>Follow the setup steps for the new account: make the Sheet and publish it (steps 2 and 3).</li>
 <li>At <b>Publish &amp; connect</b>, press <b>Bring everything across</b>.</li>
@@ -195,6 +196,7 @@ window.FD_HELP = [
 </ol>
 <p>Pressed No by mistake? On the PC open the folder <code>%LOCALAPPDATA%\\FamilyDashboardKiosk</code> (paste it into the File Explorer address bar), delete <code>startup-answer.txt</code> and/or <code>screen-answer.txt</code>, and run the start file again – it asks again.</p>
 <p>To check: press <b>Windows key + R</b>, type <code>shell:startup</code> and press Enter – there should be a “Family Dashboard” shortcut.</p>
+<p>The start file updates itself: it only holds your link, and fetches the latest launcher from the internet every time it starts – you never need to download it again unless your access code changes.</p>
 <p>If the PC starts before its internet is ready, the start file waits up to a minute for it. Windows may also show “Windows protected your PC” the first time – choose <b>More info → Run anyway</b>.</p>`
   },
   {
@@ -212,6 +214,18 @@ window.FD_HELP = [
 <p>Step-by-step guides with pictures are in the setup app’s <b>Free API keys</b> step – easiest on a computer.</p>`
   },
   {
+    id: 'bins', icon: '🗑', title: 'Bin days',
+    summary: 'The Bins widget works anywhere in the UK: straight from your council where it’s connected, from your council’s calendar link, or from a repeating schedule you type in once.',
+    body: `
+<p>In <b>Family Admin</b> tap the Bins tile → <b>Change Bins settings</b> → <b>Collection days from</b>, and pick one:</p>
+<dl>
+<dt>My council (automatic)</dt><dd>Type your postcode and house name or number. The dashboard finds your council from the postcode. If your council isn’t connected yet it says so straight away – when you save, during setup, and on the screen – and you can use one of the other two.<br>Connected so far: South Gloucestershire. More are added over time; they update by themselves.</dd>
+<dt>Calendar link</dt><dd>Many councils have an <b>“add to calendar”</b>, <b>“subscribe”</b> or <b>iCal</b> link on their “check your bin day” page. Copy that link (it ends in .ics or starts webcal://) and paste it in.</dd>
+<dt>Repeating schedule</dt><dd>Works for every home. One line per bin: <b>name | every how many weeks | a recent or next collection date</b>, for example:<br><code>Black bin | 2 | 2026-11-11</code><br><code>Recycling | 1 | 12/11/2026</code><br>Bank-holiday changes aren’t known, so check the council’s notices at Christmas.</dd>
+</dl>
+<p>The colours follow the names: black/general, recycling (blue), food (brown) and garden (green).</p>`
+},
+{
     id: 'photos', icon: '🖼', title: 'Photos',
     summary: 'The photo slideshow shows the pictures in a Google Drive folder. The folder must be shared “Anyone with the link”.',
     body: `
@@ -235,7 +249,7 @@ window.FD_HELP = [
 <tr><td>Pages</td><td>“go to calendar” · say “help” for more</td></tr>
 </table>
 <h2>It says “The microphone is blocked” or hears nothing</h2>
-<ul><li>Use the latest start file (it allows the microphone).</li>
+<ul><li>The start file allows the microphone by itself (it keeps itself up to date).</li>
 <li>Windows: <b>Settings → Privacy &amp; security → Microphone</b> – turn on “Microphone access” and “Let desktop apps access your microphone”.</li>
 <li>Windows: <b>Settings → System → Sound</b> – under Input choose your microphone and check the bar moves when you speak.</li>
 <li>Voice recognition needs the internet.</li></ul>`
@@ -268,7 +282,7 @@ window.FD_HELP = [
     body: `
 <h2>Start afresh – keep everything (recommended)</h2>
 <p>Use this if Google’s limit of 200 saved versions is nearly reached, or the Sheet has got into a muddle. It makes a new Google Sheet and copies <b>everything</b> into it – people, points, tasks, lists, notes, settings, your licence – and the screen and phones switch over by themselves.</p>
-<ol><li><b>Family Admin → Settings → Updates → Start afresh in a new Sheet</b>.</li>
+<ol><li><b>Family Admin → Settings → My data (Google) → Start afresh in a new Sheet</b>.</li>
 <li>When it says the new Sheet is ready, open it on a computer, wait for the <b>🏠 Family Dashboard</b> menu and choose <b>Finish moving here</b>. Press <b>Allow</b> on Google’s screens.</li>
 <li>Your old Sheet is kept and renamed “(old – moved …)”. Keep it for a few weeks – it points older links to the new one.</li></ol>
 <h2>From scratch – a brand-new family set-up</h2>

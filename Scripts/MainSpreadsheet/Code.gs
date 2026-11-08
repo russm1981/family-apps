@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.26';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.29';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -66,7 +66,7 @@ const LIMITS = {
   boyName: 10,
   task: 22,           // "Empty the dishwasher"
   todo: 22,
-  destination: 16,    // "Charfield School"
+  destination: 16,    // e.g. "Grandma's house"
   reason: 30,         // reason on a bonus or penalty
   eventTitle: 40,
   eventNote: 300,
@@ -101,7 +101,7 @@ const INSTALL = [
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
-  { k: 'HomeAddress', group: 'home', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
+  { k: 'HomeAddress', group: 'home', label: 'Home address', def: '',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
   { k: 'TomTomKey', group: 'keys', uses: 'Traffic, the flights and traffic maps', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
   { k: 'RailDataKey', group: 'keys', uses: 'Trains', label: 'National Rail key', help: 'Either an OpenLDBWS token (from realtime.nationalrail.co.uk/OpenLDBWSRegistration – the same one the Raspberry Pi departure boards use) or a Rail Data Marketplace key (raildata.org.uk).' },
@@ -151,6 +151,7 @@ const NEWS_FEEDS = {
  * Every kind of widget. sizes = allowed heights (first is the default). ttl = seconds the data is kept
  * before asking the source again. data(settings, id) runs here on Google; widgets without it run on the screen only.
  */
+const BIN_SOURCES = ['My council (automatic)', 'Calendar link', 'Repeating schedule'];
 const WIDGET_TYPES = {
   weather: { name: 'Weather', icon: '\u2600\uFE0F', sizes: ['full', 'half'], ttl: 20 * 60, about: 'Clock, current weather, the next hours and the next few days.',
     settings: [
@@ -162,7 +163,7 @@ const WIDGET_TYPES = {
     data: (s) => weather_(s.Location || inst_('HomeAddress')) },
   traffic: { name: 'Traffic', icon: '\uD83D\uDE97', sizes: ['full', 'half'], ttl: 10 * 60, about: 'Live map and journey times compared with the usual time.',
     settings: [
-      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: 'Charfield School | Charfield Primary School, Charfield, Wotton-under-Edge\nBristol Parkway | Bristol Parkway Station, Stoke Gifford, Bristol',
+      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: '',
         help: 'One per line: Label | address or postcode. Up to 3. Labels up to ' + LIMITS.destination + ' characters.' },
       { k: 'From', label: 'Start from', type: 'text', def: '', max: 150, help: 'Leave blank for home.' },
     ],
@@ -179,10 +180,15 @@ const WIDGET_TYPES = {
       { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 4, min: 2, max: 10 },
     ],
     data: () => agenda_(), nocache: true },
-  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'South Gloucestershire Council collections, with a "put out tonight" reminder.',
+  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a "put out tonight" reminder: straight from the council where it\u2019s connected, or from the council\u2019s calendar link, or a repeating schedule.',
     settings: [
-      { k: 'Postcode', label: 'Postcode', type: 'text', def: 'GL12 8DQ', max: 10 },
-      { k: 'House', label: 'House name or number', type: 'text', def: 'Meadow View', max: 60, help: 'Words that pick your house out of the council\u2019s list.' },
+      { k: 'Source', label: 'Collection days from', type: 'select', def: 'My council (automatic)', options: BIN_SOURCES,
+        help: 'My council: looked up from your postcode, where your council is connected (see Help). Calendar link: many councils offer an "add to calendar" (iCal / .ics) link on their bin-day page. Repeating schedule: works everywhere.' },
+      { k: 'Postcode', label: 'Postcode', type: 'text', def: '', max: 10, when: ['Source', ['My council (automatic)']] },
+      { k: 'House', label: 'House name or number', type: 'text', def: '', max: 60, when: ['Source', ['My council (automatic)']], help: 'Words that pick your house out of the council\u2019s list (My council only).' },
+      { k: 'CalendarLink', label: 'Council calendar link (iCal / .ics)', type: 'url', def: '', when: ['Source', ['Calendar link']], help: 'Calendar link only. Copy the "subscribe" or "add to calendar" link from your council\u2019s bin-day page.' },
+      { k: 'Schedule', label: 'Repeating schedule', type: 'lines', maxLines: 6, def: '', when: ['Source', ['Repeating schedule']],
+        help: 'Repeating schedule only. One bin per line: Bin | every how many weeks | a recent or next collection date, e.g. "Black bin | 2 | 2026-11-11" or "Recycling | 1 | 12/11/2026".' },
       { k: 'ReminderFrom', label: '"Put out tonight" from', type: 'time', def: '15:00', help: 'Time the day before a collection when the reminder appears.' },
       { k: 'UPRN', label: 'Council property number', type: 'text', def: '', max: 20, advanced: true, help: 'Filled in automatically. Clear it to look the address up again.' },
     ],
@@ -259,7 +265,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Russ | #a855f7\nBecky | #f472b6\nBen | #3fa9f5\nJosh | #f5a623\nAlex | #7ed321',
         help: 'One per line: Name | colour. Up to 6.' },
-      { k: 'Places', label: 'Places on the clock', type: 'lines', maxLines: 10, def: 'Home | home\nSchool | Charfield Primary School, Charfield\nWork\nShops\nSport\nFriends\nHoliday\nTravelling',
+      { k: 'Places', label: 'Places on the clock', type: 'lines', maxLines: 10, def: 'Home | home\nSchool\nWork\nShops\nSport\nFriends\nHoliday\nTravelling',
         help: 'One per line: Name, optionally | address so phones can set it automatically. "home" means the home address. Anywhere else counts as Travelling. Up to 10.' },
       { k: 'Radius', label: 'How close counts as being there (metres)', type: 'number', def: 300, min: 50, max: 5000, advanced: true },
     ],
@@ -317,7 +323,7 @@ Object.assign(WIDGET_TYPES, {
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '6';   // 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
+const LAYOUT_VER = '7';   // 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
@@ -526,6 +532,12 @@ function upgradeLayout_() {
     });
     if (add.length) sheet_('wset').getRange(sheet_('wset').getLastRow() + 1, 1, add.length, 3).setValues(add);
   }
+  // Version 7 (Nov 2026): automatic updates are the default now. Sheets made before that had them off without anyone
+  // choosing it – switch them on, unless a person has turned them off on purpose since (autoUpdateChosen).
+  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '7' && !autoUpdateOn_() &&
+      PropertiesService.getScriptProperties().getProperty('autoUpdateChosen') !== 'off') {
+    try { setAutoUpdate_(true); } catch (err) { console.warn('Automatic updates: ' + err.message); }
+  }
   renumber_('widgets');
 }
 
@@ -547,6 +559,7 @@ function doGet(e) {
   if (p.action) {
     return json_(() => {
       ensureMigrated_();
+      if (p.action === 'binCouncil') { const c = councilFor_(p.postcode); return { ok: true, council: c.name, code: c.code, automatic: !!BIN_COUNCILS[c.code], message: BIN_COUNCILS[c.code] ? c.name + ' – connected automatically' : binUnsupported_(c) }; }
       if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_() };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
@@ -637,7 +650,7 @@ function dispatch_(b) {
     case 'changeCode': return changeCode_(b);
     case 'acceptPrivacy': return acceptPrivacy_(b);
     case 'selfUpdate': return selfUpdate_(b.why || 'app');
-    case 'autoUpdate': return setAutoUpdate_(!!b.on);
+    case 'autoUpdate': chosen_(!!b.on); return setAutoUpdate_(!!b.on);
     default: throw new Error('Unknown action: ' + b.action);
   }
 }
@@ -1167,7 +1180,7 @@ function cleanSetting_(f, v) {
     return "'" + pad2_(s.split(':')[0]) + ':' + s.split(':')[1];
   }
   if (f.type === 'crs') { s = s.toUpperCase(); if (!/^[A-Z]{3}$/.test(s)) throw new Error(what + ' must be a three-letter station code, e.g. BPW'); return s; }
-  if (f.type === 'url') { if (s && !/^https:\/\/\S+$/.test(s)) throw new Error(what + ' must be a web link starting https://'); return s; }
+  if (f.type === 'url') { if (s && !/^(https|webcal):\/\/\S+$/i.test(s)) throw new Error(what + ' must be a web link starting https://'); return s.replace(/^webcal:/i, 'https:'); }
   if (f.type === 'lines') {
     const lines = s.split(/\r?\n/).map(x => x.trim()).filter(Boolean);
     if (f.maxLines && lines.length > f.maxLines) throw new Error(what + ': at most ' + f.maxLines + ' lines fit on the screen');
@@ -1179,10 +1192,19 @@ function cleanSetting_(f, v) {
 
 /** Extra checks for particular widgets. */
 function checkWidget_(type, s) {
+  if (type === 'bins') {
+    const src = String(s.Source || BIN_SOURCES[0]);
+    if (src === BIN_SOURCES[0] && String(s.Postcode || '').trim()) {
+      const c = councilFor_(s.Postcode);
+      if (!BIN_COUNCILS[c.code]) throw new Error(binUnsupported_(c));
+    }
+    if (src === 'Calendar link' && !/^(https?|webcal):\/\//i.test(String(s.CalendarLink || '').trim())) throw new Error('Paste your council\u2019s calendar link (it starts https:// or webcal://)');
+    if (src === 'Repeating schedule') binSchedule_(s.Schedule);   // throws if a line can't be read
+  }
   if (type === 'traffic') {
     String(s.Destinations || '').split('\n').filter(Boolean).forEach(line => {
       const p = line.split('|');
-      if (p.length < 2 || !p[0].trim() || !p[1].trim()) throw new Error('Each destination needs "Label | address", e.g. "School | GL12 8DQ"');
+      if (p.length < 2 || !p[0].trim() || !p[1].trim()) throw new Error('Each destination needs "Label | address", e.g. "School | BS1 4DJ"');
       checkLen_('Destination label', p[0], LIMITS.destination);
     });
   }
@@ -1412,6 +1434,7 @@ function cached_(cache, key, ttl, force, fn) {
 
 /** "51.62,-2.47" or any address/postcode → {lat,lng}. Cached for 6 hours. */
 function geocode_(place) {
+  if (!String(place || '').trim()) throw new Error('Add your home address in Family Admin → Settings → Home & calendar');
   const m = String(place).match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
   if (m) return { lat: Number(m[1]), lng: Number(m[2]) };
   const cache = CacheService.getScriptCache();
@@ -1604,12 +1627,133 @@ function journeyMins_(a, b) {
   return (m(b) - m(a) + 1440) % 1440;
 }
 
-/** South Gloucestershire Council collections. The property number (UPRN) is found once and saved in the widget's settings. */
+/* ---------------------------------------------------------------- bins, anywhere in the UK
+ * Three ways to know the collection days (setting "Collection days from"):
+ *  - My council (automatic): the postcode is looked up on postcodes.io to find the council; councils with a public
+ *    collections service have their own little reader in BIN_COUNCILS (keyed by the council's ONS code). Others get a
+ *    clear message pointing at the other two ways.
+ *  - Calendar link: the iCal (.ics) feed many councils publish on their bin-day page.
+ *  - Repeating schedule: "Bin | every N weeks | a known date" – works for every household in the country.
+ * (MagicMirror's bin modules work the same way: one module per council, or a calendar/schedule for everyone else.
+ *  The big community list of council readers – UKBinCollectionData – needs Python and a web browser to run, which a
+ *  Google script can't do, so councils are added here one by one, starting with those that have a proper web service.)
+ */
+const BIN_COUNCILS = {
+  E06000025: { name: 'South Gloucestershire Council', read: binsSouthGlos_ },
+};
+/** Which council a postcode is in (postcodes.io, free, no key). Cached for a week. */
+function councilFor_(postcode) {
+  const pc = String(postcode || '').replace(/\s+/g, '').toUpperCase();
+  if (!/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/.test(pc)) throw new Error('That doesn’t look like a UK postcode: ' + postcode);
+  const cache = CacheService.getScriptCache(), ck = 'council:' + pc, hit = cache.get(ck);
+  if (hit) return JSON.parse(hit);
+  const res = UrlFetchApp.fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(pc), { muteHttpExceptions: true });
+  if (res.getResponseCode() === 404) throw new Error('Postcode ' + postcode + ' wasn’t found – check it');
+  if (res.getResponseCode() !== 200) throw new Error('The postcode lookup said ' + res.getResponseCode() + ' – try again later');
+  const r = JSON.parse(res.getContentText()).result || {};
+  const out = { code: (r.codes || {}).admin_district || '', name: r.admin_district || 'your council', country: r.country || '' };
+  cache.put(ck, JSON.stringify(out), 6 * 3600);
+  return out;
+}
+function binUnsupported_(c) {
+  return c.name + ' can’t be read automatically yet. In the Bins settings choose “Calendar link” (if the council’s bin-day page has an “add to calendar” link) or “Repeating schedule” (works everywhere).';
+}
+/** Which of the four colours a bin gets on the screen, from its name. */
+function binKind_(name) {
+  const n = String(name || '').toLowerCase();
+  return /food|caddy|kitchen/.test(n) ? 'food' : /garden|green waste|brown/.test(n) ? 'garden' : /recycl|blue|glass|paper|card|plastic|box/.test(n) ? 'recycling' : 'refuse';
+}
+function binLabel_(name) {
+  const n = String(name || '').trim().replace(/^./, c => c.toUpperCase()), k = binKind_(n);
+  if (n.length <= 22) return n;
+  return { food: 'Food caddy', garden: 'Garden bin', recycling: 'Recycling', refuse: 'Black bin' }[k];
+}
 function bins_(s, id) {
+  const src = String(s.Source || BIN_SOURCES[0]);
+  let days;
+  if (src === 'Calendar link') days = binsIcs_(s.CalendarLink);
+  else if (src === 'Repeating schedule') days = binsRepeat_(binSchedule_(s.Schedule));
+  else {
+    if (!String(s.Postcode || '').trim()) throw new Error('Add your postcode in the Bins settings');
+    const c = councilFor_(s.Postcode), C = BIN_COUNCILS[c.code];
+    if (!C) throw new Error(binUnsupported_(c));
+    days = C.read(s, id);
+  }
+  const today = fmt_(new Date(), 'yyyy-MM-dd'), todayMs = Date.parse(today + 'T00:00:00Z');
+  return {
+    today: today, reminderFrom: String(s.ReminderFrom || '15:00'),
+    upcoming: Object.keys(days).filter(d => d >= today).sort().slice(0, 4).map(d => ({ date: d,
+      daysAway: Math.round((Date.parse(d + 'T00:00:00Z') - todayMs) / 86400000), bins: days[d] })),
+  };
+}
+/** "Black bin | 2 | 2026-11-11" lines → [{ bin, weeks, date }]. */
+function binSchedule_(text) {
+  const out = String(text || '').split('\n').map(l => l.trim()).filter(Boolean).map(line => {
+    const p = line.split('|').map(x => x.trim());
+    const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(p[2] || '') || /^(\d\d?)\/(\d\d?)\/(\d{4})$/.exec(p[2] || '');
+    if (p.length < 3 || !p[0] || !/^\d$/.test(p[1]) || +p[1] < 1 || !m) throw new Error('Each schedule line needs "Bin | every how many weeks | a date", e.g. "Black bin | 2 | 2026-11-11" – this one doesn’t: ' + line);
+    const ymd = m[1].length === 4 ? m[1] + '-' + m[2] + '-' + m[3] : m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    checkLen_('Bin name', p[0], 22);
+    return { bin: p[0], weeks: +p[1], date: ymd };
+  });
+  if (!out.length) throw new Error('Add at least one line to the repeating schedule, e.g. "Black bin | 2 | 2026-11-11"');
+  return out;
+}
+function binsRepeat_(list) {
+  const today = Date.parse(fmt_(new Date(), 'yyyy-MM-dd') + 'T00:00:00Z'), days = {}, DAY = 86400000;
+  list.forEach(b => {
+    const step = b.weeks * 7 * DAY, start = Date.parse(b.date + 'T00:00:00Z');
+    let t = start + Math.ceil((today - start) / step) * step;
+    for (let i = 0; i < 6; i++, t += step) {
+      const d = Utilities.formatDate(new Date(t), 'UTC', 'yyyy-MM-dd');
+      (days[d] = days[d] || []).push({ bin: b.bin, kind: binKind_(b.bin), schedule: 'Every ' + (b.weeks === 1 ? 'week' : b.weeks + ' weeks'), status: '' });
+    }
+  });
+  return days;
+}
+/** A council's iCal feed: each event on a date is a bin (or several: "Black bin and food caddy"). Weekly repeats are understood. */
+function binsIcs_(link) {
+  const url = String(link || '').trim().replace(/^webcal:/i, 'https:');
+  if (!/^https?:\/\//i.test(url)) throw new Error('Paste your council’s calendar link in the Bins settings');
+  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+  if (res.getResponseCode() !== 200) throw new Error('The council calendar link said ' + res.getResponseCode());
+  const text = res.getContentText().replace(/\r?\n[ \t]/g, '');
+  if (!/BEGIN:VCALENDAR/.test(text)) throw new Error('That link isn’t a calendar (.ics) – look for "add to calendar" or "subscribe" on the council’s bin-day page');
+  const today = fmt_(new Date(), 'yyyy-MM-dd'), until = Utilities.formatDate(new Date(Date.now() + 70 * 86400000), 'UTC', 'yyyy-MM-dd'), days = {};
+  const add = (d, summary) => {
+    if (d < today || d > until) return;
+    String(summary).split(/\s*(?:,|&|\band\b|\+)\s*/i).map(x => x.replace(/collection|day|bin day/ig, '').trim()).filter(Boolean).forEach(x => {
+      const label = binLabel_(/bin|caddy|recycl|waste|box|bag/i.test(x) ? x : x + (/food/i.test(x) ? ' caddy' : ''));
+      if (!(days[d] || []).some(y => y.bin === label)) (days[d] = days[d] || []).push({ bin: label, kind: binKind_(x), schedule: '', status: '' });
+    });
+  };
+  text.split('BEGIN:VEVENT').slice(1).forEach(ev => {
+    const get = k => { const m = new RegExp('^' + k + '[^:\\n]*:(.*)$', 'm').exec(ev); return m ? m[1].trim() : ''; };
+    const ds = get('DTSTART').slice(0, 8), summary = get('SUMMARY').replace(/\\,/g, ',');
+    if (!/^\d{8}$/.test(ds) || !summary) return;
+    const first = ds.slice(0, 4) + '-' + ds.slice(4, 6) + '-' + ds.slice(6, 8);
+    const rr = get('RRULE');
+    if (/FREQ=WEEKLY/.test(rr)) {
+      const n = Number((/INTERVAL=(\d+)/.exec(rr) || [])[1] || 1), stop = (/UNTIL=(\d{8})/.exec(rr) || [])[1];
+      let t = Date.parse(first + 'T00:00:00Z');
+      for (let i = 0; i < 400; i++, t += n * 7 * 86400000) {
+        const d = Utilities.formatDate(new Date(t), 'UTC', 'yyyy-MM-dd');
+        if (d > until || (stop && d.replace(/-/g, '') > stop)) break;
+        add(d, summary);
+      }
+    } else add(first, summary);
+  });
+  if (!Object.keys(days).length) throw new Error('The council calendar has no collections in the next 10 weeks');
+  return days;
+}
+
+/** South Gloucestershire Council collections. The property number (UPRN) is found once and saved in the widget's settings. */
+function binsSouthGlos_(s, id) {
   let uprn = String(s.UPRN || '').trim();
   if (!uprn) {
     const pc = String(s.Postcode || '').trim().toUpperCase();
     const match = String(s.House || '').trim().toUpperCase();
+    if (!match) throw new Error('Add your house name or number in the Bins settings');
     const res = UrlFetchApp.fetch('https://webapps.southglos.gov.uk/Webservices/SGC.RefuseCollectionService/RefuseCollectionService.svc/getAddresses/' +
       encodeURIComponent(pc), { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) throw new Error('Council address lookup said ' + res.getResponseCode());
@@ -1641,12 +1785,7 @@ function bins_(s, id) {
     (days[next] = days[next] || []).push({ bin: label, kind: name.split(' ')[0], schedule: sv.hso_scheduledescription || '',
       status: next === today ? state : '' });
   });
-  const todayMs = Date.parse(today + 'T00:00:00Z');
-  return {
-    today: today, reminderFrom: String(s.ReminderFrom || '15:00'),
-    upcoming: Object.keys(days).sort().slice(0, 4).map(d => ({ date: d,
-      daysAway: Math.round((Date.parse(d + 'T00:00:00Z') - todayMs) / 86400000), bins: days[d] })),
-  };
+  return days;
 }
 
 /** Today's and tomorrow's calendar entries. */
@@ -2810,7 +2949,7 @@ function menuUpdate() {
     '<p>Or update by hand: <a href="' + link + '" target="_blank">show me how</a>.</p>', 320);
 }
 function menuAutoUpdate() {
-  const on = !autoUpdateOn_();
+  const on = !autoUpdateOn_(); chosen_(on);
   let r; try { r = setAutoUpdate_(on); } catch (err) { r = { ok: false, message: err.message }; }
   dialog_('Automatic updates', on
     ? (r.ok ? '<p>✅ Automatic updates are <b>on</b>. The Google script checks every hour, and straight away when the screen spots a new version.</p>' + (r.warning ? '<p>⚠ ' + clean_(r.warning) + '</p>' : '')
@@ -2833,6 +2972,8 @@ function sleepSettings_() {
   const hm = (h, mm) => ('0' + Math.min(23, +h)).slice(-2) + ':' + ('0' + Math.min(59, +mm)).slice(-2);
   return { minutes: mins, style: style, nightFrom: m ? hm(m[1], m[2]) : '', nightTo: m ? hm(m[3], m[4]) : '' };
 }
+/** A person switched automatic updates on or off (so the one-off "switch them on" never overrides a deliberate off). */
+function chosen_(on) { PropertiesService.getScriptProperties().setProperty('autoUpdateChosen', on ? 'on' : 'off'); }
 function autoUpdateOn_() { return yes_(inst_('AutoUpdate'), false); }
 function setAutoUpdate_(on) {
   setInst_('AutoUpdate', on ? 'Yes' : 'No');
@@ -2860,7 +3001,17 @@ function scriptApiAt_(projectId, method, path, body) {
   let msg = text; try { msg = JSON.parse(text).error.message; } catch (e) { /* plain text */ }
   const err = new Error(String(msg).slice(0, 300));
   if (/has not been used|is disabled|not enabled|SERVICE_DISABLED|User has not enabled the Apps Script API/i.test(text)) {
-    err.message = 'The Google Apps Script API is switched off for your Google account.'; err.apiOff = true;
+    // Two different switches give this. Say which, and for which Google account, with Google's own words.
+    let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
+    const proj = (/project[s]?[ /](\d{6,})/i.exec(text) || [])[1];
+    if (proj && !/User has not enabled/i.test(text)) {
+      err.message = 'The Apps Script API is off in the Google Cloud project this script is linked to (' + proj + '). Switch it on at ' +
+        'https://console.cloud.google.com/apis/library/script.googleapis.com?project=' + proj + ' (signed in as ' + (who || 'the Sheet’s owner') + '), wait a few minutes, and try again.';
+    } else {
+      err.message = 'The Google Apps Script API is switched off for ' + (who || 'the Google account that owns the Sheet') + '. At script.google.com/home/usersettings make sure you’re signed in as ' +
+        (who || 'that account') + ' (top right) and it says On. If it already does, wait 10 minutes – Google takes a while to notice – then try again.';
+    }
+    err.apiOff = true; err.google = String(msg).slice(0, 300);
   } else if (code === 403 && /scope|insufficient/i.test(text)) {
     err.message = 'The script hasn’t been given permission to update itself yet: in the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve Google’s screen.';
   } else if (/version/i.test(text) && /limit|maximum|200/i.test(text)) {
@@ -2902,7 +3053,7 @@ function selfUpdate_(why) {
       return { ok: false, approval: true, message: msg, error: msg };
     }
     const vu = versionsUsed_(true);
-    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (Family Admin → Settings → Updates), or delete old versions in Apps Script → Project history.');
+    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (Family Admin → Settings → My data), or delete old versions in Apps Script → Project history.');
     const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
     scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
     const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });

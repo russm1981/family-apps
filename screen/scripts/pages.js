@@ -33,7 +33,7 @@
         $('rail').style.setProperty('--n', Math.max(pages.length, 3));
         // Widget pages
         var ctx = { tomtomKey: layout ? layout.tomtomKey : '' };
-        pages.filter(function (p) { return p.type === 'widgets'; }).forEach(function (p) {
+        pages.filter(function (p) { return p.type === 'widgets' && !p.base; }).forEach(function (p) {
             var sec = document.createElement('section');
             sec.className = 'screen wpage';
             sec.id = 'screen-' + p.id;
@@ -82,17 +82,26 @@
         show(pageExists(current) ? current : firstPage(), true);
         return true;
     }
-    /** Pages as shown in the side bar: a children's page with 4–6 children becomes two buttons ("Boys 1", "Boys 2"). */
+    /** Pages as shown in the side bar. One layout serves every screen:
+     *  - a tablet shows two of a page's four columns at a time, so a widget page with more than two columns becomes
+     *    two buttons ("Home 1", "Home 2") – the same page, left half and right half;
+     *  - the children's page gets as many buttons as it needs: up to 3 children a screen ("Boys 1", "Boys 2"). */
+    function tablet() { return !!(window.FDFormat && FDFormat.get().kind === 'standard'); }
+    function boysPerScreen() { return 3; }   // a tablet stacks each child's card (thinner and taller), so 3 fit there too
     function navPages() {
         var out = [];
         (layout ? layout.pages : []).filter(function (p) { return p.show; }).forEach(function (p) {
-            if (p.type === 'boys' && (p.children || 0) > 3) {
-                out.push(Object.assign({}, p, { part: 0, title: p.title + ' 1' }));
-                out.push(Object.assign({}, p, { id: p.id + '~2', part: 1, title: p.title + ' 2' }));
+            if (p.type === 'boys') {
+                var k = Math.max(1, Math.ceil((p.children || 0) / boysPerScreen()));
+                for (var i = 0; i < k; i++) out.push(Object.assign({}, p, { id: i ? p.id + '~' + (i + 1) : p.id, part: i, parts: k, title: k > 1 ? p.title + ' ' + (i + 1) : p.title }));
+            } else if (p.type === 'widgets' && tablet() && window.FDW && FDW.pack(layout.widgets.filter(function (w) { return w.page === p.id && w.show; })).length > 2) {
+                out.push(Object.assign({}, p, { half: 0, title: p.title + ' 1' }));
+                out.push(Object.assign({}, p, { id: p.id + '~h2', base: p.id, half: 1, title: p.title + ' 2' }));
             } else out.push(p);
         });
         return out;
     }
+    function baseId(id) { return String(id || '').replace(/~h\d$/, ''); }
     function pageExists(id) { return navPages().some(function (p) { return p.id === id; }); }
     function firstPage() { var p = navPages()[0]; return p ? p.id : 'home'; }
     function page(id) { return navPages().filter(function (p) { return p.id === id; })[0]; }
@@ -105,15 +114,19 @@
         current = id;
         store(SCREEN_KEY, id);
         Array.prototype.forEach.call(document.querySelectorAll('.nav-btn'), function (b) { b.classList.toggle('on', b.getAttribute('data-page') === id); });
-        var target = p.type === 'widgets' ? 'screen-' + id : 'screen-' + p.type;
+        var bid = p.base || p.id;
+        var target = p.type === 'widgets' ? 'screen-' + bid : 'screen-' + p.type;
         Array.prototype.forEach.call(document.querySelectorAll('.screen'), function (s) { s.classList.toggle('on', s.id === target); });
         if (p.type === 'widgets') {
+            var sec = $(target);
+            if (sec) { if (p.half != null) sec.setAttribute('data-half', String(p.half)); else sec.removeAttribute('data-half'); }
+            id = bid;
             renderMsg(id);
             layout.widgets.forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); });
             // Everything is already built and filled in the background, so switching is instant; only fetch if it's getting old.
             if (!fetched[id] || Date.now() - fetched[id] > POLL_MS) refresh(id);
         } else if (p.type === 'boys') {
-            if (window.FDBoys) window.FDBoys.onShow(p.part || 0);
+            if (window.FDBoys) window.FDBoys.onShow(p.part || 0, p.parts || 1);
         } else if (p.type === 'calendar') {
             if (window.FDScreens && window.FDScreens.calendar) window.FDScreens.calendar.onShow();
         }
@@ -143,6 +156,7 @@
 
     function refresh(id, force, background) {
         if (!api().ready()) return Promise.resolve();
+        id = baseId(id || current);
         if (!background) api().sync('busy');
         return api().get('page', Object.assign({ page: id || current || '', v: (window.FDNotices && FDNotices.version) || '' }, window.FDFormat ? FDFormat.params() : {}, force ? { refresh: '1' } : {})).then(function (d) {
             errors[d.page] = '';
@@ -180,7 +194,7 @@
     function warmAll() {
         if (warming || !api().ready() || !layout) return;
         warming = true;
-        var ids = navPages().filter(function (p) { return p.type === 'widgets' && p.id !== current && (!fetched[p.id] || Date.now() - fetched[p.id] > 4 * 60000); })
+        var ids = navPages().filter(function (p) { return p.type === 'widgets' && !p.base && p.id !== baseId(current) && (!fetched[p.id] || Date.now() - fetched[p.id] > 4 * 60000); })
             .map(function (p) { return p.id; });
         (function next() {
             var id = ids.shift();
@@ -220,7 +234,7 @@
         },
         show: show,
         /** A page's other half came into view (tablet layout): let its maps etc. redraw. */
-        shown: function (id) { (layout ? layout.widgets : []).forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); }); },
+        shown: function (id) { id = baseId(id); (layout ? layout.widgets : []).forEach(function (w) { if (w.page === id && instances[w.id] && instances[w.id].show) instances[w.id].show(); }); },
         reset: function () { fetched = {}; layout = null; refresh(current, true); },
         current: function () { return page(current); },
         pages: function () { return navPages(); },

@@ -181,3 +181,11 @@ details.fold[open] { padding-bottom: 14px; }
 .open-w { margin: 4px 0 6px; }
 .bar.warnbar span { background: var(--bad); }
 .card:not(.boy) .bar span { background: var(--acc); } .card:not(.boy) .bar.warnbar span { background: var(--bad); }
+
+/* Devices: QR codes */
+.qr-box { background: #fff; border-radius: 14px; padding: 10px; width: min(240px, 70vw); margin: 10px auto; }
+.qr-box svg { display: block; width: 100%; height: auto; }
+#devApp { display: flex; margin-bottom: 6px; } #devApp button { flex: 1; }
+a.mrow { text-decoration: none; color: inherit; }
+.card ol { padding-left: 22px; }
+.boy-more > summary { cursor: pointer; color: var(--acc); font-weight: 700; font-size: 14px; padding: 10px 0 2px; }
