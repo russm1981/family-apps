@@ -998,12 +998,15 @@
         var last = {}; try { last = JSON.parse(DATA.lastUpdate || '{}'); } catch (e) { last = {}; }
         $('body').innerHTML = card('Google script', '<p>' + (behind ? '<b>Version ' + esc(newest) + ' is available</b> – you have ' + esc(mine) + '.' : 'Up to date: version ' + esc(mine) + '.') + '</p>' +
             '<button class="btn wide' + (behind ? '' : ' ghost') + '" id="suNow">' + (behind ? 'Update the Google script now' : 'Check for an update now') + '</button>' +
-            '<div class="row-between" style="margin-top:14px"><span><b>Automatic updates</b><br><span class="mute small">Updates itself within minutes of a new version (and checks hourly)</span></span>' +
+            (DATA.loader ? '<p class="pos small" style="margin-top:12px"><b>✔ Updates itself.</b> Your script loads its program from GitHub, so new versions arrive within 5 minutes – nothing to switch on, and no saved versions used.</p>' +
+                (DATA.loader.newerLoader ? '<p class="neg small"><b>A newer loader is available.</b> Paste <b>Scripts/MainSpreadsheet/Loader.gs</b> into the “Code” file of your Sheet’s Apps Script once more, save, and deploy a new version.</p>' : '')
+            : '<div class="row-between" style="margin-top:14px"><span><b>Automatic updates</b><br><span class="mute small">Updates itself within minutes of a new version (and checks hourly)</span></span>' +
             '<button class="btn ' + (DATA.autoUpdate ? 'good' : 'ghost') + '" id="suAuto">' + (DATA.autoUpdate ? 'On' : 'Off') + '</button></div>' +
+            '<p class="small"><b>Easier:</b> switch to the loader – one small file you paste in once, after which the script always runs the newest program from GitHub. <a href="' + esc(helpUrl()) + '#updates" target="_blank" rel="noopener">How</a></p>') +
             (last.at ? '<p class="mute small">Last automatic update: ' + esc(String(last.at).slice(0, 16).replace('T', ' ')) + ' – ' + esc(last.result || '') + (last.to ? ' (' + esc(last.to) + ')' : '') + (last.message ? '<br>' + esc(last.message) : '') + '</p>' : '') +
-            '<details class="adv"><summary>What automatic updates need</summary><p class="small">Once per Google account, switch on <b>Google Apps Script API</b> at ' +
+            (DATA.loader ? '' : '<details class="adv"><summary>What automatic updates need</summary><p class="small">Once per Google account, switch on <b>Google Apps Script API</b> at ' +
             '<a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>. ' +
-            'Your script then downloads new versions from ' + esc(DATA.appsAddress || '') + ' – only turn this on if you trust whoever publishes that site.</p></details>') +
+            'Your script then downloads new versions from ' + esc(DATA.appsAddress || '') + ' – only turn this on if you trust whoever publishes that site.</p></details>')) +
             savedCard() +
             (LATEST && LATEST.notes ? card('What’s new', '<ul class="pvl">' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') : '') +
             '<p class="mute small help">The screen and these phone apps update themselves.</p>' +
@@ -1015,16 +1018,25 @@
                 load();
             }).catch(function (e) {
                 FD.toast(e.message, true); b.disabled = false; b.textContent = 'Try again';
-                if (/Apps Script API/.test(e.message)) sheet('<h2>One-time switch needed</h2><p>' + esc(e.message) + '</p><ol><li>Open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> (signed in as the Sheet’s owner).</li><li>Switch <b>Google Apps Script API</b> on.</li><li>Come back and press Update again.</li></ol><p class="mute small">Tap outside this box to close it.</p>');
+                if (/Apps Script API/.test(e.message)) sheet(apiHelp(e.message));
             });
         };
-        $('suAuto').onclick = function () {
+        if ($('suAuto')) $('suAuto').onclick = function () {
             act({ action: 'autoUpdate', on: !DATA.autoUpdate }).then(function (r) {
                 FD.toast(r.autoUpdate ? 'Automatic updates on' : 'Automatic updates off');
-                if (r.warning) sheet('<h2>Automatic updates are on, but…</h2><p>' + esc(r.warning) + '</p><p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>.</p>');
+                if (r.warning) sheet(apiHelp(r.warning));
                 load();
             }, function () {});
         };
+    }
+
+    /** What to do when the Google script can't use the Apps Script API. Two different switches can be off. */
+    function apiHelp(msg) {
+        var cloud = /https:\/\/console\.cloud\.google\.com\/\S+?(?=[,)\s]|$)/.exec(msg || '');
+        return '<h2>One-time switch needed</h2><p>' + esc(msg) + '</p>' + (cloud
+            ? '<ol><li>On a computer, signed in as the Sheet’s owner, open:<br><a class="btn wide" href="' + esc(cloud[0]) + '" target="_blank" rel="noopener">Google Cloud: Apps Script API</a></li><li>Click <b>Enable</b>.</li><li>Wait 5 minutes, then press Update again.</li></ol>'
+            : '<ol><li>Open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>, signed in as the Sheet’s owner (check the account at the top right).</li><li>Switch <b>Google Apps Script API</b> on.</li><li>Wait 5 minutes, then press Update again.</li></ol>') +
+            '<p class="mute small">Tap outside this box to close it.</p>';
     }
 
     /* ---- versions and diagnostics */
@@ -1039,11 +1051,11 @@
         return '<div class="rows">' +
             rowv('Screen', ss.v, L.app, ago == null ? 'not seen yet' : 'last heard from ' + (ago < 2 ? 'just now' : ago < 120 ? ago + ' min ago' : Math.round(ago / 60) + ' hours ago')) +
             rowv('Phone apps (this phone)', FD.VERSION, L.app) +
-            rowv('Google script', DATA.scriptVersion, L.script, DATA.autoUpdate ? 'updates itself' : 'automatic updates off') +
+            rowv('Google script', DATA.scriptVersion, L.script, DATA.loader ? 'loader ' + DATA.loader.loader + ' – updates itself' : DATA.autoUpdate ? 'updates itself' : 'automatic updates off') +
             rowv('Licence server', DATA.licenceServerVersion || (DATA.licence && DATA.licence.required ? '?' : 'not in use'), null) +
             rowv('Newest on GitHub', L.app ? 'apps ' + L.app + ' · script ' + L.script : '?', null) +
             '<div class="r"><span class="r-l">Saved versions (Google script)<small>Google allows ' + ((DATA.versions || {}).max || 200) + '; each update uses one</small></span><b class="r-r ' + (DATA.versions && DATA.versions.warn ? 'neg' : '') + '">' +
-                (DATA.versions ? DATA.versions.used + ' used · ' + (DATA.versions.max - DATA.versions.used) + ' left' : '?') + '</b></div>' +
+                (DATA.loader ? 'not used (loader)' : DATA.versions ? DATA.versions.used + ' used · ' + (DATA.versions.max - DATA.versions.used) + ' left' : '?') + '</b></div>' +
             '<div class="r"><span class="r-l">Privacy notice accepted</span><b class="r-r">' + esc(DATA.privacyAccepted || '–') + '</b></div></div>';
     }
     function secSupport() {
@@ -1097,13 +1109,18 @@
         if (mv) return card('Finish moving to the new Sheet', '<p>The new Sheet is ready. Open it, wait for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b> – Google asks you to allow the script, as it did the first time.</p>' +
             '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
         var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
+        if (DATA.loader && !v) return card('Moving house', '<p class="mute small">Your script loads its program from GitHub, so Google’s limit of 200 saved versions doesn’t apply and you never need to start afresh.</p>' +
+            '<details class="adv"><summary>Move to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
+            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
+            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
+            '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
         return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
                 '<div class="bar' + (v.warn ? ' warnbar' : '') + '"><span style="width:' + pct + '%"></span></div>'
                 : '<p class="mute">Not known – switch on the Google Apps Script API (see Automatic updates above).</p>') +
             (v && v.warn ? '<p class="neg"><b>Nearly full.</b> When it’s full the script can’t update. Start afresh below (easiest), or delete old versions in Apps Script → Project history.</p>' : '') +
-            '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
+            (DATA.loader ? '' : '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
             'The screen and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
-            '<button class="btn wide" id="afresh">Start afresh</button></details>' +
+            '<button class="btn wide" id="afresh">Start afresh</button></details>') +
             '<details class="adv"><summary>Move to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
             'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
             '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +

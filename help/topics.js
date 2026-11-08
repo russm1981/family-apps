@@ -70,23 +70,25 @@ window.FD_HELP = [
   },
   {
     id: 'updates', icon: '⟳', title: 'Updates',
-    summary: 'Everything updates itself: the screen and the phone apps within minutes, and your Google script too once automatic updates are on. You shouldn’t need to do anything.',
+    summary: 'Everything updates itself: the screen and the phone apps within minutes, and your Google script too. You shouldn’t need to do anything.',
     body: `
 <h2>What updates itself</h2>
 <ul>
 <li><b>The screen</b> checks every 5 minutes and updates itself when nobody is touching it. Its version number is at the bottom of the side bar.</li>
-<li><b>The phone apps</b> update the next time you open them.</li>
-<li><b>Your Google script</b> (the part inside your Google Sheet) checks every 5 minutes and updates itself – as long as <b>automatic updates</b> are on (they are, unless someone turned them off).</li>
+<li><b>The phone apps</b> check when you open them, when you come back to them, and every 15 minutes, and restart themselves.</li>
+<li><b>Your Google script</b> (the part inside your Google Sheet) runs a small <b>loader</b> that fetches the newest program every time, so new versions arrive within 5 minutes. Nothing to switch on.</li>
 </ul>
 <h2>“Your Google script needs updating”</h2>
-<p>If automatic updates are on, this message changes to “✔ The Google script has updated itself” within a few minutes – there’s nothing to do. If it stays:</p>
+<p>Your Sheet was set up before the loader existed. Switch to it once – the last time you’ll paste anything:</p>
 <ol>
-<li>On your phone: <b>Family Admin → Settings → System → Updates → Update the Google script now</b>.</li>
-<li>If it says “The Google Apps Script API is switched off”: on a computer, signed in to the Google account that owns the Sheet, open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> and switch <b>Google Apps Script API</b> on. Then try step 1 again.</li>
-<li>If it says the update “needs a new permission”: open your Google Sheet on a computer → <b>🏠 Family Dashboard → Update the Google script now</b>, and press <b>Allow</b> on Google’s screens.</li>
+<li>On a computer open the setup app’s <b>Updates</b> page (Family Admin → Settings → My data → Go through setup again, then Updates), or open your Sheet → <b>Extensions → Apps Script</b>.</li>
+<li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (the setup app has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
+<li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>
 </ol>
+<p>The old way (the script rewriting itself) needs Google’s Apps Script API switched on in two places – your account settings and the script’s own Google Cloud project, which Google often won’t let you open. The loader avoids all of that.</p>
+<p>Very rarely an update needs a new kind of Google permission or a newer loader. Family Admin then says so: paste <b>Loader.gs</b> and <b>appsscript.json</b> again as above, deploy a new version, and press <b>Allow</b> on Google’s screens.</p>
 <h2>Saved versions (Google’s limit of 200)</h2>
-<p>Google keeps up to 200 saved versions of a script, and each update uses one. The Family Admin app (<b>Settings → System → Updates</b>) shows how many are left and warns you from 190. When it does, use <a href="#afresh">Start afresh</a> – it takes a couple of minutes and resets the count.</p>`
+<p>With the loader this doesn’t apply – the script never changes, so no versions are used. Without it: Google keeps up to 200 saved versions of a script, and each update uses one. The Family Admin app (<b>Settings → System → Updates</b>) shows how many are left and warns you from 190. When it does, use <a href="#afresh">Start afresh</a> – it takes a couple of minutes and resets the count.</p>`
   },
   {
     id: 'connect', icon: '📱', title: 'Connect a new phone, tablet or screen',

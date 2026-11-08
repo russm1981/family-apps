@@ -18,7 +18,10 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.10';
+const LS_VERSION = '2026.11.12';
+// Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
+const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
+function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
 const APPS_BASE = 'https://russm1981.github.io/family-apps/';
 const TABS = { lic: 'Licences', log: 'Activity' };
@@ -81,7 +84,7 @@ function setup() {
 }
 
 function menuPortal() {
-  const t = HtmlService.createTemplateFromFile('Admin');
+  const t = adminTemplate_();
   t.inSheet = true;
   SpreadsheetApp.getUi().showModalDialog(t.evaluate().setWidth(1200).setHeight(780), 'Family Dashboard licences');
 }
@@ -105,7 +108,7 @@ function doGet(e) {
   const p = (e && e.parameter) || {};
   if (p.action) return json_(() => api_(p));
   let t;
-  try { t = HtmlService.createTemplateFromFile('Admin'); } catch (err) {
+  try { t = adminTemplate_(); } catch (err) {
     return HtmlService.createHtmlOutput('<div style="font:16px system-ui;max-width:560px;margin:60px auto;line-height:1.5"><h2>The licence portal page is missing</h2>' +
       '<p>This script has no HTML file called exactly <b>Admin</b>. To fix it: open your licence Google Sheet and choose ' +
       '<b>🔑 Licences → Update the licence server now</b>. That puts every file back from GitHub and republishes this page.</p>' +
@@ -343,7 +346,7 @@ function summary_() {
   const versions = {};
   rows.filter(r => r.Status === 'Active' && r.Version).forEach(r => { versions[r.Version] = (versions[r.Version] || 0) + 1; });
   let upd = {}; try { upd = JSON.parse(PropertiesService.getScriptProperties().getProperty('lastUpdate') || '{}'); } catch (e) { upd = {}; }
-  return { ok: true, counts: c, versions: versions, recent: logRows_(null, 15), version: LS_VERSION, lastUpdate: upd, saved: lsVersionsUsed_(),
+  return { ok: true, counts: c, versions: versions, recent: logRows_(null, 15), version: LS_VERSION, loader: LOADED ? LOADED.info() : null, lastUpdate: upd, saved: lsVersionsUsed_(),
     autoUpdate: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'updateTick') };
 }
 
@@ -522,7 +525,7 @@ function menuUpdate() {
   const ui = SpreadsheetApp.getUi();
   try {
     // The portal page (the HTML file "Admin") missing or misnamed? Put every file back from GitHub, even if up to date.
-    let missing = false; try { HtmlService.createTemplateFromFile('Admin'); } catch (e) { missing = true; }
+    let missing = false; try { adminTemplate_(); } catch (e) { missing = true; }
     const r = selfUpdate_('menu', missing);
     ui.alert('Licence server', r.updated ? 'Updated from ' + r.from + ' to ' + r.to + '.' : r.upToDate ? 'Already up to date (' + LS_VERSION + ').' : (r.message || 'Done'), ui.ButtonSet.OK);
   } catch (err) { ui.alert('Licence server', 'The update didn’t work: ' + err.message, ui.ButtonSet.OK); }
@@ -534,13 +537,20 @@ function lsApi_(method, path, body) {
   const code = res.getResponseCode(), text = res.getContentText();
   if (code >= 200 && code < 300) return text ? JSON.parse(text) : {};
   let msg = text; try { msg = JSON.parse(text).error.message; } catch (e) { /* plain text */ }
-  if (/has not been used|is disabled|not enabled|SERVICE_DISABLED|User has not enabled the Apps Script API/i.test(text)) msg = 'The Google Apps Script API is switched off for your Google account (script.google.com/home/usersettings).';
+  if (/has not been used|is disabled|not enabled|SERVICE_DISABLED|User has not enabled the Apps Script API/i.test(text)) {
+    let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
+    const proj = (/project[s]?[ /](\d{6,})/i.exec(text) || [])[1];
+    msg = proj && !/User has not enabled/i.test(text)
+      ? 'The Apps Script API is off in this script’s Google Cloud project (' + proj + '). Switch it on at https://console.cloud.google.com/apis/library/script.googleapis.com?project=' + proj + (who ? ' (signed in as ' + who + ')' : '') + ', wait a few minutes, then Check for an update.'
+      : 'The Google Apps Script API is switched off for ' + (who || 'this Google account') + ' (script.google.com/home/usersettings – check the account at the top right). If it already says On, wait 10 minutes and try again.';
+  }
   else if (/version/i.test(text) && /limit|maximum|200/i.test(text)) msg = 'Google’s limit of 200 saved versions has been reached. In Apps Script open Project history, delete old versions, then try again.';
   throw new Error(String(msg).slice(0, 300));
 }
 /** The web app deployment (the one with a version number, most recently changed). */
 /** How many of Google's 200 saved versions this licence server has used (each automatic update uses one). */
 function lsVersionsUsed_() {
+  if (LOADED) return null;   // the loader never makes new versions
   try {
     let used = 0, token = '';
     do {
@@ -563,11 +573,26 @@ function lsNewer_(a, b) {
 }
 function selfUpdate_(why, force) {
   const P = PropertiesService.getScriptProperties();
+  if (LOADED) {
+    try {
+      const r = LOADED.refresh(why);
+      P.setProperty('lastUpdate', JSON.stringify(r.updated ? { at: new Date().toISOString(), result: 'updated', from: r.from, to: r.to, how: why } : { at: new Date().toISOString(), result: 'up to date', to: r.version }));
+      return r;
+    } catch (err) {
+      P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'failed', message: err.message }));
+      if (why !== 'timer') throw err;
+      return { failed: true, message: err.message };
+    }
+  }
   if (Date.now() - Number(P.getProperty('updating') || 0) < 3 * 60000) return { busy: true, message: 'An update is already running' };
   const bust = '?t=' + Date.now();
   const get = u => { const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true }); if (r.getResponseCode() !== 200) throw new Error('Couldn’t download ' + u.replace(/\?.*/, '') + ' (' + r.getResponseCode() + ')'); return r.getContentText(); };
   const latest = JSON.parse(get(APPS_BASE + 'version.json' + bust));
-  if (!force && (!latest.licenceServer || !lsNewer_(latest.licenceServer, LS_VERSION))) return { upToDate: true, version: LS_VERSION };
+  if (!force && (!latest.licenceServer || !lsNewer_(latest.licenceServer, LS_VERSION))) {
+    // Up to date now (perhaps updated by hand): an old "failed" note no longer applies.
+    try { const old = JSON.parse(P.getProperty('lastUpdate') || '{}'); if (old.result === 'failed' && !lsNewer_(old.to || '', LS_VERSION)) P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'up to date', to: LS_VERSION })); } catch (e) { /* fine */ }
+    return { upToDate: true, version: LS_VERSION };
+  }
   P.setProperty('updating', String(Date.now()));
   const note = o => P.setProperty('lastUpdate', JSON.stringify(Object.assign({ at: new Date().toISOString(), to: latest.licenceServer }, o)));
   try {

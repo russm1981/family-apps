@@ -1,16 +1,16 @@
 {
-  "app": "2026.11.36",
-  "script": "2026.11.29",
+  "app": "2026.11.38",
+  "script": "2026.11.30",
   "date": "2026-11-08",
   "notes": [
+    "Google script and licence server now run through a small loader that fetches the newest program each time: updates arrive within 5 minutes with no Apps Script API, no Google Cloud project and no saved versions used. Paste Loader.gs in once.",
+    "Google script 2026.11.30 · licence server 2026.11.12",
+    "Automatic updates: when Google’s Apps Script API is off in a script’s own Google Cloud project, the message now gives the project and a direct link to switch it on (the apps show an “Enable” button)",
+    "Licence server 2026.11.11: clears old “update failed” notes once it’s up to date",
     "Tablets: each widget page with more than two columns gets two buttons in the side bar (e.g. Home 1, Home 2) instead of swiping and turning over by itself",
-    "Children’s page: 3 children a screen everywhere – on a tablet each child’s card is stacked (thinner and taller) and fills the screen; more children get more buttons (Boys 1, Boys 2)",
-    "Family Admin tabs: Family (points with your controls, calendar, today & tomorrow, holidays) · Lists · Other (information first: bins, weather, trains, buses, traffic) · Screen (where widgets go and how tall) · Settings",
-    "Each widget’s settings are on its own page; the Screen tab is only for layout – one layout for the Corsair, tablets and computers",
-    "Phone apps left open check for updates (on opening, when brought back to the front, and every 15 minutes) and restart themselves – or show “Update ready – Restart” if you’re in the middle of something",
-    "Google script 2026.11.29: when it can’t update itself, it says which Google account and which switch is the problem",
-    "Family Admin settings reorganised: Family & calendar · Locations & home · External data (API) keys · System · My data (Google) · Devices · About & diagnostics · Help"
+    "Children’s page: 3 children a screen everywhere – on a tablet each child’s card is stacked (thinner and taller) and fills the screen; more children get more buttons (Boys 1, Boys 2)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.10"
+  "licenceServer": "2026.11.12",
+  "loader": "1"
 }

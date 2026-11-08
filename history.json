@@ -1,5 +1,21 @@
 [
   {
+    "version": "2026.11.38",
+    "date": "2026-11-09",
+    "notes": [
+      "Google script and licence server now run through a small loader that fetches the newest program each time: updates arrive within 5 minutes with no Apps Script API, no Google Cloud project and no saved versions used. Paste Loader.gs in once.",
+      "Google script 2026.11.30 · licence server 2026.11.12"
+    ]
+  },
+  {
+    "version": "2026.11.37",
+    "date": "2026-11-09",
+    "notes": [
+      "Automatic updates: when Google’s Apps Script API is off in a script’s own Google Cloud project, the message now gives the project and a direct link to switch it on (the apps show an “Enable” button)",
+      "Licence server 2026.11.11: clears old “update failed” notes once it’s up to date"
+    ]
+  },
+  {
     "version": "2026.11.36",
     "date": "2026-11-09",
     "notes": [

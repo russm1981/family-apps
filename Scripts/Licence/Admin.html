@@ -138,8 +138,10 @@ function overview() {
       (c.quiet ? '<div class="card"><b>' + c.quiet + '</b> <span class="mute">dashboard' + (c.quiet > 1 ? 's haven’t' : ' hasn’t') + ' checked in for a month (switched off, or moved).</span></div>' : '') +
       '<div class="card"><h2>Recent activity</h2>' + (d.recent.length ? d.recent.map(logLine).join('') : '<p class="mute">Nothing yet.</p>') + '</div>' +
       '<div class="card small"><span class="mute">Dashboard versions in use: ' + (vs || '–') + '.</span><br>Licence server <b>' + esc(d.version) + '</b> · automatic updates <b>' + (d.autoUpdate ? 'on' : 'off – run Set up from the 🔑 Licences menu') + '</b>' +
-        (d.lastUpdate && d.lastUpdate.at ? '<br><span class="' + (d.lastUpdate.result === 'updated' ? 'mute' : 'err') + '">Last update ' + esc(String(d.lastUpdate.at).slice(0, 16).replace('T', ' ')) + ': ' + esc(d.lastUpdate.result) +
-          (d.lastUpdate.to ? ' (' + esc(d.lastUpdate.to) + ')' : '') + (d.lastUpdate.message ? ' – ' + esc(d.lastUpdate.message) : '') + '</span>' : '') +
+        (d.lastUpdate && d.lastUpdate.at ? '<br><span class="' + (d.lastUpdate.result === 'failed' ? 'err' : 'mute') + '">Last update ' + esc(String(d.lastUpdate.at).slice(0, 16).replace('T', ' ')) + ': ' + esc(d.lastUpdate.result) +
+          (d.lastUpdate.to ? ' (' + esc(d.lastUpdate.to) + ')' : '') + (d.lastUpdate.message ? ' – ' + esc(d.lastUpdate.message).replace(/https:\/\/[^\s,)]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>'; }) : '') + '</span>' : '') +
+        (d.loader ? '<br><span class="mute">Loads its program from GitHub (loader ' + esc(d.loader.loader) + ') – updates arrive by themselves within 5 minutes.</span>' +
+          (d.loader.newerLoader ? '<br><span class="err">A newer loader is available: paste Scripts/Licence/Loader.gs into “Code” again.</span>' : '') : '') +
         (d.saved ? '<br><span class="' + (d.saved.warn ? 'err' : 'mute') + '">Saved versions: <b>' + d.saved.used + ' of ' + d.saved.max + '</b>' +
           (d.saved.warn ? ' – nearly full. In the licence Apps Script open Project history and delete old versions (the web address stays the same).' : '') + '</span>' : '') +
         ' <button class="btn ghost" id="lsUpd" style="margin-left:8px;padding:4px 10px">Check for an update</button></div>';

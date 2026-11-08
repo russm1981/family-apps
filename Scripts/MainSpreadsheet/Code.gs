@@ -16,8 +16,11 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.29';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.30';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
+// Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
+// fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
+const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 const SHEETS = {
   boys: ['Name', 'Colour'],
   tasks: ['ID', 'Boy', 'Task', 'Points', 'Repeat', 'Order', 'Active'],
@@ -560,7 +563,7 @@ function doGet(e) {
     return json_(() => {
       ensureMigrated_();
       if (p.action === 'binCouncil') { const c = councilFor_(p.postcode); return { ok: true, council: c.name, code: c.code, automatic: !!BIN_COUNCILS[c.code], message: BIN_COUNCILS[c.code] ? c.name + ' – connected automatically' : binUnsupported_(c) }; }
-      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_() };
+      if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_(), loader: LOADED ? LOADED.version : '' };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
       movedCheck_();
@@ -576,7 +579,7 @@ function doGet(e) {
       throw new Error('Unknown action');
     });
   }
-  return HtmlService.createHtmlOutputFromFile('Admin')
+  return (LOADED ? HtmlService.createHtmlOutput(LOADED.html()) : HtmlService.createHtmlOutputFromFile('Admin'))
     .setTitle('Family Dashboard – Admin')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
@@ -824,7 +827,7 @@ function getAdmin_() {
     family: family_(),
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
-    scriptVersion: SCRIPT_VERSION, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
+    scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
     autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '',
     setupBase: appsBase_() + 'setup/',
@@ -2874,7 +2877,11 @@ function onOpen() {
   if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
   m.addToUi();
 }
-function appsBase_() { return String(inst_('AppsAddress') || APPS_DEFAULT).replace(/\/?$/, '/'); }
+function appsBase_() {
+  const b = String(inst_('AppsAddress') || APPS_DEFAULT).replace(/\/?$/, '/');
+  if (LOADED) { try { LOADED.setBase(b); } catch (e) { /* fine */ } }
+  return b;
+}
 function myUrl_() {
   const saved = PropertiesService.getScriptProperties().getProperty('execUrl');
   if (saved) return saved;
@@ -2974,7 +2981,7 @@ function sleepSettings_() {
 }
 /** A person switched automatic updates on or off (so the one-off "switch them on" never overrides a deliberate off). */
 function chosen_(on) { PropertiesService.getScriptProperties().setProperty('autoUpdateChosen', on ? 'on' : 'off'); }
-function autoUpdateOn_() { return yes_(inst_('AutoUpdate'), false); }
+function autoUpdateOn_() { return LOADED ? true : yes_(inst_('AutoUpdate'), false); }   // the loader always picks up new versions
 function setAutoUpdate_(on) {
   setInst_('AutoUpdate', on ? 'Yes' : 'No');
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'autoUpdateTick').forEach(t => ScriptApp.deleteTrigger(t));
@@ -2982,7 +2989,7 @@ function setAutoUpdate_(on) {
   ScriptApp.newTrigger('autoUpdateTick').timeBased().everyMinutes(5).create();
   PropertiesService.getScriptProperties().setProperty('tickEvery', '5');
   let warning = '';
-  try { scriptApi_('get', '/content'); } catch (err) { warning = err.message; }    // can it reach the Apps Script API?
+  if (!LOADED) { try { scriptApi_('get', '/content'); } catch (err) { warning = err.message; } }   // can it reach the Apps Script API?
   return { ok: true, autoUpdate: true, warning: warning };
 }
 /** Hourly (when automatic updates are on). */
@@ -3027,6 +3034,17 @@ function deploymentId_() { const m = /\/macros\/s\/([^/]+)\/exec/.exec(myUrl_() 
  */
 function selfUpdate_(why) {
   const P = PropertiesService.getScriptProperties();
+  if (LOADED) {   // the loader fetches the newer program; it's used from the next request on
+    try {
+      const r = LOADED.refresh(why);
+      if (r.updated) { P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'updated', from: r.from, to: r.to, how: why })); try { CacheService.getScriptCache().removeAll(['layout']); } catch (e) { /* fine */ } }
+      return r;
+    } catch (err) {
+      P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'failed', message: err.message }));
+      if (why === 'app' || why === 'menu') throw err;
+      return { ok: false, message: err.message, error: err.message };
+    }
+  }
   const busy = Number(P.getProperty('updating') || 0);
   if (Date.now() - busy < 3 * 60000) return { ok: true, busy: true, message: 'An update is already running' };
   const base = appsBase_(), bust = '?t=' + Date.now();
@@ -3164,6 +3182,7 @@ function diagnostics_(appVer) {
  */
 const VERSION_MAX = 200, VERSION_WARN = 190;
 function versionsUsed_(force) {
+  if (LOADED) return null;   // the loader never makes new versions
   const P = PropertiesService.getScriptProperties();
   let c = null; try { c = JSON.parse(P.getProperty('versionsUsed') || 'null'); } catch (e) { c = null; }
   if (!force && c && Date.now() - c.at < 12 * 3600e3) return { used: c.used, max: VERSION_MAX, warn: c.used >= VERSION_WARN };
@@ -3189,6 +3208,7 @@ const MOVE_SKIP = ['installId', 'licence', 'licenceServerAt', 'updating', 'claim
 
 /** Step 1, in the old Sheet: make the new Sheet and script, copy everything, publish the new web app. */
 function startAfresh_() {
+  if (LOADED) throw new Error('Not needed any more: this dashboard loads its program from GitHub, so it never uses up Google’s saved versions. To move to another Google account, use “Move to a different Google account”.');
   const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
   if (inst_('MovedTo')) throw new Error('This dashboard has already moved to a new Sheet');
   const from = myUrl_();

@@ -151,7 +151,7 @@
                   : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes).</div><div class="card big">' + manual() + '</div>');
             function manual() {
                 return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>Family Dashboard</b>.</li>' +
-                    '<li><b>Extensions → Apps Script</b>. Replace everything in <b>Code.gs</b> with:' + filesBox('Code.gs', 'Code.gs') + '</li>' +
+                    '<li><b>Extensions → Apps Script</b>. Replace everything in <b>Code.gs</b> with the <b>loader</b> – a small file that fetches the latest program each time, so it keeps itself up to date:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
                     '<li><b>+</b> → <b>HTML</b>, name it <b>Admin</b>, and replace its contents with:' + filesBox('Admin.html', 'Admin.html') + '</li>' +
                     '<li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json"</b>; open it and replace it with:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
                     '<li>Save (<b>Ctrl+S</b>).</li></ol>';
@@ -479,15 +479,15 @@
                     (behind ? '<div class="note bad">An update is available: version <b>' + esc(newest) + '</b> (you have ' + esc(mine) + ').</div>' +
                         (LATEST.notes ? '<ul>' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '') +
                         '<p><button class="btn big" id="updNow">Update the Google script now</button></p><div id="updMsg"></div>' +
-                        '<details><summary>Or update it by hand</summary><ol class="howto"><li>Open your Sheet → <b>Extensions → Apps Script</b>.</li>' +
-                        '<li>Open <b>Code.gs</b>, select everything (Ctrl+A) and paste the new code:' + filesBox('Code.gs', 'Code.gs') + '</li>' +
-                        '<li>Open <b>Admin.html</b> and do the same:' + filesBox('Admin.html', 'Admin.html') + '</li>' +
+                        '<details open><summary>Or switch to the loader – the last time you’ll ever do this</summary><p>The loader is a small file that fetches the newest program from these apps every time the script runs. Paste it in once and the script keeps itself up to date – no switches, no Google Cloud.</p><ol class="howto"><li>Open your Sheet → <b>Extensions → Apps Script</b>.</li>' +
+                        '<li>Open <b>Code.gs</b>, select everything (Ctrl+A) and paste the loader:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
+                        '<li>Open <b>Admin.html</b> and replace it too (a spare copy, used if the internet is down):' + filesBox('Admin.html', 'Admin.html') + '</li>' +
                         '<li>Project Settings (cog) → tick “Show appsscript.json”, then replace <b>appsscript.json</b>:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
                         '<li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>' +
                         '<li>Come back here and press <b>Check again</b>.</li></ol></details>'
                     : mine ? okLine(true, 'Your Google script is up to date (version ' + mine + ').') : '<div class="status">Checking…</div>') +
                     '<p><button class="btn ghost" id="recheck">Check again</button></p>') + '</div>' +
-                (connected() ? '<div class="card big"><h3>Automatic updates for the Google script <span class="mute">(optional)</span></h3>' +
+                (connected() && !S.loader ? '<div class="card big"><h3>Automatic updates for the Google script <span class="mute">(older way)</span></h3><p class="mute">Easier: paste in the loader (above) – then nothing needs switching on.</p>' +
                     '<p>With this on, your Google script updates itself – within minutes of a new version, and it checks every hour – so you never have to copy code again.</p>' +
                     '<div class="note"><b>Before you switch it on:</b> your script will download its new code from <b>' + esc(location.href.replace(/setup\/.*$/, '')) + '</b>. ' +
                     'That code runs with the access you gave the script (your Sheet, calendar, Gmail delivery emails, Tasks and photos folder). Only switch it on if you trust whoever publishes these apps.</div>' +
@@ -504,7 +504,7 @@
                     S.scriptVersion = ''; save(); setTimeout(function () { refreshVersions().then(render); }, 1500);
                 }).catch(function (e) {
                     b.disabled = false; b.textContent = 'Try again';
-                    $('updMsg').innerHTML = okLine(false, e.message) + (/Apps Script API/.test(e.message) ? '<p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>, then press Try again – or update by hand below.</p>' : '');
+                    $('updMsg').innerHTML = okLine(false, e.message) + (/Apps Script API/.test(e.message) ? (/console\.cloud\.google\.com/.test(e.message) ? '<p>Open the Google Cloud link in the message above, click <b>Enable</b>, wait 5 minutes, then press Try again – or update by hand below.</p>' : '<p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>, then press Try again – or update by hand below.</p>') : '');
                 });
             };
             if ($('autoBtn')) $('autoBtn').onclick = function () {
@@ -526,7 +526,7 @@
     }
     function refreshVersions() {
         return fetch('../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-            .then(function (v) { LATEST = v; return connected() ? get('ping').then(function (p) { S.scriptVersion = p.version || ''; S.autoUpdate = !!p.autoUpdate; save(); }).catch(function () {}) : null; });
+            .then(function (v) { LATEST = v; return connected() ? get('ping').then(function (p) { S.scriptVersion = p.version || ''; S.autoUpdate = !!p.autoUpdate; S.loader = p.loader || ''; save(); }).catch(function () {}) : null; });
     }
     /** Connect with S.url (+ S.code if known): fetch the code once if needed, check it works, record privacy acceptance. */
     function connect(quiet) {
