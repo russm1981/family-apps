@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.20';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.21';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -317,7 +317,7 @@ Object.assign(WIDGET_TYPES, {
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '5';   // 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
+const LAYOUT_VER = '6';   // 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
@@ -513,6 +513,19 @@ function upgradeLayout_() {
     const has = rows_('wset').filter(r => String(r.Setting).trim() === 'Language').map(r => String(r.Widget).trim());
     words.filter(id => has.indexOf(id) < 0).forEach(id => sheet_('wset').appendRow([id, 'Language', 'French']));
   }
+  // Version 6 (Nov 2026): write every setting that's still on its default into the Sheet, so a later change of
+  // default (e.g. the home address and destinations becoming blank for new families) never changes this one.
+  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '6') {
+    const have = {}; rows_('install').forEach(r => { have[String(r.Setting).trim()] = 1; });
+    INSTALL.filter(f => !f.hidden && f.def != null && f.def !== '' && !have[f.k]).forEach(f => setInst_(f.k, f.def));
+    const got = {}; rows_('wset').forEach(r => { got[String(r.Widget).trim() + '|' + String(r.Setting).trim()] = 1; });
+    const add = [];
+    rows_('widgets').forEach(w => {
+      const T = WIDGET_TYPES[String(w.Type).trim()], id = String(w.Widget).trim();
+      if (T) T.settings.forEach(f => { if (f.def != null && f.def !== '' && !got[id + '|' + f.k]) add.push([id, f.k, f.def]); });
+    });
+    if (add.length) sheet_('wset').getRange(sheet_('wset').getLastRow() + 1, 1, add.length, 3).setValues(add);
+  }
   renumber_('widgets');
 }
 
@@ -540,7 +553,8 @@ function doGet(e) {
       movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
-      if (p.action === 'page') return getPage_(p.page, p.refresh === '1');
+      if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v);
+      if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
       if (p.action === 'layout') return Object.assign({ ok: true }, layout_(), { licence: licencePublic_() });
       if (p.action === 'calendar') return getCalendar_(p.start, p.end);
@@ -780,6 +794,8 @@ function getAdmin_() {
     install: INSTALL.filter(f => !f.hidden).map(f => ({ k: f.k, label: f.label, help: f.help, group: f.group || 'other', uses: f.uses || '', value: String(inst_(f.k)) })),
     licence: licencePublic_(),
     versions: versionsUsed_(false),
+    screenSeen: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('screenSeen') || 'null'); } catch (e) { return null; } })(),
+    licenceServerVersion: licenceServerVersion_(),
     moving: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('moving') || 'null'); } catch (e) { return null; } })(),
     pages: L.pages, widgets: L.widgets, lists: lists,
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
@@ -1020,7 +1036,7 @@ function withLock_(fn) {
 
 function json_(fn) {
   let out;
-  try { out = fn(); } catch (err) { out = { ok: false, error: String(err && err.message || err) }; if (err && err.moved) out.moved = err.moved; }
+  try { out = fn(); } catch (err) { out = { ok: false, error: String(err && err.message || err) }; if (err && err.moved) out.moved = err.moved; else logError_(out.error); }
   return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -1098,7 +1114,8 @@ function layout_() {
 }
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
-function getPage_(pageId, force) {
+function getPage_(pageId, force, screenVer) {
+  if (screenVer) seen_('screenSeen', screenVer);
   const L = Object.assign({}, layout_(), { licence: licencePublic_() });
   const page = L.pages.find(p => p.id === pageId) || L.pages.find(p => p.type === 'widgets' && p.show);
   const data = {};
@@ -2790,13 +2807,17 @@ function setAutoUpdate_(on) {
   setInst_('AutoUpdate', on ? 'Yes' : 'No');
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'autoUpdateTick').forEach(t => ScriptApp.deleteTrigger(t));
   if (!on) return { ok: true, autoUpdate: false };
-  ScriptApp.newTrigger('autoUpdateTick').timeBased().everyHours(1).create();
+  ScriptApp.newTrigger('autoUpdateTick').timeBased().everyMinutes(10).create();
+  PropertiesService.getScriptProperties().setProperty('tickEvery', '10');
   let warning = '';
   try { scriptApi_('get', '/content'); } catch (err) { warning = err.message; }    // can it reach the Apps Script API?
   return { ok: true, autoUpdate: true, warning: warning };
 }
 /** Hourly (when automatic updates are on). */
-function autoUpdateTick() { try { licencePublic_(); } catch (e) { /* next hour */ } if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
+function autoUpdateTick() {
+  // Older installs checked hourly: switch them to every 10 minutes.
+  if (PropertiesService.getScriptProperties().getProperty('tickEvery') !== '10' && autoUpdateOn_()) { try { setAutoUpdate_(true); } catch (e) { /* next time */ } }
+  try { licencePublic_(); } catch (e) { /* next time */ } if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
 
 function scriptApi_(method, path, body) { return scriptApiAt_(ScriptApp.getScriptId(), method, path, body); }
 function scriptApiAt_(projectId, method, path, body) {
@@ -2865,6 +2886,89 @@ function selfUpdate_(why) {
     if (why === 'app' || why === 'menu') throw err;
     return { ok: false, message: err.message, error: err.message };
   } finally { P.deleteProperty('updating'); }
+}
+
+/* ============================================================== DIAGNOSTICS */
+/** The last 25 errors any request hit (kept in the script's own settings). */
+function logError_(msg) {
+  try {
+    if (/Wrong access code|Licence needed/.test(msg)) return;
+    const P = PropertiesService.getScriptProperties();
+    let log = []; try { log = JSON.parse(P.getProperty('errLog') || '[]'); } catch (e) { log = []; }
+    log.unshift({ at: new Date().toISOString(), msg: String(msg).slice(0, 200) });
+    P.setProperty('errLog', JSON.stringify(log.slice(0, 25)));
+  } catch (e) { /* never let logging break a request */ }
+}
+/** Note which version a screen is running (at most every 10 minutes). */
+function seen_(key, v) {
+  try {
+    const c = CacheService.getScriptCache(); if (c.get(key) === String(v)) return;
+    c.put(key, String(v), 600);
+    PropertiesService.getScriptProperties().setProperty(key, JSON.stringify({ v: String(v).slice(0, 20), at: new Date().toISOString() }));
+  } catch (e) { /* not important */ }
+}
+function licenceServerVersion_() {
+  const u = licenceServer_(); if (!u) return '';
+  return cached_(CacheService.getScriptCache(), 'lsver', 3600, false, () => {
+    try { const r = UrlFetchApp.fetch(u + '?action=ping', { muteHttpExceptions: true }); return JSON.parse(r.getContentText()).version || '?'; } catch (e) { return 'unreachable'; }
+  });
+}
+// Shown masked in the report; the real values go in its encrypted part, which only support can open.
+const SECRET_KEYS = ['AccessCode', 'TomTomKey', 'RailDataKey', 'NasaKey', 'TransportApiId', 'TransportApiKey', 'SpotifyClientId', 'SpotifyClientSecret', 'LicenceKey', 'MovedTo', 'HomeAddress', 'CalendarIds'];
+function mask_(v) { v = String(v || ''); return !v ? '(empty)' : v.length <= 6 ? '(set)' : '(set, ends …' + v.slice(-4) + ')'; }
+
+/**
+ * Everything support might need to see what's wrong. The readable part has no access code, keys, addresses, names
+ * or calendar entries. Those go in "secrets", which the admin app encrypts with the support key (from the licence
+ * server) before the report leaves the phone – only the seller's licence portal can unlock them.
+ */
+function diagnostics_(appVer) {
+  const t0 = Date.now(), P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
+  const json = k => { try { return JSON.parse(P.getProperty(k) || 'null'); } catch (e) { return P.getProperty(k); } };
+  const L = layout_(), lic = licencePublic_(), secrets = { install: {}, widgetSettings: {} };
+  let latest = {}; try { latest = JSON.parse(UrlFetchApp.fetch(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true }).getContentText()); } catch (e) { latest = { error: e.message }; }
+  const out = {
+    made: new Date().toISOString(), timeZone: Session.getScriptTimeZone(),
+    versions: { googleScript: SCRIPT_VERSION, layout: LAYOUT_VER, adminApp: appVer || '?', screenLastSeen: json('screenSeen'),
+      latestOnGitHub: { app: latest.app, script: latest.script, licenceServer: latest.licenceServer }, licenceServer: licenceServerVersion_(),
+      privacyAccepted: String(inst_('PrivacyAccepted') || '') },
+    updates: { automatic: autoUpdateOn_(), checkEveryMinutes: P.getProperty('tickEvery') || '60', lastUpdate: json('lastUpdate'), savedVersions: versionsUsed_(true),
+      triggers: ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction()) },
+    licence: { state: lic.state, ok: lic.ok, message: lic.message, keyEnds: lic.key || '', installId: installId_().slice(0, 8) + '…', server: licenceServer_() ? 'set' : 'none' },
+    webApp: myUrl_() ? 'set' : 'not known yet', appsAddress: appsBase_(), moving: json('moving') ? 'in progress' : '',
+    install: {}, tabs: ss.getSheets().map(sh => sh.getName() + ': ' + Math.max(0, sh.getLastRow() - 1) + ' rows' + (sh.isSheetHidden() ? ' (hidden)' : '')),
+    pages: L.pages.map(p => [p.id, p.type, p.show ? 'shown' : 'hidden'].join(' · ')),
+    recentErrors: (json('errLog') || []).map(e => e.at + ' (message in the locked part)'), widgets: [],
+  };
+  INSTALL.forEach(f => {
+    const v = String(inst_(f.k) == null ? '' : inst_(f.k));
+    if (SECRET_KEYS.indexOf(f.k) >= 0) { out.install[f.k] = mask_(v); secrets.install[f.k] = v; } else out.install[f.k] = v;
+  });
+  Object.assign(secrets, { webApp: myUrl_(), licenceServer: licenceServer_(), installId: installId_(), sheet: ss.getUrl(),
+    pageTitles: L.pages.map(p => p.id + ': ' + p.title), family: family_(), recentErrors: json('errLog') || [], moving: json('moving'), scriptSettings: Object.keys(P.getProperties()).sort() });
+  // Each widget: does its data load, how long it takes, what error it gives. Personal settings are masked.
+  const PRIVATE_SETTINGS = /address|postcode|house|destinations|people|places|duolingo|folder|album|link|stop|feed|zones|dates|list|calendar|names/i;
+  L.widgets.forEach(w => {
+    const s0 = Date.now(), row = { id: w.id, type: w.type, page: w.page, size: w.size, shown: w.show };
+    if (w.show && Date.now() - t0 < 200000) {
+      try { const d = widgetData_(w, false); row.data = d == null ? 'none needed' : d.error ? 'ERROR: ' + d.error : 'ok'; } catch (err) { row.data = 'ERROR: ' + err.message; }
+      row.ms = Date.now() - s0;
+    }
+    row.settings = {};
+    Object.keys(w.settings || {}).forEach(k => {
+      const v = w.settings[k];
+      if (PRIVATE_SETTINGS.test(k) && v !== '' && v != null) { row.settings[k] = '(set)'; (secrets.widgetSettings[w.id] = secrets.widgetSettings[w.id] || {})[k] = v; }
+      else row.settings[k] = v;
+    });
+    out.widgets.push(row);
+  });
+  const fam = secrets.family;
+  out.family = { people: fam.people.length, children: fam.people.filter(p => p.role === 'child').length, onPoints: fam.people.filter(p => p.points).length, specials: fam.specials.length };
+  out.tookSeconds = Math.round((Date.now() - t0) / 100) / 10;
+  // The support key (public half), so the app can lock the secrets before the report leaves the phone.
+  let key = null;
+  try { const u = licenceServer_(); if (u) key = JSON.parse(UrlFetchApp.fetch(u + '?action=supportKey', { muteHttpExceptions: true }).getContentText()).publicKey || null; } catch (e) { key = null; }
+  return { ok: true, report: out, secrets: secrets, supportKey: key };
 }
 
 /* ============================================================== SAVED VERSIONS AND STARTING AFRESH */

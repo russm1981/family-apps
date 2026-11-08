@@ -18,7 +18,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.3';
+const LS_VERSION = '2026.11.4';
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
 const APPS_BASE = 'https://russm1981.github.io/family-apps/';
 const TABS = { lic: 'Licences', log: 'Activity' };
@@ -72,8 +72,9 @@ function setup() {
     msg += '\n\nA first key has been made for your own dashboard:\n\n' + k;
   }
   ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'updateTick').forEach(t => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('updateTick').timeBased().everyHours(1).create();
-  msg += '\n\nAutomatic updates: on (checks every hour).';
+  ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(10).create();
+  PropertiesService.getScriptProperties().setProperty('tickEvery', '10');
+  msg += '\n\nAutomatic updates: on (checks every 10 minutes).';
   msg += '\n\nNext (first time only): Deploy > New deployment > Web app, Execute as: Me, Who has access: Anyone. Then 🔑 Licences > Show the web addresses.';
   try { SpreadsheetApp.getUi().alert('Licence server', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) { console.log(msg); }
 }
@@ -120,6 +121,8 @@ function json_(fn) {
 function api_(b) {
   switch (b.action) {
     case 'ping': return { ok: true, app: 'family-dashboard-licences', version: LS_VERSION };
+    // The public half of the support key: dashboards lock the private parts of a diagnostics report with it.
+    case 'supportKey': { const k = PropertiesService.getScriptProperties().getProperty('supportPublic'); return { ok: true, publicKey: k ? JSON.parse(k) : null }; }
     case 'check': case 'activate': return withLock_(() => verify_(b));
     case 'move': return withLock_(() => move_(b));
     default: throw new Error('Unknown action');
@@ -242,6 +245,15 @@ function admin(password, op, args) {
     case 'saveSettings': return { ok: true, settings: saveSettings_(args) };
     case 'password': return { ok: true, password: setPassword_(args.password) };
     case 'selfUpdate': return Object.assign({ ok: true }, selfUpdate_('portal'));
+    case 'supportKey': { const P = PropertiesService.getScriptProperties(); return { ok: true, has: !!P.getProperty('supportPrivate'), privateKey: args.withPrivate && P.getProperty('supportPrivate') ? JSON.parse(P.getProperty('supportPrivate')) : null }; }
+    case 'saveSupportKey': {
+      const P = PropertiesService.getScriptProperties();
+      if (P.getProperty('supportPrivate') && !args.replace) throw new Error('There is already a support key');
+      if (!args.publicKey || !args.privateKey || args.publicKey.kty !== 'RSA' || !args.privateKey.d) throw new Error('That isn’t a key pair');
+      P.setProperties({ supportPublic: JSON.stringify(args.publicKey), supportPrivate: JSON.stringify(args.privateKey) });
+      log_('', 'Support key made', '', '');
+      return { ok: true };
+    }
     default: throw new Error('Unknown admin action');
   }
 }
@@ -447,7 +459,13 @@ function logRows_(key, max) {
 // Needs the "Google Apps Script API" switched on at script.google.com/home/usersettings (once per Google account).
 const LS_FILES = [['Code', 'SERVER_JS', 'Code.gs'], ['Admin', 'HTML', 'Admin.html'], ['appsscript', 'JSON', 'appsscript.json']];
 
-function updateTick() { try { selfUpdate_('timer'); } catch (err) { console.warn('Licence server update: ' + err.message); } }
+function updateTick() {
+  const P = PropertiesService.getScriptProperties();
+  if (P.getProperty('tickEvery') !== '10') {     // was hourly: switch to every 10 minutes
+    try { ScriptApp.getProjectTriggers().filter(t => t.getHandlerFunction() === 'updateTick').forEach(t => ScriptApp.deleteTrigger(t));
+      ScriptApp.newTrigger('updateTick').timeBased().everyMinutes(10).create(); P.setProperty('tickEvery', '10'); } catch (e) { /* next time */ }
+  }
+  try { selfUpdate_('timer'); } catch (err) { console.warn('Licence server update: ' + err.message); } }
 function menuUpdate() {
   const ui = SpreadsheetApp.getUi();
   try {

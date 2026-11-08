@@ -111,7 +111,7 @@ function login(msg) {
 /* ---------------------------------------------------------------- frame */
 function frame() {
   $('app').innerHTML = '<header><h1>🔑 Family Dashboard licences</h1><nav id="nav">' +
-    [['overview', 'Overview'], ['licences', 'Licences'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['settings', 'Settings']].map(function (t) {
+    [['overview', 'Overview'], ['licences', 'Licences'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['support', 'Support'], ['settings', 'Settings']].map(function (t) {
       return '<button data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') +
     (IN_SHEET ? '' : '<button id="out">Sign out</button>') + '</nav></header><main id="main"></main>';
   $('nav').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { TAB = b.getAttribute('data-t'); render(); } };
@@ -121,7 +121,7 @@ function frame() {
 }
 function render() {
   Array.prototype.forEach.call(document.querySelectorAll('#nav [data-t]'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === TAB); });
-  ({ overview: overview, licences: licences, issue: issuePage, import: importPage, settings: settingsPage })[TAB]();
+  ({ overview: overview, licences: licences, issue: issuePage, import: importPage, settings: settingsPage, support: supportPage })[TAB]();
 }
 function loadRows() { return call('list').then(function (d) { ROWS = d.rows; return ROWS; }); }
 
@@ -341,6 +341,53 @@ function download(name, text) {
   document.body.appendChild(a); a.click(); a.remove();
 }
 
+/* ---------------------------------------------------------------- support: diagnostics reports */
+// A report's private part is locked with the public half of the support key (RSA-OAEP 3072 + AES-GCM 256).
+// The private half never leaves this licence server; it's fetched (after the admin password) only to unlock reports here.
+function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
+function unb64(t) { var s = atob(t), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+function supportPage() {
+  $('main').innerHTML = '<div class="card"><h2>Open a diagnostics report</h2><p class="mute small">When a customer sends a report from Family Admin → Settings → Versions & diagnostics, its private part (access code, API keys, addresses, names) is locked so only you can read it. Paste the whole report, or choose the file.</p>' +
+    '<div class="row"><label style="margin:0;color:var(--acc);cursor:pointer">Choose the file<input type="file" id="dFile" accept=".txt,text/plain" style="display:none"></label></div>' +
+    '<textarea id="dText" placeholder="Paste the report here" style="margin-top:10px;min-height:140px"></textarea>' +
+    '<div class="row" style="margin-top:10px"><button class="btn" id="dOpen">Unlock and show</button></div><div id="dOut" class="status"></div></div>';
+  $('dFile').onchange = function () { var f = this.files[0]; if (!f) return; var r = new FileReader(); r.onload = function () { $('dText').value = r.result; $('dOpen').onclick(); }; r.readAsText(f); };
+  $('dOpen').onclick = function () {
+    var text = $('dText').value, m = /FDENC1:([A-Za-z0-9+\/=\s]+)/.exec(text);
+    if (!m) { $('dOut').innerHTML = text.trim() ? '<p class="mute">This report has no locked part.</p><pre class="keys">' + esc(text) + '</pre>' : ''; return; }
+    $('dOut').textContent = 'Unlocking…';
+    var box = JSON.parse(atob(m[1].replace(/\s/g, '')));
+    call('supportKey', { withPrivate: true }).then(function (d) {
+      if (!d.privateKey) throw new Error('No support key yet – make one in Settings');
+      return crypto.subtle.importKey('jwk', d.privateKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+    }).then(function (pk) { return crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, unb64(box.k)); })
+      .then(function (raw) { return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['decrypt']); })
+      .then(function (ak) { return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, ak, unb64(box.d)); })
+      .then(function (plain) {
+        var secrets = JSON.parse(new TextDecoder().decode(plain)), full = text.replace(/-----[^\n]*ENCRYPTED[\s\S]*$/, '').trim() + '\n\n===== PRIVATE PART (unlocked) =====\n' + JSON.stringify(secrets, null, 2);
+        $('dOut').innerHTML = '<p class="ok">✔ Unlocked.</p><div class="row"><button class="btn ghost" id="dCopy">Copy all</button><button class="btn ghost" id="dSave">Download</button></div><pre class="keys" style="max-height:60vh;overflow:auto;font-size:12px">' + esc(full) + '</pre>';
+        $('dCopy').onclick = function () { copy(full); };
+        $('dSave').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([full], { type: 'text/plain' })); a.download = 'diagnostics-unlocked.txt'; document.body.appendChild(a); a.click(); a.remove(); };
+      }).catch(function (e) { $('dOut').innerHTML = '<p class="err">Couldn’t unlock it: ' + esc(e.message || 'wrong key') + '</p>'; });
+  };
+}
+function supportKeyCard() {
+  return '<div class="card"><h2>Support key</h2><div id="skBody" class="mute">Checking…</div></div>';
+}
+function wireSupportKey() {
+  call('supportKey').then(function (d) {
+    $('skBody').innerHTML = d.has ? '<p>✔ Made. Customers’ diagnostics reports are locked with it; open them under Support.</p>'
+      : '<p>Not made yet. Make it once: customers’ diagnostics reports then lock their private details so only you can read them.</p><button class="btn" id="skMake">Make the support key</button>';
+    if ($('skMake')) $('skMake').onclick = function () {
+      this.disabled = true;
+      crypto.subtle.generateKey({ name: 'RSA-OAEP', modulusLength: 3072, publicExponent: new Uint8Array([1, 0, 1]), hash: 'SHA-256' }, true, ['encrypt', 'decrypt'])
+        .then(function (kp) { return Promise.all([crypto.subtle.exportKey('jwk', kp.publicKey), crypto.subtle.exportKey('jwk', kp.privateKey)]); })
+        .then(function (k) { return call('saveSupportKey', { publicKey: k[0], privateKey: k[1] }); })
+        .then(function () { toast('Support key made'); wireSupportKey(); }, function (e) { toast(e.message, true); wireSupportKey(); });
+    };
+  }, function (e) { $('skBody').textContent = e.message; });
+}
+
 /* ---------------------------------------------------------------- settings */
 function settingsPage() {
   $('main').innerHTML = '<p class="mute">Loading…</p>';
@@ -352,9 +399,11 @@ function settingsPage() {
       '<div class="grid2"><div><label>From (name)</label><input id="sSeller" value="' + esc(s.sellerName) + '"></div><div><label>Setup link</label><input id="sSetup" value="' + esc(s.setupLink) + '"></div></div>' +
       '<label>Subject</label><input id="sSubj" value="' + esc(s.subject) + '"><label>Message</label><textarea id="sBody" style="min-height:240px">' + esc(s.body) + '</textarea>' +
       '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button></div><div id="sOut" class="status"></div></div>' +
+      supportKeyCard() +
       '<div class="card"><h2>Admin password</h2><div class="grid2"><div><label>New password (12+ characters)</label><input id="p1" type="password" autocomplete="new-password"></div>' +
       '<div><label>Again</label><input id="p2" type="password" autocomplete="new-password"></div></div><div class="row" style="margin-top:12px"><button class="btn ghost" id="pSave">Change password</button></div><div id="pOut" class="status"></div></div>';
     if ($('cpUrl')) $('cpUrl').onclick = function () { copy(d.url); };
+    wireSupportKey();
     $('sSave').onclick = function () {
       call('saveSettings', { sellerName: $('sSeller').value, setupLink: $('sSetup').value, subject: $('sSubj').value, body: $('sBody').value })
         .then(function () { $('sOut').innerHTML = '<span class="ok">✔ Saved</span>'; }, function (e) { $('sOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });

@@ -141,7 +141,7 @@
     function refresh(id, force, background) {
         if (!api().ready()) return Promise.resolve();
         if (!background) api().sync('busy');
-        return api().get('page', Object.assign({ page: id || current || '' }, force ? { refresh: '1' } : {})).then(function (d) {
+        return api().get('page', Object.assign({ page: id || current || '', v: (window.FDNotices && FDNotices.version) || '' }, force ? { refresh: '1' } : {})).then(function (d) {
             errors[d.page] = '';
             applyLayout(d.layout);
             if (window.FDNotices) window.FDNotices.check(d.layout);

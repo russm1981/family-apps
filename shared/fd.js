@@ -33,8 +33,8 @@
 
     function fetchJson(url, opts) {
         var ctl = new AbortController();
-        var t = setTimeout(function () { ctl.abort(); }, 25000);
         opts = opts || {};
+        var t = setTimeout(function () { ctl.abort(); }, opts.timeout || 25000);
         opts.signal = ctl.signal; opts.cache = 'no-store'; opts.redirect = 'follow';
         return fetch(url, opts).then(function (r) {
             if (!r.ok) throw new Error('Server said ' + r.status);
@@ -60,10 +60,11 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        get: function (action, params) {
+        VERSION: '2026.11.25',     // the phone apps' version (same number as the screen's)
+        get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
-            return fetchJson(cfg.url + (cfg.url.indexOf('?') >= 0 ? '&' : '?') + q, { method: 'GET' });
+            return fetchJson(cfg.url + (cfg.url.indexOf('?') >= 0 ? '&' : '?') + q, { method: 'GET', timeout: timeout });
         },
         post: function (body) {
             body = Object.assign({}, body, { code: cfg.code });

@@ -27,6 +27,7 @@
         licence: ['🎫', 'Licence', 'Your licence key'],
         updates: ['⟳', 'Updates', 'Google script version and automatic updates'],
         access: ['🔒', 'Access code & devices', 'Connect phones and the screen, change the access code'],
+        support: ['🩺', 'Versions & diagnostics', 'Every version number, and a report to send to support'],
         advanced: ['🧰', 'Advanced', 'Where the apps are hosted, the full setup app'],
     };
 
@@ -244,7 +245,8 @@
         if (k === 'family') return ((DATA.family || {}).people || []).map(function (p) { return p.name; }).join(', ');
         if (k === 'keys') { var miss = missingKeys(); return miss.length ? '⚠ Needed: ' + miss.join(', ') : 'All the keys your widgets need are in'; }
         if (k === 'licence') return L.required ? (L.ok ? (L.state === 'trial' ? L.message : '✔ ' + L.message) : '⚠ ' + L.message) : 'Not needed yet';
-        if (k === 'updates') return 'Version ' + (DATA.scriptVersion || '?') + (DATA.autoUpdate ? ' · automatic updates on' : '');
+        if (k === 'updates') return 'Version ' + (DATA.scriptVersion || '?') + (DATA.autoUpdate ? ' · automatic updates on' : '') + (DATA.versions ? ' · ' + DATA.versions.used + ' of ' + DATA.versions.max + ' saved versions used' : '');
+        if (k === 'support') return 'Screen ' + ((DATA.screenSeen || {}).v || '?') + ' · script ' + (DATA.scriptVersion || '?') + ' · apps ' + FD.VERSION;
         return SECTIONS[k][2];
     }
     /** One line of live information for a tile. */
@@ -820,7 +822,7 @@
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);
-        ({ family: secFamily, keys: secKeys, home: secHome, screen: secScreen, licence: secLicence, updates: secUpdates, access: secAccess, advanced: secAdvanced })[k]();
+        ({ family: secFamily, keys: secKeys, home: secHome, screen: secScreen, licence: secLicence, updates: secUpdates, access: secAccess, advanced: secAdvanced, support: secSupport })[k]();
     }
     /** Installation settings of one group, with a Save button. */
     function installFields(group, keys) {
@@ -910,7 +912,8 @@
             'Your script then downloads new versions from ' + esc(DATA.appsAddress || '') + ' – only turn this on if you trust whoever publishes that site.</p></details>') +
             versionsCard() +
             (LATEST && LATEST.notes ? card('What’s new', '<ul class="pvl">' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>') : '') +
-            '<p class="mute small help">The screen and these phone apps update themselves.</p>';
+            '<p class="mute small help">The screen and these phone apps update themselves.</p>' +
+            '<a class="link-card" data-go="s/support" href="#"><b>Every version number, and diagnostics ›</b><span class="mute small">Screen, phone apps, Google script and licence server.</span></a>';
         wireAfresh();
         $('suNow').onclick = function () {
             var b = $('suNow'); b.disabled = true; b.textContent = 'Updating… (up to a minute)';
@@ -929,6 +932,68 @@
                 load();
             }, function () {});
         };
+    }
+
+    /* ---- versions and diagnostics */
+    function versionTable() {
+        var L = LATEST || {}, ss = DATA.screenSeen || {};
+        var rowv = function (name, mine, latest, note) {
+            var behind = mine && latest && newer(latest, mine);
+            return '<div class="r"><span class="r-l">' + name + (note ? '<small>' + note + '</small>' : '') + '</span><b class="r-r ' + (behind ? 'neg' : '') + '">' + esc(mine || '?') +
+                (behind ? ' <small>→ ' + esc(latest) + '</small>' : '') + '</b></div>';
+        };
+        var ago = ss.at ? Math.round((Date.now() - Date.parse(ss.at)) / 60000) : null;
+        return '<div class="rows">' +
+            rowv('Screen', ss.v, L.app, ago == null ? 'not seen yet' : 'last heard from ' + (ago < 2 ? 'just now' : ago < 120 ? ago + ' min ago' : Math.round(ago / 60) + ' hours ago')) +
+            rowv('Phone apps (this phone)', FD.VERSION, L.app) +
+            rowv('Google script', DATA.scriptVersion, L.script, DATA.autoUpdate ? 'updates itself' : 'automatic updates off') +
+            rowv('Licence server', DATA.licenceServerVersion || (DATA.licence && DATA.licence.required ? '?' : 'not in use'), null) +
+            rowv('Newest on GitHub', L.app ? 'apps ' + L.app + ' · script ' + L.script : '?', null) +
+            '<div class="r"><span class="r-l">Saved versions (Google script)<small>Google allows ' + ((DATA.versions || {}).max || 200) + '; each update uses one</small></span><b class="r-r ' + (DATA.versions && DATA.versions.warn ? 'neg' : '') + '">' +
+                (DATA.versions ? DATA.versions.used + ' used · ' + (DATA.versions.max - DATA.versions.used) + ' left' : '?') + '</b></div>' +
+            '<div class="r"><span class="r-l">Privacy notice accepted</span><b class="r-r">' + esc(DATA.privacyAccepted || '–') + '</b></div></div>';
+    }
+    function secSupport() {
+        $('body').innerHTML = card('Versions', versionTable()) +
+            card('Diagnostics report', '<p class="small">Makes a text file describing your dashboard – versions, settings, which widgets work and the last errors – to send to support if something’s wrong.</p>' +
+                '<p class="mute small">Your access code, API keys, addresses, names and calendar details go in a <b>locked</b> part that only Family Dashboard support can open. Nothing is sent anywhere until you send the file yourself.</p>' +
+                '<button class="btn wide" id="diag">Generate diagnostics</button><div id="diagOut"></div>');
+        $('diag').onclick = function () {
+            var b = this; b.disabled = true; b.textContent = 'Checking everything… (up to a minute)';
+            FD.get('diagnostics', { app: FD.VERSION }, 240000).then(function (d) { return buildReport(d); }).then(function (txt) {
+                b.disabled = false; b.textContent = 'Generate again';
+                var name = 'family-dashboard-diagnostics-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.txt';
+                var file = new File([txt], name, { type: 'text/plain' });
+                var canShare = navigator.canShare && navigator.canShare({ files: [file] });
+                $('diagOut').innerHTML = '<p class="pos small" style="margin-top:12px"><b>✔ Ready</b> (' + Math.round(txt.length / 1024) + ' KB).</p>' +
+                    (canShare ? '<button class="btn wide" id="dShare">Share / email it</button>' : '') +
+                    '<button class="btn ghost wide" id="dSave">Download the file</button><button class="btn ghost wide" id="dCopy">Copy the text</button>' +
+                    '<details class="adv"><summary>See what’s in it</summary><textarea readonly rows="14" class="mono" style="font-size:11px">' + esc(txt) + '</textarea></details>';
+                if ($('dShare')) $('dShare').onclick = function () { navigator.share({ files: [file], title: 'Family Dashboard diagnostics', text: 'Diagnostics report for Family Dashboard support' }).catch(function () {}); };
+                $('dSave').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+                $('dCopy').onclick = function () { try { navigator.clipboard.writeText(txt).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
+            }).catch(function (e) { b.disabled = false; b.textContent = 'Try again'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
+        };
+    }
+    function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
+    /** Readable report, then the private details locked with the support key (RSA-OAEP + AES-GCM). */
+    function buildReport(d) {
+        var r = d.report, phone = { userAgent: navigator.userAgent, screen: screen.width + '×' + screen.height, online: navigator.onLine, appVersion: FD.VERSION, standalone: !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches) };
+        var head = 'FAMILY DASHBOARD – DIAGNOSTICS REPORT\nMade ' + new Date().toString() + '\n\nThe readable part below has no access code, keys, addresses or names.\n' +
+            'Those are in the locked part at the end, which only Family Dashboard support can open.\n\n';
+        var body = head + JSON.stringify(Object.assign({ thisPhone: phone }, r), null, 2);
+        if (!d.supportKey || !window.crypto || !crypto.subtle) return Promise.resolve(body + '\n\n(No locked part: ' + (!d.supportKey ? 'support key not available' : 'this browser can’t encrypt') + '. Nothing private is included.)\n');
+        var aes, iv = crypto.getRandomValues(new Uint8Array(12));
+        return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']).then(function (k) {
+            aes = k; return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(d.secrets)));
+        }).then(function (data) {
+            return Promise.all([data, crypto.subtle.exportKey('raw', aes), crypto.subtle.importKey('jwk', d.supportKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt'])]);
+        }).then(function (x) {
+            return crypto.subtle.encrypt({ name: 'RSA-OAEP' }, x[2], x[1]).then(function (k) {
+                var box = btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) }));
+                return body + '\n\n----- ENCRYPTED PRIVATE PART (only Family Dashboard support can open this) -----\nFDENC1:' + box.replace(/(.{76})/g, '$1\n') + '\n----- END -----\n';
+            });
+        });
     }
 
     /* ---- saved versions and starting afresh */
