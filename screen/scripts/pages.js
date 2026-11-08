@@ -149,12 +149,27 @@
             store(DATA_KEY + d.page, JSON.stringify(d.data));
             feed(d.data);
             if (!background) api().sync('ok');
+            lastOk = Date.now(); stale('');
             renderMsg(d.page);
         }).catch(function (e) {
             errors[id] = e.message;
             if (!background) api().sync('err', e.message);
+            if (!background && Date.now() - lastOk > 15 * 60000) stale(e.message);
             renderMsg(id);
         });
+    }
+    /** Nothing new from the Google Sheet for 15 minutes: say so on the screen (the red dot alone is easy to miss). */
+    var lastOk = Date.now();
+    function stale(msg) {
+        var b = document.getElementById('staleNote');
+        if (!msg) { if (b) b.style.display = 'none'; return; }
+        if (!b) {
+            b = document.createElement('div'); b.id = 'staleNote'; b.className = 'notice stale'; document.body.appendChild(b);
+            b.addEventListener('click', function () { refresh(current, true); });
+        }
+        var t = new Date(lastOk), hm = ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2);
+        b.innerHTML = '<span>⚠ <b>Not updated since ' + (Date.now() - lastOk > 20 * 3600e3 ? t.toLocaleDateString('en-GB', { weekday: 'short' }) + ' ' : '') + hm + '.</b> ' + esc(msg) + ' <u>Tap to try again</u></span>';
+        b.style.display = 'flex';
     }
     /** Fill every other page in the background, one at a time, so they're ready before anyone taps them. */
     var warming = false;

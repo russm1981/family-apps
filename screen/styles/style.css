@@ -962,3 +962,21 @@ body.osk-open .pop-card { max-height: 44vh; }
 .sleep .sl-time { font-size: 4.2rem; font-weight: 300; letter-spacing: 0.04em; line-height: 1; }
 .sleep .sl-date { font-size: 1rem; }
 .sleep.black .sl-clock { display: none; }
+
+/* to-do: done tasks stay struck through; switch at the bottom */
+.td-it.done .td-tx span { text-decoration: line-through; }
+.td-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding-top: 0.35rem; }
+.td-switch { display: flex; align-items: center; gap: 0.5rem; background: none; border: 0; color: var(--mute); font: inherit; font-size: 0.9rem; padding: 0.2rem 0; }
+.td-switch .sw { width: 2.3rem; height: 1.3rem; border-radius: 99px; background: var(--panel-2); border: 1px solid var(--line); position: relative; flex: none; transition: background .15s; }
+.td-switch .sw::after { content: ''; position: absolute; top: 0.12rem; left: 0.14rem; width: 0.95rem; height: 0.95rem; border-radius: 50%; background: var(--mute); transition: left .15s, background .15s; }
+.td-switch.on { color: var(--text); } .td-switch.on .sw { background: rgba(76, 217, 100, .25); border-color: var(--good); }
+.td-switch.on .sw::after { left: 1.18rem; background: var(--good); }
+.td-foot .ls-clear { margin: 0; }
+
+/* Licence: nothing works until a key is added */
+.lic-lock { position: fixed; inset: 0; z-index: 4500; background: rgba(8,10,14,.94); display: none; align-items: center; justify-content: center; }
+.lic-box { max-width: 46rem; text-align: center; padding: 2.4rem 3rem; background: #151922; border: 1px solid #2a3140; border-radius: 1.4rem; }
+.lic-ico { font-size: 3.2rem; } .lic-box h2 { margin: .4rem 0 .6rem; font-size: 2rem; }
+.lic-box p { color: #c9d1dd; font-size: 1.15rem; line-height: 1.5; } .lic-how { color: #8b93a3 !important; font-size: 1rem !important; }
+.notice.stale { top: 1rem; bottom: auto; right: 1rem; border-color: rgba(255,91,91,.7); cursor: pointer; }
+.notice.stale u { color: #8fd0ff; text-decoration: none; margin-left: .4rem; }

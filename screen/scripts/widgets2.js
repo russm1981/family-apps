@@ -145,18 +145,30 @@
                 '<span class="td-tx"><span>' + esc(i.text) + '</span>' + (i.notes && full ? '<small>' + esc(i.notes) + '</small>' : '') + '</span>' + (i.done ? '' : due(i)) + '</button>' +
                 (i.done ? '' : '<button class="td-star' + (i.star ? ' on' : '') + '" data-l="star" data-id="' + esc(i.id) + '" aria-label="Priority">' + (i.star ? '\u2605' : '\u2606') + '</button>') + '</div>';
         }
-        function shown() { return (data && data.items || []).filter(function (i) { return s.ShowTicked || !i.done; }); }
+        // Ticked tasks stay (struck through) unless the "Show done" switch at the bottom is off. Remembered on this screen.
+        var DONE_KEY = 'familyDashboard.todoDone.' + w.id, showDone = true;
+        try { var sv = localStorage.getItem(DONE_KEY); showDone = sv === null ? true : sv === '1'; } catch (e) { /* ignore */ }
+        var pinned = {};   // just ticked: stays where it was (struck through) for 10 minutes before moving down
+        function shown() {
+            var list = (data && data.items || []).filter(function (i) { return showDone || !i.done; });
+            if (!showDone) return list;
+            var now = Date.now(), keep = [];
+            list = list.filter(function (i) { var p = pinned[i.id]; if (i.done && p && now - p.at < 600000) { keep.push({ i: i, at: p.pos }); return false; } return true; });
+            keep.sort(function (a, b) { return a.at - b.at; }).forEach(function (k) { list.splice(Math.min(k.at, list.length), 0, k.i); });
+            return list;
+        }
         function render() {
             if (!data || data.error) { box.innerHTML = errBox(data ? data.error : 'No tasks'); return; }
             var all = shown(), left = data.items.filter(function (i) { return !i.done; }).length;
             var late = data.items.filter(function (i) { return !i.done && i.due && daysTo(i.due) < 0; }).length;
             el.querySelector('.ls-count').innerHTML = left ? left + ' to do' + (late ? ' · <b class="late">' + late + ' late</b>' : '') : 'All done 🎉';
-            var fit = full ? 9 : 4, cut = all.length > fit ? fit - 1 : all.length;
             var ticked = data.items.length - left;
-            box.innerHTML = all.length ? all.slice(0, cut).map(row).join('') +
-                (all.length > cut ? '<button class="ls-more" data-l="all">+' + (all.length - cut) + ' more ›››</button>' : '') +
-                (ticked && s.ShowTicked && all.length <= cut ? '<button class="ls-clear" data-l="clear">Clear ticked (' + ticked + ')</button>' : '')
-                : '<div class="empty">Nothing to do 🎉</div>';
+            var fit = (full ? 9 : 4) - (ticked ? 1 : 0), cut = all.length > fit ? fit - 1 : all.length;
+            var foot = ticked ? '<div class="td-foot"><button class="td-switch' + (showDone ? ' on' : '') + '" data-l="showdone"><span class="sw"></span>Show done (' + ticked + ')</button>' +
+                (showDone ? '<button class="ls-clear" data-l="clear">Clear done</button>' : '') + '</div>' : '';
+            box.innerHTML = (all.length ? all.slice(0, cut).map(row).join('') +
+                (all.length > cut ? '<button class="ls-more" data-l="all">+' + (all.length - cut) + ' more ›››</button>' : '')
+                : '<div class="empty">Nothing to do 🎉</div>') + foot;
         }
         var touched = 0;   // a background refresh straight after a change may carry older data: ignore it for a few seconds
         function send(b) {
@@ -187,7 +199,10 @@
             var a = b.getAttribute('data-l');
             if (a === 'toggle') {
                 var it = data.items.filter(function (i) { return i.id === b.getAttribute('data-id'); })[0];
-                if (it) { it.done = !it.done; b.parentNode.classList.toggle('done', it.done); setTimeout(render, 0); }
+                if (it) {
+                    if (!it.done) pinned[it.id] = { at: Date.now(), pos: shown().indexOf(it) }; else delete pinned[it.id];
+                    it.done = !it.done; b.parentNode.classList.toggle('done', it.done); setTimeout(render, 0);
+                }
                 send({ op: 'toggle', id: b.getAttribute('data-id') });
             } else if (a === 'star') {                                       // priority on/off: starred go to the top
                 var st = data.items.filter(function (i) { return i.id === b.getAttribute('data-id'); })[0];
@@ -197,6 +212,10 @@
                     render(); if (popAll) openAll();
                 }
                 send({ op: 'star', id: b.getAttribute('data-id') });
+            } else if (a === 'showdone') {
+                showDone = !showDone;
+                try { localStorage.setItem(DONE_KEY, showDone ? '1' : '0'); } catch (e2) { /* ignore */ }
+                render();
             } else if (a === 'all') openAll();
             else if (a === 'add') openAdd();
             else if (a === 'save') save();
@@ -426,9 +445,18 @@
         ['⏰', 'What time is it?', '¿Qué hora es?', 'Quelle heure est-il ?', 'Wie spät ist es?', 'Che ore sono?'],
     ];
     T.words = function (el, w) {
-        var s = w.settings, L = LANG[s.Language] || LANG.Spanish, duo = null;
-        el.innerHTML = '<div class="wd-head"><h3>' + L[1] + ' ' + esc(s.Language || 'Spanish') + ' word</h3></div><div class="wd-body"></div><div class="wd-duo"></div>';
+        var s = w.settings, duo = null, L, name;
+        el.innerHTML = '<div class="wd-head"><h3></h3></div><div class="wd-body"></div><div class="wd-duo"></div>';
+        // "Same as Duolingo" (or nothing chosen): the language the first Duolingo user is learning, otherwise French.
+        var CODES = { fr: 'French', es: 'Spanish', de: 'German', it: 'Italian' };
+        function pickLang() {
+            var first = duo && duo.users && duo.users.filter(function (u) { return u.lang; })[0];
+            name = LANG[s.Language] ? s.Language : (first && CODES[first.lang]) || 'French';
+            L = LANG[name];
+            el.querySelector('.wd-head h3').innerHTML = L[1] + ' ' + esc(name) + ' word';
+        }
         function render() {
+            pickLang();
             var x = WORDS[pick(WORDS.length, s.Change, 11)];
             el.querySelector('.wd-body').innerHTML = '<span class="wd-emoji">' + x[0] + '</span><div class="wd-words"><b class="wd-word">' + esc(x[L[0] + 1]) + '</b>' +
                 '<span class="wd-en">' + esc(x[1]) + '</span></div>';

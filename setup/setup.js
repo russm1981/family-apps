@@ -172,6 +172,9 @@
                 '<li>Back in your Sheet, <b>reload the page</b>. A new menu appears: <b>🏠 Family Dashboard → Connect my screen and phones → Open the setup app</b>. ' +
                 'This page reopens already connected – nothing to type.</li></ol>' +
                 '<div id="connStatus">' + (connected() ? okLine(true, 'Connected to your Family Dashboard Sheet.') : '') + '</div></div>' +
+                (connected() ? '<div class="card big" id="licCard"><h3>🔑 Your licence key</h3><p class="mute">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
+                    '<div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
+                    '<button class="btn" id="licGo">Check and save</button></div><div id="licStatus" class="mute">Checking…</div></div>' : '') +
                 '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>Or paste the Web app URL here instead</summary>' +
                 '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
                 '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
@@ -184,6 +187,18 @@
                 connect(false);
             };
             $('useCode').onclick = function () { S.code = $('code').value.trim(); save(); $('connect').onclick(); };
+            if ($('licCard')) {
+                var show = function (L) {
+                    $('licStatus').innerHTML = !L || !L.required ? '<span class="mute">Licence keys aren’t needed yet.</span>' : okLine(L.ok, L.message + (L.key ? ' (key …' + L.key + ')' : ''));
+                };
+                post({ action: 'licence' }).then(function (d) { show(d.licence); }, function (e) { $('licStatus').textContent = /Unknown action/.test(e.message) ? 'Update your Google script to use licence keys.' : e.message; });
+                $('licGo').onclick = function () {
+                    var k = $('licKey').value.trim(); if (!k) return;
+                    $('licStatus').textContent = 'Checking…'; $('licGo').disabled = true;
+                    post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; $('licKey').value = ''; show(d.licence); S.licensed = true; save(); },
+                        function (e) { $('licGo').disabled = false; $('licStatus').innerHTML = okLine(false, e.message); });
+                };
+            }
         }, ready: function () { return connected(); }, blocked: 'Connect to your Sheet first (the menu in your Sheet, or paste the address)' },
 
         { id: 'devices', title: 'Connect your devices', render: function () {
@@ -224,14 +239,13 @@
                 '<div class="card big"><label style="margin-top:0">Home address or postcode</label><input id="home" value="' + esc(S.home || '') + '" placeholder="e.g. 12 High Street, Falfield, GL12 8DQ">' +
                 '<p class="mute">Used for the weather, traffic, the nearest bus stop and the flights map.</p></div>' +
 
-                '<div class="card big"><h3>1. Everyone in the family</h3><p class="mute">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Names up to ' + LM.name + ' letters.</p>' +
+                '<div class="card big"><h3>1. Everyone in the family</h3><p class="mute">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Names up to ' + LM.name + ' letters. Tap ⭐ Points to put a child on the points page, or take them off.</p>' +
                 '<div id="ppl">' + F.people.map(personRow).join('') + '</div>' +
                 '<button class="btn sm ghost" id="addP">+ Add a person</button></div>' +
 
                 '<div class="card big"><h3>2. The two groups</h3><p class="mute">On the calendar key each person shows in their group’s colour, with their name in brackets, e.g. “Drums (Ben)”.</p>' +
                 groupRow('children', 'Children’s group', F.children, 'e.g. Boys, Kids, The girls') +
                 groupRow('adults', 'Adults’ group', F.adults, 'e.g. Russ & Becky, Mum & Dad') +
-                '<label class="tick"><input type="checkbox" id="pts"' + (F.points === false ? '' : ' checked') + '> Put the children on the points page too</label>' +
                 '<div class="row" id="ptsRow"><span style="flex:none">Points page name</span><input id="ptsTitle" maxlength="14" value="' + esc(F.pointsTitle || '') + '" placeholder="Same as the children’s group"></div>' +
                 '<p class="mute" id="ptsNote"></p></div>' +
 
@@ -250,6 +264,7 @@
                 return '<div class="prow" data-was="' + esc(p.was || '') + '" data-match="' + esc(p.match || '') + '">' +
                     '<input data-n placeholder="Name" maxlength="' + LM.name + '" value="' + esc(p.name) + '">' +
                     '<div class="seg"><button type="button" data-r="adult"' + (p.role === 'adult' ? ' class="on"' : '') + '>Adult</button><button type="button" data-r="child"' + (p.role !== 'adult' ? ' class="on"' : '') + '>Child</button></div>' +
+                    '<button type="button" class="ptb' + (p.points === false ? '' : ' on') + '" data-pt title="On the points page?">⭐ Points</button>' +
                     '<input type="color" data-c value="' + esc(p.colour || '#3fa9f5') + '"><button type="button" class="x" data-del title="Remove">✕</button>' +
                     '<input class="match" data-m placeholder="Matching words, e.g. football, Cubs" value="' + esc(p.match || '') + '"></div>';
             }
@@ -272,6 +287,7 @@
                 if (n >= LM.people) { toast('Up to ' + LM.people + ' people', true); return; }
                 $('ppl').insertAdjacentHTML('beforeend', '<div class="prow" data-was="" data-match=""><input data-n placeholder="Name" maxlength="' + LM.name + '">' +
                     '<div class="seg"><button type="button" data-r="adult">Adult</button><button type="button" data-r="child" class="on">Child</button></div>' +
+                    '<button type="button" class="ptb on" data-pt title="On the points page?">⭐ Points</button>' +
                     '<input type="color" data-c value="' + colours[n % colours.length] + '"><button type="button" class="x" data-del title="Remove">✕</button>' +
                     '<input class="match" data-m placeholder="Matching words, e.g. football, Cubs"></div>');
                 $('ppl').lastChild.querySelector('[data-n]').focus(); preview();
@@ -288,6 +304,8 @@
             body.onclick = function (e) {
                 var r = e.target.closest('.seg [data-r]');
                 if (r) { Array.prototype.forEach.call(r.parentNode.children, function (x) { x.classList.toggle('on', x === r); }); preview(); return; }
+                var pt = e.target.closest('[data-pt]');
+                if (pt) { pt.classList.toggle('on'); preview(); return; }
                 var d = e.target.closest('[data-del]');
                 if (d) { d.closest('.prow, .srow').remove(); preview(); }
             };
@@ -304,7 +322,7 @@
                 post({ action: 'saveInstall', values: { HomeAddress: home } }).then(function () {
                     return post(Object.assign({ action: 'saveFamily' }, f));
                 }).then(function (d) {
-                    S.fam = fromServer(d.family); S.fam.points = f.points; S.familyDone = true; save();
+                    S.fam = fromServer(d.family); S.familyDone = true; save();
                     render(); $('famStatus').innerHTML = okLine(true, 'Saved. The screen and calendar app pick it up within a minute.');
                 }).catch(function (e) { $('famStatus').innerHTML = okLine(false, e.message); });
             };
@@ -312,7 +330,9 @@
             function collect() {
                 var people = Array.prototype.map.call(document.querySelectorAll('.prow'), function (r) {
                     var on = r.querySelector('.seg .on');
-                    return { name: r.querySelector('[data-n]').value.trim(), role: on ? on.getAttribute('data-r') : 'child', colour: r.querySelector('[data-c]').value,
+                    var role = on ? on.getAttribute('data-r') : 'child';
+                    return { name: r.querySelector('[data-n]').value.trim(), role: role, colour: r.querySelector('[data-c]').value,
+                        points: role === 'child' && r.querySelector('[data-pt]').classList.contains('on'),
                         match: r.querySelector('[data-m]').value.trim(), was: r.getAttribute('data-was') || '' };
                 }).filter(function (p) { return p.name; });
                 var grp = function (k) {
@@ -326,7 +346,7 @@
                 }).filter(function (x) { return x.name; });
                 return { people: people, children: grp('children'), adults: grp('adults'), specials: specials,
                     family: { colour: $('famC').value, match: F.family.match }, holiday: { colour: $('holC').value, match: F.holiday.match },
-                    points: $('pts').checked, pointsTitle: $('ptsTitle').value.trim() };
+                    pointsTitle: $('ptsTitle').value.trim() };
             }
             function problems(f) {
                 if (!f.people.length) return 'Add at least one person';
@@ -339,7 +359,6 @@
                 if (bad) return '“' + bad + '” can’t contain a dash, colon, comma or |';
                 var kids = f.people.filter(function (p) { return p.role === 'child'; }).length;
                 if (kids > LM.children) return 'Up to ' + LM.children + ' children';
-                if (f.points && !kids) return 'Mark at least one person as a child for the points page (or untick it)';
                 return '';
             }
             function preview() {
@@ -355,12 +374,18 @@
                 }).join('');
                 $('keyNote').textContent = key.length + ' entries on the key' + (f.specials.some(function (x) { return x.bar; }) ? ' · strips show as a bar along the bottom of each day' : '') + '.';
                 var title = $('ptsTitle').value.trim() || f.children.name || 'Children';
-                $('ptsRow').style.display = $('pts').checked ? '' : 'none';
-                $('ptsNote').textContent = !$('pts').checked ? 'The points page is left as it is.'
-                    : !kids.length ? 'Mark at least one person as a child.'
-                    : kids.length <= 3 ? 'The “' + title + '” page shows ' + kids.map(function (p) { return p.name; }).join(', ') + ' side by side.'
-                    : 'With ' + kids.length + ' children the page is split in two to keep it neat: “' + title + ' 1” (' + kids.slice(0, Math.ceil(kids.length / 2)).map(function (p) { return p.name; }).join(', ') +
-                      ') and “' + title + ' 2” (' + kids.slice(Math.ceil(kids.length / 2)).map(function (p) { return p.name; }).join(', ') + ').';
+                Array.prototype.forEach.call(document.querySelectorAll('.prow'), function (r) {
+                    var on = r.querySelector('.seg .on'); r.classList.toggle('adult', !!on && on.getAttribute('data-r') === 'adult');
+                });
+                var pk = kids.filter(function (p) { return p.points; }), names = function (a) { return a.map(function (p) { return p.name; }).join(', '); };
+                var off = kids.filter(function (p) { return !p.points; });
+                $('ptsRow').style.display = pk.length ? '' : 'none';
+                $('ptsNote').textContent = (!kids.length ? 'Mark someone as a child to use the points page.'
+                    : !pk.length ? 'Nobody has ⭐ Points ticked, so the points page is left as it is.'
+                    : pk.length <= 3 ? 'The “' + title + '” points page shows ' + names(pk) + ' side by side.'
+                    : 'With ' + pk.length + ' children the points page is split in two to keep it neat: “' + title + ' 1” (' + names(pk.slice(0, Math.ceil(pk.length / 2))) +
+                      ') and “' + title + ' 2” (' + names(pk.slice(Math.ceil(pk.length / 2))) + ').') +
+                    (pk.length && off.length ? ' Not on it: ' + names(off) + ' (their points are kept if you tick them again).' : '');
             }
         } },
         { id: 'keys', title: 'Free API keys', render: function () {

@@ -80,7 +80,13 @@
         opts.signal = ctl.signal; opts.cache = 'no-store'; opts.redirect = 'follow';
         return fetch(url, opts).then(function (r) {
             if (!r.ok) throw new Error('Server said ' + r.status);
-            return r.json();
+            return r.text().then(function (txt) {
+                try { return JSON.parse(txt); } catch (e) { throw new Error('The Google script sent back an error page instead of data – it may need approving again (in the Sheet: Extensions → Apps Script → Run setup)'); }
+            });
+        }, function (e) {
+            if (e && e.name === 'AbortError') throw new Error('No answer from the Google script for 20 seconds');
+            // A Google error page (e.g. "authorisation required") has no CORS headers, so the browser just says "Failed to fetch".
+            throw new Error(navigator.onLine === false ? 'This PC is offline' : 'Can’t reach the Google script – check the internet, or open the Family Admin app to see if the script needs approving again');
         }).then(function (d) {
             if (d && d.ok === false) throw new Error(d.error || 'Request failed');
             return d;

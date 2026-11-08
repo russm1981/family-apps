@@ -101,3 +101,10 @@ label.tick.sm { margin: 0; font-weight: 600; font-size: 14px; white-space: nowra
 .kp small { color: var(--mute); font-weight: 400; font-size: 13px; }
 @media (max-width: 760px) { .prow, .srow { grid-template-columns: minmax(0, 1fr) 54px 40px; } .prow .seg, .srow .tick.sm { grid-column: 1 / -1; grid-row: 2; justify-self: start; } .glabel { width: 110px; } }
 .row input[type=color] { flex: none; width: 64px; }
+
+/* Points on/off for each child */
+.prow { grid-template-columns: minmax(0, 1fr) auto auto 64px 40px; }
+.ptb { border: 1px solid var(--line); background: none; color: var(--mute); font: inherit; font-weight: 700; padding: 10px 12px; border-radius: 10px; cursor: pointer; opacity: .55; }
+.ptb.on { background: rgba(250, 204, 21, .16); border-color: #facc15; color: inherit; opacity: 1; }
+.prow.adult .ptb { visibility: hidden; }
+@media (max-width: 760px) { .prow { grid-template-columns: minmax(0, 1fr) 54px 40px; } .prow .ptb { grid-column: 1 / -1; grid-row: 2; justify-self: end; } }

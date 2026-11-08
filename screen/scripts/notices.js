@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.19';
+    var APP_VERSION = '2026.11.22';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;       // nobody has touched the screen for 3 minutes → update by itself
@@ -140,6 +140,18 @@
         v.title = 'Screen ' + APP_VERSION + (lastLayout && lastLayout.scriptVersion ? ' · Google script ' + lastLayout.scriptVersion : '');
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', showVersion); else setTimeout(showVersion, 0);
+    /** No licence: cover the screen with what to do. Free trial: a small reminder in the last week. */
+    function showLicence(lic) {
+        var el = document.getElementById('licLock');
+        if (lic && lic.required && !lic.ok) {
+            if (!el) { el = document.createElement('div'); el.id = 'licLock'; el.className = 'lic-lock'; document.body.appendChild(el); }
+            el.innerHTML = '<div class="lic-box"><div class="lic-ico">🔑</div><h2>' + (lic.state === 'missing' ? 'Add your licence key' : 'Licence problem') + '</h2>' +
+                '<p>' + esc(lic.message || '') + '</p><p class="lic-how">On your phone: <b>Family Admin → Settings → Licence</b>, and type in the key from your order email. ' +
+                'This screen carries on by itself within a few minutes.</p></div>';
+            el.style.display = 'flex';
+        } else if (el) el.style.display = 'none';
+        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → Settings → Licence)</span>' : '');
+    }
     window.FDNotices = {
         version: APP_VERSION,
         check: function (L) {
@@ -148,6 +160,7 @@
             lastLayout = L;
             if (window.FDSleep && L.sleep) window.FDSleep.config(L.sleep);
             showVersion();
+            showLicence(L.licence);
             showPrivacy();
             if (first) checkForUpdate(); else showScript();
         },

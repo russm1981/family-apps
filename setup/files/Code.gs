@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.15';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.19';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 const SHEETS = {
   boys: ['Name', 'Colour'],
@@ -97,22 +97,23 @@ const INSTALL = [
   { k: 'AccessCode', label: 'Access code', help: 'Made for you when the Sheet is set up. Change it from the Family Admin app (Install tab) so the rules are checked.', hidden: true },
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
+  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
-  { k: 'AppsAddress', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
-  { k: 'HomeAddress', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
+  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
+  { k: 'HomeAddress', group: 'home', label: 'Home address', def: 'Dudden Farm, Sundayshill Lane, Falfield, GL12 8DQ',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
-  { k: 'TomTomKey', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
-  { k: 'RailDataKey', label: 'National Rail key', help: 'Either an OpenLDBWS token (from realtime.nationalrail.co.uk/OpenLDBWSRegistration – the same one the Raspberry Pi departure boards use) or a Rail Data Marketplace key (raildata.org.uk).' },
-  { k: 'CalendarIds', label: 'Calendars to show', def: 'default', help: 'default = your main calendar, all = every calendar, or calendar IDs separated by commas.' },
-  { k: 'AddToCalendar', label: 'Calendar for new events', def: 'default', help: 'Where + Add saves events: default = your main calendar, or a calendar ID.' },
-  { k: 'SleepMinutes', label: 'Screen sleep after (minutes)', def: '30', help: 'With nobody touching the screen, it goes dark after this many minutes; a touch wakes it. 0 = never.' },
-  { k: 'SleepStyle', label: 'Sleep screen', def: 'Clock', help: 'Clock = black with a small, dim clock. Black = completely black.' },
-  { k: 'NightHours', label: 'Night hours', def: '23:30-06:30', help: 'Between these times the screen sleeps (unless someone touches it), and goes back to sleep after 2 minutes. Blank = no night hours.' },
-  { k: 'NasaKey', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA picture of the day. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
-  { k: 'TransportApiId', label: 'TransportAPI app ID', help: 'For live bus times (free account at developer.transportapi.com \u2013 the same service the MagicMirror bus module uses).' },
-  { k: 'TransportApiKey', label: 'TransportAPI app key', help: 'From the same TransportAPI account.' },
-  { k: 'SpotifyClientId', label: 'Spotify Client ID', help: 'From developer.spotify.com → Dashboard → your app. Then tap "Connect Spotify" on the Spotify widget.' },
-  { k: 'SpotifyClientSecret', label: 'Spotify Client secret', help: 'From the same Spotify app page (View client secret).' },
+  { k: 'TomTomKey', group: 'keys', uses: 'Traffic, the flights and traffic maps', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
+  { k: 'RailDataKey', group: 'keys', uses: 'Trains', label: 'National Rail key', help: 'Either an OpenLDBWS token (from realtime.nationalrail.co.uk/OpenLDBWSRegistration – the same one the Raspberry Pi departure boards use) or a Rail Data Marketplace key (raildata.org.uk).' },
+  { k: 'CalendarIds', group: 'calendar', label: 'Calendars to show', def: 'default', help: 'default = your main calendar, all = every calendar, or calendar IDs separated by commas.' },
+  { k: 'AddToCalendar', group: 'calendar', label: 'Calendar for new events', def: 'default', help: 'Where + Add saves events: default = your main calendar, or a calendar ID.' },
+  { k: 'SleepMinutes', group: 'screen', label: 'Screen sleep after (minutes)', def: '30', help: 'With nobody touching the screen, it goes dark after this many minutes; a touch wakes it. 0 = never.' },
+  { k: 'SleepStyle', group: 'screen', label: 'Sleep screen', def: 'Clock', help: 'Clock = black with a small, dim clock. Black = completely black.' },
+  { k: 'NightHours', group: 'screen', label: 'Night hours', def: '23:30-06:30', help: 'Between these times the screen sleeps (unless someone touches it), and goes back to sleep after 2 minutes. Blank = no night hours.' },
+  { k: 'NasaKey', group: 'keys', uses: 'NASA picture of the day', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA picture of the day. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
+  { k: 'TransportApiId', group: 'keys', uses: 'Bus stop', label: 'TransportAPI app ID', help: 'For live bus times (free account at developer.transportapi.com \u2013 the same service the MagicMirror bus module uses).' },
+  { k: 'TransportApiKey', group: 'keys', uses: 'Bus stop', label: 'TransportAPI app key', help: 'From the same TransportAPI account.' },
+  { k: 'SpotifyClientId', group: 'keys', uses: 'Spotify', label: 'Spotify Client ID', help: 'From developer.spotify.com → Dashboard → your app. Then tap "Connect Spotify" on the Spotify widget.' },
+  { k: 'SpotifyClientSecret', group: 'keys', uses: 'Spotify', label: 'Spotify Client secret', help: 'From the same Spotify app page (View client secret).' },
 ];
 
 /* ====================================================== PAGES AND WIDGETS */
@@ -277,7 +278,6 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Title', label: 'Title on screen', type: 'text', def: 'To do', max: 16 },
       { k: 'TasksList', label: 'Google Tasks list', type: 'text', def: '', max: 60, help: 'The list’s name in Google Tasks. Blank = your first list (usually "My Tasks").' },
-      { k: 'ShowTicked', label: 'Show ticked tasks until cleared', type: 'bool', def: false },
       { k: 'AddOnScreen', label: 'Allow adding on the screen', type: 'bool', def: true },
     ],
     data: (s) => todo_(s), nocache: true },
@@ -309,13 +309,14 @@ Object.assign(WIDGET_TYPES, {
     data: () => spotifyNow_() },
   words: { name: 'Word of the day', icon: '🗣️', sizes: ['half'], ttl: 20 * 60, about: 'A new word in another language, plus Duolingo streaks.',
     settings: [
-      { k: 'Language', label: 'Language', type: 'select', def: 'Spanish', options: ['Spanish', 'French', 'German', 'Italian'] },
+      { k: 'Language', label: 'Language', type: 'select', def: 'Same as Duolingo', options: ['Same as Duolingo', 'French', 'Spanish', 'German', 'Italian'],
+        help: 'The language of the word of the day. "Same as Duolingo" uses the language the first Duolingo username below is learning (French if there isn\u2019t one).' },
       { k: 'Change', label: 'New word', type: 'select', def: 'Every hour', options: QUOTE_CHANGE },
       { k: 'Duolingo', label: 'Duolingo usernames', type: 'text', def: '', max: 80, help: 'Optional, separated by commas, to show each person’s streak. Profiles must be public.' },
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '4';   // 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
+const LAYOUT_VER = '5';   // 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
@@ -502,6 +503,13 @@ function upgradeLayout_() {
   }
   // Kitchen timer: the old standard buttons (1–20 minutes) become 3, 5, 10, 15, 20, 30.
   setColumn_('wset', 'Value', r => String(r[1]).trim() === 'Presets' && String(r[2]).replace(/\s/g, '') === '1,3,5,10,15,20' ? '3,5,10,15,20,30' : undefined);
+  // Version 5 (Nov 2026): the word of the day was Spanish by default; this family learns French.
+  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '5') {
+    const words = rows_('widgets').filter(w => String(w.Type).trim() === 'words').map(w => String(w.Widget).trim());
+    setColumn_('wset', 'Value', r => words.indexOf(String(r[0]).trim()) >= 0 && String(r[1]).trim() === 'Language' && String(r[2]).trim() === 'Spanish' ? 'French' : undefined);
+    const has = rows_('wset').filter(r => String(r.Setting).trim() === 'Language').map(r => String(r.Widget).trim());
+    words.filter(id => has.indexOf(id) < 0).forEach(id => sheet_('wset').appendRow([id, 'Language', 'French']));
+  }
   renumber_('widgets');
 }
 
@@ -526,10 +534,11 @@ function doGet(e) {
       if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_() };
       if (p.action === 'claim') return withLock_(claim_);
       checkCode_(p.code);
+      if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1');
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
-      if (p.action === 'layout') return Object.assign({ ok: true }, layout_());
+      if (p.action === 'layout') return Object.assign({ ok: true }, layout_(), { licence: licencePublic_() });
       if (p.action === 'calendar') return getCalendar_(p.start, p.end);
       // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Ben&place=School  or  &lat=..&lon=..
       if (p.action === 'where') return withLock_(() => setWhere_(p));
@@ -563,6 +572,7 @@ function doPost(e) {
 
 /** Actions shared by the screen (via doPost), the phone apps and the admin page (via api). */
 function dispatch_(b) {
+  if (LICENCE_FREE.indexOf(b.action) < 0) requireLicence_();
   switch (b.action) {
     case 'complete': return completeTask_(b.boy, b.taskId);
     case 'penalty': return addEntry_(b.boy, 'penalty', '', b.reason || 'Penalty', -Math.abs(Number(b.points)));
@@ -572,6 +582,8 @@ function dispatch_(b) {
     case 'undo': return deleteEntry_(b.id);
     case 'state': return getState_();
     case 'admin': return getAdmin_();
+    case 'licence': return { ok: true, licence: licencePublic_(!!b.recheck) };
+    case 'setLicence': return setLicence_(b.key);
     case 'saveTask': return saveTask_(b.task);
     case 'deleteTask': return deleteRowById_('tasks', b.id);
     case 'saveList': return saveList_(b.list, b.rows);
@@ -757,7 +769,8 @@ function getAdmin_() {
       Timestamp: fmt_(new Date(l.Timestamp), 'EEE d MMM yyyy HH:mm'),
     })),
     state: getState_(),
-    install: INSTALL.filter(f => !f.hidden).map(f => ({ k: f.k, label: f.label, help: f.help, value: String(inst_(f.k)) })),
+    install: INSTALL.filter(f => !f.hidden).map(f => ({ k: f.k, label: f.label, help: f.help, group: f.group || 'other', uses: f.uses || '', value: String(inst_(f.k)) })),
+    licence: licencePublic_(),
     pages: L.pages, widgets: L.widgets, lists: lists,
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
@@ -1076,10 +1089,10 @@ function layout_() {
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
 function getPage_(pageId, force) {
-  const L = layout_();
+  const L = Object.assign({}, layout_(), { licence: licencePublic_() });
   const page = L.pages.find(p => p.id === pageId) || L.pages.find(p => p.type === 'widgets' && p.show);
   const data = {};
-  if (page && page.type === 'widgets') {
+  if (page && page.type === 'widgets' && L.licence.ok) {      // no licence: the screen shows how to add one instead
     L.widgets.filter(w => w.page === page.id && w.show).forEach(w => { data[w.id] = widgetData_(w, force); });
   }
   return { ok: true, layout: L, page: page ? page.id : '', data: data, serverTime: new Date().toISOString() };
@@ -1308,7 +1321,7 @@ function saveInstall_(values) {
   Object.keys(values).forEach(k => {
     if (k === 'AccessCode') throw new Error('The access code can only be changed in the Sheet');
     const f = INSTALL.find(x => x.k === k);
-    if (!f) return;
+    if (!f || f.hidden) return;
     const v = String(values[k] == null ? '' : values[k]).trim();
     if (k === 'HomeAddress' && !v) throw new Error('The home address can\u2019t be blank');
     if (v.length > 200) throw new Error(f.label + ' is too long');
@@ -1930,7 +1943,9 @@ function family_() {
   return {
     // Children in the order they're on the points page, then the adults.
     people: raw.filter(c => c.kind === 'child').sort((x, y) => rank(x) - rank(y)).concat(raw.filter(c => c.kind === 'adult'))
-      .map(c => ({ name: c.name, colour: c.colour, match: c.match, role: c.kind })),
+      // points: is this child on the points page? (With nobody there yet, every child starts ticked.)
+      .map(c => ({ name: c.name, colour: c.colour, match: c.match, role: c.kind,
+        points: c.kind === 'child' ? (!kids.length || kids.indexOf(norm_(c.name)) >= 0) : false })),
     children: g('children', 'Children', '#22d3ee'), adults: g('adults', 'Adults', '#a855f7'),
     family: { name: 'Family', colour: fam ? fam.colour : '#c08457', match: fam ? fam.match : '' },
     holiday: { name: 'Holiday', colour: hol ? hol.colour : '#ef4444', match: hol ? hol.match : 'flight' },
@@ -1978,9 +1993,11 @@ function saveFamily_(b) {
     const role = p.role === 'child' ? 'child' : p.role === 'adult' ? 'adult' : '';
     if (!role) throw new Error('Say whether ' + p.name + ' is an adult or a child');
     const name = clean('Each person', p.name, L.name);
-    return { name: name, was: p.was, role: role, colour: colour(name, p.colour), match: match(p.match, p.was, name) };
+    return { name: name, was: p.was, role: role, colour: colour(name, p.colour), match: match(p.match, p.was, name),
+      points: role === 'child' && b.points !== false && p.points !== false };
   });
   const kids = ppl.filter(p => p.role === 'child');
+  const onPoints = kids.filter(p => p.points);   // each child can be on or off the points page
   if (kids.length > L.children) throw new Error('Up to ' + L.children + ' children');
   const specials = (b.specials || []).filter(x => x && String(x.name || '').trim());
   if (specials.length > L.specials) throw new Error('Up to ' + L.specials + ' special categories, so the calendar key stays readable');
@@ -2002,12 +2019,14 @@ function saveFamily_(b) {
     sh.clearContents();
     sh.getRange(1, 1, 1, SHEETS.categories.length).setValues([SHEETS.categories]).setFontWeight('bold');
     sh.getRange(2, 1, rows.length, SHEETS.categories.length).setValues(rows);
-    // The children are also the points page. Renaming keeps their points, tasks and reminders.
-    if (b.points !== false && kids.length) {
-      kids.forEach(k => { if (k.was && k.was !== k.name) renameChild_(k.was, k.name); });
+    // Renaming a child keeps their points, tasks and reminders.
+    kids.forEach(k => { if (k.was && k.was !== k.name) renameChild_(k.was, k.name); });
+    // The ticked children are the points page. Someone taken off keeps their points history, so ticking them
+    // again later brings it all back. Nobody ticked: the points page is left as it is.
+    if (onPoints.length) {
       const bs = sheet_('boys');
       if (bs.getLastRow() > 1) bs.getRange(2, 1, bs.getLastRow() - 1, SHEETS.boys.length).clearContent();
-      bs.getRange(2, 1, kids.length, 2).setValues(kids.map(k => [k.name, k.colour]));
+      bs.getRange(2, 1, onPoints.length, 2).setValues(onPoints.map(k => [k.name, k.colour]));
     }
     const title = String(b.pointsTitle || '').trim() || groups.children.name;
     if (title.length > 14) throw new Error('The points page name can be up to 14 characters');
@@ -2765,7 +2784,7 @@ function setAutoUpdate_(on) {
   return { ok: true, autoUpdate: true, warning: warning };
 }
 /** Hourly (when automatic updates are on). */
-function autoUpdateTick() { if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
+function autoUpdateTick() { try { licencePublic_(); } catch (e) { /* next hour */ } if (autoUpdateOn_()) { try { selfUpdate_('timer'); } catch (err) { console.warn('Auto update: ' + err.message); } } }
 
 function scriptApi_(method, path, body) {
   const res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects/' + ScriptApp.getScriptId() + path, {
@@ -2830,6 +2849,101 @@ function selfUpdate_(why) {
     if (why === 'app' || why === 'menu') throw err;
     return { ok: false, message: err.message, error: err.message };
   } finally { P.deleteProperty('updating'); }
+}
+
+/* ============================================================== LICENCE */
+/*
+ * The seller's licence server says whether this dashboard's key is good. Its address is "licence" in version.json
+ * on the apps address (read once a day); with no address there, licensing is off.
+ * - No key yet: a 14-day trial from when licensing first applied, then the screen and apps ask for a key.
+ * - The key is checked once a day. If the licence server can't be reached, the last good answer counts for 21 days.
+ * - A key works on one dashboard at a time: each dashboard has a random installation number (nothing else is sent).
+ */
+const LICENCE = { trialDays: 14, graceDays: 21, recheckHours: 24 };
+// What still works without a licence: enough to see the problem and put a key in.
+const LICENCE_FREE = ['admin', 'licence', 'setLicence', 'acceptPrivacy', 'selfUpdate', 'autoUpdate', 'changeCode', 'family', 'saveInstall'];
+
+function licenceServer_() {
+  const P = PropertiesService.getScriptProperties();
+  const at = Number(P.getProperty('licenceServerAt') || 0);
+  if (Date.now() - at > 24 * 3600e3) {
+    P.setProperty('licenceServerAt', String(Date.now()));
+    try {
+      const r = UrlFetchApp.fetch(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true });
+      if (r.getResponseCode() === 200) P.setProperty('licenceServer', String(JSON.parse(r.getContentText()).licence || '').trim());
+    } catch (err) { /* keep the last one */ }
+  }
+  const u = P.getProperty('licenceServer') || '';
+  return /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) ? u : '';
+}
+function installId_() {
+  const P = PropertiesService.getScriptProperties();
+  let id = P.getProperty('installId');
+  if (!id) { id = Utilities.getUuid(); P.setProperty('installId', id); }
+  return id;
+}
+function askLicenceServer_(server, key) {
+  const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    payload: JSON.stringify({ action: 'check', key: key, install: installId_(), version: SCRIPT_VERSION }) });
+  if (r.getResponseCode() !== 200) throw new Error('The licence server said ' + r.getResponseCode());
+  const d = JSON.parse(r.getContentText());
+  if (!d.state) throw new Error(d.error || 'The licence server gave no answer');
+  return d;
+}
+/** This dashboard's licence: { required, ok, state, message, daysLeft, name, key (last 5 characters) }. */
+function licencePublic_(recheck) {
+  const server = licenceServer_();
+  if (!server) return { required: false, ok: true, state: 'off' };
+  const P = PropertiesService.getScriptProperties(), key = String(inst_('LicenceKey') || '').trim();
+  let st = {}; try { st = JSON.parse(P.getProperty('licence') || '{}'); } catch (e) { st = {}; }
+  if (!st.since) { st.since = Date.now(); P.setProperty('licence', JSON.stringify(st)); }
+  if (!key) {
+    const left = Math.ceil(LICENCE.trialDays - (Date.now() - st.since) / 864e5);
+    return left > 0 ? { required: true, ok: true, state: 'trial', daysLeft: left, message: 'Free trial: ' + left + ' day' + (left === 1 ? '' : 's') + ' left. Add your licence key to keep using the dashboard.' }
+      : { required: true, ok: false, state: 'missing', message: 'The free trial has ended. Add your licence key to carry on.' };
+  }
+  if (recheck || st.key !== key || Date.now() - (st.checked || 0) > LICENCE.recheckHours * 3600e3) {
+    try {
+      const d = askLicenceServer_(server, key);
+      Object.assign(st, { key: key, state: d.state, message: d.message || '', name: d.name || '', checked: Date.now(), offline: '' });
+      if (d.ok) st.lastOk = Date.now();
+    } catch (err) {
+      st.checked = Date.now() - (LICENCE.recheckHours - 1) * 3600e3;    // try again in an hour
+      st.offline = String(err && err.message || err);
+      if (st.key !== key) Object.assign(st, { key: key, state: 'unchecked', message: 'The licence server couldn’t be reached to check the key' });
+    }
+    P.setProperty('licence', JSON.stringify(st));
+  }
+  const tail = key.slice(-5);
+  if (st.state === 'active') {
+    const left = Math.ceil(LICENCE.graceDays - (Date.now() - (st.lastOk || 0)) / 864e5);
+    if (left > 0) return { required: true, ok: true, state: 'active', name: st.name, key: tail, message: st.offline && left < LICENCE.graceDays - 2
+      ? 'Licensed. The licence server hasn’t answered for a while – it needs to within ' + left + ' days.' : 'Licensed' + (st.name ? ' to ' + st.name : '') };
+    return { required: true, ok: false, state: 'offline', key: tail, message: 'The licence couldn’t be checked for ' + LICENCE.graceDays + ' days. Check the internet connection, or contact the seller.' };
+  }
+  return { required: true, ok: false, state: st.state || 'unchecked', key: tail, message: st.message || 'The licence key couldn’t be checked' };
+}
+function requireLicence_() {
+  const L = licencePublic_();
+  if (!L.ok) throw new Error('Licence needed: ' + L.message);
+}
+/** Check a new key with the licence server and, if it's good, keep it. */
+function setLicence_(key) {
+  key = String(key || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^FD(?=.{20}$)/, '');
+  if (key.length !== 20) throw new Error('A licence key is FD- then four groups of five letters and numbers, e.g. FD-AB2CD-EF3GH-JK4LM-NP5QR');
+  key = 'FD-' + key.match(/.{5}/g).join('-');
+  const server = licenceServer_();
+  if (!server) { setInst_('LicenceKey', key); return { ok: true, licence: licencePublic_(), message: 'Saved. (Licences aren’t being checked yet.)' }; }
+  let d;
+  try { d = askLicenceServer_(server, key); } catch (err) { throw new Error('Couldn’t reach the licence server – try again in a minute (' + err.message + ')'); }
+  if (!d.ok) throw new Error(d.message || 'That key wasn’t accepted');
+  setInst_('LicenceKey', key);
+  const P = PropertiesService.getScriptProperties();
+  let st = {}; try { st = JSON.parse(P.getProperty('licence') || '{}'); } catch (e) { st = {}; }
+  Object.assign(st, { key: key, state: 'active', message: d.message, name: d.name || '', checked: Date.now(), lastOk: Date.now(), offline: '', since: st.since || Date.now() });
+  P.setProperty('licence', JSON.stringify(st));
+  bumpVersions_();
+  return { ok: true, licence: licencePublic_(), message: d.message || 'Licensed' };
 }
 
 /** "2026.11.4" > "2026.11.3"? */
