@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>tr('Family Dashboard')</title>
+    <link rel="manifest" href="app.webmanifest">
+    <meta name="mobile-web-app-capable" content="yes">
+    <script>/* tr() is for iCUE; in a browser show the plain name */ if (/^tr\(/.test(document.title)) document.title = 'Family Dashboard';</script>
     <link rel="icon" type="image/svg+xml" href="resources/icon.svg" />
     <meta http-equiv="Content-Security-Policy"
         content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://*.github.io; object-src 'none'; base-uri 'none'; form-action 'none';" />

@@ -62,7 +62,8 @@
     }
 
     /** Year view: a computer shows the whole year (January–December); a tablet half a year (January–June or July–December). */
-    function yearMonths() { var F = window.FDFormat && FDFormat.get(); return F && F.kind === 'standard' ? 6 : 12; }
+    /** Year view = a wall planner: one row per month. 12 rows when there's room (about 75 px a row), otherwise 6. */
+    function yearMonths() { var F = window.FDFormat && FDFormat.get(); return F && F.kind === 'standard' && window.innerHeight < 900 ? 6 : 12; }
     function yearAvailable() { var F = window.FDFormat && FDFormat.get(); return !!F && (F.kind === 'computer' || F.kind === 'standard'); }
     function yearStart(d) { var n = yearMonths(); return new Date(d.getFullYear(), n === 12 ? 0 : Math.floor(d.getMonth() / n) * n, 1); }
     function calRange() {
@@ -185,6 +186,12 @@
         var today = ymd(new Date());
         $('calStatus').textContent = !api().ready() ? 'Not connected' : calErr ? '⚠ ' + calErr : calLoading ? 'Updating…' : '';
         $('calRows').className = 'cal-rows view-' + calView + (alignDays ? '' : ' no-align');
+        $('calRows').style.gridTemplateRows = '';
+        // Where the key goes: tablets – along the bottom except in Month view; computers – along the bottom (small) in
+        // Year view; the Corsair – on the right as always.
+        var F = window.FDFormat && FDFormat.get(), kind = F ? F.kind : 'wide';
+        $('screen-calendar').classList.toggle('key-bottom', kind === 'standard' ? calView !== '1m' : kind === 'computer' && calView === 'year');
+        $('screen-calendar').classList.toggle('key-small', calView === 'year');
         if (calView === 'week') renderWeek(data, today);
         else if (calView === 'year') renderYear(data, today);
         else if (calView === '1m') renderMonth(data, today);
@@ -225,7 +232,7 @@
         $('calRows').innerHTML = '<div class="cs-wrap"><div class="cs-inner">' + html + '</div></div>';
         var wrap = $('calRows').querySelector('.cs-wrap');
         // About 10 days across the screen.
-        var label = 4.2 * parseFloat(getComputedStyle(document.documentElement).fontSize), gap = 0.18 * parseFloat(getComputedStyle(document.documentElement).fontSize);
+        var mw = parseFloat(getComputedStyle($('screen-calendar')).getPropertyValue('--mw')) || 4.2, label = mw * parseFloat(getComputedStyle(document.documentElement).fontSize), gap = 0.18 * parseFloat(getComputedStyle(document.documentElement).fontSize);
         var cw = Math.max(60, (wrap.clientWidth - label - 10 * gap) / 10);
         wrap.style.setProperty('--cw', cw + 'px');
         var key = ymd(calStart);
@@ -276,28 +283,31 @@
         $('calRows').innerHTML = html + '</div>';
     }
 
-    /** Year view: little month calendars (4 × 3 on a computer, 3 × 2 on a tablet). Each day shows its first entries as
-     *  coloured lines and holidays as a coloured band; tap a day for everything on it, or a month's name to open it. */
+    /** Year view: a wall planner – one row per month, days across (lined up by weekday, or starting at the left, as the
+     *  3-month views), each day showing its first entries as coloured chips. Tap a day for everything on it, or a month's name to open it. */
     function renderYear(data, today) {
         var n = yearMonths(), last = addMonths(calStart, n - 1);
         $('calYear').textContent = calStart.getFullYear();
         $('calRange').textContent = n === 12 ? 'Whole year' : MON[calStart.getMonth()] + ' – ' + MON[last.getMonth()];
-        var html = '<div class="yv yv-' + n + '">';
+        var lim = n === 12 ? 2 : 3, html = '';
         for (var m = 0; m < n; m++) {
-            var ms = addMonths(calStart, m), first = mondayOf(ms), mon = ms.getMonth();
-            html += '<div class="yv-m"><button class="yv-t" data-month="' + ymd(ms) + '">' + MONTHNAME[mon] + '</button><div class="yv-g">' +
-                ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(function (x, i) { return '<b class="' + (i > 4 ? 'we' : '') + '">' + x + '</b>'; }).join('');
-            for (var i = 0; i < 42; i++) {
-                var dt = addDays(first, i), ds = ymd(dt);
-                if (dt.getMonth() !== mon) { html += '<span class="yv-x"></span>'; continue; }
-                var evs = dayParts(data, ds).evs, hb = barHtml(data, dt);
-                var lines = evs.slice(0, 2).map(function (e) { return '<i ' + evStyle(e) + '>' + esc(e.t) + '</i>'; }).join('') + (evs.length > 2 ? '<i class="yv-more">+' + (evs.length - 2) + '</i>' : '');
+            var ms = addMonths(calStart, m);
+            var dim = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
+            html += '<div class="cal-row"><button class="cal-month" data-month="' + ymd(ms) + '"><b>' + MON[ms.getMonth()] + '</b></button>';
+            var off = alignDays ? (ms.getDay() + 6) % 7 : 0, cols = alignDays ? 37 : 31;
+            for (var col = 0; col < cols; col++) {
+                var d = col - off + 1;
+                if (d < 1 || d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
+                var dt = new Date(ms.getFullYear(), ms.getMonth(), d), ds = ymd(dt);
+                var evs = dayParts(data, ds).evs, hb = barHtml(data, dt), cut = evs.length > lim ? lim - 1 : evs.length;
+                var chips = evs.slice(0, cut).map(function (e) { return '<div class="ev" ' + evStyle(e) + '>' + esc(e.t) + '</div>'; }).join('') + (evs.length > cut ? '<div class="ev more">+' + (evs.length - cut) + '</div>' : '');
                 var tip = evs.map(function (e) { return e.t; }).join(', ');
-                html += '<button class="cal-cell yv-d' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '><span class="yv-n">' + dt.getDate() + '</span>' + lines + hb.html + '</button>';
+                html += '<button class="cal-cell' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '"' + (tip ? ' title="' + esc(tip) + '"' : '') + '><span class="cd"><b>' + d + '</b><i>' + DOW[dt.getDay()].charAt(0) + '</i></span>' + chips + hb.html + '</button>';
             }
-            html += '</div></div>';
+            html += '</div>';
         }
-        $('calRows').innerHTML = html + '</div>';
+        $('calRows').innerHTML = html;
+        $('calRows').style.gridTemplateRows = 'repeat(' + n + ', minmax(0, 1fr))';
     }
     /** On a computer the year uses the whole window; everything else stays at the Corsair's shape. */
     function fullWindow() {

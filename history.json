@@ -1,5 +1,25 @@
 [
   {
+    "version": "2026.11.43",
+    "date": "2026-11-09",
+    "notes": [
+      "Calendar Year view is now a wall planner: a row for each month (all 12 when there’s room), lined up by weekday or not – the same setting as the 3-month views",
+      "Calendar key: along the bottom on a tablet (except Month view, where it stays on the right), and small along the bottom in Year view on a computer; the Corsair is unchanged",
+      "Tablets and computers no longer use the dashboard’s sleep screen – the tablet’s power button or the computer’s own settings do that; the Corsair keeps it",
+      "Tablets: the first tap makes the dashboard full screen; it can also be added to the home screen and opens full screen from there"
+    ]
+  },
+  {
+    "version": "2026.11.42",
+    "date": "2026-11-09",
+    "notes": [
+      "Tablet: side bar shows icons only, with 1 and 2 on pages split in two; a proper calendar icon showing today’s date",
+      "Tablet calendar: the key runs along the bottom and the month names take less room, so the days get the full width",
+      "Tablet children’s page: each child’s card scrolls when there’s more than fits (the morning list was cut off)",
+      "Browser tab says “Family Dashboard”"
+    ]
+  },
+  {
     "version": "2026.11.41",
     "date": "2026-11-09",
     "notes": [

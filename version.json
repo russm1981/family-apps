@@ -1,14 +1,15 @@
 {
-  "app": "2026.11.41",
+  "app": "2026.11.43",
   "script": "2026.11.32",
   "date": "2026-11-08",
   "notes": [
-    "Family Admin → Family: the calendar and family tiles come first, then the points cards – each child now has its own “Set up points” link",
-    "Family Admin → Settings → System → Licence shows your whole licence key once it’s been entered, with a Copy button",
-    "Google script 2026.11.32",
-    "Setup is simpler: no Apps Script API switch – publish once with Deploy → New deployment, and the script keeps itself up to date",
-    "Fewer Google permissions: the script no longer asks to manage Apps Script projects and deployments",
-    "Google script 2026.11.31"
+    "Calendar Year view is now a wall planner: a row for each month (all 12 when there’s room), lined up by weekday or not – the same setting as the 3-month views",
+    "Calendar key: along the bottom on a tablet (except Month view, where it stays on the right), and small along the bottom in Year view on a computer; the Corsair is unchanged",
+    "Tablets and computers no longer use the dashboard’s sleep screen – the tablet’s power button or the computer’s own settings do that; the Corsair keeps it",
+    "Tablets: the first tap makes the dashboard full screen; it can also be added to the home screen and opens full screen from there",
+    "Tablet: side bar shows icons only, with 1 and 2 on pages split in two; a proper calendar icon showing today’s date",
+    "Tablet calendar: the key runs along the bottom and the month names take less room, so the days get the full width",
+    "Tablet children’s page: each child’s card scrolls when there’s more than fits (the morning list was cut off)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.12",

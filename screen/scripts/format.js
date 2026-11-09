@@ -91,6 +91,17 @@
         clearTimeout(rt);
         rt = setTimeout(function () { var was = F.kind; detect(); window.dispatchEvent(new Event('fdbox')); if (was !== F.kind) location.reload(); else Array.prototype.forEach.call(document.querySelectorAll('.screen.wpage'), pager); }, 400);
     });
+    /* ---- Tablets: full screen (no address bar). Browsers only allow it after a tap, so the first tap does it – and again
+     * after the tablet has been woken, if the browser dropped out of full screen. Opening the dashboard from its home-screen
+     * icon (Add to Home screen) is full screen from the start. */
+    function fullScreen() {
+        if (F.kind !== 'standard') return;
+        var standalone = window.matchMedia && (matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches);
+        var d = document, el = d.documentElement, on = d.fullscreenElement || d.webkitFullscreenElement;
+        if (standalone || on) return;
+        try { var r = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen(); if (r && r.catch) r.catch(function () { /* not allowed now */ }); } catch (e) { /* not allowed here */ }
+    }
+    document.addEventListener('pointerup', function () { try { fullScreen(); } catch (e) { /* fine */ } }, true);
     function start() { detect(); }
     if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
 

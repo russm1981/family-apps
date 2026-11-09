@@ -59,8 +59,11 @@
     // Any touch, click or key counts as someone using the screen.
     ['pointerdown', 'keydown', 'wheel'].forEach(function (t) { document.addEventListener(t, function () { if (!asleep) lastTouch = Date.now(); }, true); });
 
+    /** Only the Corsair needs the dashboard's own sleep screen: a tablet sleeps with its side button, a computer with its own settings. */
+    function wanted() { var F = window.FDFormat && FDFormat.get(); return !F || F.kind === 'wide'; }
     function tick() {
         var now = new Date(), idle = Date.now() - lastTouch;
+        if (!wanted()) { if (asleep) wake(); return; }
         if (asleep) {
             if (document.getElementById('alarm') && document.getElementById('alarm').classList.contains('on')) wake();   // the timer's going off
             return;

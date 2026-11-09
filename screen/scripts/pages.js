@@ -28,7 +28,9 @@
         var pages = navPages();
         // Side bar
         $('railPages').innerHTML = pages.map(function (p) {
-            return '<button class="nav-btn" data-page="' + esc(p.id) + '" data-type="' + esc(p.type) + '"><span class="ico">' + esc(p.icon) + '</span><span class="nt">' + esc(p.title) + '</span></button>';
+            var ico = p.type === 'calendar' ? calIcon() : esc(p.icon);
+            return '<button class="nav-btn" data-page="' + esc(p.id) + '" data-type="' + esc(p.type) + '" title="' + esc(p.title) + '" aria-label="' + esc(p.title) + '"><span class="ico">' + ico +
+                (p.num ? '<sup class="pn">' + p.num + '</sup>' : '') + '</span><span class="nt">' + esc(p.title) + '</span></button>';
         }).join('');
         $('rail').style.setProperty('--n', Math.max(pages.length, 3));
         // Widget pages
@@ -86,6 +88,12 @@
      *  - a tablet shows two of a page's four columns at a time, so a widget page with more than two columns becomes
      *    two buttons ("Home 1", "Home 2") – the same page, left half and right half;
      *  - the children's page gets as many buttons as it needs: up to 3 children a screen ("Boys 1", "Boys 2"). */
+    /** A calendar page icon with today's date on it. */
+    function calIcon() {
+        return '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+            '<path d="M3 9.5h18" stroke="currentColor" stroke-width="1.8"/><path d="M8 2.5v4M16 2.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+            '<text x="12" y="18.3" text-anchor="middle" font-size="8.5" font-weight="700" font-family="system-ui,sans-serif" fill="currentColor">' + new Date().getDate() + '</text></svg>';
+    }
     function tablet() { return !!(window.FDFormat && FDFormat.get().kind === 'standard'); }
     function boysPerScreen() { return 3; }   // a tablet stacks each child's card (thinner and taller), so 3 fit there too
     function navPages() {
@@ -93,10 +101,10 @@
         (layout ? layout.pages : []).filter(function (p) { return p.show; }).forEach(function (p) {
             if (p.type === 'boys') {
                 var k = Math.max(1, Math.ceil((p.children || 0) / boysPerScreen()));
-                for (var i = 0; i < k; i++) out.push(Object.assign({}, p, { id: i ? p.id + '~' + (i + 1) : p.id, part: i, parts: k, title: k > 1 ? p.title + ' ' + (i + 1) : p.title }));
+                for (var i = 0; i < k; i++) out.push(Object.assign({}, p, { id: i ? p.id + '~' + (i + 1) : p.id, part: i, parts: k, num: k > 1 ? i + 1 : 0, title: k > 1 ? p.title + ' ' + (i + 1) : p.title }));
             } else if (p.type === 'widgets' && tablet() && window.FDW && FDW.pack(layout.widgets.filter(function (w) { return w.page === p.id && w.show; })).length > 2) {
-                out.push(Object.assign({}, p, { half: 0, title: p.title + ' 1' }));
-                out.push(Object.assign({}, p, { id: p.id + '~h2', base: p.id, half: 1, title: p.title + ' 2' }));
+                out.push(Object.assign({}, p, { half: 0, num: 1, title: p.title + ' 1' }));
+                out.push(Object.assign({}, p, { id: p.id + '~h2', base: p.id, half: 1, num: 2, title: p.title + ' 2' }));
             } else out.push(p);
         });
         return out;

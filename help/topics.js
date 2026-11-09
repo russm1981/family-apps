@@ -140,8 +140,8 @@ window.FD_HELP = [
     body: `
 <table class="t">
 <tr><td><b>Wide</b></td><td>The Corsair XENEON EDGE (2560×720) and similar very wide screens. Four columns of widgets side by side.</td></tr>
-<tr><td><b>Tablet</b></td><td>A tablet held sideways – we test on the Amazon Fire HD 10 (1920×1200). Two columns at a time: a page with more than two columns gets two buttons in the side bar, e.g. <b>Home 1</b> and <b>Home 2</b>. The children’s page shows 3 children a screen, each card stacked to fit, with more buttons if needed.</td></tr>
-<tr><td><b>Computer</b></td><td>A computer’s web browser shows the Corsair layout at its own shape, scaled to fit the window. The calendar’s <b>Year</b> view uses the whole window (a tablet shows six months).</td></tr>
+<tr><td><b>Tablet</b></td><td>A tablet held sideways – we test on the Amazon Fire HD 10 (1920×1200). Two columns at a time: a page with more than two columns gets two buttons in the side bar (the house with a 1, the house with a 2). Tap the screen once and it goes full screen – or add it to the home screen (browser menu → Add to Home screen) and open it from there. A tablet doesn’t use the dashboard’s sleep screen: just press its power button. The children’s page shows 3 children a screen, each card stacked to fit, with more buttons if needed.</td></tr>
+<tr><td><b>Computer</b></td><td>A computer’s web browser shows the Corsair layout at its own shape, scaled to fit the window. The calendar’s <b>Year</b> view is a wall planner – a row for each month – using the whole window (on a tablet too).</td></tr>
 </table>
 <p>On a different shape – a phone, a tablet held upright, or a strangely sized window – the dashboard uses the nearer layout and shows <i>“This screen is an unusual shape”</i>. It will still work, but some things may not fit. On a tablet, turn it sideways; on a computer, make the browser window full-screen (F11).</p>
 <p>The children’s page and the calendar are drawn a little smaller on tablets so everything fits.</p>`
