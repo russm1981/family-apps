@@ -1,5 +1,55 @@
 [
   {
+    "version": "2026.11.49",
+    "date": "2026-11-10",
+    "notes": [
+      "Connecting a screen from a phone now says whose dashboard it will show and asks “Is this screen in your home?” – with “No – it’s someone else’s screen” leading to their own setup",
+      "Screen status page: “Disconnect this screen”",
+      "A copy of someone else’s dashboard Sheet is emptied automatically before anything is shown; Sheet menu “Clear everything and start from scratch”",
+      "Google script 2026.11.36"
+    ]
+  },
+  {
+    "version": "2026.11.48",
+    "date": "2026-11-09",
+    "notes": [
+      "Bins simplified: one place to set them up (Set up bin days); the settings only hold the reminder time; the council is shown plainly with “Not right?” instead of a long list; by hand (with the AI helper) is the clear next step when a council can’t be read",
+      "Google script 2026.11.35"
+    ]
+  },
+  {
+    "version": "2026.11.47",
+    "date": "2026-11-09",
+    "notes": [
+      "Bins by hand: “Let an AI assistant look it up” – a ready-written request (with your postcode, house and council) to copy into ChatGPT, Claude or Gemini; paste its answer back and your bins are filled in"
+    ]
+  },
+  {
+    "version": "2026.11.46",
+    "date": "2026-11-09",
+    "notes": [
+      "Bins: Dorset Council can now be read automatically (13 councils)",
+      "Google script 2026.11.34"
+    ]
+  },
+  {
+    "version": "2026.11.45",
+    "date": "2026-11-09",
+    "notes": [
+      "Bins: “Set up bin days” in Family Admin – postcode → your council (change it if wrong) → read automatically where we can (12 councils so far, more being added), otherwise a simple form to enter your bins by hand, with a preview",
+      "Diagnostics: when a widget (or setting up bin days) fails, the report now includes what was asked of the outside service and what came back – in the locked part",
+      "Google script 2026.11.33"
+    ]
+  },
+  {
+    "version": "2026.11.44",
+    "date": "2026-11-09",
+    "notes": [
+      "Family Admin and Family Calendar on a computer: connect by typing the code they show into your phone (Family Admin → Settings → Devices → Connect by code), or scan their QR code – no links to copy; if the browser already has another app connected, one tap uses the same family",
+      "Home page: “Connect this browser” the same way – it then shows your own links and settings"
+    ]
+  },
+  {
     "version": "2026.11.43",
     "date": "2026-11-09",
     "notes": [

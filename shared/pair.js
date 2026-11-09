@@ -36,4 +36,44 @@
         return null;
     }
     window.FDPairSend = { send: send, norm: norm, saved: saved };
+
+    /* ---- the other end: this device shows a code, and waits for a connected phone to send the family's link to it. */
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    function newCode() {
+        var a = new Uint8Array(8); crypto.getRandomValues(a);
+        var c = Array.prototype.map.call(a, function (b) { return A[b % 32]; }).join('');
+        return c.slice(0, 4) + '-' + c.slice(4);
+    }
+    function unb64(t) { var s = atob(t), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+    function open(code, box) {
+        var p = String(box).split('.');
+        return sha('fd-pair-key:' + code).then(function (k) { return crypto.subtle.importKey('raw', k, { name: 'AES-GCM' }, false, ['decrypt']); })
+            .then(function (key) { return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(p[0]) }, key, unb64(p[1])); })
+            .then(function (plain) { return JSON.parse(new TextDecoder().decode(plain)); });
+    }
+    /** Start waiting. onLink({url, code}) is called once a phone sends it. Returns { code, link (for a QR code), stop() }, or null if not possible here. */
+    function receive(onLink, onState) {
+        if (!window.crypto || !crypto.subtle) return null;
+        var code = '';
+        try { code = sessionStorage.getItem('fdPairCode') || ''; } catch (e) { /* fine */ }
+        if (!code) { code = newCode(); try { sessionStorage.setItem('fdPairCode', code); } catch (e) { /* fine */ } }
+        var timer = null, relay = '', stopped = false;
+        function poll() {
+            if (stopped || !relay) return;
+            sha('fd-pair-id:' + code).then(function (h) {
+                return fetch(relay + '?action=pairGet&id=' + hex(h).slice(0, 24) + '&t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); });
+            }).then(function (d) {
+                if (!d || !d.box || stopped) return;
+                return open(code, d.box).then(function (cfg) { stop(); try { sessionStorage.removeItem('fdPairCode'); } catch (e) { /* fine */ } onLink(cfg); });
+            }).catch(function () { /* try again shortly */ });
+        }
+        function stop() { stopped = true; clearInterval(timer); }
+        fetch(base() + 'version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
+            relay = v.licence || '';
+            if (!relay) { if (onState) onState('unavailable'); return; }
+            timer = setInterval(poll, 4000); poll(); if (onState) onState('waiting');
+        }).catch(function () { if (onState) onState('offline'); });
+        return { code: code, link: base() + 'pair/#c=' + code, stop: stop };
+    }
+    window.FDPairRecv = { receive: receive };
 })();

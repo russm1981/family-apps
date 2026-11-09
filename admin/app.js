@@ -361,10 +361,11 @@
                 '<a class="btn wide" href="' + esc(location.href.replace(/admin\/.*$/, '') + 'calendar/') + '">Open the Family Calendar app</a>';
         },
         bins: function (w) {
-            var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
+            var d = GL[w.id], set = '<button class="btn wide" id="binSet">' + (d && !d.error ? 'Change how bin days are found' : 'Set up bin days') + '</button>';
+            if (!d || d.error) return card('', waiting(w) + set);
             return card('Next collections', rows(d.upcoming, function (u) {
                 return row(u.daysAway === 0 ? 'Today' : u.daysAway === 1 ? 'Tomorrow' : nice(u.date), u.daysAway > 1 ? 'in ' + u.daysAway + ' days' : '', esc(u.bins.map(function (b) { return b.bin; }).join(', ')));
-            }, 'No collections found'));
+            }, 'No collections found') + set);
         },
         countdown: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
@@ -405,7 +406,185 @@
         },
         quote: function (w) { var d = GL[w.id]; return card('', d && d.q ? '<blockquote>' + esc(d.q) + '</blockquote><p class="mute small">' + esc(d.a || '') + '</p>' : '<p class="mute">' + esc(summary(w)) + '. A new quote shows on the screen each day.</p>'); },
     };
-    var WIRE = { memo: function () { wireMemo(); }, list: wireList, todo: wireList, whereabouts: wireWhere };
+    var WIRE = { memo: function () { wireMemo(); }, list: wireList, todo: wireList, whereabouts: wireWhere, bins: function (w) { if ($('binSet')) $('binSet').onclick = function () { binWizard(w); }; } };
+
+    /* ---- "Set up bin days": postcode → council → read it automatically if we can, otherwise enter the bins by hand. */
+    var BIN_TYPES = [['Black bin', 'general waste'], ['Recycling', ''], ['Garden bin', 'green waste'], ['Food caddy', 'food waste'], ['Glass', ''], ['Paper & card', ''], ['Other', 'type a name']];
+    function binWizard(w) {
+        var S = { w: w, postcode: w.settings.Postcode || ((/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(((DATA.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') || [])[1] || ''),
+            house: w.settings.House || '', uprn: w.settings.UPRN || '', link: w.settings.CalendarLink || '', list: null, council: null, rows: null };
+        function save(settings, msg) {
+            act({ action: 'saveWidget', widget: { id: w.id, settings: settings } }, msg || 'Saved – the screen shows your bin days within a minute')
+                .then(function () { closeSheet(); delete GL[w.id]; fetchWidget(w.id); }, function () {});
+        }
+        function preview(d) {
+            return '<div class="rows">' + (d.upcoming || []).map(function (u) { return row(nice(u.date), u.daysAway > 1 ? 'in ' + u.daysAway + ' days' : u.daysAway === 1 ? 'tomorrow' : 'today', esc(u.bins.map(function (b) { return b.bin; }).join(', '))); }).join('') + '</div>';
+        }
+        function step1() {
+            sheet('<h2>🗑️ Set up bin days</h2><p class="mute small">We’ll find your council from your postcode and read your collection days from it if we can. If not, you can type your bins in – it takes a minute.</p>' +
+                '<label>Postcode</label><input id="bwPc" value="' + esc(S.postcode) + '" autocapitalize="characters" autocomplete="postal-code" maxlength="10">' +
+                '<button class="btn wide" id="bwFind">Find my council</button><div id="bwOut"></div>' +
+                '<div class="sheet-actions"><button class="btn ghost" id="bwHand">Skip – enter my bins by hand</button></div>');
+            $('bwHand').onclick = manual;
+            $('bwFind').onclick = function () {
+                S.postcode = $('bwPc').value.trim(); if (!S.postcode) { FD.toast('Type your postcode', true); return; }
+                var b = this; b.disabled = true; b.textContent = 'Looking it up…';
+                FD.get('binLookup', { postcode: S.postcode }).then(function (d) {
+                    S.list = d.councils || []; S.council = d.council;
+                    if (d.postcodeError) { b.disabled = false; b.textContent = 'Find my council'; $('bwOut').innerHTML = '<p class="neg small">' + esc(d.postcodeError) + '</p>'; return; }
+                    step2();
+                }, function (e) { b.disabled = false; b.textContent = 'Find my council'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
+            };
+        }
+        function step2() {
+            var c = S.council || {};
+            sheet('<h2>🗑️ Your council</h2><p>Your bins are collected by <b id="bwName">' + esc(c.name || 'a council we don’t know') + '</b>. <button class="link" id="bwChange">Not right?</button></p>' +
+                '<div id="bwPick" hidden><select id="bwC">' + (S.list || []).map(function (x) { return '<option value="' + esc(x.code) + '"' + (x.code === c.code ? ' selected' : '') + '>' + esc(x.name) + (x.ready ? ' ✔' : '') + '</option>'; }).join('') +
+                (c.code && !(S.list || []).some(function (x) { return x.code === c.code; }) ? '<option value="' + esc(c.code) + '" selected>' + esc(c.name) + '</option>' : '') + '</select>' +
+                '<p class="mute small">✔ = its bin days can be read automatically.</p></div><div id="bwHow"></div>' +
+                '<div class="sheet-actions"><button class="btn ghost" id="bwBack">Back</button></div>');
+            $('bwChange').onclick = function () { $('bwPick').hidden = false; this.hidden = true; };
+            $('bwBack').onclick = step1;
+            $('bwC').onchange = function () { $('bwName').textContent = this.options[this.selectedIndex].text.replace(/ ✔$/, ''); how(); }; how();
+        }
+        function how() {
+            var code = $('bwC').value, x = (S.list || []).filter(function (y) { return y.code === code; })[0] || { code: code, name: S.council && S.council.name, how: 'none' };
+            S.council = x;
+            var needUprn = (x.needs || []).indexOf('uprn') >= 0, needHouse = (x.needs || []).indexOf('house') >= 0 || (x.needs || []).indexOf('house_number') >= 0;
+            if (x.ready) {
+                $('bwHow').innerHTML = '<p class="pos small"><b>✔ We can read ' + esc(x.name) + '’s bin days.</b></p>' +
+                    (needHouse ? '<label>House name or number</label><input id="bwHouse" value="' + esc(S.house) + '">' : '') +
+                    (needUprn ? '<label>Your property number (UPRN)</label><input id="bwUprn" inputmode="numeric" value="' + esc(S.uprn) + '" placeholder="e.g. 100121234567">' +
+                        '<p class="mute small">Every home has one. Find yours at <a href="https://www.findmyaddress.co.uk/search" target="_blank" rel="noopener">findmyaddress.co.uk</a>: search your postcode, pick your address, and copy the <b>UPRN</b> number.</p>' : '') +
+                    '<button class="btn wide" id="bwTry">Try it</button><div id="bwRes"></div>';
+                $('bwTry').onclick = function () {
+                    var set = { Source: 'My council (automatic)', Council: x.code, Postcode: S.postcode };
+                    if ($('bwHouse')) set.House = S.house = $('bwHouse').value.trim();
+                    if ($('bwUprn')) set.UPRN = S.uprn = $('bwUprn').value.replace(/\D/g, '');
+                    var b = this; b.disabled = true; b.textContent = 'Asking ' + x.name + '…';
+                    FD.post({ action: 'binTry', settings: set }).then(function (r) {
+                        b.disabled = false; b.textContent = 'Try again';
+                        if (!r.data || !(r.data.upcoming || []).length) throw new Error('No collections came back');
+                        $('bwRes').innerHTML = '<p class="pos small"><b>✔ It works.</b> Your next collections:</p>' + preview(r.data) + '<button class="btn good wide" id="bwUse">Use this</button>';
+                        $('bwUse').onclick = function () { set.UPRN = set.UPRN || ''; save(set); };
+                    }).catch(function (e) {
+                        b.disabled = false; b.textContent = 'Try again';
+                        $('bwRes').innerHTML = '<p class="neg small"><b>That didn’t work:</b> ' + esc(e.message) + '</p><p class="small">Check the details above and try again – or enter your bins by hand.</p><button class="btn wide" id="bwM">Enter my bins by hand</button>';
+                        $('bwM').onclick = manual;
+                    });
+                };
+            } else {
+                $('bwHow').innerHTML = '<p class="small">We can’t read this council’s bin days automatically' + (x.note ? ' – ' + esc(x.note.replace(/^Chichester’s bin-day page is /, 'its website is ').replace(/ – enter your bins by hand\.?$/, '')) : x.how === 'feed' || x.how === 'page' ? ' yet' : '') +
+                    '. Entering them takes a minute – and an AI assistant can look them up for you.</p>' +
+                    '<button class="btn wide" id="bwM">Enter my bins by hand</button><p class="small center"><button class="link" id="bwI">My council has an “add to calendar” link</button></p>';
+                $('bwM').onclick = manual; $('bwI').onclick = ics;
+            }
+        }
+        function ics() {
+            sheet('<h2>🗑️ Council calendar link</h2><p class="small">On your council’s “check your bin day” page, look for <b>add to calendar</b>, <b>subscribe</b> or <b>iCal</b>, and copy that link (it ends .ics or starts webcal://).</p>' +
+                '<label>Calendar link</label><input id="bwL" type="url" value="' + esc(S.link) + '"><button class="btn wide" id="bwTry">Try it</button><div id="bwRes"></div>' +
+                '<div class="sheet-actions"><button class="btn ghost" id="bwBack">Back</button></div>');
+            $('bwBack').onclick = step2;
+            $('bwTry').onclick = function () {
+                var set = { Source: 'Calendar link', CalendarLink: S.link = $('bwL').value.trim(), Postcode: S.postcode };
+                FD.post({ action: 'binTry', settings: set }).then(function (r) {
+                    $('bwRes').innerHTML = '<p class="pos small"><b>✔ It works.</b></p>' + preview(r.data) + '<button class="btn good wide" id="bwUse">Use this</button>';
+                    $('bwUse').onclick = function () { save(set); };
+                }, function (e) { $('bwRes').innerHTML = '<p class="neg small">' + esc(e.message) + '</p>'; });
+            };
+        }
+        /* By hand: one row per bin – what it is, how often, and the next (or a recent) collection date. */
+        function manual() {
+            if (!S.rows) {
+                S.rows = String(w.settings.Schedule || '').split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return p.length >= 3 ? { name: p[0], weeks: +p[1] || 1, date: toIso(p[2]) } : null; }).filter(Boolean);
+                if (!S.rows.length) S.rows = [{ name: 'Black bin', weeks: 2, date: '' }, { name: 'Recycling', weeks: 2, date: '' }];
+            }
+            var opt = function (r) {
+                var known = BIN_TYPES.some(function (t) { return t[0] === r.name; });
+                return '<select data-bt>' + BIN_TYPES.map(function (t) { var on = t[0] === r.name || (t[0] === 'Other' && !known); return '<option value="' + t[0] + '"' + (on ? ' selected' : '') + '>' + t[0] + (t[1] ? ' (' + t[1] + ')' : '') + '</option>'; }).join('') + '</select>' +
+                    '<input data-bn placeholder="Name, e.g. Blue box" maxlength="22" value="' + esc(known ? '' : r.name) + '"' + (known ? ' hidden' : '') + '>';
+            };
+            sheet('<h2>🗑️ Your bins</h2><p class="mute small">For each bin: what it is, how often it’s collected, and the date of its next collection (look at your council’s bin calendar).</p>' +
+                '<details class="card fold" id="bwAi"><summary><b>✨ Let an AI assistant look it up</b><span class="mute">ChatGPT, Claude, Gemini…</span></summary>' +
+                '<p class="small">Copy this request into an AI assistant that can search the web. It finds your council’s bin calendar and replies in a form you paste straight back here.</p>' +
+                '<label>House name or number (so it finds your exact address)</label><input id="bwAiHouse" value="' + esc(S.house) + '">' +
+                '<textarea id="bwAiText" readonly rows="7" class="small"></textarea><button class="btn wide" id="bwAiCopy">Copy the request</button>' +
+                '<label>Then paste the assistant’s answer here</label><textarea id="bwAiIn" rows="5" placeholder="Black bin | 2 | 2026-11-12"></textarea><button class="btn ghost wide" id="bwAiUse">Fill in my bins from this</button><p class="small" id="bwAiMsg"></p></details>' +
+                '<div id="bwRows">' + S.rows.map(function (r, i) {
+                    return '<div class="card bw-row" data-i="' + i + '">' + opt(r) + '<div class="two"><div><label>Every</label><select data-bw>' + [1, 2, 3, 4].map(function (n) { return '<option value="' + n + '"' + (n === r.weeks ? ' selected' : '') + '>' + (n === 1 ? 'week' : n + ' weeks') + '</option>'; }).join('') + '</select></div>' +
+                        '<div><label>Next collection</label><input type="date" data-bd value="' + esc(r.date) + '"></div></div><button class="btn ghost sm" data-bx>Remove</button></div>';
+                }).join('') + '</div><button class="btn ghost wide" id="bwAdd">+ Add another bin</button>' +
+                '<h3 class="sh">The next few collections</h3><div id="bwPrev" class="small"></div>' +
+                '<div class="sheet-actions"><button class="btn ghost" id="bwCancel">Cancel</button><button class="btn good" id="bwSave">Save</button></div>');
+            function read() {
+                S.rows = Array.prototype.map.call(document.querySelectorAll('.bw-row'), function (el) {
+                    var t = el.querySelector('[data-bt]').value, n = el.querySelector('[data-bn]');
+                    n.hidden = t !== 'Other';
+                    return { name: t === 'Other' ? n.value.trim() : t, weeks: +el.querySelector('[data-bw]').value, date: el.querySelector('[data-bd]').value };
+                });
+            }
+            function prev() {
+                read();
+                var ok = S.rows.filter(function (r) { return r.name && r.date; }), days = {};
+                var today = new Date(); today = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                ok.forEach(function (r) {
+                    var d = FD.parse(r.date), step = r.weeks * 7;
+                    while (d < today) d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + step);
+                    for (var i = 0; i < 4; i++) { var k = d.toISOString().slice(0, 10), key = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); (days[key] = days[key] || []).push(r.name); d = new Date(d.getFullYear(), d.getMonth(), d.getDate() + step); }
+                });
+                var ks = Object.keys(days).sort().slice(0, 6);
+                $('bwPrev').innerHTML = ks.length ? '<div class="rows">' + ks.map(function (k) { return row(nice(k), null, esc(days[k].join(', '))); }).join('') + '</div>' : '<p class="mute">Add a next-collection date to see them here.</p>';
+            }
+            $('bwRows').oninput = prev; $('bwRows').onchange = prev;
+            function aiText() {
+                var c = S.council && S.council.name ? S.council.name : 'my local council';
+                return 'Please find the bin (waste and recycling) collection days for this home in the UK:\n' +
+                    '  ' + ($('bwAiHouse').value.trim() || '[house name or number]') + ', ' + (S.postcode || '[postcode]') + ' – council: ' + c + '\n\n' +
+                    'Search the council’s website (its “check your bin day” or bin calendar page) for this address. For every kind of bin or box ' +
+                    '(general waste, recycling, food, garden, glass…), work out how often it’s collected and its next collection date on or after ' + new Date().toISOString().slice(0, 10) + '.\n\n' +
+                    'Reply with ONLY these lines, one per bin, nothing else:\n' +
+                    'Bin name | every how many weeks (1, 2, 3 or 4) | next collection date as YYYY-MM-DD\n\n' +
+                    'Example:\nBlack bin | 2 | 2026-11-12\nRecycling | 2 | 2026-11-19\nFood caddy | 1 | 2026-11-12\n\n' +
+                    'Keep bin names short (up to 22 letters). If you can’t find this address’s collection days, say so instead of guessing.';
+            }
+            $('bwAiText').value = aiText();
+            $('bwAiHouse').oninput = function () { S.house = this.value; $('bwAiText').value = aiText(); };
+            $('bwAiCopy').onclick = function () { var t = $('bwAiText'); try { navigator.clipboard.writeText(t.value).then(function () { FD.toast('Copied – paste it into the assistant'); }); } catch (e) { t.select(); document.execCommand('copy'); FD.toast('Copied'); } };
+            $('bwAiUse').onclick = function () {
+                var got = parseAi($('bwAiIn').value);
+                if (!got.length) { $('bwAiMsg').innerHTML = '<span class="neg">Couldn’t find any “Bin | weeks | date” lines in that. Check the assistant replied in that form.</span>'; return; }
+                S.rows = got; manual(); FD.toast(got.length + ' bin' + (got.length > 1 ? 's' : '') + ' filled in – check them, then Save');
+            };
+            $('bwRows').onclick = function (e) { var x = e.target.closest('[data-bx]'); if (x) { read(); S.rows.splice(+x.closest('.bw-row').getAttribute('data-i'), 1); manual(); } };
+            $('bwAdd').onclick = function () { read(); S.rows.push({ name: 'Garden bin', weeks: 2, date: '' }); manual(); };
+            $('bwCancel').onclick = closeSheet;
+            $('bwSave').onclick = function () {
+                read();
+                var bad = S.rows.filter(function (r) { return !r.name || !r.date; });
+                if (!S.rows.length || bad.length) { FD.toast('Each bin needs a name and its next collection date', true); return; }
+                save({ Source: 'Repeating schedule', Schedule: S.rows.map(function (r) { return r.name + ' | ' + r.weeks + ' | ' + r.date; }).join('\n'), Postcode: S.postcode });
+            };
+            prev();
+        }
+        /** The assistant's reply → rows. Forgiving: bullets, code fences, "fortnightly", "every 2 weeks", 12/11/2026, 12 Nov 2026. */
+        function parseAi(text) {
+            var MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+            return String(text || '').split('\n').map(function (l) {
+                l = l.replace(/^[\s>*•\-`#|0-9.)]*(?=[A-Za-z])/, '').replace(/`/g, '').trim();
+                var p = l.split('|').map(function (x) { return x.trim(); });
+                if (p.length < 3 || !p[0]) return null;
+                var wk = /fortnight/i.test(p[1]) ? 2 : /week/i.test(p[1]) && !/\d/.test(p[1]) ? 1 : parseInt(p[1], 10);
+                if (!(wk >= 1 && wk <= 4)) return null;
+                var d = toIso(p[2]), m;
+                if (!d && (m = /(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/.exec(p[2])) && MON[m[2].toLowerCase()]) d = m[3] + '-' + ('0' + MON[m[2].toLowerCase()]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+                if (!d) return null;
+                var name = p[0].replace(/\*/g, '').slice(0, 22), known = BIN_TYPES.filter(function (t) { return t[0].toLowerCase() === name.toLowerCase(); })[0];
+                return { name: known ? known[0] : name, weeks: wk, date: d };
+            }).filter(Boolean);
+        }
+        function toIso(t) { t = String(t || '').trim(); var m = /(\d{4})-(\d\d)-(\d\d)/.exec(t); if (m) return m[0]; m = /(\d\d?)\/(\d\d?)\/(\d{4})/.exec(t); return m ? m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2) : ''; }
+        if (w.settings.Source === 'Repeating schedule' && w.settings.Schedule) manual(); else step1();
+    }
 
     /* ================================================================ points */
 
@@ -757,7 +936,7 @@
             case 'trains': return s.From + ' → ' + s.To;
             case 'traffic': return lines(s.Destinations).join(', ');
             case 'weather': return s.Location || 'Home';
-            case 'bins': return s.Source === 'Calendar link' ? 'From the council’s calendar link' : s.Source === 'Repeating schedule' ? lines(s.Schedule).join(', ') || 'Schedule needed' : (s.Postcode || 'Postcode needed') + (s.House ? ' · ' + s.House : '');
+            case 'bins': return s.Source === 'Calendar link' ? 'your council’s calendar link' : s.Source === 'Repeating schedule' ? (lines(s.Schedule).length ? 'entered by hand – ' + lines(s.Schedule).join(', ') : 'not set up yet') : s.Postcode || s.Council ? 'your council, automatically' + (s.Postcode ? ' (' + s.Postcode + ')' : '') : 'not set up yet';
             case 'flights': return 'Within ' + s.RadiusMiles + ' miles';
             case 'news': return s.Feed;
             case 'photos': return s.Source + ((s.Source === 'Google Drive folder' ? s.DriveFolder : s.AlbumLink) ? '' : ' – link needed');
@@ -827,10 +1006,15 @@
     }
     /** A widget's own settings (from its page in Family / Lists / Other). Where it goes is on the Screen tab. */
     function settingsSheet(w) {
-        var T = typeOf(w.type);
-        sheet('<h2>' + esc(T.icon) + ' ' + esc(widgetName(w)) + ' settings</h2><p class="mute small">' + esc(T.about) + '</p>' + fields(T.settings, w.settings) +
+        var T = typeOf(w.type), defs = T.settings, extra = '';
+        if (w.type === 'bins') {   // where the bin days come from is set by "Set up bin days"; only the reminder is a setting
+            defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
+            extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
+        }
+        sheet('<h2>' + esc(T.icon) + ' ' + esc(widgetName(w)) + ' settings</h2><p class="mute small">' + esc(T.about) + '</p>' + extra + fields(defs, w.settings) +
             '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>');
         applyWhen();
+        if ($('wBins')) $('wBins').onclick = function () { binWizard(w); };
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
             act({ action: 'saveWidget', widget: { id: w.id, settings: readFields() } }, 'Saved – the screen updates within a minute')
@@ -1235,9 +1419,9 @@
                 '<li>Open it from the new icon – it’s already connected.</li></ol>' +
                 (navigator.share ? '<button class="btn ghost wide" id="devShare">Send the link instead</button>' : '<button class="btn ghost wide" id="devCopy">Copy the link</button>') +
                 '<p class="mute small">The link contains your access code – only share it with family.</p>') +
-            card('Add another screen', '<p class="small"><b>Tablet, Raspberry Pi or computer:</b> on the new screen open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. It shows a QR code and a code like <b>K7Q2-M9XD</b> – scan the QR code with this phone, or type the code here:</p>' +
+            card('Connect by code', '<p class="small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. Scan the QR code with this phone, or type the code here:</p>' +
                 '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn wide" id="prGo">Connect the screen</button><div id="prOut"></div>' +
-                '<p class="small"><b>Windows PC (like the Corsair):</b> download the start file from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'downloads/windows/</b>, run it, and type the code it shows here. ' +
+                '<p class="small"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download the start file from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'downloads/windows/</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the screen link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
             screensCard() +
@@ -1247,8 +1431,9 @@
         if ($('devCopy')) $('devCopy').onclick = function () { try { navigator.clipboard.writeText(appLink(devPick)).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
         wireScreens();
         $('prGo').onclick = function () {
+            if (!confirm('Connect it to YOUR family’s dashboard? Only do this for a screen or computer in your own home – it will show your calendar, points, notes and photos. (Setting up someone else? They need their own setup.)')) return;
             var b = this; b.disabled = true;
-            FDPairSend.send($('prCode').value, FD.config()).then(function (code) { $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> Screen ' + esc(code) + ' connects within a few seconds.</p>'; b.disabled = false; $('prCode').value = ''; },
+            FDPairSend.send($('prCode').value, FD.config()).then(function (code) { $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> ' + esc(code) + ' connects within a few seconds.</p>'; b.disabled = false; $('prCode').value = ''; },
                 function (e) { b.disabled = false; FD.toast(e.message, true); });
         };
         $('sOut').onclick = function () { if (confirm('Disconnect this phone? You’ll need a QR code or link from another family phone to connect it again.')) { FD.clearConfig(); try { localStorage.removeItem('fdadmin.data'); } catch (e) { /* ignore */ } location.reload(); } };

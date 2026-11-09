@@ -1,4 +1,4 @@
-/* Family Dashboard – Google script – LOADER (version 1)
+/* Family Dashboard – Google script – LOADER (version 1.1)
  *
  * This small file is all that lives in this Apps Script project's "Code" file. Each time the script runs it fetches
  * the real program from where the apps are hosted (GitHub Pages), keeps a copy for a few hours so it stays quick,
@@ -13,7 +13,7 @@
  * same-named function in the program.
  */
 const FD_LOADER = (function () {
-  const VERSION = '1';
+  const VERSION = '1.1';   // compared with version.json "loader": a higher number there asks families to paste this file again
   const DEFAULT_BASE = 'https://russm1981.github.io/family-apps/';
   const CODE = 'setup/files/Code.gs', HTML = 'setup/files/Admin.html';           // relative to the apps address
   const VKEY = 'script', VDECL = /const SCRIPT_VERSION = '([^']+)'/;  // version.json key, and how the program states its version
@@ -158,4 +158,5 @@ function menuConnect() { return fdCall_('menuConnect', arguments); }
 function menuFamily() { return fdCall_('menuFamily', arguments); }
 function menuStartAfresh() { return fdCall_('menuStartAfresh', arguments); }
 function menuUpdate() { return fdCall_('menuUpdate', arguments); }
+function menuWipe() { return fdCall_('menuWipe', arguments); }
 

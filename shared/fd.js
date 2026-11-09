@@ -152,7 +152,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.43',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.49',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -197,32 +197,53 @@
         },
 
         /** Full-screen "connect this phone" form. Calls done() once it works. */
+        /** Not connected yet: connect from a phone that already is (a code / QR code), use a link this browser already has,
+         *  or paste a setup link. */
         setupScreen: function (el, appName, done) {
-            var c = FD.config();
+            var c = FD.config(), other = window.FDPairSend && FDPairSend.saved && FDPairSend.saved();
+            var waiter = window.FDPairRecv ? FDPairRecv.receive(function (cfg) {
+                FD.setConfig(cfg.url, cfg.code);
+                var st = document.getElementById('suState'); if (st) st.textContent = '✔ Connected – starting…';
+                FD.get('state').then(function () { done(); }, function () { done(); });
+            }, function (state) {
+                var st = document.getElementById('suState'); if (!st) return;
+                st.textContent = state === 'waiting' ? 'Waiting for your phone…' : state === 'offline' ? 'No internet connection – check it and reload.' : 'Connecting by code isn’t available – use a setup link below.';
+            }) : null;
+            var qr = '';
+            if (waiter && window.qrcode) { try { var q = qrcode(0, 'M'); q.addData(waiter.link); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { qr = ''; } }
             el.innerHTML =
                 '<div class="setup"><div class="setup-card">' +
                 '<img src="icons/icon-192.png" alt="" class="setup-icon">' +
                 '<h1>' + FD.esc(appName) + '</h1>' +
-                '<p class="mute">Connect this phone to your Family Dashboard. Paste the setup link Russ sent you, or fill in both boxes.</p>' +
+                (other ? '<p>This browser is already connected to a Family Dashboard (another of its apps).</p><button class="btn wide" id="suSame">Use the same family</button><div class="or">or</div>' : '') +
+                (waiter ? '<p><b>Connect from your phone</b> – on a phone that already has Family Admin: <b>Settings → Devices → Connect by code</b>, and type</p>' +
+                    '<p class="su-code" style="font:800 30px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-align:center;margin:8px 0">' + FD.esc(waiter.code) + '</p>' +
+                    (qr ? '<p class="mute small" style="text-align:center">or scan this with the phone’s camera:</p><div style="background:#fff;border-radius:12px;padding:8px;width:180px;margin:6px auto">' + qr + '</div>' : '') +
+                    '<p class="mute small" id="suState" style="text-align:center">Waiting for your phone…</p>' : '') +
+                '<details' + (waiter ? '' : ' open') + '><summary>Or paste a setup link</summary>' +
                 '<label>Setup link</label><input id="suLink" placeholder="Paste setup link" autocomplete="off">' +
                 '<div class="or">or</div>' +
                 '<label>Web app URL</label><input id="suUrl" placeholder="https://script.google.com/macros/s/…/exec" value="' + FD.esc(c.url) + '" autocomplete="off">' +
                 '<label>Access code</label><input id="suCode" placeholder="Access code" value="' + FD.esc(c.code) + '" autocomplete="off" autocapitalize="off">' +
-                '<button class="btn wide" id="suGo">Connect</button><p id="suErr" class="err"></p></div></div>';
+                '<button class="btn wide" id="suGo">Connect</button></details><p id="suErr" class="err"></p></div></div>';
+            function use(url, code, btn) {
+                FD.setConfig(url, code);
+                btn.disabled = true; var was = btn.textContent; btn.textContent = 'Checking…';
+                FD.get('state').then(function () { if (waiter) waiter.stop(); done(); }).catch(function (e) {
+                    btn.disabled = false; btn.textContent = was;
+                    document.getElementById('suErr').textContent = e.message;
+                });
+            }
             function go() {
                 var s = FD.parseSetup(document.getElementById('suLink').value);
                 var url = s ? s.url : document.getElementById('suUrl').value, code = s ? s.code : document.getElementById('suCode').value;
                 if (!/^https:\/\/script\.google\.com\//.test(String(url).trim()) || !String(code).trim()) {
                     document.getElementById('suErr').textContent = 'That doesn’t look right – check the link, or the URL and code.'; return;
                 }
-                FD.setConfig(url, code);
-                var b = document.getElementById('suGo'); b.disabled = true; b.textContent = 'Checking…';
-                FD.get('state').then(function () { done(); }).catch(function (e) {
-                    b.disabled = false; b.textContent = 'Connect';
-                    document.getElementById('suErr').textContent = e.message;
-                });
+                use(url, code, document.getElementById('suGo'));
             }
             document.getElementById('suGo').onclick = go;
+            if (other) document.getElementById('suSame').onclick = function () { use(other.url, other.code, this); };
         },
 
         registerSW: function () {

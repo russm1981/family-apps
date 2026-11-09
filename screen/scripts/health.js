@@ -60,6 +60,7 @@
                 else if (a === 'check') fullCheck();
                 else if (a === 'save') saveReport(b);
                 else if (a === 'retry') { if (window.FDPages) FDPages.refreshNow(true); }
+                else if (a === 'forget') { if (confirm('Disconnect this screen from this family’s dashboard? It then shows a code to connect it again – to this family or another one.')) api().forget(); }
                 else if (a === 'updApp') { b.disabled = true; b.textContent = 'Updating…'; FDNotices.updateNow(); }
                 else if (a === 'updScript') busyBtn(b, 'Updating the Google script…', FDNotices.updateScript().then(function (r) { api().toast(r.upToDate ? 'Already up to date' : 'Google script updated'); }));
                 else if (a === 'autoOn') busyBtn(b, 'Turning on…', FDNotices.autoOn().then(function (r) { api().toast(r.autoUpdate ? 'Automatic updates are on' + (r.warning ? ' – but: ' + r.warning : '') : 'Couldn’t turn them on', !r.autoUpdate || !!r.warning); }));
@@ -96,7 +97,8 @@
                 vrow('Last answer from the Sheet', H.at ? new Date(H.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'none yet', !H.ok) +
             '</table><div class="hl-btns"><button class="n-btn" data-h="check"' + (checking ? ' disabled' : '') + '>' + (checking ? 'Checking every widget…' : 'Check everything now') + '</button>' +
             '<button class="n-btn ghost" data-h="retry">Try the Sheet again</button>' +
-            '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button></div>' +
+            '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button>' +
+            '<button class="n-btn ghost" data-h="forget">Disconnect this screen</button></div>' +
             '</div></div>' + qrBlock() + '<div><div>' +
             '<p class="hl-foot">To email a report to support, use Family Admin on your phone → Settings → Versions & diagnostics. ' +
             'Private details (access code, keys, addresses, names) are locked so only support can read them.</p></div></div>';

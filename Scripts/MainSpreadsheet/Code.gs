@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.32';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.36';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -183,7 +183,7 @@ const WIDGET_TYPES = {
       { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 4, min: 2, max: 10 },
     ],
     data: () => agenda_(), nocache: true },
-  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a "put out tonight" reminder: straight from the council where it\u2019s connected, or from the council\u2019s calendar link, or a repeating schedule.',
+  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in Family Admin → Bins → Set up bin days.',
     settings: [
       { k: 'Source', label: 'Collection days from', type: 'select', def: 'My council (automatic)', options: BIN_SOURCES,
         help: 'My council: looked up from your postcode, where your council is connected (see Help). Calendar link: many councils offer an "add to calendar" (iCal / .ics) link on their bin-day page. Repeating schedule: works everywhere.' },
@@ -193,7 +193,8 @@ const WIDGET_TYPES = {
       { k: 'Schedule', label: 'Repeating schedule', type: 'lines', maxLines: 6, def: '', when: ['Source', ['Repeating schedule']],
         help: 'Repeating schedule only. One bin per line: Bin | every how many weeks | a recent or next collection date, e.g. "Black bin | 2 | 2026-11-11" or "Recycling | 1 | 12/11/2026".' },
       { k: 'ReminderFrom', label: '"Put out tonight" from', type: 'time', def: '15:00', help: 'Time the day before a collection when the reminder appears.' },
-      { k: 'UPRN', label: 'Council property number', type: 'text', def: '', max: 20, advanced: true, help: 'Filled in automatically. Clear it to look the address up again.' },
+      { k: 'Council', label: 'Council (code)', type: 'text', def: '', max: 12, advanced: true, help: 'Filled in by “Set up bin days” in the Family Admin app. Blank = worked out from the postcode.' },
+      { k: 'UPRN', label: 'Property number (UPRN)', type: 'text', def: '', max: 20, advanced: true, help: 'Your home’s unique property reference number. Some councils need it – “Set up bin days” helps you find it.' },
     ],
     data: (s, id) => bins_(s, id) },
   flights: { name: 'Flights overhead', icon: '\u2708\uFE0F', sizes: ['full'], ttl: 25, about: 'Live map of planes near home, with where they\u2019re going (ADS-B).',
@@ -366,6 +367,7 @@ const PAGE_ICONS = ['\u2302', '\u25C8', '\u2726', '\u2600', '\u266B', '\u2708', 
 /* ------------------------------------------------------------------ setup */
 
 function setup() {
+  freshCopy_();
   const ss = SpreadsheetApp.getActive();
   ss.setSpreadsheetTimeZone(TZ); // so dates typed in the sheet mean UK dates
   ensureTabs_();
@@ -545,7 +547,48 @@ function upgradeLayout_() {
 }
 
 /** New code, old Sheet: set up the new tabs automatically on the first request. */
+/* ---- A copy of someone else's dashboard Sheet must never show their family.
+ * "Make my copy" (and File → Make a copy) copies the tabs – people, lists, notes, settings, keys, access code – but not
+ * this script's properties. So: properties empty but the Installation tab has an access code → this is a copy of
+ * somebody's dashboard. Wipe every family tab and setting before anything is shown; the setup app then starts afresh.
+ * (An existing dashboard already has properties, so it's never touched; it just gets its "home" noted.) */
+function freshCopy_() {
+  const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive(), id = ss.getId();
+  const home = P.getProperty('homeSheet');
+  if (home === id) return false;
+  const mine = P.getKeys().filter(k => !/^(fd|trace:)/.test(k));    // the loader's own notes don't count
+  if (!home && mine.length) { P.setProperty('homeSheet', id); return false; }
+  let code = ''; try { const sh = ss.getSheetByName(TAB.install); if (sh) code = String(inst_('AccessCode') || ''); } catch (e) { code = ''; }
+  if (code || home) wipeFamily_();
+  P.setProperty('homeSheet', id);
+  return true;
+}
+/** Empty every family tab and setting (keeps the page layout). Used for copies, and the Sheet menu's "Clear everything". */
+function wipeFamily_() {
+  const ss = SpreadsheetApp.getActive();
+  ['boys', 'tasks', 'ledger', 'todos', 'todoLog', 'timetable', 'lists', 'where', 'memos', 'wset'].forEach(k => {
+    const sh = ss.getSheetByName(TAB[k]);
+    if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(1, sh.getLastColumn())).clearContent();
+  });
+  const cat = ss.getSheetByName(TAB.categories);
+  if (cat) { if (cat.getLastRow() > 1) cat.getRange(2, 1, cat.getLastRow() - 1, Math.max(1, cat.getLastColumn())).clearContent(); cat.getRange(2, 1, DEFAULT_CATEGORIES.length, 6).setValues(DEFAULT_CATEGORIES); }
+  const inst = ss.getSheetByName(TAB.install);
+  if (inst && inst.getLastRow() > 1) inst.getRange(2, 2, inst.getLastRow() - 1, 1).clearContent();   // keys, address, access code, licence…
+  ['_move', 'Old settings', 'Old destinations'].forEach(n => { const sh = ss.getSheetByName(n); if (sh) ss.deleteSheet(sh); });
+  const P = PropertiesService.getScriptProperties();
+  P.getKeys().filter(k => !/^fd/.test(k)).forEach(k => P.deleteProperty(k));   // a fresh start: setup, trial, versions
+  try { CacheService.getScriptCache().removeAll(['layout', 'binRegistry']); } catch (e) { /* fine */ }
+}
+function menuWipe() {
+  const ui = SpreadsheetApp.getUi();
+  if (ui.alert('Clear everything?', 'This empties every family tab and setting in this Sheet – people, points, lists, notes, keys, address and access code – so it can be set up from scratch. The page layout is kept. It can’t be undone (Google Sheets’ version history can still bring old data back).', ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return;
+  wipeFamily_(); PropertiesService.getScriptProperties().setProperty('homeSheet', SpreadsheetApp.getActive().getId());
+  setup();
+  ui.alert('Done', 'This Sheet is empty and ready to set up. Open the setup app and choose “First-time setup”.', ui.ButtonSet.OK);
+}
+
 function ensureMigrated_() {
+  freshCopy_();
   const ss = SpreadsheetApp.getActive();
   const ver = PropertiesService.getScriptProperties().getProperty('layoutVer');
   if (ss.getSheetByName(TAB.widgets) && ss.getSheetByName(TAB.install) && ss.getSheetByName(TAB.memos) && ver === LAYOUT_VER) return;
@@ -562,6 +605,7 @@ function doGet(e) {
   if (p.action) {
     return json_(() => {
       ensureMigrated_();
+      if (p.action === 'binLookup') return binLookup_(p.postcode);
       if (p.action === 'binCouncil') { const c = councilFor_(p.postcode); return { ok: true, council: c.name, code: c.code, automatic: !!BIN_COUNCILS[c.code], message: BIN_COUNCILS[c.code] ? c.name + ' – connected automatically' : binUnsupported_(c) }; }
       if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_(), loader: LOADED ? LOADED.version : '' };
       if (p.action === 'claim') return withLock_(claim_);
@@ -569,6 +613,7 @@ function doGet(e) {
       movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
+      if (p.action === 'whose') return { ok: true, people: family_().people.map(x => x.name) };   // the pair page: "the dashboard of Russ, Becky…"
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v, p);
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
@@ -654,6 +699,7 @@ function dispatch_(b) {
     case 'acceptPrivacy': return acceptPrivacy_(b);
     case 'selfUpdate': return selfUpdate_(b.why || 'app');
     case 'autoUpdate': chosen_(!!b.on); return setAutoUpdate_(!!b.on);
+    case 'binTry': return { ok: true, data: traced_('binTry', () => bins_(Object.assign({}, b.settings || {}), '')) };   // "Set up bin days": try before saving
     default: throw new Error('Unknown action: ' + b.action);
   }
 }
@@ -1157,10 +1203,10 @@ function getWidget_(id, force) {
 function widgetData_(w, force) {
   const T = WIDGET_TYPES[w.type];
   if (!T.data) return null;
-  if (T.nocache) { try { return T.data(w.settings, w.id); } catch (err) { return { error: String(err && err.message || err) }; } }
+  if (T.nocache) { try { return traced_(w.id, () => T.data(w.settings, w.id)); } catch (err) { return { error: String(err && err.message || err) }; } }
   // Widgets that read the calendar start again whenever the calendar is changed from the dashboard.
   const key = 'w:' + dataVer_() + ':' + (T.calendar ? calVersion_() + ':' : '') + w.id + ':' + hash_(JSON.stringify(w.settings));
-  return cached_(CacheService.getScriptCache(), key, T.ttl || 600, force, () => T.data(w.settings, w.id));
+  return cached_(CacheService.getScriptCache(), key, T.ttl || 600, force, () => traced_(w.id, () => T.data(w.settings, w.id)));
 }
 
 /* ------------------------------------------------------ saving settings */
@@ -1197,9 +1243,9 @@ function cleanSetting_(f, v) {
 function checkWidget_(type, s) {
   if (type === 'bins') {
     const src = String(s.Source || BIN_SOURCES[0]);
-    if (src === BIN_SOURCES[0] && String(s.Postcode || '').trim()) {
-      const c = councilFor_(s.Postcode);
-      if (!BIN_COUNCILS[c.code]) throw new Error(binUnsupported_(c));
+    if (src === BIN_SOURCES[0] && (String(s.Council || '').trim() || String(s.Postcode || '').trim())) {
+      const code = String(s.Council || '').trim() || councilFor_(s.Postcode).code;
+      if (!BIN_COUNCILS[code]) throw new Error(binUnsupported_({ name: (binRegistry_()[code] || {}).name || 'Your council' }));
     }
     if (src === 'Calendar link' && !/^(https?|webcal):\/\//i.test(String(s.CalendarLink || '').trim())) throw new Error('Paste your council\u2019s calendar link (it starts https:// or webcal://)');
     if (src === 'Repeating schedule') binSchedule_(s.Schedule);   // throws if a line can't be read
@@ -1419,6 +1465,49 @@ function deleteWhere_(key, test) {
 
 /* ============================================================ WIDGET DATA */
 
+/* ---- What we asked other services, for the diagnostics report when something doesn't work.
+ * Every web request goes through uf_(): the last few in this run are kept in memory. When a widget (or "Set up bin
+ * days") fails, its requests and the start of each answer are saved (one small note per widget, replaced each time),
+ * and go into the LOCKED part of a diagnostics report – they can contain addresses or property numbers. Keys in web
+ * addresses are blanked out. A widget that works again has its note deleted. */
+const NET_ = [];
+function uf_(url, opts) {
+  const t0 = Date.now(), o = opts || {}, rec = { at: new Date().toISOString(), method: String(o.method || 'get').toUpperCase(),
+    url: String(url).replace(/([?&](?:key|api_key|apikey|app_key|app_id|token|access_token|client_secret|code)=)[^&]+/gi, '$1***') };
+  if (o.payload) rec.sent = String(typeof o.payload === 'string' ? o.payload : JSON.stringify(o.payload)).slice(0, 600).replace(/("?(?:TokenValue|key|token|password)"?\s*[:=>]\s*"?)[^"<,&]+/gi, '$1***');
+  try {
+    const r = UrlFetchApp.fetch(url, opts);
+    rec.status = r.getResponseCode(); rec.ms = Date.now() - t0;
+    try { rec.body = String(r.getContentText()).slice(0, 1500); } catch (e) { rec.body = '(not text)'; }
+    NET_.push(rec); if (NET_.length > 12) NET_.shift();
+    return r;
+  } catch (err) {
+    rec.error = String(err && err.message || err); rec.ms = Date.now() - t0;
+    NET_.push(rec); if (NET_.length > 12) NET_.shift();
+    throw err;
+  }
+}
+/** Run fn for one widget; if it fails, keep a note of what it asked and what came back. */
+function traced_(id, fn) {
+  const n = NET_.length, P = PropertiesService.getScriptProperties();
+  try {
+    const v = fn();
+    if (P.getProperty('trace:' + id)) P.deleteProperty('trace:' + id);   // working again
+    return v;
+  } catch (err) {
+    try {
+      const calls = NET_.slice(n).slice(-4);
+      let note = { at: new Date().toISOString(), error: String(err && err.message || err), calls: calls };
+      let txt = JSON.stringify(note);
+      while (txt.length > 8500 && note.calls.some(c => c.body && c.body.length > 100)) {   // a Script property holds up to 9 KB
+        note.calls.forEach(c => { if (c.body) c.body = c.body.slice(0, Math.floor(c.body.length / 2)) + '…'; });
+        txt = JSON.stringify(note);
+      }
+      if (txt.length <= 8500) P.setProperty('trace:' + id, txt);
+    } catch (e) { /* the note is a nice-to-have */ }
+    throw err;
+  }
+}
 /** Run fn, cache its JSON for ttl seconds; on failure return {error}. */
 function cached_(cache, key, ttl, force, fn) {
   if (!force) {
@@ -1459,7 +1548,7 @@ function weather_(place) {
     '&hourly=temperature_2m,precipitation_probability,weather_code,is_day' +
     '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset' +
     '&timezone=Europe%2FLondon&forecast_days=5&wind_speed_unit=mph';
-  const d = JSON.parse(UrlFetchApp.fetch(url).getContentText());
+  const d = JSON.parse(uf_(url).getContentText());
   const nowHour = fmt_(new Date(), "yyyy-MM-dd'T'HH:00");
   let i0 = d.hourly.time.indexOf(nowHour);
   if (i0 < 0) i0 = 0;
@@ -1499,7 +1588,7 @@ function traffic_(home, destText) {
       const to = geocode_(r.address);
       const url = 'https://api.tomtom.com/routing/1/calculateRoute/' + from.lat + ',' + from.lng + ':' + to.lat + ',' + to.lng +
         '/json?traffic=true&computeTravelTimeFor=all&sectionType=traffic&routeRepresentation=polyline&departAt=now&key=' + encodeURIComponent(key);
-      const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      const res = uf_(url, { muteHttpExceptions: true });
       if (res.getResponseCode() !== 200) throw new Error('TomTom said ' + res.getResponseCode());
       const route = JSON.parse(res.getContentText()).routes[0];
       const sm = route.summary;
@@ -1582,7 +1671,7 @@ function railErr_(msg, auth) { const e = new Error(msg); e.auth = !!auth; return
 function ldbRest_(key, from, to) {
   const url = 'https://api1.raildata.org.uk/1010-live-departure-board-dep1_2/LDBWS/api/20220120/GetDepBoardWithDetails/' +
     from + '?numRows=10' + (to ? '&filterCrs=' + to + '&filterType=to' : '') + '&timeWindow=180';
-  const res = UrlFetchApp.fetch(url, { headers: { 'x-apikey': key }, muteHttpExceptions: true });
+  const res = uf_(url, { headers: { 'x-apikey': key }, muteHttpExceptions: true });
   const code = res.getResponseCode();
   if (code === 401 || code === 403) throw railErr_('Rail Data Marketplace said ' + code, true);
   if (code !== 200) throw railErr_('National Rail said ' + code);
@@ -1598,7 +1687,7 @@ function ldbSoap_(key, from, to) {
     '<soap:Body><ldb:GetDepBoardWithDetailsRequest><ldb:numRows>10</ldb:numRows><ldb:crs>' + x(from) + '</ldb:crs>' +
     (to ? '<ldb:filterCrs>' + x(to) + '</ldb:filterCrs><ldb:filterType>to</ldb:filterType>' : '') +
     '<ldb:timeOffset>0</ldb:timeOffset><ldb:timeWindow>120</ldb:timeWindow></ldb:GetDepBoardWithDetailsRequest></soap:Body></soap:Envelope>';
-  const res = UrlFetchApp.fetch('https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb12.asmx', {
+  const res = uf_('https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb12.asmx', {
     method: 'post', contentType: 'text/xml; charset=utf-8', payload: body, muteHttpExceptions: true,
     headers: { SOAPAction: 'http://thalesgroup.com/RTTI/2015-05-14/ldb/GetDepBoardWithDetails' } });
   const code = res.getResponseCode(), text = res.getContentText();
@@ -1641,16 +1730,96 @@ function journeyMins_(a, b) {
  *  The big community list of council readers – UKBinCollectionData – needs Python and a web browser to run, which a
  *  Google script can't do, so councils are added here one by one, starting with those that have a proper web service.)
  */
+// The councils this script can read, by ONS code (what postcodes.io gives for a postcode). Each reader returns
+// { 'yyyy-MM-dd': [ { bin, kind, schedule, status } ] }. Most need the home's UPRN (property number).
+// Ported from the community UKBinCollectionData project; the full list of councils and how each can be read is in
+// <apps address>/data/bin-councils.json.
 const BIN_COUNCILS = {
-  E06000025: { name: 'South Gloucestershire Council', read: binsSouthGlos_ },
+  E06000025: { name: 'South Gloucestershire Council', read: binsSouthGlos_, needs: ['postcode', 'house'] },
+  E06000038: { name: 'Reading Borough Council', read: s => binsFrom_(binJson_('https://api.reading.gov.uk/api/collections/' + binUprn_(s)).collections, c => [c.service.replace(/ Collection Service/i, ' bin'), binDate_(c.date)]) },
+  E06000062: { name: 'West Northamptonshire Council', read: s => binsFrom_(binJson_('https://api.westnorthants.digital/openapi/v1/unified-waste-collections/' + binUprn_(s)).collectionItems, c => [c.type, binDate_(c.date)]) },
+  E07000240: { name: 'St Albans City and District Council', read: s => binsFrom_(binJson_('https://gis.stalbans.gov.uk/NoticeBoard9/VeoliaProxy.NoticeBoard.asmx/GetServicesByUprnAndNoticeBoard',
+    { method: 'post', contentType: 'application/json; charset=UTF-8', payload: JSON.stringify({ uprn: binUprn_(s), noticeBoard: 'default' }) }).d, c => [c.ServiceHeaders[0].TaskType, binDate_(c.ServiceHeaders[0].Next)]) },
+  E07000220: { name: 'Rugby Borough Council', read: s => { const w = binJson_('https://apps.cloud9technologies.com/rugby/citizenmobile/webapi/wastecollections/' + binUprn_(s)).wasteCollectionDates || {};
+    return binsFrom_(Object.keys(w).filter(k => /^container/.test(k) && w[k]).map(k => w[k]), c => [c.containerDescription, binDate_(c.collectionDate)]); } },
+  E06000014: { name: 'City of York Council', read: s => binsFrom_(binJson_('https://waste-api.york.gov.uk/api/Collections/GetBinCollectionDataForUprn/' + binUprn_(s)).services, c => [c.service, binDate_(c.nextCollection)]) },
+  S12000042: { name: 'Dundee City Council', read: s => binsFrom_(binJson_('https://www.dundee-mybins.co.uk/get_calendar.php?rn=' + binUprn_(s)), c => [c.title, binDate_(c.start)]) },
+  S12000021: { name: 'North Ayrshire Council', read: s => {
+    const a = ((binJson_('https://www.maps.north-ayrshire.gov.uk/arcgis/rest/services/AGOL/YourLocationLive/MapServer/8/query?f=json&outFields=*&returnDistinctValues=true&returnGeometry=false&spatialRel=esriSpatialRelIntersects&where=' +
+      encodeURIComponent("UPRN = '" + binUprn_(s) + "'")).features || [])[0] || {}).attributes || {};
+    return binsFrom_(['BLUE', 'GREY', 'PURPLE', 'BROWN'].filter(k => a[k + '_DATE_TEXT']), k => [k.charAt(0) + k.slice(1).toLowerCase() + ' bin', binDate_(a[k + '_DATE_TEXT'])]); } },
+  S12000014: { name: 'Falkirk Council', read: s => { const out = []; (binJson_('https://recycling.falkirk.gov.uk/api/collections/' + binUprn_(s)).collections || []).forEach(c => (c.dates || []).forEach(d => out.push([c.type, d])));
+    return binsFrom_(out, x => [x[0], binDate_(x[1])]); } },
+  E09000009: { name: 'London Borough of Ealing', read: s => binsFrom_(binJson_('https://www.ealing.gov.uk/site/custom_scripts/WasteCollectionWS/home/FindCollection',
+    { method: 'post', contentType: 'application/json', payload: JSON.stringify({ uprn: binUprn_(s) }) }).param2, c => [c.Service, binDate_(c.collectionDate[0])]) },
+  E09000015: { name: 'London Borough of Harrow', read: s => binsFrom_((((binJson_('https://www.harrow.gov.uk/ajax/bins?u=' + binUprn_(s) + '&r=12345', { headers: { 'User-Agent': 'Mozilla/5.0' } }).results || {}).collections || {}).all), c => [c.binType, binDate_(c.eventTime)]) },
+  E07000008: { name: 'Cambridge City Council', read: s => { const out = [], N = { ORGANIC: 'Green bin', RECYCLE: 'Blue bin', DOMESTIC: 'Black bin' };
+    (binJson_('https://servicelayer3c.azure-api.net/wastecalendar/collection/search/' + binUprn_(s) + '/?authority=CCC&numberOfCollections=40').collections || []).forEach(c => (c.roundTypes || []).forEach(t => out.push([N[t] || t, c.date])));
+    return binsFrom_(out, x => [x[0], binDate_(x[1])]); } },
+  E06000059: { name: 'Dorset Council', read: s => {   // one small web service per kind of bin
+    const u = binUprn_(s), out = [];
+    ['refuseday', 'recyclingday', 'foodwasteday', 'gardenwasteday'].forEach(t => {
+      const r = uf_('https://geoapi.dorsetcouncil.gov.uk/v1/services/' + t + '/' + u, { muteHttpExceptions: true });
+      if (r.getResponseCode() !== 200) { if (t === 'refuseday') throw new Error('Dorset Council’s bin service said ' + r.getResponseCode()); return; }
+      const v = ((JSON.parse(r.getContentText()) || {}).values || [])[0];
+      if (v && v.dateNextVisit) out.push([String(v.type || t.replace(/day$/, '')) + ' bin', v.dateNextVisit]);
+    });
+    return binsFrom_(out, x => [x[0], binDate_(x[1])]); } },
 };
+/* ---- helpers for the council readers */
+function binUprn_(s) { const u = String(s.UPRN || '').replace(/\D/g, ''); if (!u) throw new Error('This council needs your home’s property number (UPRN) – use “Set up bin days” in the Family Admin app'); return u; }
+function binJson_(url, opts) {
+  const r = uf_(url, Object.assign({ muteHttpExceptions: true, followRedirects: true }, opts || {}));
+  if (r.getResponseCode() !== 200) throw new Error('The council’s bin service said ' + r.getResponseCode());
+  try { return JSON.parse(r.getContentText()); } catch (e) { throw new Error('The council’s bin service sent something unexpected'); }
+}
+/** Any date the councils use → yyyy-MM-dd: 2026-11-11, 2026-11-11T00:00:00, 11/11/2026, 11/11/2026 00:00:00, Wednesday 11 November 2026, /Date(…)/. */
+function binDate_(v) {
+  const t = String(v == null ? '' : v).trim();
+  let m = /^(\d{4})-(\d\d)-(\d\d)/.exec(t); if (m) return m[1] + '-' + m[2] + '-' + m[3];
+  m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t); if (m) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  m = /\/Date\((\d+)/.exec(t); if (m) return fmt_(new Date(Number(m[1])), 'yyyy-MM-dd');
+  const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
+  m = /(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})/.exec(t); if (m && MON[m[2].toLowerCase()]) return m[3] + '-' + ('0' + MON[m[2].toLowerCase()]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  const d = new Date(t); return isNaN(d) ? '' : fmt_(d, 'yyyy-MM-dd');
+}
+/** list + (item → [bin name, yyyy-MM-dd]) → the days map every reader returns. */
+function binsFrom_(list, pick) {
+  const days = {};
+  (list || []).forEach(x => {
+    let p; try { p = pick(x); } catch (e) { return; }
+    if (!p || !p[1] || !p[0]) return;
+    const label = binLabel_(p[0]);
+    if (!(days[p[1]] || []).some(y => y.bin === label)) (days[p[1]] = days[p[1]] || []).push({ bin: label, kind: binKind_(p[0]), schedule: '', status: '' });
+  });
+  if (!Object.keys(days).length) throw new Error('The council’s bin service found no collections for that property – check the property number (UPRN)');
+  return days;
+}
+/** All the councils, and how each can be read (from <apps address>/data/bin-councils.json, kept for 6 hours). */
+function binRegistry_() {
+  const c = CacheService.getScriptCache(), hit = c.get('binRegistry');
+  if (hit) return JSON.parse(hit);
+  let reg = {};
+  try { reg = JSON.parse(uf_(appsBase_() + 'data/bin-councils.json', { muteHttpExceptions: true }).getContentText()).councils || {}; } catch (e) { reg = {}; }
+  Object.keys(BIN_COUNCILS).forEach(k => { reg[k] = Object.assign({ name: BIN_COUNCILS[k].name, how: 'feed' }, reg[k] || {}, { ready: true, needs: BIN_COUNCILS[k].needs || ['uprn'] }); });
+  try { c.put('binRegistry', JSON.stringify(reg), 21600); } catch (e) { /* too big – fine, fetched next time */ }
+  return reg;
+}
+/** "Set up bin days": the council for a postcode, and every council to choose from. */
+function binLookup_(postcode) {
+  const reg = binRegistry_();
+  let c = null; try { c = councilFor_(postcode); } catch (e) { c = { error: e.message }; }
+  const list = Object.keys(reg).map(k => ({ code: k, name: reg[k].name, how: reg[k].how, ready: !!BIN_COUNCILS[k], needs: reg[k].needs || [], note: reg[k].note || '' })).sort((a, b) => a.name.localeCompare(b.name));
+  const mine = c && c.code ? (list.find(x => x.code === c.code) || { code: c.code, name: c.name, how: 'none', ready: false, needs: [] }) : null;
+  return { ok: true, council: mine, postcodeError: c && c.error || '', councils: list };
+}
 /** Which council a postcode is in (postcodes.io, free, no key). Cached for a week. */
 function councilFor_(postcode) {
   const pc = String(postcode || '').replace(/\s+/g, '').toUpperCase();
   if (!/^[A-Z]{1,2}\d[A-Z\d]?\d[A-Z]{2}$/.test(pc)) throw new Error('That doesn’t look like a UK postcode: ' + postcode);
   const cache = CacheService.getScriptCache(), ck = 'council:' + pc, hit = cache.get(ck);
   if (hit) return JSON.parse(hit);
-  const res = UrlFetchApp.fetch('https://api.postcodes.io/postcodes/' + encodeURIComponent(pc), { muteHttpExceptions: true });
+  const res = uf_('https://api.postcodes.io/postcodes/' + encodeURIComponent(pc), { muteHttpExceptions: true });
   if (res.getResponseCode() === 404) throw new Error('Postcode ' + postcode + ' wasn’t found – check it');
   if (res.getResponseCode() !== 200) throw new Error('The postcode lookup said ' + res.getResponseCode() + ' – try again later');
   const r = JSON.parse(res.getContentText()).result || {};
@@ -1659,7 +1828,7 @@ function councilFor_(postcode) {
   return out;
 }
 function binUnsupported_(c) {
-  return c.name + ' can’t be read automatically yet. In the Bins settings choose “Calendar link” (if the council’s bin-day page has an “add to calendar” link) or “Repeating schedule” (works everywhere).';
+  return c.name + ' can’t be read automatically yet. In Family Admin open the Bins widget → Set up bin days, and enter your bins by hand (or use the council’s calendar link if it has one).';
 }
 /** Which of the four colours a bin gets on the screen, from its name. */
 function binKind_(name) {
@@ -1667,7 +1836,8 @@ function binKind_(name) {
   return /food|caddy|kitchen/.test(n) ? 'food' : /garden|green waste|brown/.test(n) ? 'garden' : /recycl|blue|glass|paper|card|plastic|box/.test(n) ? 'recycling' : 'refuse';
 }
 function binLabel_(name) {
-  const n = String(name || '').trim().replace(/^./, c => c.toUpperCase()), k = binKind_(n);
+  let n = String(name || '').trim(); if (/^[^a-z]+$/.test(n)) n = n.toLowerCase();   // "REFUSE" → "Refuse"
+  n = n.replace(/^./, c => c.toUpperCase()); const k = binKind_(n);
   if (n.length <= 22) return n;
   return { food: 'Food caddy', garden: 'Garden bin', recycling: 'Recycling', refuse: 'Black bin' }[k];
 }
@@ -1677,9 +1847,10 @@ function bins_(s, id) {
   if (src === 'Calendar link') days = binsIcs_(s.CalendarLink);
   else if (src === 'Repeating schedule') days = binsRepeat_(binSchedule_(s.Schedule));
   else {
-    if (!String(s.Postcode || '').trim()) throw new Error('Add your postcode in the Bins settings');
-    const c = councilFor_(s.Postcode), C = BIN_COUNCILS[c.code];
-    if (!C) throw new Error(binUnsupported_(c));
+    let code = String(s.Council || '').trim(), c = null;
+    if (!code) { if (!String(s.Postcode || '').trim()) throw new Error('Set up your bin days in the Family Admin app (the Bins widget)'); c = councilFor_(s.Postcode); code = c.code; }
+    const C = BIN_COUNCILS[code];
+    if (!C) throw new Error(binUnsupported_(c || { name: (binRegistry_()[code] || {}).name || 'Your council' }));
     days = C.read(s, id);
   }
   const today = fmt_(new Date(), 'yyyy-MM-dd'), todayMs = Date.parse(today + 'T00:00:00Z');
@@ -1718,7 +1889,7 @@ function binsRepeat_(list) {
 function binsIcs_(link) {
   const url = String(link || '').trim().replace(/^webcal:/i, 'https:');
   if (!/^https?:\/\//i.test(url)) throw new Error('Paste your council’s calendar link in the Bins settings');
-  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+  const res = uf_(url, { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error('The council calendar link said ' + res.getResponseCode());
   const text = res.getContentText().replace(/\r?\n[ \t]/g, '');
   if (!/BEGIN:VCALENDAR/.test(text)) throw new Error('That link isn’t a calendar (.ics) – look for "add to calendar" or "subscribe" on the council’s bin-day page');
@@ -1757,7 +1928,7 @@ function binsSouthGlos_(s, id) {
     const pc = String(s.Postcode || '').trim().toUpperCase();
     const match = String(s.House || '').trim().toUpperCase();
     if (!match) throw new Error('Add your house name or number in the Bins settings');
-    const res = UrlFetchApp.fetch('https://webapps.southglos.gov.uk/Webservices/SGC.RefuseCollectionService/RefuseCollectionService.svc/getAddresses/' +
+    const res = uf_('https://webapps.southglos.gov.uk/Webservices/SGC.RefuseCollectionService/RefuseCollectionService.svc/getAddresses/' +
       encodeURIComponent(pc), { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) throw new Error('Council address lookup said ' + res.getResponseCode());
     const list = JSON.parse(res.getContentText()) || [];
@@ -1769,7 +1940,7 @@ function binsSouthGlos_(s, id) {
     uprn = String(hit[0].Uprn);
     if (id) setWset_(id, 'UPRN', uprn);
   }
-  const res = UrlFetchApp.fetch('https://api.southglos.gov.uk/wastecomp/GetCollectionDetails?uprn=' + encodeURIComponent(uprn), { muteHttpExceptions: true });
+  const res = uf_('https://api.southglos.gov.uk/wastecomp/GetCollectionDetails?uprn=' + encodeURIComponent(uprn), { muteHttpExceptions: true });
   if (res.getResponseCode() !== 200) throw new Error('Council collections said ' + res.getResponseCode());
   const services = (JSON.parse(res.getContentText()).value || []);
   const today = fmt_(new Date(), 'yyyy-MM-dd');
@@ -1827,7 +1998,7 @@ function flights_(s) {
   const miles = Math.max(3, Math.min(60, Number(s.RadiusMiles) || 20));
   const nm = Math.ceil(miles * 0.869);
   const base = s.Source === 'airplanes.live' ? 'https://api.airplanes.live/v2/point/' : 'https://api.adsb.lol/v2/point/';
-  const res = UrlFetchApp.fetch(base + c.lat.toFixed(4) + '/' + c.lng.toFixed(4) + '/' + nm,
+  const res = uf_(base + c.lat.toFixed(4) + '/' + c.lng.toFixed(4) + '/' + nm,
     { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
   if (res.getResponseCode() !== 200) throw new Error(s.Source + ' said ' + res.getResponseCode() + ' \u2013 try the other data source in the widget settings');
   const ac = JSON.parse(res.getContentText()).ac || [];
@@ -1855,7 +2026,7 @@ function flights_(s) {
       if (r === null) {
         r = '{}';
         try {
-          const q = UrlFetchApp.fetch('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(p.cs), { muteHttpExceptions: true });
+          const q = uf_('https://api.adsbdb.com/v0/callsign/' + encodeURIComponent(p.cs), { muteHttpExceptions: true });
           if (q.getResponseCode() === 200) {
             const fr = (JSON.parse(q.getContentText()).response || {}).flightroute || {};
             const ap = x => x ? { code: x.iata_code || x.icao_code || '', city: x.municipality || x.name || '' } : null;
@@ -1882,7 +2053,7 @@ function titleCase_(s) { return s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpp
 function news_(s) {
   const url = s.Feed === 'Another feed (link below)' ? String(s.FeedUrl || '').trim() : NEWS_FEEDS[s.Feed] || NEWS_FEEDS['BBC \u2013 Top stories'];
   if (!url) throw new Error('Paste the feed link into the News widget settings');
-  const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true });
+  const res = uf_(url, { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error('The news feed said ' + res.getResponseCode());
   const feed = parseFeed_(res.getContentText());
   if (!feed.items.length) throw new Error('No headlines found in that feed');
@@ -1947,7 +2118,7 @@ function drivePhotos_(link) {
  */
 function albumPhotos_(link) {
   if (!/^https:\/\/(photos\.app\.goo\.gl|photos\.google\.com)\//.test(String(link || ''))) throw new Error('Paste a Google Photos shared album link (photos.app.goo.gl/\u2026) into the widget settings');
-  const res = UrlFetchApp.fetch(link, { muteHttpExceptions: true, followRedirects: true });
+  const res = uf_(link, { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error('Google Photos said ' + res.getResponseCode());
   const html = res.getContentText();
   const re = /\["(https:\/\/lh3\.googleusercontent\.com\/pw\/[^"\s]+)",(\d+),(\d+)/g;
@@ -2260,7 +2431,7 @@ function tidyBirthday_(text, cat) {
 /** English (England & Wales) bank holidays from GOV.UK, as { 'yyyy-MM-dd': 'Christmas Day' }. Checked daily. */
 function bankHolidays_() {
   const v = cached_(CacheService.getScriptCache(), 'bankhols', 6 * 3600, false, () => {
-    const res = UrlFetchApp.fetch('https://www.gov.uk/bank-holidays.json', { muteHttpExceptions: true });
+    const res = uf_('https://www.gov.uk/bank-holidays.json', { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) throw new Error('GOV.UK said ' + res.getResponseCode());
     const out = {};
     (JSON.parse(res.getContentText())['england-and-wales'].events || []).forEach(e => { out[e.date] = e.title; });
@@ -2518,7 +2689,7 @@ function busTapi_(s, id) {
   if (!code) {
     const h = geocode_(inst_('HomeAddress'));
     countTapi_(props);
-    const r = UrlFetchApp.fetch('https://transportapi.com/v3/uk/places.json?type=bus_stop&lat=' + h.lat + '&lon=' + h.lng + '&' + auth, { muteHttpExceptions: true });
+    const r = uf_('https://transportapi.com/v3/uk/places.json?type=bus_stop&lat=' + h.lat + '&lon=' + h.lng + '&' + auth, { muteHttpExceptions: true });
     if (r.getResponseCode() !== 200) throw new Error('TransportAPI said ' + r.getResponseCode() + ' when looking for the nearest stop' + (r.getResponseCode() === 403 ? ' – check the app ID and key' : ''));
     const m = (JSON.parse(r.getContentText()).member || []).filter(x => x.atcocode).sort((a, b) => (a.distance || 0) - (b.distance || 0))[0];
     if (!m) throw new Error('No bus stops found near home – type a stop code in the widget settings');
@@ -2532,7 +2703,7 @@ function busTapi_(s, id) {
   const due = !last || (plan.inWindow && now - last.fetched >= plan.gapMins * 60000);
   if (!due || tapiUsed_(props) >= TAPI_PER_DAY) return Object.assign({}, last || { stop: name, code: code, departures: [] }, { note: plan.note });
   countTapi_(props);
-  const res = UrlFetchApp.fetch('https://transportapi.com/v3/uk/bus/stop/' + encodeURIComponent(code) + '/live.json?' + auth + '&group=no&limit=10&nextbuses=no', { muteHttpExceptions: true });
+  const res = uf_('https://transportapi.com/v3/uk/bus/stop/' + encodeURIComponent(code) + '/live.json?' + auth + '&group=no&limit=10&nextbuses=no', { muteHttpExceptions: true });
   if (res.getResponseCode() !== 200) {
     if (last) return Object.assign({}, last, { note: 'TransportAPI said ' + res.getResponseCode() + ' – showing the last times' });
     throw new Error('TransportAPI said ' + res.getResponseCode() + (res.getResponseCode() === 403 ? ' – check the app ID and key' : ''));
@@ -2571,7 +2742,7 @@ function busTimesOrg_(s, id) {
     code = st.code; name = st.name;
     if (id) { setWset_(id, 'StopCode', code); setWset_(id, 'StopName', name); }
   }
-  const res = UrlFetchApp.fetch('https://bustimes.org/stops/' + encodeURIComponent(code), { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
+  const res = uf_('https://bustimes.org/stops/' + encodeURIComponent(code), { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
   if (res.getResponseCode() !== 200) throw new Error('bustimes.org said ' + res.getResponseCode() + ' for stop ' + code);
   const html = res.getContentText();
   const h1 = (/<h1[^>]*>([\s\S]*?)<\/h1>/i.exec(html) || [])[1];
@@ -2591,7 +2762,7 @@ function nearestStop_() {
   for (let d = 0.012; d <= 0.1; d *= 3) {
     const url = 'https://bustimes.org/stops.json?ymax=' + (h.lat + d).toFixed(5) + '&xmax=' + (h.lng + d * 1.6).toFixed(5) +
       '&ymin=' + (h.lat - d).toFixed(5) + '&xmin=' + (h.lng - d * 1.6).toFixed(5);
-    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
+    const res = uf_(url, { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
     if (res.getResponseCode() !== 200) throw new Error('Couldn’t search for bus stops (bustimes.org said ' + res.getResponseCode() + '). Type a stop code in the widget settings.');
     const f = (JSON.parse(res.getContentText()).features || []).map(x => ({
       code: String((x.properties || {}).url || '').split('/').filter(Boolean).pop(),
@@ -2675,7 +2846,7 @@ function memo_(b) {
 /* ------------------------------------------------------ quotes, NASA, Duolingo */
 
 function zenQuotes_() {
-  const res = UrlFetchApp.fetch('https://zenquotes.io/api/quotes', { muteHttpExceptions: true });
+  const res = uf_('https://zenquotes.io/api/quotes', { muteHttpExceptions: true });
   if (res.getResponseCode() !== 200) throw new Error('ZenQuotes said ' + res.getResponseCode());
   return { quotes: (JSON.parse(res.getContentText()) || []).filter(x => x.q && x.q.length < 160).map(x => ({ q: x.q, a: x.a })), credit: 'Quotes from zenquotes.io' };
 }
@@ -2694,7 +2865,7 @@ function apod_() {
   let d = null, why = '';
   for (let i = 0; i < tries.length && !d; i++) {
     try {
-      const res = UrlFetchApp.fetch(tries[i], { muteHttpExceptions: true });
+      const res = uf_(tries[i], { muteHttpExceptions: true });
       const code = res.getResponseCode();
       if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it on the Installation tab.'; break; }
       if (code === 403) { why = 'NASA didn’t accept the key – check NasaKey on the Installation tab.'; break; }
@@ -2721,7 +2892,7 @@ function apod_() {
 /** Today's APOD from NASA Science's site feed (no key needed). */
 function apodScience_() {
   try {
-    const res = UrlFetchApp.fetch('https://science.nasa.gov/wp-json/wp/v2/image-article?categories=22766&per_page=1&_embed=1',
+    const res = uf_('https://science.nasa.gov/wp-json/wp/v2/image-article?categories=22766&per_page=1&_embed=1',
       { muteHttpExceptions: true, headers: { Accept: 'application/json' } });
     if (res.getResponseCode() !== 200) return null;
     const p = (JSON.parse(res.getContentText()) || [])[0];
@@ -2742,7 +2913,7 @@ function apodScience_() {
 
 function apodPage_() {
   try {
-    const res = UrlFetchApp.fetch('https://apod.nasa.gov/apod/astropix.html', { muteHttpExceptions: true });
+    const res = uf_('https://apod.nasa.gov/apod/astropix.html', { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) return null;
     const h = res.getContentText();
     const img = /<IMG\s+SRC="([^"]+)"/i.exec(h), big = /<a href="(image\/[^"]+)"/i.exec(h);
@@ -2763,7 +2934,7 @@ function duolingo_(names) {
     let out;
     try {
       // Same public address and fields as the MagicMirror module MMM-Duolingo-Streak.
-      const r = UrlFetchApp.fetch('https://www.duolingo.com/2017-06-30/users?username=' + encodeURIComponent(u),
+      const r = uf_('https://www.duolingo.com/2017-06-30/users?username=' + encodeURIComponent(u),
         { muteHttpExceptions: true, headers: { 'User-Agent': 'Mozilla/5.0 (FamilyDashboard)' } });
       const d = r.getResponseCode() === 200 ? (JSON.parse(r.getContentText()).users || [])[0] : null;
       const cur = d && d.streakData && d.streakData.currentStreak;
@@ -2814,7 +2985,7 @@ function spotifyCallback_(p) {
 }
 function spotifyTokenCall_(payload) {
   const id = String(inst_('SpotifyClientId') || '').trim(), secret = String(inst_('SpotifyClientSecret') || '').trim();
-  const res = UrlFetchApp.fetch('https://accounts.spotify.com/api/token', { method: 'post', payload: payload, muteHttpExceptions: true,
+  const res = uf_('https://accounts.spotify.com/api/token', { method: 'post', payload: payload, muteHttpExceptions: true,
     headers: { Authorization: 'Basic ' + Utilities.base64Encode(id + ':' + secret) } });
   return JSON.parse(res.getContentText() || '{}');
 }
@@ -2832,7 +3003,7 @@ function spotifyToken_() {
   return tok.access_token;
 }
 function spotifyApi_(method, path, retry) {
-  const res = UrlFetchApp.fetch('https://api.spotify.com/v1/me/player' + path, { method: method, muteHttpExceptions: true,
+  const res = uf_('https://api.spotify.com/v1/me/player' + path, { method: method, muteHttpExceptions: true,
     headers: { Authorization: 'Bearer ' + spotifyToken_() }, contentType: 'application/json', payload: method === 'get' ? undefined : '' });
   if (res.getResponseCode() === 401 && !retry) { CacheService.getScriptCache().remove('spAccess'); return spotifyApi_(method, path, true); }
   return res;
@@ -2866,6 +3037,7 @@ function spotifyControl_(op) {
 // A "🏠 Family Dashboard" menu in the Google Sheet: connect devices and check for updates without touching any code.
 
 function onOpen() {
+  try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
   const m = SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
     .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
@@ -2873,6 +3045,8 @@ function onOpen() {
   // With the loader, updates need no switch and use no saved versions, so these two aren't needed.
   if (!LOADED) m.addItem('Turn automatic updates on / off', 'menuAutoUpdate');
   m.addSeparator().addItem('Repair the tabs (runs setup)', 'setup');
+  // (Through the loader, a menu item needs a matching name in the loader file – loaders from before 1.1 don't have this one.)
+  if (!LOADED || typeof globalThis.menuWipe === 'function') m.addItem('Clear everything and start from scratch…', 'menuWipe');
   if (!LOADED) m.addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
   if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
   m.addToUi();
@@ -3002,7 +3176,7 @@ function autoUpdateTick() {
 
 function scriptApi_(method, path, body) { return scriptApiAt_(ScriptApp.getScriptId(), method, path, body); }
 function scriptApiAt_(projectId, method, path, body) {
-  const res = UrlFetchApp.fetch('https://script.googleapis.com/v1/projects' + (projectId ? '/' + projectId : '') + path, {
+  const res = uf_('https://script.googleapis.com/v1/projects' + (projectId ? '/' + projectId : '') + path, {
     method: method, contentType: 'application/json', muteHttpExceptions: true,
     headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }, payload: body ? JSON.stringify(body) : undefined });
   const code = res.getResponseCode(), text = res.getContentText();
@@ -3050,7 +3224,7 @@ function selfUpdate_(why) {
   const busy = Number(P.getProperty('updating') || 0);
   if (Date.now() - busy < 3 * 60000) return { ok: true, busy: true, message: 'An update is already running' };
   const base = appsBase_(), bust = '?t=' + Date.now();
-  const fetchText = u => { const r = UrlFetchApp.fetch(u, { muteHttpExceptions: true }); if (r.getResponseCode() !== 200) throw new Error('Couldn’t download ' + u.replace(/\?.*/, '') + ' (' + r.getResponseCode() + ')'); return r.getContentText(); };
+  const fetchText = u => { const r = uf_(u, { muteHttpExceptions: true }); if (r.getResponseCode() !== 200) throw new Error('Couldn’t download ' + u.replace(/\?.*/, '') + ' (' + r.getResponseCode() + ')'); return r.getContentText(); };
   const latest = JSON.parse(fetchText(base + 'version.json' + bust));
   if (!newer_(latest.script, SCRIPT_VERSION)) return { ok: true, upToDate: true, version: SCRIPT_VERSION };
   const dep = deploymentId_();
@@ -3112,7 +3286,7 @@ function seen_(key, v) {
 function licenceServerVersion_() {
   const u = licenceServer_(); if (!u) return '';
   return cached_(CacheService.getScriptCache(), 'lsver', 3600, false, () => {
-    try { const r = UrlFetchApp.fetch(u + '?action=ping', { muteHttpExceptions: true }); return JSON.parse(r.getContentText()).version || '?'; } catch (e) { return 'unreachable'; }
+    try { const r = uf_(u + '?action=ping', { muteHttpExceptions: true }); return JSON.parse(r.getContentText()).version || '?'; } catch (e) { return 'unreachable'; }
   });
 }
 // Shown masked in the report; the real values go in its encrypted part, which only support can open.
@@ -3128,7 +3302,7 @@ function diagnostics_(appVer) {
   const t0 = Date.now(), P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
   const json = k => { try { return JSON.parse(P.getProperty(k) || 'null'); } catch (e) { return P.getProperty(k); } };
   const L = layout_(), lic = licencePublic_(), secrets = { install: {}, widgetSettings: {} };
-  let latest = {}; try { latest = JSON.parse(UrlFetchApp.fetch(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true }).getContentText()); } catch (e) { latest = { error: e.message }; }
+  let latest = {}; try { latest = JSON.parse(uf_(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true }).getContentText()); } catch (e) { latest = { error: e.message }; }
   const out = {
     made: new Date().toISOString(), timeZone: Session.getScriptTimeZone(),
     versions: { googleScript: SCRIPT_VERSION, layout: LAYOUT_VER, adminApp: appVer || '?', screenLastSeen: json('screenSeen'),
@@ -3146,6 +3320,10 @@ function diagnostics_(appVer) {
     const v = String(inst_(f.k) == null ? '' : inst_(f.k));
     if (SECRET_KEYS.indexOf(f.k) >= 0) { out.install[f.k] = mask_(v); secrets.install[f.k] = v; } else out.install[f.k] = v;
   });
+  // What failing widgets (and the last "Set up bin days" that didn't work) asked, and what came back.
+  const traces = {}; Object.keys(P.getProperties()).filter(k => /^trace:/.test(k)).forEach(k => { try { traces[k.slice(6)] = JSON.parse(P.getProperty(k)); } catch (e) { /* skip */ } });
+  out.failureNotes = Object.keys(traces).map(k => k + ' (' + traces[k].at + ', ' + traces[k].calls.length + ' requests – details in the locked part)');
+  secrets.failureNotes = traces;
   Object.assign(secrets, { webApp: myUrl_(), licenceServer: licenceServer_(), installId: installId_(), sheet: ss.getUrl(),
     pageTitles: L.pages.map(p => p.id + ': ' + p.title), family: family_(), recentErrors: json('errLog') || [], moving: json('moving'), scriptSettings: Object.keys(P.getProperties()).sort() });
   // Each widget: does its data load, how long it takes, what error it gives. Personal settings are masked.
@@ -3169,7 +3347,7 @@ function diagnostics_(appVer) {
   out.tookSeconds = Math.round((Date.now() - t0) / 100) / 10;
   // The support key (public half), so the app can lock the secrets before the report leaves the phone.
   let key = null;
-  try { const u = licenceServer_(); if (u) key = JSON.parse(UrlFetchApp.fetch(u + '?action=supportKey', { muteHttpExceptions: true }).getContentText()).publicKey || null; } catch (e) { key = null; }
+  try { const u = licenceServer_(); if (u) key = JSON.parse(uf_(u + '?action=supportKey', { muteHttpExceptions: true }).getContentText()).publicKey || null; } catch (e) { key = null; }
   return { ok: true, report: out, secrets: secrets, supportKey: key };
 }
 
@@ -3257,7 +3435,7 @@ function finishMove() {
   // Tell the old Sheet: it hands over the licence and points everyone here.
   let note = '';
   try {
-    const r = UrlFetchApp.fetch(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
+    const r = uf_(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
       payload: JSON.stringify({ action: 'moveDone', code: inst_('AccessCode'), to: carry.to, install: carry.install }) });
     const d = JSON.parse(r.getContentText());
     if (!d.ok) note = d.error || 'the old Sheet didn’t answer';
@@ -3283,7 +3461,7 @@ function moveDone_(b) {
   const key = String(inst_('LicenceKey') || ''), server = licenceServer_();
   if (key && server) {
     try {
-      const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+      const r = uf_(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
         payload: JSON.stringify({ action: 'move', key: key, install: installId_(), to: b.install, version: SCRIPT_VERSION }) });
       const d = JSON.parse(r.getContentText());
       if (!d.ok) licenceNote = 'The licence couldn’t be moved (' + (d.message || d.error || 'refused') + ') – ask the seller to release it, then enter it again.';
@@ -3350,7 +3528,7 @@ function importPack_(id) {
   const to = myUrl_();
   let note = '';
   try {
-    const r = UrlFetchApp.fetch(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
+    const r = uf_(carry.from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true,
       payload: JSON.stringify({ action: 'moveDone', code: inst_('AccessCode'), to: to, install: carry.install, token: carry.token }) });
     const d = JSON.parse(r.getContentText());
     if (!d.ok) note = d.error || 'the old dashboard didn’t answer'; else if (d.licenceNote) note = d.licenceNote;
@@ -3388,7 +3566,7 @@ function licenceServer_() {
   if (Date.now() - at > 24 * 3600e3) {
     P.setProperty('licenceServerAt', String(Date.now()));
     try {
-      const r = UrlFetchApp.fetch(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true });
+      const r = uf_(appsBase_() + 'version.json?t=' + Date.now(), { muteHttpExceptions: true });
       if (r.getResponseCode() === 200) P.setProperty('licenceServer', String(JSON.parse(r.getContentText()).licence || '').trim());
     } catch (err) { /* keep the last one */ }
   }
@@ -3402,7 +3580,7 @@ function installId_() {
   return id;
 }
 function askLicenceServer_(server, key) {
-  const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+  const r = uf_(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     payload: JSON.stringify({ action: 'check', key: key, install: installId_(), version: SCRIPT_VERSION }) });
   if (r.getResponseCode() !== 200) throw new Error('The licence server said ' + r.getResponseCode());
   const d = JSON.parse(r.getContentText());
@@ -3470,7 +3648,7 @@ function releaseLicence_() {
   const key = String(inst_('LicenceKey') || ''), server = licenceServer_();
   if (!key) throw new Error('This dashboard has no licence key');
   if (server) {
-    const r = UrlFetchApp.fetch(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    const r = uf_(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
       payload: JSON.stringify({ action: 'release', key: key, install: installId_() }) });
     const d = JSON.parse(r.getContentText());
     if (!d.ok) throw new Error(d.message || d.error || 'The licence server said no');

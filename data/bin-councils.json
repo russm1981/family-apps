@@ -1,0 +1,2477 @@
+{
+ "councils": {
+  "E06000001": {
+   "how": "feed",
+   "name": "Hartlepool",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000002": {
+   "how": "feed",
+   "name": "Middlesbrough",
+   "needs": [
+    "house_number"
+   ]
+  },
+  "E06000003": {
+   "how": "feed",
+   "name": "Redcar and Cleveland",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000004": {
+   "how": "browser",
+   "name": "Stockton-on-Tees",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000005": {
+   "how": "page",
+   "name": "Darlington Borough Council",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000006": {
+   "how": "browser",
+   "name": "Halton",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000007": {
+   "how": "feed",
+   "name": "Warrington",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000008": {
+   "how": "feed",
+   "name": "Blackburn with Darwen",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000009": {
+   "how": "feed",
+   "name": "Blackpool",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000010": {
+   "how": "feed",
+   "name": "Kingston upon Hull",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000011": {
+   "how": "browser",
+   "name": "East Riding of Yorkshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000012": {
+   "how": "page",
+   "name": "North East Lincolnshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000013": {
+   "how": "feed",
+   "name": "North Lincolnshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000014": {
+   "how": "feed",
+   "name": "York",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E06000015": {
+   "how": "page",
+   "name": "Derby",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000016": {
+   "how": "feed",
+   "name": "Leicester",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000018": {
+   "how": "feed",
+   "name": "Nottingham",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000019": {
+   "how": "page",
+   "name": "Herefordshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000020": {
+   "how": "feed",
+   "name": "Telford and Wrekin",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000021": {
+   "how": "page",
+   "name": "Stoke-on-Trent",
+   "needs": []
+  },
+  "E06000022": {
+   "how": "feed",
+   "name": "Bath and North East Somerset",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000023": {
+   "how": "page",
+   "name": "City of Bristol",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000024": {
+   "how": "page",
+   "name": "North Somerset",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000025": {
+   "how": "feed",
+   "name": "South Gloucestershire",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E06000026": {
+   "how": "feed",
+   "name": "Plymouth",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000027": {
+   "how": "browser",
+   "name": "Torbay",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000030": {
+   "how": "page",
+   "name": "Swindon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000031": {
+   "how": "browser",
+   "name": "Peterborough",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000032": {
+   "how": "feed",
+   "name": "Luton",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000034": {
+   "how": "feed",
+   "name": "Thurrock",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000035": {
+   "how": "feed",
+   "name": "Medway",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000036": {
+   "how": "feed",
+   "name": "Bracknell Forest",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000037": {
+   "how": "browser",
+   "name": "West Berkshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000038": {
+   "how": "feed",
+   "name": "Reading",
+   "needs": [],
+   "ready": true
+  },
+  "E06000039": {
+   "how": "page",
+   "name": "Slough",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000040": {
+   "how": "browser",
+   "name": "Windsor and Maidenhead",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000041": {
+   "how": "browser",
+   "name": "Wokingham",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000042": {
+   "how": "feed",
+   "name": "Milton Keynes",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000043": {
+   "how": "browser",
+   "name": "Brighton and Hove",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E06000044": {
+   "how": "page",
+   "name": "Portsmouth",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000045": {
+   "how": "page",
+   "name": "Southampton",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000047": {
+   "how": "feed",
+   "name": "County Durham",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000049": {
+   "how": "page",
+   "name": "Cheshire East",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000050": {
+   "how": "feed",
+   "name": "Cheshire West and Chester",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000051": {
+   "how": "page",
+   "name": "Shropshire",
+   "needs": []
+  },
+  "E06000052": {
+   "how": "page",
+   "name": "Cornwall",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000054": {
+   "how": "page",
+   "name": "Wiltshire",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000055": {
+   "how": "feed",
+   "name": "Bedford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000056": {
+   "how": "page",
+   "name": "Central Bedfordshire",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000057": {
+   "how": "browser",
+   "name": "Northumberland",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E06000058": {
+   "how": "feed",
+   "name": "Bournemouth, Christchurch and Poole",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000059": {
+   "how": "feed",
+   "name": "Dorset Council",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E06000060": {
+   "how": "feed",
+   "name": "Buckinghamshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000061": {
+   "how": "feed",
+   "name": "North Northamptonshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000062": {
+   "how": "feed",
+   "name": "West Northamptonshire",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E06000063": {
+   "how": "page",
+   "name": "Cumberland",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000064": {
+   "how": "page",
+   "name": "Eden District (Westmorland and Furness)",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000065": {
+   "how": "feed",
+   "name": "North Yorkshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E06000066": {
+   "how": "browser",
+   "name": "Somerset",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000008": {
+   "how": "feed",
+   "name": "Cambridge",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E07000009": {
+   "how": "feed",
+   "name": "East Cambridgeshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000010": {
+   "how": "feed",
+   "name": "Fenland",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000011": {
+   "how": "page",
+   "name": "Huntingdonshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000012": {
+   "how": "feed",
+   "name": "South Cambridgeshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000032": {
+   "how": "feed",
+   "name": "Amber Valley",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000033": {
+   "how": "feed",
+   "name": "Bolsover",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000034": {
+   "how": "feed",
+   "name": "Chesterfield",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000035": {
+   "how": "page",
+   "name": "Derbyshire Dales",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000036": {
+   "how": "feed",
+   "name": "Erewash",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000037": {
+   "how": "page",
+   "name": "High Peak",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000038": {
+   "how": "page",
+   "name": "North East Derbyshire",
+   "needs": [
+    "house_number"
+   ]
+  },
+  "E07000039": {
+   "how": "feed",
+   "name": "South Derbyshire",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000040": {
+   "how": "feed",
+   "name": "East Devon",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000041": {
+   "how": "feed",
+   "name": "Exeter",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000042": {
+   "how": "feed",
+   "name": "Mid Devon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000043": {
+   "how": "browser",
+   "name": "North Devon",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000044": {
+   "how": "feed",
+   "name": "South Hams",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000045": {
+   "how": "page",
+   "name": "Teignbridge",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000046": {
+   "how": "feed",
+   "name": "Torridge",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000047": {
+   "how": "browser",
+   "name": "West Devon",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000061": {
+   "how": "page",
+   "name": "Eastbourne",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000062": {
+   "how": "feed",
+   "name": "Hastings",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000063": {
+   "how": "page",
+   "name": "Lewes",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000064": {
+   "how": "feed",
+   "name": "Rother",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000065": {
+   "how": "feed",
+   "name": "Wealden",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000066": {
+   "how": "browser",
+   "name": "Basildon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000067": {
+   "how": "page",
+   "name": "Braintree",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000069": {
+   "how": "page",
+   "name": "Castle Point",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000070": {
+   "how": "browser",
+   "name": "Chelmsford",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000071": {
+   "how": "browser",
+   "name": "Colchester",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000072": {
+   "how": "browser",
+   "name": "Epping Forest",
+   "needs": [
+    "postcode"
+   ]
+  },
+  "E07000073": {
+   "how": "page",
+   "name": "Harlow",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000074": {
+   "how": "page",
+   "name": "Maldon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000075": {
+   "how": "feed",
+   "name": "Rochford",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000076": {
+   "how": "browser",
+   "name": "Tendring",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000077": {
+   "how": "browser",
+   "name": "Uttlesford",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000078": {
+   "how": "feed",
+   "name": "Cheltenham",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000079": {
+   "how": "browser",
+   "name": "Cotswold",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000080": {
+   "how": "browser",
+   "name": "Forest of Dean",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000081": {
+   "how": "browser",
+   "name": "Gloucester",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000082": {
+   "how": "feed",
+   "name": "Gosport Borough Council",
+   "needs": [
+    "postcode"
+   ]
+  },
+  "E07000083": {
+   "how": "feed",
+   "name": "Tewkesbury",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000084": {
+   "how": "page",
+   "name": "Basingstoke and Deane",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000086": {
+   "how": "browser",
+   "name": "Eastleigh",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000087": {
+   "how": "page",
+   "name": "Fareham",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000089": {
+   "how": "feed",
+   "name": "Hart",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000091": {
+   "how": "browser",
+   "name": "New Forest",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000092": {
+   "how": "feed",
+   "name": "Rushmoor",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000093": {
+   "how": "browser",
+   "name": "Test Valley",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000094": {
+   "how": "browser",
+   "name": "Winchester",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000095": {
+   "how": "browser",
+   "name": "Broxbourne",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000096": {
+   "how": "browser",
+   "name": "Dacorum",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000097": {
+   "how": "feed",
+   "name": "East Herts Council",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000098": {
+   "how": "browser",
+   "name": "Hertsmere",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000099": {
+   "how": "browser",
+   "name": "North Hertfordshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000102": {
+   "how": "browser",
+   "name": "Three Rivers",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000103": {
+   "how": "feed",
+   "name": "Watford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000105": {
+   "how": "browser",
+   "name": "Ashford",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000106": {
+   "how": "feed",
+   "name": "Canterbury",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000107": {
+   "how": "page",
+   "name": "Dartford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000108": {
+   "how": "feed",
+   "name": "Dover",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000109": {
+   "how": "feed",
+   "name": "Gravesham",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000110": {
+   "how": "browser",
+   "name": "Maidstone",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000111": {
+   "how": "browser",
+   "name": "Sevenoaks",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000112": {
+   "how": "page",
+   "name": "Folkestone and Hythe",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000113": {
+   "how": "browser",
+   "name": "Swale",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000114": {
+   "how": "browser",
+   "name": "Thanet",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000115": {
+   "how": "page",
+   "name": "Tonbridge and Malling",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000116": {
+   "how": "feed",
+   "name": "Tunbridge Wells",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000117": {
+   "how": "feed",
+   "name": "Burnley",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000118": {
+   "how": "page",
+   "name": "Chorley",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000120": {
+   "how": "browser",
+   "name": "Hyndburn",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000121": {
+   "how": "page",
+   "name": "Lancaster",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000123": {
+   "how": "browser",
+   "name": "Preston",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000126": {
+   "how": "page",
+   "name": "South Ribble",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000127": {
+   "how": "page",
+   "name": "West Lancashire",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000128": {
+   "how": "page",
+   "name": "Wyre",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000129": {
+   "how": "page",
+   "name": "Blaby",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000130": {
+   "how": "page",
+   "name": "Charnwood",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000131": {
+   "how": "page",
+   "name": "Harborough",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000132": {
+   "how": "page",
+   "name": "Hinckley and Bosworth",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000133": {
+   "how": "page",
+   "name": "Melton",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000134": {
+   "how": "feed",
+   "name": "North West Leicestershire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000135": {
+   "how": "page",
+   "name": "Oadby and Wigston",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000136": {
+   "how": "browser",
+   "name": "Boston",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000137": {
+   "how": "browser",
+   "name": "East Lindsey",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000138": {
+   "how": "feed",
+   "name": "City of Lincoln",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000139": {
+   "how": "page",
+   "name": "North Kesteven",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000140": {
+   "how": "browser",
+   "name": "South Holland",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000141": {
+   "how": "browser",
+   "name": "South Kesteven District Council",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000142": {
+   "how": "feed",
+   "name": "West Lindsey",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000143": {
+   "how": "feed",
+   "name": "Breckland",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000144": {
+   "how": "browser",
+   "name": "Broadland",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000145": {
+   "how": "browser",
+   "name": "Great Yarmouth",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000146": {
+   "how": "page",
+   "name": "Kings Lynn and West Norfolk",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000147": {
+   "how": "browser",
+   "name": "North Norfolk",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000148": {
+   "how": "page",
+   "name": "Norwich",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000149": {
+   "how": "page",
+   "name": "South Norfolk",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000165": {
+   "how": "page",
+   "name": "Harrogate",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000170": {
+   "how": "browser",
+   "name": "Ashfield",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000171": {
+   "how": "feed",
+   "name": "Bassetlaw",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000172": {
+   "how": "browser",
+   "name": "Broxtowe",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000173": {
+   "how": "feed",
+   "name": "Gedling",
+   "needs": [
+    "house_number"
+   ]
+  },
+  "E07000174": {
+   "how": "feed",
+   "name": "Mansfield",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000175": {
+   "how": "page",
+   "name": "Newark and Sherwood",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000176": {
+   "how": "browser",
+   "name": "Rushcliffe",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000177": {
+   "how": "page",
+   "name": "Cherwell",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000178": {
+   "how": "page",
+   "name": "Oxford",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000179": {
+   "how": "page",
+   "name": "South Oxfordshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000180": {
+   "how": "page",
+   "name": "Vale of White Horse",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000181": {
+   "how": "browser",
+   "name": "West Oxfordshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000192": {
+   "how": "page",
+   "name": "Cannock Chase",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000193": {
+   "how": "browser",
+   "name": "East Staffordshire",
+   "needs": []
+  },
+  "E07000194": {
+   "how": "page",
+   "name": "Lichfield",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000195": {
+   "how": "page",
+   "name": "Newcastle-under-Lyme",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000196": {
+   "how": "page",
+   "name": "South Staffordshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000197": {
+   "how": "page",
+   "name": "Stafford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000198": {
+   "how": "page",
+   "name": "Staffordshire Moorlands",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000200": {
+   "how": "browser",
+   "name": "Babergh",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000202": {
+   "how": "page",
+   "name": "Ipswich",
+   "needs": [
+    "house_number"
+   ]
+  },
+  "E07000203": {
+   "how": "browser",
+   "name": "Mid Suffolk",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000207": {
+   "how": "feed",
+   "name": "Elmbridge",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000208": {
+   "how": "browser",
+   "name": "Epsom and Ewell",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000209": {
+   "how": "browser",
+   "name": "Guildford",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000210": {
+   "how": "feed",
+   "name": "Mole Valley",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000211": {
+   "how": "browser",
+   "name": "Reigate and Banstead",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000212": {
+   "how": "page",
+   "name": "Runnymede",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000213": {
+   "how": "feed",
+   "name": "Spelthorne",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000214": {
+   "how": "page",
+   "name": "Surrey Heath",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000215": {
+   "how": "feed",
+   "name": "Tandridge",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000216": {
+   "how": "page",
+   "name": "Waverley",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000217": {
+   "how": "page",
+   "name": "Woking",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000219": {
+   "how": "page",
+   "name": "Nuneaton and Bedworth",
+   "needs": [
+    "house_number"
+   ]
+  },
+  "E07000220": {
+   "how": "browser",
+   "name": "Rugby",
+   "needs": [
+    "uprn",
+    "postcode"
+   ],
+   "ready": true
+  },
+  "E07000221": {
+   "how": "feed",
+   "name": "Stratford-on-Avon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000222": {
+   "how": "page",
+   "name": "Warwick",
+   "needs": []
+  },
+  "E07000223": {
+   "how": "page",
+   "name": "Adur",
+   "needs": []
+  },
+  "E07000224": {
+   "how": "browser",
+   "name": "Arun",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000225": {
+   "how": "browser",
+   "name": "Chichester",
+   "needs": [
+    "postcode",
+    "house_number"
+   ],
+   "note": "Chichester’s bin-day page is protected against automated visitors (Cloudflare Turnstile), so it can’t be read automatically – enter your bins by hand."
+  },
+  "E07000226": {
+   "how": "feed",
+   "name": "Crawley",
+   "needs": [
+    "uprn",
+    "house_number"
+   ]
+  },
+  "E07000227": {
+   "how": "page",
+   "name": "Horsham",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000228": {
+   "how": "page",
+   "name": "Mid Sussex",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000234": {
+   "how": "page",
+   "name": "Bromsgrove",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000235": {
+   "how": "feed",
+   "name": "Malvern Hills",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000236": {
+   "how": "page",
+   "name": "Redditch",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000237": {
+   "how": "page",
+   "name": "Worcester",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000238": {
+   "how": "browser",
+   "name": "Wychavon",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000239": {
+   "how": "page",
+   "name": "Wyre Forest",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E07000240": {
+   "how": "feed",
+   "name": "St Albans",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E07000241": {
+   "how": "page",
+   "name": "Welwyn Hatfield",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000243": {
+   "how": "feed",
+   "name": "Stevenage",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E07000244": {
+   "how": "browser",
+   "name": "East Suffolk",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E07000245": {
+   "how": "page",
+   "name": "West Suffolk",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E08000001": {
+   "how": "feed",
+   "name": "Bolton",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000002": {
+   "how": "feed",
+   "name": "Bury",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000003": {
+   "how": "feed",
+   "name": "Manchester",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000004": {
+   "how": "page",
+   "name": "Oldham",
+   "needs": []
+  },
+  "E08000005": {
+   "how": "feed",
+   "name": "Rochdale",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E08000006": {
+   "how": "page",
+   "name": "Salford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000007": {
+   "how": "page",
+   "name": "Stockport",
+   "needs": []
+  },
+  "E08000008": {
+   "how": "feed",
+   "name": "Tameside",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000010": {
+   "how": "page",
+   "name": "Wigan",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E08000011": {
+   "how": "browser",
+   "name": "Knowsley",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000012": {
+   "how": "page",
+   "name": "Liverpool",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000013": {
+   "how": "browser",
+   "name": "St. Helens",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000014": {
+   "how": "page",
+   "name": "Sefton",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000015": {
+   "how": "browser",
+   "name": "Wirral",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000016": {
+   "how": "page",
+   "name": "Barnsley",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E08000017": {
+   "how": "browser",
+   "name": "Doncaster",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000018": {
+   "how": "feed",
+   "name": "Rotherham",
+   "needs": [
+    "postcode"
+   ]
+  },
+  "E08000019": {
+   "how": "feed",
+   "name": "Sheffield",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000021": {
+   "how": "feed",
+   "name": "Newcastle upon Tyne",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000022": {
+   "how": "page",
+   "name": "North Tyneside",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000023": {
+   "how": "feed",
+   "name": "South Tyneside",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000024": {
+   "how": "page",
+   "name": "Sunderland",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000025": {
+   "how": "page",
+   "name": "Birmingham",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E08000026": {
+   "how": "page",
+   "name": "Coventry",
+   "needs": []
+  },
+  "E08000027": {
+   "how": "feed",
+   "name": "Dudley",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000028": {
+   "how": "feed",
+   "name": "Sandwell",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000029": {
+   "how": "page",
+   "name": "Solihull",
+   "needs": []
+  },
+  "E08000030": {
+   "how": "page",
+   "name": "Walsall",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000031": {
+   "how": "feed",
+   "name": "Wolverhampton",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000032": {
+   "how": "page",
+   "name": "Bradford",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000033": {
+   "how": "page",
+   "name": "Calderdale",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E08000034": {
+   "how": "feed",
+   "name": "Kirklees",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000035": {
+   "how": "feed",
+   "name": "Leeds",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E08000036": {
+   "how": "browser",
+   "name": "Wakefield",
+   "needs": []
+  },
+  "E08000037": {
+   "how": "feed",
+   "name": "Gateshead",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000002": {
+   "how": "browser",
+   "name": "Barking and Dagenham",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000003": {
+   "how": "browser",
+   "name": "Barnet",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000004": {
+   "how": "browser",
+   "name": "Bexley",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000005": {
+   "how": "page",
+   "name": "Brent",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000006": {
+   "how": "browser",
+   "name": "Bromley",
+   "needs": []
+  },
+  "E09000007": {
+   "how": "feed",
+   "name": "Camden",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000008": {
+   "how": "browser",
+   "name": "Croydon",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000009": {
+   "how": "feed",
+   "name": "Ealing",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E09000010": {
+   "how": "browser",
+   "name": "Enfield",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000011": {
+   "how": "feed",
+   "name": "Greenwich",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000012": {
+   "how": "feed",
+   "name": "Hackney",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000013": {
+   "how": "page",
+   "name": "Hammersmith & Fulham",
+   "needs": [
+    "postcode"
+   ]
+  },
+  "E09000014": {
+   "how": "feed",
+   "name": "Haringey",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E09000015": {
+   "how": "feed",
+   "name": "Harrow",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "E09000016": {
+   "how": "feed",
+   "name": "Havering",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000017": {
+   "how": "page",
+   "name": "Hillingdon",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000018": {
+   "how": "feed",
+   "name": "Hounslow",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000019": {
+   "how": "page",
+   "name": "Islington",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E09000021": {
+   "how": "browser",
+   "name": "Kingston upon Thames",
+   "needs": []
+  },
+  "E09000022": {
+   "how": "feed",
+   "name": "Lambeth",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000023": {
+   "how": "feed",
+   "name": "Lewisham",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000024": {
+   "how": "page",
+   "name": "Merton",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000025": {
+   "how": "page",
+   "name": "Newham",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000026": {
+   "how": "browser",
+   "name": "Redbridge",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E09000027": {
+   "how": "page",
+   "name": "Richmond upon Thames",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E09000028": {
+   "how": "page",
+   "name": "Southwark",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "E09000029": {
+   "how": "page",
+   "name": "Sutton",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000030": {
+   "how": "feed",
+   "name": "Tower Hamlets",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "E09000031": {
+   "how": "browser",
+   "name": "Waltham Forest",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "E09000032": {
+   "how": "page",
+   "name": "Wandsworth",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "N09000001": {
+   "how": "page",
+   "name": "Antrim and Newtownabbey",
+   "needs": []
+  },
+  "N09000002": {
+   "how": "page",
+   "name": "Armagh City, Banbridge and Craigavon",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "N09000003": {
+   "how": "page",
+   "name": "Belfast",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "N09000006": {
+   "how": "feed",
+   "name": "Fermanagh and Omagh",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "N09000007": {
+   "how": "feed",
+   "name": "Lisburn and Castlereagh",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "N09000008": {
+   "how": "page",
+   "name": "Mid and East Antrim",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "N09000009": {
+   "how": "browser",
+   "name": "Mid Ulster",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "N09000011": {
+   "how": "page",
+   "name": "Ards and North Down",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000006": {
+   "how": "page",
+   "name": "Dumfries and Galloway Council",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000008": {
+   "how": "feed",
+   "name": "East Ayrshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000010": {
+   "how": "page",
+   "name": "East Lothian",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000011": {
+   "how": "browser",
+   "name": "East Renfrewshire",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000014": {
+   "how": "feed",
+   "name": "Falkirk",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "S12000017": {
+   "how": "feed",
+   "name": "Highland",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000019": {
+   "how": "browser",
+   "name": "Midlothian",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000020": {
+   "how": "page",
+   "name": "Moray",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000021": {
+   "how": "feed",
+   "name": "North Ayrshire",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "S12000028": {
+   "how": "feed",
+   "name": "South Ayrshire",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "S12000029": {
+   "how": "page",
+   "name": "South Lanarkshire",
+   "needs": [
+    "postcode"
+   ]
+  },
+  "S12000030": {
+   "how": "browser",
+   "name": "Stirling",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000033": {
+   "how": "feed",
+   "name": "Aberdeen City",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000034": {
+   "how": "page",
+   "name": "Aberdeenshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000035": {
+   "how": "browser",
+   "name": "Argyll and Bute",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "S12000036": {
+   "how": "feed",
+   "name": "City of Edinburgh",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000038": {
+   "how": "page",
+   "name": "Renfrewshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000039": {
+   "how": "page",
+   "name": "West Dunbartonshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000040": {
+   "how": "browser",
+   "name": "West Lothian",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000041": {
+   "how": "browser",
+   "name": "Angus",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "S12000042": {
+   "how": "feed",
+   "name": "Dundee City",
+   "needs": [
+    "uprn"
+   ],
+   "ready": true
+  },
+  "S12000045": {
+   "how": "page",
+   "name": "East Dunbartonshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000047": {
+   "how": "browser",
+   "name": "Fife",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "S12000048": {
+   "how": "feed",
+   "name": "Perth and Kinross",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000049": {
+   "how": "page",
+   "name": "Glasgow City",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "S12000050": {
+   "how": "page",
+   "name": "North Lanarkshire",
+   "needs": []
+  },
+  "W06000001": {
+   "how": "feed",
+   "name": "Isle of Anglesey",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000002": {
+   "how": "page",
+   "name": "Gwynedd",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000003": {
+   "how": "page",
+   "name": "Conwy",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000004": {
+   "how": "feed",
+   "name": "Denbighshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000005": {
+   "how": "page",
+   "name": "Flintshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000006": {
+   "how": "browser",
+   "name": "Wrexham",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "W06000008": {
+   "how": "browser",
+   "name": "Ceredigion",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "W06000009": {
+   "how": "page",
+   "name": "Pembrokeshire",
+   "needs": []
+  },
+  "W06000010": {
+   "how": "page",
+   "name": "Carmarthenshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000011": {
+   "how": "feed",
+   "name": "Swansea",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "W06000012": {
+   "how": "browser",
+   "name": "Neath Port Talbot",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  },
+  "W06000014": {
+   "how": "feed",
+   "name": "The Vale of Glamorgan",
+   "needs": [
+    "uprn",
+    "postcode",
+    "house_number"
+   ]
+  },
+  "W06000015": {
+   "how": "feed",
+   "name": "Cardiff",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000016": {
+   "how": "page",
+   "name": "Rhondda Cynon Taff",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000019": {
+   "how": "browser",
+   "name": "Blaenau Gwent",
+   "needs": [
+    "uprn",
+    "postcode"
+   ]
+  },
+  "W06000021": {
+   "how": "page",
+   "name": "Monmouthshire",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000022": {
+   "how": "feed",
+   "name": "Newport",
+   "needs": [
+    "uprn"
+   ]
+  },
+  "W06000023": {
+   "how": "feed",
+   "name": "Powys",
+   "needs": [
+    "postcode",
+    "house_number"
+   ]
+  }
+ },
+ "source": "UKBinCollectionData (github.com/robbrad/UKBinCollectionData)"
+}

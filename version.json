@@ -1,15 +1,15 @@
 {
-  "app": "2026.11.43",
-  "script": "2026.11.32",
+  "app": "2026.11.49",
+  "script": "2026.11.36",
   "date": "2026-11-08",
   "notes": [
-    "Calendar Year view is now a wall planner: a row for each month (all 12 when there’s room), lined up by weekday or not – the same setting as the 3-month views",
-    "Calendar key: along the bottom on a tablet (except Month view, where it stays on the right), and small along the bottom in Year view on a computer; the Corsair is unchanged",
-    "Tablets and computers no longer use the dashboard’s sleep screen – the tablet’s power button or the computer’s own settings do that; the Corsair keeps it",
-    "Tablets: the first tap makes the dashboard full screen; it can also be added to the home screen and opens full screen from there",
-    "Tablet: side bar shows icons only, with 1 and 2 on pages split in two; a proper calendar icon showing today’s date",
-    "Tablet calendar: the key runs along the bottom and the month names take less room, so the days get the full width",
-    "Tablet children’s page: each child’s card scrolls when there’s more than fits (the morning list was cut off)"
+    "Connecting a screen from a phone now says whose dashboard it will show and asks “Is this screen in your home?” – with “No – it’s someone else’s screen” leading to their own setup",
+    "Screen status page: “Disconnect this screen”",
+    "A copy of someone else’s dashboard Sheet is emptied automatically before anything is shown; Sheet menu “Clear everything and start from scratch”",
+    "Google script 2026.11.36",
+    "Bins simplified: one place to set them up (Set up bin days); the settings only hold the reminder time; the council is shown plainly with “Not right?” instead of a long list; by hand (with the AI helper) is the clear next step when a council can’t be read",
+    "Google script 2026.11.35",
+    "Bins by hand: “Let an AI assistant look it up” – a ready-written request (with your postcode, house and council) to copy into ChatGPT, Claude or Gemini; paste its answer back and your bins are filled in"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.12",

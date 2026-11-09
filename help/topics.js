@@ -42,7 +42,7 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → Settings → Devices → Add another screen</b>. For the Windows PC, make a new start file in the setup app (<b>Settings → My data (Google) → Go through setup again</b>, step “Connect your devices”) and replace the old one.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → Settings → Devices → Connect by code</b>. For the Windows PC, make a new start file in the setup app (<b>Settings → My data (Google) → Go through setup again</b>, step “Connect your devices”) and replace the old one.</dd>
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
@@ -95,6 +95,8 @@ window.FD_HELP = [
     summary: 'Each phone or screen needs your family’s private link once. Get it from the Family Admin app on a phone that’s already connected, or from the setup app.',
     body: `
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
+<h2>Family Admin or Family Calendar on a computer</h2>
+<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → Settings → Devices → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
 <h2>A new phone (Family Admin or Family Calendar)</h2>
 <ol>
 <li>On a phone that’s <b>already connected</b>: <b>Family Admin → Settings → Devices</b>. This shows QR codes.</li>
@@ -122,7 +124,7 @@ window.FD_HELP = [
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
 <li><b>New to Family Dashboard?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → Settings → Devices → <b>Add another screen</b> and type the code.)</li>
+<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → Settings → Devices → <b>Connect by code</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
@@ -217,26 +219,16 @@ window.FD_HELP = [
   },
   {
     id: 'bins', icon: '🗑', title: 'Bin days',
-    summary: 'The Bins widget works anywhere in the UK: straight from your council where it’s connected, from your council’s calendar link, or from a repeating schedule you type in once.',
-    body: `
-<p>In <b>Family Admin</b> tap the Bins tile → <b>Change Bins settings</b> → <b>Collection days from</b>, and pick one:</p>
-<dl>
-<dt>My council (automatic)</dt><dd>Type your postcode and house name or number. The dashboard finds your council from the postcode. If your council isn’t connected yet it says so straight away – when you save, during setup, and on the screen – and you can use one of the other two.<br>Connected so far: South Gloucestershire. More are added over time; they update by themselves.</dd>
-<dt>Calendar link</dt><dd>Many councils have an <b>“add to calendar”</b>, <b>“subscribe”</b> or <b>iCal</b> link on their “check your bin day” page. Copy that link (it ends in .ics or starts webcal://) and paste it in.</dd>
-<dt>Repeating schedule</dt><dd>Works for every home. One line per bin: <b>name | every how many weeks | a recent or next collection date</b>, for example:<br><code>Black bin | 2 | 2026-11-11</code><br><code>Recycling | 1 | 12/11/2026</code><br>Bank-holiday changes aren’t known, so check the council’s notices at Christmas.</dd>
-</dl>
-<p>The colours follow the names: black/general, recycling (blue), food (brown) and garden (green).</p>`
-},
-{
-    id: 'photos', icon: '🖼', title: 'Photos',
-    summary: 'The photo slideshow shows the pictures in a Google Drive folder. The folder must be shared “Anyone with the link”.',
+    summary: 'The Bins widget works anywhere in the UK. Family Admin → the Bins tile → Set up bin days: type your postcode, we find your council, and read your bin days from it if we can – otherwise you type your bins in once.',
     body: `
 <ol>
-<li>In Google Drive make a folder (e.g. “Dashboard photos”) and put photos in it.</li>
-<li>Right-click it → <b>Share</b> → under General access choose <b>Anyone with the link</b> → <b>Copy link</b>.</li>
-<li><b>Family Admin</b> → tap the Photos tile → <b>Change Photos settings</b> → paste the link → <b>Save</b>.</li>
+<li><b>Family Admin</b> → tap the <b>Bins</b> tile → <b>Set up bin days</b>.</li>
+<li>Type your postcode → <b>Find my council</b>. Check it’s the council that collects your bins (choose another from the list if not). Councils marked ✔ can be read automatically.</li>
+<li><b>Council marked ✔:</b> most need your home’s <b>property number (UPRN)</b> – find it at <a href="https://www.findmyaddress.co.uk/search" target="_blank" rel="noopener">findmyaddress.co.uk</a> (search your postcode, pick your address, copy the UPRN). Press <b>Try it</b>: if your next collections appear, press <b>Use this</b>. If not, you can enter your bins by hand.</li>
+<li><b>Any other council:</b> enter your bins by hand – for each bin, what it is, how often (every 1–4 weeks) and its next collection date. You see the next few collections before you save. Or, if your council’s bin-day page has an “add to calendar” link, use that.<br><b>Shortcut:</b> open <b>✨ Let an AI assistant look it up</b> – copy the ready-written request into ChatGPT, Claude or Gemini, then paste its answer back and your bins fill themselves in. Check the dates against the council’s calendar before saving.</li>
 </ol>
-<p>New photos in the folder appear within an hour. If it says the folder isn’t shared, repeat step 2.</p>`
+<p>More councils are being added over time; ones you’ve set up by hand can switch over later. Bank-holiday changes aren’t known when you’ve entered your bins by hand.</p>
+<p>If it stops working, a diagnostics report (Settings → About &amp; diagnostics) includes what the council’s service said, so support can see why.</p>`
   },
   {
     id: 'voice', icon: '🎙', title: 'Voice commands',
