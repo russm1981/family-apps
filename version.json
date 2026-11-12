@@ -1,14 +1,12 @@
 {
-  "app": "2026.11.61",
+  "app": "2026.11.62",
   "script": "2026.11.43",
   "date": "2026-11-08",
   "notes": [
+    "Family Admin on the phone is for everyday use: points, lists, notes, the calendar and each widget’s everyday settings. The screen layout and rare settings (family & calendar set-up, places, API keys, updates, your Google data, diagnostics) are on the new settings website for a computer: russm1981.github.io/family-apps/settings",
     "Tablets connect with a short address and a code typed on the computer – no long link to scan; setup’s QR codes are bigger and easier to scan",
     "When to show: picking a widget for other times adds a hidden one to hold its settings if there isn’t one, and it can’t be removed while it’s in use; the list says which is which",
-    "Adding a widget shows straight away in Family Admin",
-    "Setup: after Deploy, copy the Web app URL and paste it into the setup page to connect – no Sheet menu needed",
-    "Setup and help: what to do if Deploy just spins or Google keeps asking for permission",
-    "Family Admin: moving widgets and pages happens instantly, and saved changes show straight away while they’re saved in the background – several quick taps are all kept, in order"
+    "Adding a widget shows straight away in Family Admin"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

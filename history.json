@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.62",
+    "date": "2026-11-12",
+    "notes": [
+      "Family Admin on the phone is for everyday use: points, lists, notes, the calendar and each widget’s everyday settings. The screen layout and rare settings (family & calendar set-up, places, API keys, updates, your Google data, diagnostics) are on the new settings website for a computer: russm1981.github.io/family-apps/settings"
+    ]
+  },
+  {
     "version": "2026.11.61",
     "date": "2026-11-12",
     "notes": [

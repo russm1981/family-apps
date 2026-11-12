@@ -25,7 +25,15 @@
     try { DATA = JSON.parse(localStorage.getItem('fdadmin.data') || 'null'); } catch (e) { DATA = null; }
     try { GL = JSON.parse(localStorage.getItem('fdadmin.glance') || '{}') || {}; } catch (e) { GL = {}; }
 
-    var TABS = [['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other'], ['layout', '▦', 'Screen'], ['settings', '⚙', 'Settings']];
+    // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
+    // (settings/, window.FD_DESK): also the screen layout and the rarely-used settings – the phone links to it.
+    var DESK = !!window.FD_DESK;
+    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other']]
+        : [['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other'], ['settings', '⚙', 'Settings']];
+    // Settings sections on the phone (the rest are on the computer website).
+    var PHONE_S = { screen: 1, licence: 1, devices: 1 };
+    function deskUrl() { return location.href.replace(/[#?].*$/, '').replace(/admin\/.*$/, '').replace(/settings\/.*$/, '') + 'settings/'; }
+    function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
     var FAMILY_W = { agenda: 1, countdown: 1, whereabouts: 1 }, LIST_W = { memo: 1, list: 1, todo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
     function tabFor(type) { return FAMILY_W[type] ? 'family' : LIST_W[type] ? 'lists' : 'other'; }
@@ -43,7 +51,7 @@
         updates: ['⟳', 'Updates', 'Google script version and automatic updates', true],
     };
     var ALIAS = { access: 'devices', advanced: 'mydata', home: 'places' };   // older links
-    function menuKeys() { return Object.keys(SECTIONS).filter(function (k) { return !SECTIONS[k][3]; }); }
+    function menuKeys() { return Object.keys(SECTIONS).filter(function (k) { return DESK ? !SECTIONS[k][3] : PHONE_S[k]; }); }
     function helpUrl() { return location.href.replace(/admin\/.*$/, '') + 'help/'; }
 
     /* ================================================================ data */
@@ -120,15 +128,15 @@
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
         if (h[0] === 'points') return { pts: true, tab: 'family' };
-        if (h[0] === 'home' || h[0] === '') return { tab: 'family' };
+        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'layout' : 'family' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: 'settings' };
-        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : 'home' };
+        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'layout' : 'family') };
     }
     function go(where) { if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">Family Admin</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard settings' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>'; }).join('') + '</nav>' +
@@ -152,7 +160,8 @@
         $('body').onclick = null;
         if (!DATA) { $('title').textContent = 'Family Admin'; $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         if (!DATA.widgets) { $('body').innerHTML = '<div class="empty">Update the Google Apps Script to the latest version.</div>'; return; }
-        if (r.w) renderWidget(r.w);
+        if (!DESK && ((r.s && !PHONE_S[r.s]) || (!r.s && !r.w && !r.pts && r.tab === 'layout'))) renderOnComputer(r.s ? SECTIONS[r.s][1] : 'Screen layout');
+        else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
         else ({ family: renderFamily, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings })[r.tab]();
@@ -161,6 +170,19 @@
         privacyCheck();
     }
     function title(t) { $('title').textContent = t; }
+    /** On the phone: a page that's on the computer website instead. */
+    function renderOnComputer(what) {
+        title(what);
+        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is set on the Family Dashboard settings website. On a computer, open:</p>' +
+            '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Settings → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
+        $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
+    }
+    function deskCard() {
+        return card('💻 More settings on a computer', '<p class="small">Screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data and diagnostics are on the settings website:</p>' +
+            '<div class="desk-addr">' + esc(deskShort()) + '</div>');
+    }
 
     /* ================================================================ notices: licence, privacy, weak code, updates */
 
@@ -177,9 +199,9 @@
         if (L && L.required && !L.ok && r.s !== 'licence') out += '<div class="banner warn"><b>🎫 ' + esc(L.message) + '</b> <button class="link" data-go="s/licence">Add your key</button></div>';
         else if (L && L.state === 'trial' && r.tab === 'family' && !r.w && !r.pts) out += '<div class="banner">' + esc(L.message) + ' <button class="link" data-go="s/licence">Add your key</button></div>';
         if (DATA.moving && r.s !== 'updates') out += '<div class="banner warn"><b>Moving to a new Sheet isn’t finished.</b> <button class="link" data-go="s/updates">What to do</button></div>';
-        else if (DATA.versions && DATA.versions.warn && r.s !== 'updates' && !r.w) out += '<div class="banner warn"><b>The Google script has used ' + DATA.versions.used + ' of its ' + DATA.versions.max + ' saved versions.</b> <button class="link" data-go="s/updates">Sort it out</button></div>';
+        else if (DESK && DATA.versions && DATA.versions.warn && r.s !== 'updates' && !r.w) out += '<div class="banner warn"><b>The Google script has used ' + DATA.versions.used + ' of its ' + DATA.versions.max + ' saved versions.</b> <button class="link" data-go="s/updates">Sort it out</button></div>';
         if (DATA.codeWeak && r.tab === 'family' && !r.w && !r.pts) out += '<div class="banner warn"><b>Your access code is weak.</b> <button class="link" data-go="s/mydata">Fix it</button></div>';
-        if (LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion) && r.s !== 'updates' && !r.w && (r.tab === 'family' || r.tab === 'settings'))
+        if (DESK && LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion) && r.s !== 'updates' && !r.w && (r.tab === 'layout' || r.tab === 'settings'))
             out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <button class="link" data-go="s/updates">Update now</button></div>';
         return out;
     }
@@ -275,7 +297,7 @@
         var t = function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w) + (w.show ? '' : ' (hidden)'), GLANCE[w.type] ? glanceLine(w) : esc(summary(w))); };
         $('body').innerHTML = (info.length ? '<h3 class="sec">Information <button class="link" id="glRefresh">Refresh</button></h3><div class="tiles">' + info.map(t).join('') + '</div>' : '') +
             (rest.length ? '<h3 class="sec">Everything else</h3><div class="tiles">' + rest.map(t).join('') + '</div>' : '') +
-            (info.length || rest.length ? '' : card('Nothing here yet', '<p class="mute">Add widgets on the Screen tab.</p><button class="btn wide" data-go="layout">Screen</button>'));
+            (info.length || rest.length ? '' : card('Nothing here yet', '<p class="mute">Widgets are added on the computer, at ' + esc(deskShort()) + '.</p>'));
         if ($('glRefresh')) $('glRefresh').onclick = function () { fetchGlance(true); FD.toast('Refreshing…'); };
         fetchGlance();
     }
@@ -340,7 +362,7 @@
         $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + esc(T.icon) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' page' + (w.show ? '' : ' (hidden)') + '</span></div>' +
             '<div id="wView">' + view + '</div>' +
             card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
-                '<button class="btn ghost wide" data-go="layout">Where it goes on the screen ›</button>', 'w-set');
+                (DESK ? '<button class="btn ghost wide" data-go="layout">Where it goes on the screen ›</button>' : '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>'), 'w-set');
         $('wSet').onclick = function () { settingsSheet(w); };
         if (WIRE[w.type]) WIRE[w.type](w);
         if (GLANCE[w.type] && !GL[w.id]) fetchWidget(w.id);
@@ -791,7 +813,7 @@
     function renderLists() {
         title('Lists');
         var ws = distinct(function (w) { return w.type === 'memo' || w.type === 'list' || w.type === 'todo'; });
-        if (!ws.length) { $('body').innerHTML = card('No lists on the screen', '<p class="mute">Add a Notes, List or To-do widget on the Screen tab.</p><button class="btn wide" data-go="layout">Screen</button>'); return; }
+        if (!ws.length) { $('body').innerHTML = card('No lists on the screen', '<p class="mute">Add a Notes, List or To-do widget on the computer, at ' + esc(deskShort()) + '.</p>'); return; }
         // Only one list at a time can be edited here (the editors share element ids), so the others show a summary.
         var open = sessionStorage.getItem('fdadmin.openList') || ws[0].id;
         if (!ws.some(function (w) { return w.id === open; })) open = ws[0].id;
@@ -1141,7 +1163,8 @@
         $('body').innerHTML = '<div class="menu">' + menuKeys().map(function (k) {
             var x = SECTIONS[k];
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
-        }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div><p class="mute small center">Family Admin · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+        }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
+            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard settings' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);
@@ -1618,5 +1641,7 @@
 
     function start() { frame(); render(); load().then(function () { fetchGlance(); }); }
     FD.registerSW();
-    if (FD.configured()) start(); else FD.setupScreen($('app'), 'Family Admin', start);
+    // The website on a computer that's already been used for setup (or has Family Admin) connects by itself.
+    if (DESK && !FD.configured() && window.FDPairSend) { var sv = FDPairSend.saved(); if (sv) FD.setConfig(sv.url, sv.code); }
+    if (FD.configured()) start(); else FD.setupScreen($('app'), DESK ? 'Family Dashboard settings' : 'Family Admin', start);
 })();

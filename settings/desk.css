@@ -1,0 +1,8 @@
+/* The settings website on a computer: the phone app's pages, wider. */
+body.desk .main { max-width: 980px; margin: 0 auto; }
+body.desk .top-row { max-width: 980px; margin: 0 auto; }
+body.desk .tabbar { left: 50%; right: auto; transform: translateX(-50%); width: min(980px, 100%); border-radius: 14px 14px 0 0; }
+body.desk .tabbar button { flex-direction: row; justify-content: center; gap: 8px; font-size: 14px; padding: 12px 0; }
+body.desk .tabbar button i { font-size: 18px; }
+body.desk .sheet-bg { align-items: center; justify-content: center; }
+body.desk .sheet { max-width: 620px; border-radius: 18px; max-height: 88vh; }

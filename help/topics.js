@@ -4,6 +4,14 @@
  */
 window.FD_HELP = [
   {
+    id: 'where', icon: '🧭', title: 'Phone app or settings website?',
+    summary: 'Everyday things are in Family Admin on your phone; the screen layout and rare settings are on the settings website on a computer.',
+    body: `
+<p><b>Family Admin (phone)</b>: points and tasks, notes, shopping and to-do lists, the calendar, and each widget’s everyday settings – train stations, traffic routes, bins reminder, screen sleep. Also your licence key and connecting phones and screens.</p>
+<p><b>Settings website (computer)</b> – <b>russm1981.github.io/family-apps/settings</b>: which widgets go on which page and how tall (and “When to show”), adding and removing widgets and pages, family &amp; calendar set-up, home address and places, API keys, updates, your Google data (access code, moving, starting again) and diagnostics.</p>
+<p>The first time you open the website on a computer, it shows a code: on your phone, <b>Family Admin → Settings → Devices → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
+  },
+  {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
     summary: 'Setting up from your licence email: what to click at each step, and what to do where people most often get stuck.',
     body: `
@@ -100,7 +108,7 @@ window.FD_HELP = [
 <h2>“Your Google script needs updating”</h2>
 <p>Your Sheet was set up before the loader existed. Switch to it once – the last time you’ll paste anything:</p>
 <ol>
-<li>On a computer open the setup app’s <b>Updates</b> page (Family Admin → Settings → My data → Go through setup again, then Updates), or open your Sheet → <b>Extensions → Apps Script</b>.</li>
+<li>On a computer open the setup app’s <b>Updates</b> page (settings website → Settings → My data → Go through setup again, then Updates), or open your Sheet → <b>Extensions → Apps Script</b>.</li>
 <li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (the setup app has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
 <li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>
 </ol>
@@ -174,7 +182,7 @@ window.FD_HELP = [
 <p>Some families prefer the dashboard’s permissions (calendar, Gmail for parcels…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
 <ol>
 <li>If you haven’t got one, make the new Google account (e.g. at gmail.com).</li>
-<li>On your phone: <b>Family Admin → Settings → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
+<li>On your phone: <b>the settings website (on a computer) → Settings → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
 <li>On a <b>computer</b>, sign in to Google as the new account (a private/incognito window is easiest) and open the link. It’s the setup app, in “moving” mode.</li>
 <li>Follow the setup steps for the new account: make the Sheet and publish it (steps 2 and 3).</li>
 <li>At <b>Publish &amp; connect</b>, press <b>Bring everything across</b>.</li>
