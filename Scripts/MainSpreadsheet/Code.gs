@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.44';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.45';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -608,6 +608,7 @@ function doGet(e) {
   if (p.action) {
     return json_(() => {
       ensureMigrated_();
+      autoRefresh_();
       if (p.action === 'binLookup') return binLookup_(p.postcode);
       if (p.action === 'binCouncil') { const c = councilFor_(p.postcode); return { ok: true, council: c.name, code: c.code, automatic: !!BIN_COUNCILS[c.code], message: BIN_COUNCILS[c.code] ? c.name + ' – connected automatically' : binUnsupported_(c) }; }
       if (p.action === 'ping') return { ok: true, app: 'family-dashboard', version: SCRIPT_VERSION, layout: LAYOUT_VER, autoUpdate: autoUpdateOn_(), loader: LOADED ? LOADED.version : '' };
@@ -646,6 +647,7 @@ function doPost(e) {
   if (q.owntracks) return ownTracks_(e);
   return json_(() => {
     ensureMigrated_();
+    autoRefresh_();
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
     checkCode_(body.code);
     if (body.action !== 'moveDone') movedCheck_();
@@ -871,7 +873,7 @@ function getAdmin_() {
     screenSeen: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('screenSeen') || 'null'); } catch (e) { return null; } })(),
     licenceServerVersion: licenceServerVersion_(),
     moving: (() => { try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('moving') || 'null'); } catch (e) { return null; } })(),
-    pages: L.pages, widgets: L.widgets, lists: lists,
+    pages: L.pages, widgets: L.widgets, lists: lists, unused: unusedWidgets_(L.widgets),
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
     family: family_(),
@@ -879,7 +881,7 @@ function getAdmin_() {
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
-    autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '',
+    autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '', lastCheck: PropertiesService.getScriptProperties().getProperty('lastCheck') || '',
     setupBase: appsBase_() + 'setup/',
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
     pageTypes: Object.keys(PAGE_TYPES).map(k => schemaOut_(k, PAGE_TYPES[k])),
@@ -1356,7 +1358,15 @@ function saveWidget_(w) {
   const data = sh.getDataRange().getValues();
   const head = data[0].map(String);
   const r = data.findIndex((row, i) => i > 0 && String(row[0]).trim() === w.id);
-  if (r < 0) throw new Error('Widget not found');
+  if (r < 0) {      // not on any screen ("Not in use" in the admin app): just its settings
+    const u = unusedWidgets_(layout_().widgets).find(x => x.id === w.id);
+    if (!u || !w.settings) throw new Error('Widget not found');
+    const UT = WIDGET_TYPES[u.type], uout = {}, umerged = Object.assign({}, u.settings);
+    Object.keys(w.settings).forEach(k => { const f = UT.settings.find(x => x.k === k); if (!f) return; uout[k] = cleanSetting_(f, w.settings[k]); umerged[k] = coerce_(f, String(uout[k]).replace(/^'/, '')); });
+    checkWidget_(u.type, umerged);
+    setWsetMany_(w.id, uout);
+    return getAdmin_();
+  }
   const type = String(data[r][head.indexOf('Type')]).trim(), T = WIDGET_TYPES[type];
   if (w.page !== undefined) {
     const p = rows_('pages').find(x => String(x.Page).trim() === w.page);
@@ -1416,6 +1426,14 @@ function saveWidget_(w) {
   return ['list', 'todo', 'whereabouts'].indexOf(type) >= 0 && Object.keys(out).length ? getAdmin_() : layoutOnly_();
 }
 /** After a change to pages or widgets: just the new layout (quick), rather than everything the admin app shows. */
+/** Every kind of widget that isn't on any screen: its settings (kept from before, or the defaults) can still be changed. */
+function unusedWidgets_(widgets) {
+  const all = wsetAll_(), have = {}; widgets.forEach(w => { have[w.type] = 1; });
+  return Object.keys(WIDGET_TYPES).filter(t => !have[t]).map(t => {
+    const id = Object.keys(all).filter(k => new RegExp('^' + t + '\\d+$').test(k)).sort()[0] || t + '1';
+    return { id: id, type: t, unused: true, settings: settingsFor_(id, WIDGET_TYPES[t].settings, all) };
+  });
+}
 function layoutOnly_() { const L = layout_(); return { ok: true, layoutOnly: true, pages: L.pages, widgets: L.widgets }; }
 /** Which widgets are another widget's backup ("At other times show"): { backupId: [ids it stands in for] }. */
 function backups_(widgets) {
@@ -1433,7 +1451,9 @@ function addWidget_(pageId, type, at) {
   const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
   if (!p || String(p.Type).toLowerCase() !== 'widgets') throw new Error('Pick a widget page');
   const ids = rows_('widgets').map(w => String(w.Widget).trim());
+  const kept = Object.keys(wsetAll_()).filter(k => new RegExp('^' + type + '\\d+$').test(k) && ids.indexOf(k) < 0).sort()[0];
   let n = 1; while (ids.indexOf(type + n) >= 0) n++;
+  if (kept) n = kept.slice(type.length);
   sheet_('widgets').appendRow([type + n, pageId, 999, type, T.sizes[0], 'Yes']);
   renumber_('widgets');
   if (at !== undefined && at !== null && isFinite(Number(at))) {     // dropped in a particular place (the settings website)
@@ -1476,7 +1496,7 @@ function deleteWidget_(id) {
         ' at other times, and holds its settings. Untick “Show on the screen” to hide it, or change that widget’s “When to show” first.');
   }
   deleteWhere_('widgets', r => String(r[0]).trim() === id);
-  deleteWhere_('wset', r => String(r[0]).trim() === id);
+  // Its settings stay (in Widget settings): added again later, it gets the same name and so its settings back.
   bumpVersions_();
   return layoutOnly_();
 }
@@ -3371,15 +3391,27 @@ function deploymentId_() { const m = /\/macros\/s\/([^/]+)\/exec/.exec(myUrl_() 
  * Bring this script up to the version on the apps address.
  * why: 'menu' (someone is at the Sheet, so new permissions can be approved), 'app' (a button or the screen), 'timer'.
  */
+/** Through the loader: every few minutes one request also checks GitHub for a newer program (as the "Update now" button does). */
+function autoRefresh_() {
+  if (!LOADED) return;
+  try {
+    const c = CacheService.getScriptCache();
+    if (c.get('fdp:auto')) return;
+    c.put('fdp:auto', '1', 240);
+    selfUpdate_('auto');
+  } catch (e) { /* next time */ }
+}
 function selfUpdate_(why) {
   const P = PropertiesService.getScriptProperties();
   if (LOADED) {   // the loader fetches the newer program; it's used from the next request on
     try {
       const r = LOADED.refresh(why);
+      P.setProperty('lastCheck', JSON.stringify({ at: new Date().toISOString(), how: why, result: r.updated ? 'updated to ' + r.to : 'up to date (' + r.version + ')' }));
       if (r.updated) { P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'updated', from: r.from, to: r.to, how: why })); try { CacheService.getScriptCache().removeAll(['layout']); } catch (e) { /* fine */ } }
       return r;
     } catch (err) {
-      P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'failed', message: err.message }));
+      P.setProperty('lastCheck', JSON.stringify({ at: new Date().toISOString(), how: why, result: 'failed: ' + err.message }));
+      if (why !== 'auto') P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'failed', message: err.message }));
       if (why === 'app' || why === 'menu') throw err;
       return { ok: false, message: err.message, error: err.message };
     }

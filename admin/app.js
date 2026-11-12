@@ -315,14 +315,22 @@
     }
     function renderOther() {
         title('Widgets');
-        var info = distinct(function (w) { return INFO_W[w.type]; }), rest = distinct(function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type]; });
+        // Every widget on the screens (hidden ones too), then every kind that isn't on any screen – its settings can still be changed.
+        var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type]; };
+        fi.hidden = fr.hidden = true;
+        var info = distinct(fi), rest = distinct(fr);
         var order = ['bins', 'weather', 'trains', 'bus', 'traffic'];
         info.sort(function (a, b) { return order.indexOf(a.type) - order.indexOf(b.type); });
         var t = function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w) + (w.show ? '' : ' (hidden)'), GLANCE[w.type] ? glanceLine(w) : esc(summary(w))); };
         $('body').innerHTML = (info.length ? '<h3 class="sec">Information <button class="link" id="glRefresh">Refresh</button></h3><div class="tiles">' + info.map(t).join('') + '</div>' : '') +
             (rest.length ? '<h3 class="sec">Everything else</h3><div class="tiles">' + rest.map(t).join('') + '</div>' : '') +
+            ((DATA.unused || []).length ? '<h3 class="sec">Not in use</h3><p class="mute small">Not on any screen. Their settings are kept, ready for when they’re added (on Setup, on a computer).</p><div class="tiles">' +
+                DATA.unused.map(function (u) { return '<button class="tile unused" data-unused="' + esc(u.id) + '"><span class="t-ico">' + esc(typeOf(u.type).icon) + '</span><b>' + esc(typeOf(u.type).name) + '</b><small>Settings ›</small></button>'; }).join('') + '</div>' : '') +
             (info.length || rest.length ? '' : card('Nothing here yet', '<p class="mute">Widgets are added on the computer, at ' + esc(deskShort()) + '.</p>'));
         if ($('glRefresh')) $('glRefresh').onclick = function () { fetchGlance(true); FD.toast('Refreshing…'); };
+        $('body').querySelectorAll('[data-unused]').forEach(function (b) {
+            b.onclick = function () { var u = (DATA.unused || []).filter(function (x) { return x.id === b.getAttribute('data-unused'); })[0]; if (u) settingsSheet(u); };
+        });
         fetchGlance();
     }
     function everydayLine(w) {
@@ -1319,6 +1327,8 @@
             : '<div class="row-between" style="margin-top:14px"><span><b>Automatic updates</b><br><span class="mute small">Updates itself within minutes of a new version (and checks hourly)</span></span>' +
             '<button class="btn ' + (DATA.autoUpdate ? 'good' : 'ghost') + '" id="suAuto">' + (DATA.autoUpdate ? 'On' : 'Off') + '</button></div>' +
             '<p class="small"><b>Easier:</b> switch to the loader – one small file you paste in once, after which the script always runs the newest program from GitHub. <a href="' + esc(helpUrl()) + '#updates" target="_blank" rel="noopener">How</a></p>') +
+            (function () { var lc = {}; try { lc = JSON.parse(DATA.lastCheck || '{}'); } catch (e) { lc = {}; }
+                return lc.at ? '<p class="mute small">Last check of GitHub: ' + esc(String(lc.at).slice(0, 16).replace('T', ' ')) + ' (' + esc(lc.how || '') + ') – ' + esc(lc.result || '') + '</p>' : ''; })() +
             (last.at ? '<p class="mute small">Last automatic update: ' + esc(String(last.at).slice(0, 16).replace('T', ' ')) + ' – ' + esc(last.result || '') + (last.to ? ' (' + esc(last.to) + ')' : '') + (last.message ? '<br>' + esc(last.message) : '') + '</p>' : '') +
             (DATA.loader ? '' : '<details class="adv"><summary>What automatic updates need</summary><p class="small">Once per Google account, switch on <b>Google Apps Script API</b> at ' +
             '<a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a>. ' +

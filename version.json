@@ -1,12 +1,14 @@
 {
-  "app": "2026.11.66",
-  "script": "2026.11.44",
+  "app": "2026.11.67",
+  "script": "2026.11.45",
   "date": "2026-11-08",
   "notes": [
+    "The Google script now checks GitHub for a newer version itself every few minutes, the same way as the “Update now” button, and the Updates page shows when it last checked and what happened",
+    "The screen retries a script update quietly every 3 minutes, instead of asking you to update by hand",
+    "Family Admin → Widgets: hidden widgets are listed too, and a “Not in use” section has the settings of every widget that isn’t on a screen. Removing a widget keeps its settings; adding it again brings them back",
     "Family Admin: Settings → Updates is back on the phone, with “Update the Google script now” if it hasn’t updated itself",
     "Family Admin: separate Memos and Lists tabs, and the Other tab is now called Widgets",
-    "The website for computers is now called Setup, at one address – russm1981.github.io/family-apps/setup – with first-time setup, every step-by-step guide, the screen layout and the rarer settings. Old links (licence emails, the Sheet’s menu, …/settings) still work",
-    "Settings website: a drag-and-drop screen layout editor – screens down the left (add widget, calendar or points screens), widgets to drag in on the right, and a preview as on the Corsair, a tablet or a computer. Widgets with “When to show” are drawn split diagonally with their times"
+    "The website for computers is now called Setup, at one address – russm1981.github.io/family-apps/setup – with first-time setup, every step-by-step guide, the screen layout and the rarer settings. Old links (licence emails, the Sheet’s menu, …/settings) still work"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

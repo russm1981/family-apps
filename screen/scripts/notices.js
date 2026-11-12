@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.66';
+    var APP_VERSION = '2026.11.67';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -90,19 +90,25 @@
     /** Automatic updates on: ask the Google script to update itself (at most every 15 minutes per version). */
     var scriptUpdating = false;
     function autoScript() {
-        var tried = String(api().load('familyDashboard.scriptAuto') || '').split('|');
-        if (scriptUpdating || (tried[0] === latest.script && Date.now() - Number(tried[1] || 0) < 15 * 60000)) return false;
-        api().store('familyDashboard.scriptAuto', latest.script + '|' + Date.now());
+        // Tried for this version: when, and how many times. GitHub can take a few minutes to have every new file
+        // ready, so a failure just tries again 3 minutes later – only after several does it say so.
+        var tried = String(api().load('familyDashboard.scriptAuto') || '').split('|'), same = tried[0] === latest.script, fails = same ? Number(tried[2] || 0) : 0;
+        if (scriptUpdating || (same && Date.now() - Number(tried[1] || 0) < 3 * 60000)) return false;
+        api().store('familyDashboard.scriptAuto', latest.script + '|' + Date.now() + '|' + fails);
         scriptUpdating = true;
-        banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Updating the Google script to ' + esc(latest.script) + '…</b></div>');
+        if (!fails) banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Updating the Google script to ' + esc(latest.script) + '…</b></div>');
+        var failed = function (msg) {
+            scriptUpdating = false;
+            api().store('familyDashboard.scriptAuto', latest.script + '|' + Date.now() + '|' + (fails + 1));
+            if (fails + 1 < 5) { banner('scrBanner', ''); return; }      // quietly try again in 3 minutes
+            banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc(msg || '') + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
+        };
         api().post({ action: 'selfUpdate', why: 'screen' }).then(function (r) {
-            scriptUpdating = false;
-            if (r && (r.updated || r.upToDate)) { lastLayout.scriptVersion = r.to || r.version || latest.script; scriptDone(lastLayout.scriptVersion); if (window.FDHealth) FDHealth.note('script', ''); return; }
-            banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc((r && r.message) || '') + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
-        }).catch(function (err) {
-            scriptUpdating = false;
-            banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>The Google script couldn’t update itself</b><span>' + esc(err.message) + '</span></div><button class="n-btn ghost" data-s="ok">OK</button>');
-        });
+            if (r && (r.updated || r.upToDate) && !(r.upToDate && newer(latest.script, r.version || ''))) {
+                scriptUpdating = false; lastLayout.scriptVersion = r.to || r.version || latest.script; scriptDone(lastLayout.scriptVersion); if (window.FDHealth) FDHealth.note('script', ''); return;
+            }
+            failed((r && r.message) || 'GitHub doesn’t have the new version ready yet');
+        }).catch(function (err) { failed(err.message); });
         var b = document.getElementById('scrBanner');
         b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
         return true;
@@ -127,6 +133,9 @@
         scriptWasBehind = true;
         if (lastLayout.autoUpdate && newer(latest.script, lastLayout.scriptVersion) && autoScript()) return;
         if (scriptUpdating) return;
+        // Updating itself: no "please update" message while it's still trying (it says so itself after 5 failed tries).
+        var t = String(api().load('familyDashboard.scriptAuto') || '').split('|');
+        if (lastLayout.autoUpdate && !(t[0] === latest.script && Number(t[2] || 0) >= 5)) { if (!document.getElementById('scrBanner') || !/couldn/.test(document.getElementById('scrBanner').textContent)) banner('scrBanner', ''); return; }
         var nag = Number(api().load(SCRIPT_KEY) || 0);
         if (!newer(latest.script, lastLayout.scriptVersion) || Date.now() < nag) { banner('scrBanner', ''); return; }
         var b = banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Your Google script needs updating</b>' +

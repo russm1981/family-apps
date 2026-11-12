@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.67",
+    "date": "2026-11-12",
+    "notes": [
+      "The Google script now checks GitHub for a newer version itself every few minutes, the same way as the “Update now” button, and the Updates page shows when it last checked and what happened",
+      "The screen retries a script update quietly every 3 minutes, instead of asking you to update by hand",
+      "Family Admin → Widgets: hidden widgets are listed too, and a “Not in use” section has the settings of every widget that isn’t on a screen. Removing a widget keeps its settings; adding it again brings them back"
+    ]
+  },
+  {
     "version": "2026.11.66",
     "date": "2026-11-12",
     "notes": [

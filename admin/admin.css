@@ -196,3 +196,5 @@ details.when summary { font-weight: 600; cursor: pointer; }
 .wrow.pending { opacity: .5; pointer-events: none; }
 
 .desk-addr { font: 700 17px ui-monospace, Menlo, Consolas, monospace; background: #fff; color: #111; padding: 10px 12px; border-radius: 10px; margin: 8px 0; word-break: break-all; }
+
+.tile.unused { opacity: .7; }
