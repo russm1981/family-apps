@@ -28,8 +28,8 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other']]
-        : [['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other'], ['settings', '⚙', 'Settings']];
+    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
+        : [['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1 };
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
@@ -37,8 +37,8 @@
     function guideUrl() { return appsRoot() + 'setup/guide/'; }
     function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
-    var FAMILY_W = { agenda: 1, countdown: 1, whereabouts: 1 }, LIST_W = { memo: 1, list: 1, todo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
-    function tabFor(type) { return FAMILY_W[type] ? 'family' : LIST_W[type] ? 'lists' : 'other'; }
+    var FAMILY_W = { agenda: 1, countdown: 1, whereabouts: 1 }, LIST_W = { list: 1, todo: 1 }, MEMO_W = { memo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
+    function tabFor(type) { return FAMILY_W[type] ? 'family' : MEMO_W[type] ? 'memos' : LIST_W[type] ? 'lists' : 'other'; }
     // The Settings menu, in order. Sections marked sub: true are reached from another section (System → Licence…).
     var SECTIONS = {
         family: ['👪', 'Family & calendar', 'Children and the points page, calendar groups and colours, which Google calendars'],
@@ -166,7 +166,7 @@
         else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
-        else ({ family: renderFamily, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools })[r.tab]();
+        else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         privacyCheck();
@@ -314,7 +314,7 @@
         fetchGlance();
     }
     function renderOther() {
-        title('Other');
+        title('Widgets');
         var info = distinct(function (w) { return INFO_W[w.type]; }), rest = distinct(function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type]; });
         var order = ['bins', 'weather', 'trains', 'bus', 'traffic'];
         info.sort(function (a, b) { return order.indexOf(a.type) - order.indexOf(b.type); });
@@ -834,14 +834,16 @@
 
     /* ================================================================ lists: notes, shopping, to-dos together */
 
-    function renderLists() {
-        title('Lists');
-        var ws = distinct(function (w) { return w.type === 'memo' || w.type === 'list' || w.type === 'todo'; });
-        if (!ws.length) { $('body').innerHTML = card('No lists on the screen', '<p class="mute">Add a Notes, List or To-do widget on the computer, at ' + esc(deskShort()) + '.</p>'); return; }
+    function renderMemos() { renderListsOf('Memos', function (w) { return w.type === 'memo'; }, 'No memos on the screen', 'Add a Memo widget'); }
+    function renderLists() { renderListsOf('Lists', function (w) { return w.type === 'list' || w.type === 'todo'; }, 'No lists on the screen', 'Add a List or To-do widget'); }
+    function renderListsOf(name, which, none, how) {
+        title(name);
+        var ws = distinct(which);
+        if (!ws.length) { $('body').innerHTML = card(none, '<p class="mute">' + how + ' on Setup, on a computer: ' + esc(deskShort()) + '.</p>'); return; }
         // Only one list at a time can be edited here (the editors share element ids), so the others show a summary.
         var open = sessionStorage.getItem('fdadmin.openList') || ws[0].id;
         if (!ws.some(function (w) { return w.id === open; })) open = ws[0].id;
-        $('body').innerHTML = '<div class="seg lseg" id="lseg">' + ws.map(function (w) { return '<button data-l="' + esc(w.id) + '" class="' + (w.id === open ? 'on' : '') + '">' + esc(typeOf(w.type).icon) + ' ' + esc(widgetName(w)) + '</button>'; }).join('') + '</div>' +
+        $('body').innerHTML = (ws.length < 2 ? '<div id="lseg"></div>' : '<div class="seg lseg" id="lseg">' + ws.map(function (w) { return '<button data-l="' + esc(w.id) + '" class="' + (w.id === open ? 'on' : '') + '">' + esc(typeOf(w.type).icon) + ' ' + esc(widgetName(w)) + '</button>'; }).join('') + '</div>') +
             '<div id="lone">' + VIEWS[widgetOf(open).type](widgetOf(open)) + '</div>';
         $('lseg').onclick = function (e) { var b = e.target.closest('[data-l]'); if (b) { try { sessionStorage.setItem('fdadmin.openList', b.getAttribute('data-l')); } catch (x) { /* fine */ } render(); } };
         WIRE[widgetOf(open).type](widgetOf(open));

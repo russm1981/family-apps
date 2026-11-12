@@ -1,12 +1,12 @@
 {
-  "app": "2026.11.64",
+  "app": "2026.11.65",
   "script": "2026.11.44",
   "date": "2026-11-08",
   "notes": [
+    "Family Admin: separate Memos and Lists tabs, and the Other tab is now called Widgets",
     "The website for computers is now called Setup, at one address – russm1981.github.io/family-apps/setup – with first-time setup, every step-by-step guide, the screen layout and the rarer settings. Old links (licence emails, the Sheet’s menu, …/settings) still work",
     "Settings website: a drag-and-drop screen layout editor – screens down the left (add widget, calendar or points screens), widgets to drag in on the right, and a preview as on the Corsair, a tablet or a computer. Widgets with “When to show” are drawn split diagonally with their times",
-    "Settings website: a Setup & tools tab with every guided step (family & calendar, connecting devices, keys, licence, check everything, updates, starting again)",
-    "The home page shows the three places: the dashboard, Family Admin (phone) and the settings website (computer)"
+    "Settings website: a Setup & tools tab with every guided step (family & calendar, connecting devices, keys, licence, check everything, updates, starting again)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.65",
+    "date": "2026-11-12",
+    "notes": [
+      "Family Admin: separate Memos and Lists tabs, and the Other tab is now called Widgets"
+    ]
+  },
+  {
     "version": "2026.11.64",
     "date": "2026-11-12",
     "notes": [
