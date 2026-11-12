@@ -302,47 +302,65 @@
     /* ======================================================= TODAY & TOMORROW */
 
     T.agenda = function (el, w) {
-        // Today and Tomorrow side by side, and underneath them the coming weekend's two days (from Family Admin you can turn the weekend off).
+        // Today and Tomorrow side by side, and the weekend underneath under one heading, each entry with its day.
+        // Friday: Today and This weekend side by side. Saturday and Sunday: the weekend underneath is next weekend.
         var max = w.settings.MaxPerDay || 3, wkOn = w.settings.Weekend !== false;
         el.innerHTML = '<div class="ag-cols"><div class="ag-col"><h3 class="ag-h1">Today</h3><div class="ag-list l1">' + loading() + '</div></div>' +
-            '<div class="ag-col"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div></div>' +
-            (wkOn ? '<div class="ag-cols ag-wk"></div>' : '');
+            '<div class="ag-col ag-c2"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div></div>' +
+            (wkOn ? '<div class="ag-wk"><h3 class="ag-h3"></h3><div class="ag-list ag-wl l3"></div></div>' : '');
         var q = function (c) { return el.querySelector(c); };
-        var DAYFULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         function tags(evs, n) {
             var b = (evs || []).filter(function (e) { return e.bar; })[0];
             return (b ? '<em class="ag-hol" style="--hc:' + esc(b.c) + '">' + esc(b.k) + '</em>' : '') + (n ? '<em class="ag-bh">' + esc(n) + '</em>' : '');
         }
-        // Half height: the weekend days get a line fewer than today and tomorrow, so everything fits.
-        var wkMax = max;
-        function list(evs, ds, lim) {
-            lim = lim || max;
-            evs = (evs || []).filter(function (e) { return !e.bar; });
-            if (!evs.length) return '<div class="empty">Nothing on</div>';
-            var cut = evs.length > lim ? lim - 1 : evs.length;
-            var html = evs.slice(0, cut).map(function (e) {
-                return '<div class="ag-ev" style="--ec:' + esc(e.c) + '"><span class="ag-text">' + esc(e.t) + '</span>' +
+        /** rows: [{ e, day }]. lim: lines including "+ more". */
+        function list(rows, ds, lim) {
+            if (!rows.length) return '<div class="empty">Nothing on</div>';
+            var cut = rows.length > lim ? lim - 1 : rows.length;
+            var html = rows.slice(0, cut).map(function (x) {
+                var e = x.e;
+                return '<div class="ag-ev" style="--ec:' + esc(e.c) + '">' + (x.day ? '<span class="ag-day">' + x.day + '</span>' : '') + '<span class="ag-text">' + esc(e.t) + '</span>' +
                     (e.time ? '<span class="ag-time">' + esc(e.time) + '</span>' : '') + '</div>';
             }).join('');
-            if (evs.length > cut) html += '<button class="ag-more" data-goday="' + ds + '">+' + (evs.length - cut) + ' more \u203a</button>';
+            if (rows.length > cut) html += '<button class="ag-more" data-goday="' + ds + '">+' + (rows.length - cut) + ' more \u203a</button>';
             return html;
         }
+        function plain(evs) { return (evs || []).filter(function (e) { return !e.bar; }).map(function (e) { return { e: e }; }); }
+        function dmy(d) { return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
         return {
             update: function (a) {
-                if (!a || a.error) { q('.l1').innerHTML = errBox(a ? a.error : 'No calendar'); q('.l2').innerHTML = ''; if (q('.ag-wk')) q('.ag-wk').innerHTML = ''; return; }
-                var t = parseYmd(a.today), m = parseYmd(a.tomorrow), bh = a.bankHolidays || {};
-                q('.ag-h1').innerHTML = 'Today <span>' + DOW[t.getDay()] + ' ' + t.getDate() + ' ' + MON[t.getMonth()] + '</span>' + tags(a.days.today, bh.today);
-                q('.ag-h2').innerHTML = 'Tomorrow <span>' + DOW[m.getDay()] + ' ' + m.getDate() + ' ' + MON[m.getMonth()] + '</span>' + tags(a.days.tomorrow, bh.tomorrow);
-                q('.l1').innerHTML = list(a.days.today, a.today);
-                q('.l2').innerHTML = list(a.days.tomorrow, a.tomorrow);
-                var W = a.weekend, box = q('.ag-wk');
-                if (!box) return;
-                if (!W || !W.days || !W.days.length) { box.innerHTML = ''; return; }
-                box.innerHTML = W.days.map(function (ds, i) {
-                    var d = parseYmd(ds);
-                    return '<div class="ag-col"><h3>' + (W.next ? 'Next ' : '') + DAYFULL[d.getDay()] + ' <span>' + d.getDate() + ' ' + MON[d.getMonth()] + '</span>' +
-                        tags(W.events[i], W.bankHolidays[i]) + '</h3><div class="ag-list">' + list(W.events[i], ds, wkMax) + '</div></div>';
-                }).join('');
+                if (!a || a.error) { q('.l1').innerHTML = errBox(a ? a.error : 'No calendar'); q('.l2').innerHTML = ''; if (q('.l3')) q('.l3').innerHTML = ''; return; }
+                var t = parseYmd(a.today), m = parseYmd(a.tomorrow), bh = a.bankHolidays || {}, W = a.weekend;
+                var hasWk = wkOn && W && W.days && W.days.length;
+                var fri = hasWk && a.friday;                 // Friday: the weekend takes tomorrow's place
+                q('.ag-h1').innerHTML = 'Today <span>' + dmy(t) + '</span>' + tags(a.days.today, bh.today);
+                q('.l1').innerHTML = list(plain(a.days.today), a.today, fri ? max * 2 : max);
+                var wHead = '', wRows = [];
+                if (hasWk) {
+                    var ds = W.days.map(parseYmd), d0 = ds[0], d1 = ds[1], seen = {};
+                    wHead = (W.next ? 'Next weekend' : 'This weekend') + ' <span>' + DOW[d0.getDay()] + ' ' + d0.getDate() + (d0.getMonth() !== d1.getMonth() ? ' ' + MON[d0.getMonth()] : '') +
+                        '\u2013' + DOW[d1.getDay()] + ' ' + d1.getDate() + ' ' + MON[d1.getMonth()] + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
+                    (W.events || []).forEach(function (evs, i) {
+                        plain(evs).forEach(function (x) {
+                            var id = x.e.id || x.e.full || x.e.t; if (seen[id]) return; seen[id] = 1;     // an event over both days shows once
+                            x.day = DOW[ds[i].getDay()]; wRows.push(x);
+                        });
+                    });
+                }
+                if (fri) {
+                    q('.ag-h2').innerHTML = wHead;
+                    q('.l2').innerHTML = list(wRows, W.days[0], max * 2);
+                    if (q('.ag-wk')) q('.ag-wk').style.display = 'none';
+                    return;
+                }
+                q('.ag-h2').innerHTML = 'Tomorrow <span>' + dmy(m) + '</span>' + tags(a.days.tomorrow, bh.tomorrow);
+                q('.l2').innerHTML = list(plain(a.days.tomorrow), a.tomorrow, max);
+                if (!q('.ag-wk')) return;
+                q('.ag-wk').style.display = hasWk ? '' : 'none';
+                if (!hasWk) return;
+                q('.ag-h3').innerHTML = wHead;
+                q('.l3').innerHTML = list(wRows, W.days[0], max * 2);      // two columns of entries
+                q('.l3').style.gridTemplateRows = 'repeat(' + Math.min(max, Math.ceil(Math.min(wRows.length, max * 2) / 2)) + ', auto)';
             },
         };
     };

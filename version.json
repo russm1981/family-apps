@@ -1,13 +1,13 @@
 {
-  "app": "2026.11.52",
-  "script": "2026.11.37",
+  "app": "2026.11.53",
+  "script": "2026.11.38",
   "date": "2026-11-08",
   "notes": [
+    "Today & tomorrow: the weekend is grouped under one heading with each entry’s day – “This weekend” Monday to Thursday, in place of tomorrow on Fridays, and “Next weekend” on Saturdays and Sundays",
     "Family Calendar and Family Admin say clearly when a licence key is needed, with a box to type it in, instead of just not loading",
     "Today & tomorrow: up to 3 things a day, with the coming weekend’s Saturday and Sunday underneath",
     "Setup is clearer for a new family: an overview of the steps, every click spelled out, its own licence key step, and a warning if it’s opened on a phone",
-    "The licence email explains exactly what to do and opens setup with the key already in it",
-    "The screen’s “Add your licence key” page lets you type the key in on the screen itself"
+    "The licence email explains exactly what to do and opens setup with the key already in it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",
