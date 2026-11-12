@@ -35,7 +35,16 @@
         }
         return null;
     }
-    window.FDPairSend = { send: send, norm: norm, saved: saved };
+    /** After sending: true once the screen or computer has collected it, false if it's still waiting there. */
+    function collected(code) {
+        code = norm(code);
+        return fetch(base() + 'version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
+            return sha('fd-pair-id:' + code).then(function (h) {
+                return fetch(v.licence + '?action=pairPeek&id=' + hex(h).slice(0, 24) + '&t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); });
+            });
+        }).then(function (d) { if (!d || !d.ok || !('waiting' in d)) throw new Error('unknown'); return !d.waiting; });
+    }
+    window.FDPairSend = { send: send, norm: norm, saved: saved, collected: collected };
 
     /* ---- the other end: this device shows a code, and waits for a connected phone to send the family's link to it. */
     var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.70",
+    "date": "2026-11-12",
+    "notes": [
+      "Connect by code: after sending, Family Admin checks the screen or computer actually picked it up, and says so – or tells you to check the code"
+    ]
+  },
+  {
     "version": "2026.11.69",
     "date": "2026-11-12",
     "notes": [

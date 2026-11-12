@@ -18,7 +18,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.14';
+const LS_VERSION = '2026.11.15';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
@@ -169,6 +169,11 @@ function api_(b) {
       if (!/^[0-9a-f]{24}$/.test(id) || box.length > 4000 || !/^[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+$/.test(box)) throw new Error('Bad pairing request');
       CacheService.getScriptCache().put('pair:' + id, box, 600);
       return { ok: true };
+    }
+    case 'pairPeek': {   // the phone that sent it: has the screen collected it yet? (nothing is read or removed)
+      const id = String(b.id || '');
+      if (!/^[0-9a-f]{24}$/.test(id)) throw new Error('Bad pairing request');
+      return { ok: true, waiting: !!CacheService.getScriptCache().get('pair:' + id) };
     }
     case 'pairGet': {
       const id = String(b.id || ''), c = CacheService.getScriptCache();

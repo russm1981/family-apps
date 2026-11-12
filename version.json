@@ -1,16 +1,14 @@
 {
-  "app": "2026.11.69",
+  "app": "2026.11.70",
   "script": "2026.11.46",
   "date": "2026-11-08",
   "notes": [
+    "Connect by code: after sending, Family Admin checks the screen or computer actually picked it up, and says so – or tells you to check the code",
     "Setup website: tabs along the top – First-time setup, Screen layout, Reconfigure, Settings, then Family, Notes, Lists and Widgets. A computer that isn’t connected yet gets a choice: first-time setup, or connect this computer",
     "The licence email and setup explain in plain English how it works (your data stays in your own Google account, reached only with your private access code) and what each step does, including what an API key is",
-    "Family Admin is described as for adults",
-    "Notes: up to 6, shown two at a time on the screen with “Page 1 of 3”, turning by themselves every 8 seconds (tap the page number to turn now)",
-    "Family Admin: the Memos tab is now Notes, showing the notes as they look on the screen, with a box to add one underneath",
-    "The Google script now checks GitHub for a newer version itself every few minutes, the same way as the “Update now” button, and the Updates page shows when it last checked and what happened"
+    "Family Admin is described as for adults"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.14",
+  "licenceServer": "2026.11.15",
   "loader": "1"
 }

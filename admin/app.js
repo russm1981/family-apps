@@ -1599,7 +1599,21 @@
         $('prGo').onclick = function () {
             if (!confirm('Connect it to YOUR family’s dashboard? Only do this for a screen or computer in your own home – it will show your calendar, points, notes and photos. (Setting up someone else? They need their own setup.)')) return;
             var b = this; b.disabled = true;
-            FDPairSend.send($('prCode').value, FD.config()).then(function (code) { $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> ' + esc(code) + ' connects within a few seconds.</p>'; b.disabled = false; $('prCode').value = ''; },
+            FDPairSend.send($('prCode').value, FD.config()).then(function (code) {
+                $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> Waiting for ' + esc(code) + ' to pick it up…</p>'; b.disabled = false; $('prCode').value = '';
+                // Check it was collected – a code typed wrongly, or from a page that's been closed, would otherwise look like it worked.
+                var tries = 0;
+                (function check() {
+                    setTimeout(function () {
+                        if (!FDPairSend.collected) return;
+                        FDPairSend.collected(code).then(function (got) {
+                            if (got) { $('prOut').innerHTML = '<p class="pos small"><b>✔ Connected.</b> ' + esc(code) + ' has picked it up.</p>'; return; }
+                            if (++tries < 4) return check();
+                            $('prOut').innerHTML = '<p class="neg small"><b>Not picked up yet.</b> Check the code on the screen or computer is <b>' + esc(code) + '</b>, and that its page is still open – then type it again.</p>';
+                        }, function () { $('prOut').innerHTML = '<p class="pos small"><b>✔ Sent.</b> ' + esc(code) + ' should connect within a few seconds.</p>'; });
+                    }, 5000);
+                })();
+            },
                 function (e) { b.disabled = false; FD.toast(e.message, true); });
         };
         $('sOut').onclick = function () { if (confirm('Disconnect this phone? You’ll need a QR code or link from another family phone to connect it again.')) { FD.clearConfig(); try { localStorage.removeItem('fdadmin.data'); } catch (e) { /* ignore */ } location.reload(); } };
