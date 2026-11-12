@@ -302,33 +302,47 @@
     /* ======================================================= TODAY & TOMORROW */
 
     T.agenda = function (el, w) {
-        var max = w.settings.MaxPerDay || 4;
+        // Today and Tomorrow side by side, and underneath them the coming weekend's two days (from Family Admin you can turn the weekend off).
+        var max = w.settings.MaxPerDay || 3, wkOn = w.settings.Weekend !== false;
         el.innerHTML = '<div class="ag-cols"><div class="ag-col"><h3 class="ag-h1">Today</h3><div class="ag-list l1">' + loading() + '</div></div>' +
-            '<div class="ag-col"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div></div>';
+            '<div class="ag-col"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div></div>' +
+            (wkOn ? '<div class="ag-cols ag-wk"></div>' : '');
         var q = function (c) { return el.querySelector(c); };
+        var DAYFULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        function tags(evs, n) {
+            var b = (evs || []).filter(function (e) { return e.bar; })[0];
+            return (b ? '<em class="ag-hol" style="--hc:' + esc(b.c) + '">' + esc(b.k) + '</em>' : '') + (n ? '<em class="ag-bh">' + esc(n) + '</em>' : '');
+        }
+        // Half height: the weekend days get a line fewer than today and tomorrow, so everything fits.
+        var wkMax = max;
+        function list(evs, ds, lim) {
+            lim = lim || max;
+            evs = (evs || []).filter(function (e) { return !e.bar; });
+            if (!evs.length) return '<div class="empty">Nothing on</div>';
+            var cut = evs.length > lim ? lim - 1 : evs.length;
+            var html = evs.slice(0, cut).map(function (e) {
+                return '<div class="ag-ev" style="--ec:' + esc(e.c) + '"><span class="ag-text">' + esc(e.t) + '</span>' +
+                    (e.time ? '<span class="ag-time">' + esc(e.time) + '</span>' : '') + '</div>';
+            }).join('');
+            if (evs.length > cut) html += '<button class="ag-more" data-goday="' + ds + '">+' + (evs.length - cut) + ' more \u203a</button>';
+            return html;
+        }
         return {
             update: function (a) {
-                if (!a || a.error) { q('.l1').innerHTML = errBox(a ? a.error : 'No calendar'); q('.l2').innerHTML = ''; return; }
+                if (!a || a.error) { q('.l1').innerHTML = errBox(a ? a.error : 'No calendar'); q('.l2').innerHTML = ''; if (q('.ag-wk')) q('.ag-wk').innerHTML = ''; return; }
                 var t = parseYmd(a.today), m = parseYmd(a.tomorrow), bh = a.bankHolidays || {};
-                function tags(evs, n) {
-                    var b = (evs || []).filter(function (e) { return e.bar; })[0];
-                    return (b ? '<em class="ag-hol" style="--hc:' + esc(b.c) + '">' + esc(b.k) + '</em>' : '') + (n ? '<em class="ag-bh">' + esc(n) + '</em>' : '');
-                }
                 q('.ag-h1').innerHTML = 'Today <span>' + DOW[t.getDay()] + ' ' + t.getDate() + ' ' + MON[t.getMonth()] + '</span>' + tags(a.days.today, bh.today);
                 q('.ag-h2').innerHTML = 'Tomorrow <span>' + DOW[m.getDay()] + ' ' + m.getDate() + ' ' + MON[m.getMonth()] + '</span>' + tags(a.days.tomorrow, bh.tomorrow);
-                function list(evs, ds) {
-                    evs = (evs || []).filter(function (e) { return !e.bar; });
-                    if (!evs.length) return '<div class="empty">Nothing on</div>';
-                    var cut = evs.length > max ? max - 1 : evs.length;
-                    var html = evs.slice(0, cut).map(function (e) {
-                        return '<div class="ag-ev" style="--ec:' + esc(e.c) + '"><span class="ag-text">' + esc(e.t) + '</span>' +
-                            (e.time ? '<span class="ag-time">' + esc(e.time) + '</span>' : '') + '</div>';
-                    }).join('');
-                    if (evs.length > cut) html += '<button class="ag-more" data-goday="' + ds + '">+' + (evs.length - cut) + ' more \u203a</button>';
-                    return html;
-                }
                 q('.l1').innerHTML = list(a.days.today, a.today);
                 q('.l2').innerHTML = list(a.days.tomorrow, a.tomorrow);
+                var W = a.weekend, box = q('.ag-wk');
+                if (!box) return;
+                if (!W || !W.days || !W.days.length) { box.innerHTML = ''; return; }
+                box.innerHTML = W.days.map(function (ds, i) {
+                    var d = parseYmd(ds);
+                    return '<div class="ag-col"><h3>' + (W.next ? 'Next ' : '') + DAYFULL[d.getDay()] + ' <span>' + d.getDate() + ' ' + MON[d.getMonth()] + '</span>' +
+                        tags(W.events[i], W.bankHolidays[i]) + '</h3><div class="ag-list">' + list(W.events[i], ds, wkMax) + '</div></div>';
+                }).join('');
             },
         };
     };

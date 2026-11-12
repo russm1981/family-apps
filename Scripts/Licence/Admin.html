@@ -401,10 +401,10 @@ function settingsPage() {
     var s = d.settings;
     $('main').innerHTML = '<div class="card"><h2>Licence server address</h2><p class="mute small">Dashboards check their key here. It goes in <b>version.json</b> on GitHub as <code>"licence"</code>.</p>' +
       '<div class="row"><span class="key" style="flex:1;overflow:auto">' + esc(d.url || 'Not deployed yet') + '</span>' + (d.url ? '<button class="btn ghost" id="cpUrl">Copy</button>' : '') + '</div></div>' +
-      '<div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
+      '<div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link (on a line of its own it becomes a big “Start setting up” button), {help} = the setup help page, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
       '<div class="grid2"><div><label>From (name)</label><input id="sSeller" value="' + esc(s.sellerName) + '"></div><div><label>Setup link</label><input id="sSetup" value="' + esc(s.setupLink) + '"></div></div>' +
       '<label>Subject</label><input id="sSubj" value="' + esc(s.subject) + '"><label>Message</label><textarea id="sBody" style="min-height:240px">' + esc(s.body) + '</textarea>' +
-      '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button></div><div id="sOut" class="status"></div></div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button><button class="btn ghost" id="sTest">Send me a sample</button><button class="btn ghost" id="sReset">Back to the standard wording</button></div><div id="sOut" class="status"></div></div>' +
       supportKeyCard() +
       '<div class="card"><h2>Admin password</h2><div class="grid2"><div><label>New password (12+ characters)</label><input id="p1" type="password" autocomplete="new-password"></div>' +
       '<div><label>Again</label><input id="p2" type="password" autocomplete="new-password"></div></div><div class="row" style="margin-top:12px"><button class="btn ghost" id="pSave">Change password</button></div><div id="pOut" class="status"></div></div>';
@@ -413,6 +413,14 @@ function settingsPage() {
     $('sSave').onclick = function () {
       call('saveSettings', { sellerName: $('sSeller').value, setupLink: $('sSetup').value, subject: $('sSubj').value, body: $('sBody').value })
         .then(function () { $('sOut').innerHTML = '<span class="ok">✔ Saved</span>'; }, function (e) { $('sOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+    };
+    $('sTest').onclick = function () {
+      $('sOut').textContent = 'Sending…';
+      call('testEmail').then(function (r) { $('sOut').innerHTML = '<span class="ok">✔ Sent to ' + esc(r.to) + '</span>'; }, function (e) { $('sOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
+    };
+    $('sReset').onclick = function () {
+      if (!confirm('Put the standard subject, message and setup link back?')) return;
+      call('saveSettings', { setupLink: '', subject: '', body: '' }).then(function () { settingsPage(); }, function (e) { $('sOut').innerHTML = '<span class="err">' + esc(e.message) + '</span>'; });
     };
     $('pSave').onclick = function () {
       if ($('p1').value !== $('p2').value) { $('pOut').innerHTML = '<span class="err">The two passwords are different</span>'; return; }

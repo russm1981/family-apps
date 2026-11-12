@@ -165,6 +165,8 @@
    }
    // From the order email: …/#key=FD-…  – Setup fills the licence key in by itself.
    var km = /[#&]key=([^&#\s]+)/.exec(location.hash);
+   // (Older emails link here rather than to setup: go straight on to setup.)
+   if (km) { location.replace('setup/#key=' + km[1]); }
    if (km) { var key = decodeURIComponent(km[1]); document.querySelector('.tile.first').href = 'setup/#key=' + encodeURIComponent(key);
      var kn = document.createElement('p'); kn.className = 'sub'; kn.innerHTML = '🔑 Your licence key <b>' + esc(key) + '</b> is ready – Setup will fill it in for you.'; document.querySelector('.tiles.three').before(kn); }
    // A link straight to this page (…/#api=…&code=…) connects it too.

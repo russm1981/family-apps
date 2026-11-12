@@ -4,6 +4,23 @@
  */
 window.FD_HELP = [
   {
+    id: 'setup', icon: '🧭', title: 'Help with first-time setup',
+    summary: 'Setting up from your licence email: what to click at each step, and what to do where people most often get stuck.',
+    body: `
+<h2>Where to start</h2>
+<p>Open your licence email <b>on a computer</b> (not a phone) and click <b>Start setting up</b>. The setup page opens with your licence key already in it. Press <b>Start</b>, then <b>Next</b> at the bottom of each page.</p>
+<h2>Common sticking points</h2>
+<dl>
+<dt>“Make my copy” asks me to sign in, or copies into the wrong account</dt><dd>Sign in with the Google account the dashboard should live in – the one with the family calendar. If you’re signed into two accounts, Google uses the one shown at the top right; switch there and click <b>Make my copy</b> again.</dd>
+<dt>I can’t find Deploy</dt><dd>It’s in the <b>Apps Script</b> tab, not the Sheet: in the Sheet click <b>Extensions → Apps Script</b>. <b>Deploy</b> is the blue button at the top right of that tab.</dd>
+<dt>“Google hasn’t verified this app”</dt><dd>That’s normal: it’s your own private copy, which Google hasn’t reviewed. Click <b>Advanced</b> (small, bottom left), then <b>Go to Family Dashboard (unsafe)</b>, then <b>Allow</b>.</dd>
+<dt>The 🏠 Family Dashboard menu doesn’t appear in the Sheet</dt><dd>Reload the Sheet’s tab (F5, or ⌘R on a Mac) and wait about 10 seconds – it appears after <b>Help</b> along the top.</dd>
+<dt>The setup page says “Couldn’t reach that address” or “opened a Google page instead”</dt><dd>In Apps Script: <b>Deploy → Manage deployments → ✎ (pencil)</b>, check <b>Who has access</b> is <b>Anyone</b>, and click <b>Deploy</b>.</dd>
+<dt>The licence key isn’t accepted</dt><dd>See <a href="#licence">Licence key</a>. You can carry on without it for 14 days and add it later.</dd>
+<dt>I closed the setup page</dt><dd>Open it again from the same computer and browser – it remembers where you were. Or in your Sheet: <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>.</dd>
+</dl>`
+  },
+  {
     id: 'dot', icon: '🟢', title: 'The coloured dot on the screen',
     summary: 'The small dot next to the microphone tells you at a glance whether everything is working: green is fine, orange means something needs a look, red means the screen can’t get any information.',
     body: `
@@ -169,12 +186,13 @@ window.FD_HELP = [
     body: `
 <h2>Entering your key</h2>
 <ol><li>Find your order email – the key looks like <code>FD-AB2CD-EF3GH-JK4LM-NP5QR</code>.</li>
-<li>On your phone: <b>Family Admin → Settings → Licence</b>, type it in and press <b>Check and save</b>. (Or in the setup app, at the “Publish &amp; connect” step.)</li></ol>
+<li>When you first set up, the setup app has a step <b>“Your licence key”</b> – the link in your email fills it in for you.</li>
+<li>Later: on your phone, <b>Family Admin → Settings → System → Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
 <h2>Messages</h2>
 <dl>
 <dt>“Free trial: N days left”</dt><dd>Everything works; add your key before the trial ends.</dd>
 <dt>“That licence key isn’t recognised”</dt><dd>Check it against your email – it’s easy to mix up similar letters. Letters O and I and numbers 0 and 1 are never used.</dd>
-<dt>“Already in use on another dashboard”</dt><dd>A key works on one dashboard at a time. If you moved to a new Sheet, free the key on the old one first (<b>Settings → Licence → Free up my licence key</b>), or ask the seller to release it.</dd>
+<dt>“Already in use on another dashboard”</dt><dd>A key works on one dashboard at a time, and it belongs to the first dashboard it was entered on. If it was typed into an app that was connected to <b>someone else’s</b> dashboard (for example a phone that was set up for a relative’s family), it went to theirs. Ask the seller to <b>release</b> it, then enter it again. If you moved to a new Sheet, free the key on the old one first (<b>Settings → System → Licence → Free up my licence key</b>).</dd>
 <dt>“Use this screen instead?”</dt><dd>Your licence is for a set number of screens and they’re in use. Choose which screen this one replaces, or ask the seller for a licence with more screens. See <a href="#connect">Connect a new phone, tablet or screen</a>.</dd>
 <dt>“Couldn’t be checked for 21 days”</dt><dd>The dashboard checks its key once a day. Check the internet; if it carries on, contact the seller.</dd>
 </dl>`

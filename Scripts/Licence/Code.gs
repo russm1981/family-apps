@@ -18,7 +18,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.12';
+const LS_VERSION = '2026.11.13';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
@@ -31,11 +31,28 @@ const LOGCOLS = ['When', 'Key', 'Event', 'Install', 'Detail'];
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';     // no 0/O, 1/I – easy to read out and type
 const DEFAULTS = {
   sellerName: 'Family Dashboard',
-  subject: 'Your Family Dashboard licence key',
-  body: 'Hello {name},\n\nThank you for buying Family Dashboard.\n\nYour licence key is:\n\n    {key}\n\n' +
+  subject: 'Your Family Dashboard licence key – and how to get started',
+  body: 'Hello {name},\n\nThank you for buying Family Dashboard. Everything you need to get started is in this email.\n\n' +
+    'YOUR LICENCE KEY\n\n    {key}\n\nKeep this email: you need the key again if you ever set the dashboard up from scratch.\n\n' +
+    'HOW TO GET STARTED\n\n' +
+    '1. Use a computer (a Windows PC or a Mac), not a phone or tablet – part of setup is done on Google’s website.\n\n' +
+    '2. Click the link below. It opens the setup page with your licence key already filled in:\n\n{setup}\n\n' +
+    '3. Press Start, then follow the page one step at a time, pressing Next at the bottom of each one. It takes about 30 minutes, ' +
+    'and if you stop, the page remembers where you got to.\n\n' +
+    'WHAT YOU’LL NEED\n\n' +
+    '- A Google (Gmail) account – ideally the one your family calendar is in\n' +
+    '- Your screen: a Windows PC with a Corsair XENEON EDGE, a tablet, or a Raspberry Pi with a screen\n' +
+    '- About half an hour\n\n' +
+    'STUCK?\n\nThere’s help for every step here: {help}\nOr just reply to this email.\n\nBest wishes,\n{seller}',
+  setupLink: 'https://russm1981.github.io/family-apps/setup/',
+};
+// Earlier standard wording: treated as "not changed", so buyers get the current wording.
+const OLD_DEFAULTS = {
+  subject: ['Your Family Dashboard licence key'],
+  body: ['Hello {name},\n\nThank you for buying Family Dashboard.\n\nYour licence key is:\n\n    {key}\n\n' +
     'To set up your dashboard, open {setup} on a computer and follow the steps. You will be asked for this key.\n\n' +
-    'Keep this email: you need the key again if you ever set the dashboard up from scratch.\n\nBest wishes,\n{seller}',
-  setupLink: 'https://russm1981.github.io/family-apps/',
+    'Keep this email: you need the key again if you ever set the dashboard up from scratch.\n\nBest wishes,\n{seller}'],
+  setupLink: ['https://russm1981.github.io/family-apps/', 'https://russm1981.github.io/family-apps'],
 };
 
 /* ================================================================ menu & setup */
@@ -175,7 +192,7 @@ function verify_(b) {
   const C = colIndex_(), rec = sh.getRange(row, 1, 1, COLS.length).getValues()[0];
   const status = String(rec[C.Status]), bound = String(rec[C.Install] || '');
   if (status === 'Revoked') return bad('revoked', 'This licence has been switched off. Please contact the seller.');
-  if (bound && bound !== install) return bad('in-use', 'This licence key is already in use on another dashboard. Ask the seller to release it if you have moved.');
+  if (bound && bound !== install) return bad('in-use', 'This licence key is already in use on another dashboard. If it was typed into an app that was connected to someone else’s dashboard, it went there. Ask the seller to release it, then enter it again.');
   const now = new Date();
   if (!bound) {
     rec[C.Status] = 'Active'; rec[C.Install] = install; rec[C.Activated] = now;
@@ -284,6 +301,12 @@ function admin(password, op, args) {
     case 'delete': return withLock_(() => delete_(args.key));
     case 'email': return withLock_(() => ({ ok: true, sent: emailKeys_(null, [args.key]) }));
     case 'emailUnsent': return withLock_(() => ({ ok: true, sent: emailKeys_(null, null, true) }));
+    case 'testEmail': {      // a sample of the buyers' email, to you (the owner of this licence server)
+      const me = Session.getEffectiveUser().getEmail(), m = emailFor_(settings_(), 'there', ['FD-SAMPL-EKEYS-AMPLE-KEYXX']);
+      if (!me) throw new Error('Couldn’t tell which account to send it to');
+      MailApp.sendEmail({ to: me, subject: '[Sample] ' + m.subject, body: m.body, htmlBody: m.html, name: settings_().sellerName });
+      return { ok: true, to: me };
+    }
     case 'log': return { ok: true, rows: logRows_(args.key, 300) };
     case 'settings': return { ok: true, settings: settings_(), url: ScriptApp.getService().getUrl() || '', quota: MailApp.getRemainingDailyQuota() };
     case 'saveSettings': return { ok: true, settings: saveSettings_(args) };
@@ -446,11 +469,8 @@ function emailKeys_(toEmail, keys, unsentOnly) {
   if (emails.length > MailApp.getRemainingDailyQuota()) throw new Error('Google lets this account send ' + MailApp.getRemainingDailyQuota() + ' more emails today – try fewer, or tomorrow');
   emails.forEach(email => {
     const list = byEmail[email], name = (list[0].name || '').split(' ')[0] || 'there';
-    const keyText = list.map(x => x.key).join('\n    ');
-    // One key: the setup link carries it, so setup fills it in by itself.
-    const link = S.setupLink + (list.length === 1 ? '#key=' + encodeURIComponent(list[0].key) : '');
-    const fill = t => String(t).replace(/\{name\}/g, name).replace(/\{key\}/g, keyText).replace(/\{setup\}/g, link).replace(/\{seller\}/g, S.sellerName);
-    MailApp.sendEmail({ to: email, subject: fill(S.subject), body: fill(S.body), name: S.sellerName });
+    const m = emailFor_(S, name, list.map(x => x.key));
+    MailApp.sendEmail({ to: email, subject: m.subject, body: m.body, htmlBody: m.html, name: S.sellerName });
     const now = new Date();
     list.forEach(x => { sh.getRange(x.i + 2, C.Emailed + 1).setValue(now); log_(String(x.key), 'Emailed', '', email); });
     sent += list.length;
@@ -458,9 +478,36 @@ function emailKeys_(toEmail, keys, unsentOnly) {
   return sent;
 }
 
+/** The licence email for these keys: plain text, and an HTML copy with a big "Start setting up" button. */
+function emailFor_(S, name, keys) {
+  // One key: the setup link carries it, so setup fills it in by itself.
+  let base = String(S.setupLink || DEFAULTS.setupLink).trim();
+  if (/github\.io\/family-apps\/?$/.test(base)) base = base.replace(/\/?$/, '/') + 'setup/';     // straight to setup, not the home page
+  const link = base + (keys.length === 1 ? '#key=' + encodeURIComponent(keys[0]) : '');
+  const help = APPS_BASE + 'help/#setup';
+  const keyText = keys.join('\n    ');
+  const fill = t => String(t).replace(/\{name\}/g, name).replace(/\{key\}/g, keyText).replace(/\{setup\}/g, link).replace(/\{help\}/g, help).replace(/\{seller\}/g, S.sellerName);
+  const body = fill(S.body);
+  const e = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const linkify = t => e(t).replace(/https?:\/\/[^\s<]+/g, u => '<a href="' + u + '" style="color:#1f6f5c">' + (u === e(help) ? 'the setup help page' : u.length > 60 ? u.slice(0, 57) + '…' : u) + '</a>');
+  const html = body.split(/\n{2,}/).map(par => {
+    const p = par.trim();
+    if (!p) return '';
+    if (p === link) return '<p style="margin:18px 0"><a href="' + e(link) + '" style="display:inline-block;background:#1f6f5c;color:#ffffff;padding:14px 26px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:17px">Start setting up →</a></p>';
+    if (keys.indexOf(p) >= 0 || p.split(/\s+/).every(w => keys.indexOf(w) >= 0)) return '<p style="font:bold 22px ui-monospace,Menlo,Consolas,monospace;letter-spacing:1px;background:#f3f1ea;padding:12px 16px;border-radius:8px;display:inline-block">' + p.split(/\s+/).map(e).join('<br>') + '</p>';
+    if (/^[A-Z’' ?]+$/.test(p) && p.length < 40) return '<h3 style="margin:22px 0 6px;font-size:15px;letter-spacing:.5px;color:#1f6f5c">' + e(p) + '</h3>';
+    return '<p style="margin:8px 0">' + linkify(p).replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+  return { subject: fill(S.subject), body: body,
+    html: '<div style="font:16px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d2329;max-width:560px">' + html + '</div>' };
+}
+
 function settings_() {
   const P = PropertiesService.getScriptProperties(), o = {};
-  Object.keys(DEFAULTS).forEach(k => { o[k] = P.getProperty('set_' + k) || DEFAULTS[k]; });
+  Object.keys(DEFAULTS).forEach(k => {
+    const v = P.getProperty('set_' + k);
+    o[k] = v && (OLD_DEFAULTS[k] || []).indexOf(v) < 0 ? v : DEFAULTS[k];
+  });
   return o;
 }
 function saveSettings_(a) {

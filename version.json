@@ -1,17 +1,17 @@
 {
-  "app": "2026.11.49",
-  "script": "2026.11.36",
+  "app": "2026.11.51",
+  "script": "2026.11.37",
   "date": "2026-11-08",
   "notes": [
+    "Today & tomorrow: up to 3 things a day, with the coming weekend’s Saturday and Sunday underneath",
+    "Setup is clearer for a new family: an overview of the steps, every click spelled out, its own licence key step, and a warning if it’s opened on a phone",
+    "The licence email explains exactly what to do and opens setup with the key already in it",
+    "The screen’s “Add your licence key” page lets you type the key in on the screen itself",
+    "Every app shows which family it’s connected to and can be disconnected: Family Calendar (⚙ next to Today), Family Admin (Settings → Devices → This phone), the screen (Status page), the setup app and the home page",
     "Connecting a screen from a phone now says whose dashboard it will show and asks “Is this screen in your home?” – with “No – it’s someone else’s screen” leading to their own setup",
-    "Screen status page: “Disconnect this screen”",
-    "A copy of someone else’s dashboard Sheet is emptied automatically before anything is shown; Sheet menu “Clear everything and start from scratch”",
-    "Google script 2026.11.36",
-    "Bins simplified: one place to set them up (Set up bin days); the settings only hold the reminder time; the council is shown plainly with “Not right?” instead of a long list; by hand (with the AI helper) is the clear next step when a council can’t be read",
-    "Google script 2026.11.35",
-    "Bins by hand: “Let an AI assistant look it up” – a ready-written request (with your postcode, house and council) to copy into ChatGPT, Claude or Gemini; paste its answer back and your bins are filled in"
+    "Screen status page: “Disconnect this screen”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.12",
+  "licenceServer": "2026.11.13",
   "loader": "1"
 }

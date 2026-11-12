@@ -1,5 +1,22 @@
 [
   {
+    "version": "2026.11.51",
+    "date": "2026-11-12",
+    "notes": [
+      "Today & tomorrow: up to 3 things a day, with the coming weekend’s Saturday and Sunday underneath",
+      "Setup is clearer for a new family: an overview of the steps, every click spelled out, its own licence key step, and a warning if it’s opened on a phone",
+      "The licence email explains exactly what to do and opens setup with the key already in it",
+      "The screen’s “Add your licence key” page lets you type the key in on the screen itself"
+    ]
+  },
+  {
+    "version": "2026.11.50",
+    "date": "2026-11-10",
+    "notes": [
+      "Every app shows which family it’s connected to and can be disconnected: Family Calendar (⚙ next to Today), Family Admin (Settings → Devices → This phone), the screen (Status page), the setup app and the home page"
+    ]
+  },
+  {
     "version": "2026.11.49",
     "date": "2026-11-10",
     "notes": [

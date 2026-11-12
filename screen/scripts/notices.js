@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.49';
+    var APP_VERSION = '2026.11.51';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -195,9 +195,27 @@
         if (el) el.onclick = null;
         if (lic && lic.required && !lic.ok) {
             if (!el) { el = document.createElement('div'); el.id = 'licLock'; el.className = 'lic-lock'; document.body.appendChild(el); }
-            el.innerHTML = '<div class="lic-box"><div class="lic-ico">🔑</div><h2>' + (lic.state === 'missing' ? 'Add your licence key' : 'Licence problem') + '</h2>' +
-                '<p>' + esc(lic.message || '') + '</p><p class="lic-how">On your phone: <b>Family Admin → Settings → Licence</b>, and type in the key from your order email. ' +
-                'This screen carries on by itself within a few minutes.</p></div>';
+            var sig = (lic.state || '') + '|' + (lic.message || '');
+            if (el.getAttribute('data-sig') !== sig || el.style.display !== 'flex') {      // don't wipe a key being typed in
+                el.setAttribute('data-sig', sig);
+                el.innerHTML = '<div class="lic-box"><div class="lic-ico">🔑</div><h2>' + (lic.state === 'missing' ? 'Add your licence key' : 'Licence problem') + '</h2>' +
+                    '<p>' + esc(lic.message || '') + '</p>' +
+                    '<p class="lic-how">Your key is in your order email: FD- then four groups of five letters and numbers. Type it here:</p>' +
+                    '<div class="lic-row"><input id="licIn" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="n-btn" id="licSave">Check and save</button></div>' +
+                    '<p class="lic-msg" id="licMsg"></p>' +
+                    '<p class="lic-how">Or on your phone: <b>Family Admin → Settings → System → Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
+                var go = function () {
+                    var inp = document.getElementById('licIn'), k = inp.value.trim(), msg = document.getElementById('licMsg'), btn = document.getElementById('licSave');
+                    if (!k) { msg.textContent = 'Type your key in first.'; return; }
+                    btn.disabled = true; msg.textContent = 'Checking…';
+                    api().post({ action: 'setLicence', key: k }).then(function (d) {
+                        msg.textContent = '✔ ' + ((d && d.message) || 'Saved'); el.setAttribute('data-sig', '');
+                        setTimeout(function () { el.style.display = 'none'; if (window.FDPages) FDPages.refreshNow(true); }, 1500);
+                    }).catch(function (err) { btn.disabled = false; msg.textContent = '⚠ ' + String(err && err.message || err).replace(/^Error:\s*/, ''); });
+                };
+                document.getElementById('licSave').onclick = go;
+                document.getElementById('licIn').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+            }
             el.style.display = 'flex';
         } else if (el) el.style.display = 'none';
         if (window.FDHealth) FDHealth.note('licence', lic && lic.required && (!lic.ok || /hasn’t answered/.test(lic.message || '')) ? 'Licence: ' + lic.message : '');

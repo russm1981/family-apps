@@ -56,7 +56,9 @@
     }
     function okLine(ok, text) { return '<div class="status ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✔ ' : '⚠ ') + esc(text) + '</div>'; }
     function connected() { return !!(S.url && S.code && S.connected); }
-    function needConnect() { return connected() ? '' : '<div class="note bad">Connect to your Google Sheet first (step 3).</div>'; }
+    function needConnect() { return connected() ? '' : '<div class="note bad">Connect to your Google Sheet first (step 2, “Publish & connect”).</div>'; }
+    function helpLink(topic) { return '<p class="mute help-l">Stuck? <a href="../help/#' + topic + '" target="_blank" rel="noopener">Help with this step</a></p>'; }
+    function phoneish() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820) || /iPhone|Android.+Mobile/.test(navigator.userAgent); }
     /** Family as the server sends it → the form, remembering each name so renames can be followed. */
     function fromServer(f) {
         f = JSON.parse(JSON.stringify(f || {}));
@@ -110,44 +112,60 @@
     var P = window.FD_PRIVACY || { version: '0', summary: [], full: '' };
     var STEPS = [
         { id: 'welcome', title: 'Welcome & privacy', render: function () {
-            return '<h1>Let’s set up your Family Dashboard</h1>' +
-                '<p class="lead">About 20–30 minutes. No code to copy: you make your own copy of the Family Dashboard Sheet, publish it, and this page connects everything.</p>' +
-                '<div class="grid2"><div class="card"><h3>What you’ll end up with</h3><ul>' +
-                '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, flights overhead, photos and more.</li>' +
+            return (connected() ? '<div class="card"><p>This page is connected to a Family Dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
+                    'Setting up a <b>different</b> family? <button class="link" id="suForget">Disconnect and start a new one</button></p></div>' : '') +
+                (S.licKey ? '<div class="note ok">🔑 Your licence key <b class="mono">' + esc(S.licKey) + '</b> came with the link from your email. Setup fills it in for you – nothing to type.</div>' : '') +
+                (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done on Google’s website, which doesn’t work properly on a phone. ' +
+                    'Open your licence email on your computer and click the link there, or send this page to yourself: <button class="btn sm" id="suSend">Copy this page’s link</button></div>' : '') +
+                '<h1>Let’s set up your Family Dashboard</h1>' +
+                '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
+                'You can stop at any point – this page remembers where you got to.</p>' +
+                '<div class="card big"><h3>The steps</h3><ol class="howto">' +
+                '<li><b>Make your own copy of the Family Dashboard Sheet</b> in your Google account – one click. <span class="mute">(2 minutes)</span></li>' +
+                '<li><b>Publish it</b>, so your screen and phones can reach it. Google asks you to allow it. <span class="mute">(5 minutes – the only fiddly bit, and the page shows you every click)</span></li>' +
+                '<li><b>Your licence key</b> – from your order email. <span class="mute">(1 minute)</span></li>' +
+                '<li><b>Your family</b> – names and colours for the calendar and the children’s points. <span class="mute">(5 minutes)</span></li>' +
+                '<li><b>Connect your screen and phones.</b> <span class="mute">(5 minutes)</span></li>' +
+                '<li><b>Live data</b> such as traffic and trains – optional; skip any you don’t want. <span class="mute">(up to 10 minutes)</span></li>' +
+                '<li><b>Check everything works.</b></li></ol></div>' +
+                '<div class="grid2"><div class="card"><h3>What you need</h3><ul>' +
+                '<li>This page open on a <b>computer</b>.</li><li>A <b>Google (Gmail) account</b> – the one the family calendar is in.</li>' +
+                '<li>Your <b>licence email</b> (it has your key).</li>' +
+                '<li>The <b>screen</b>: a Windows PC with a Corsair XENEON EDGE, a tablet, or a Raspberry Pi with a screen.</li></ul></div>' +
+                '<div class="card"><h3>What you’ll end up with</h3><ul>' +
+                '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
-                '<li>Two phone apps: <b>Family Calendar</b> and <b>Family Admin</b>.</li></ul></div>' +
-                '<div class="card"><h3>What you need</h3><ul><li>A Google (Gmail) account.</li>' +
-                '<li>A screen: a Windows PC with a Corsair XENEON EDGE, a Raspberry Pi with a screen, or a wall tablet.</li>' +
-                '<li>This page open on a computer.</li></ul></div></div>' +
+                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (parents).</li></ul></div></div>' +
+                '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
                 '<div class="card privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
                 '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
                 '<label class="tick"><input type="checkbox" id="pvOk"' + (S.privacy === P.version ? ' checked' : '') + '> I have read and accept the privacy notice (version ' + esc(P.version) + ', ' + esc(P.updated || '') + ')</label></div>';
         }, wire: function () {
+            if ($('suSend')) $('suSend').onclick = function () {
+                var u = location.href.split('#')[0] + (S.licKey ? '#key=' + encodeURIComponent(S.licKey) : '');
+                navigator.clipboard.writeText(u).then(function () { toast('Copied – paste it into an email or message to yourself'); }, function () { prompt('Copy this link:', u); });
+            };
+            if ($('suForget')) $('suForget').onclick = function () {
+                if (!confirm('Disconnect this page from that dashboard and start setting up a new family? (The other dashboard isn’t changed.)')) return;
+                try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) { /* fine */ }
+                location.replace(location.pathname);
+            };
             $('pvOk').onchange = function () {
                 S.privacy = $('pvOk').checked ? P.version : ''; save(); render();
+                if (S.privacy) toast('Thanks – press Start at the bottom');
                 if (S.privacy && connected()) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
             };
-        }, ready: function () { return S.privacy === P.version; }, blocked: 'Tick the box to accept the privacy notice first' },
-
-        { id: 'apps', title: 'Get the apps', render: function () {
-            return '<h1>1. Get the apps</h1><p class="lead">Install them now – you’ll connect them to your own Sheet in step 4.</p>' +
-                '<div class="grid3">' +
-                '<div class="card app"><h3>🖥 Screen (Windows + XENEON EDGE)</h3><p class="mute">Download, unzip into Documents\\Family Dashboard. (In step 4 you’ll get a personal start file that connects it by itself.)</p>' +
-                '<a class="btn" href="../downloads/family-dashboard-windows.zip" download>Download for Windows</a>' +
-                '<p class="mute">Raspberry Pi or tablet? Nothing to download – step 4 gives you the address to open.</p></div>' +
-                '<div class="card app"><h3>📅 Family Calendar</h3><p class="mute">For everyone. Scan with the phone camera, then add to the home screen.</p>' + qr(appsBase + 'calendar/') + '</div>' +
-                '<div class="card app"><h3>⚙ Family Admin</h3><p class="mute">For parents: points, tasks, widgets, settings.</p>' + qr(appsBase + 'admin/') + '</div></div>' +
-                '<div class="card"><b>Add to the home screen:</b> iPhone – open in <b>Safari</b> → Share → <b>Add to Home Screen</b>. Android – open in <b>Chrome</b> → ⋮ → <b>Install app</b>.' +
-                '<p class="mute">The phone apps and the screen update themselves from the internet – nothing to reinstall later.</p></div>';
-        } },
+        }, ready: function () { return S.privacy === P.version; }, blocked: 'Tick the box at the bottom to accept the privacy notice first' },
 
         { id: 'sheet', title: 'Make your Google Sheet', render: function () {
             var tpl = CFG.templateId;
-            return '<h1>2. Make your own Google Sheet</h1>' +
-                (tpl ? '<div class="card big"><p>This makes <b>your own copy</b> of the Family Dashboard Sheet in your Google account – with all the code already inside.</p>' +
-                    '<a class="btn big" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a>' +
-                    '<p class="mute">Google asks "Copy document?" → <b>Make a copy</b>. Your new Sheet opens in a new tab – keep it open for step 3.</p></div>' +
-                    '<details class="card"><summary>No "Make my copy" button working? Do it by hand</summary>' + manual() + '</details>'
+            return '<h1>1. Make your own Google Sheet</h1><p class="lead">Everything your dashboard shows is kept in a Google Sheet in your own Google account. This makes yours.</p>' +
+                (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
+                    '<span class="mute">(it opens in a new tab)</span></li>' +
+                    '<li>If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
+                    '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
+                    '<li>Your new Sheet opens, called <b>“Copy of Family Dashboard”</b>. Leave that tab open, come back to this tab, and press <b>Next</b>.</li></ol></div>' +
+                    helpLink('setup') + '<details class="card"><summary>“Make my copy” not working? Do it by hand</summary>' + manual() + '</details>'
                   : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes).</div><div class="card big">' + manual() + '</div>');
             function manual() {
                 return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>Family Dashboard</b>.</li>' +
@@ -163,26 +181,36 @@
                 '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
                 '<li><b>Run when you’re not there, and connect to external services</b> – the 5-minute timer, and fetching its own newest program from these apps.</li>' +
                 '<li>It all runs as you, inside your own Google account.</li></ul></details>';
-            return '<h1>3. Publish it and connect</h1><div class="card big"><ol class="howto">' +
-                '<li>In your new Sheet: <b>Extensions → Apps Script</b>.</li>' +
-                '<li><b>Deploy → New deployment</b> → ⚙ next to “Select type” → <b>Web app</b>. Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b>.</li>' +
-                '<li>Google asks for permission (once): <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b>. ' + perms + '</li>' +
-                '<li><b>Click the Web app URL</b> it shows (a page opens – you can close it).</li>' +
-                '<li>Back in the Sheet (reload it if the menu isn’t there): <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>, then press <b>Open the setup app</b>. This page reopens already connected – nothing to type.</li></ol>' +
-                '<p class="mute">That’s the only setting there is: the script keeps itself up to date from now on.</p>' +
-                '<div id="connStatus">' + (connected() ? okLine(true, 'Connected to your Family Dashboard Sheet.') : '') + '</div></div>' +
-                (connected() && S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
+            if (connected()) return '<h1>2. Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your Family Dashboard Sheet.') + '<p>Press <b>Next</b>.</p>' +
+                '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
+            return '<h1>2. Publish it and connect</h1><p class="lead">This lets your screen and phones talk to your Sheet. You do it once. Follow each line in order – it’s mostly clicking.</p>' +
+                '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
+                '<li>In the menu along the top of the Sheet, click <b>Extensions</b> → <b>Apps Script</b>. A new tab opens with some code in it. <span class="mute">You don’t need to change anything.</span></li>' +
+                '<li>Top right, click the blue <b>Deploy</b> button → <b>New deployment</b>.</li>' +
+                '<li>Next to <b>“Select type”</b>, click the ⚙ cog → <b>Web app</b>.</li>' +
+                '<li>Under <b>Who has access</b>, choose <b>Anyone</b> <span class="mute">(not “Anyone with Google account”)</span>. Leave <b>Execute as</b> on <b>Me</b>. Click <b>Deploy</b>.</li>' +
+                '<li>Google asks for permission. Click <b>Authorize access</b> and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
+                    'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
+                '<li>Google shows a <b>Web app URL</b>. <b>Click it once</b> – a page opens; you can close it. Then click <b>Done</b>.</li>' +
+                '<li>Go back to the tab with your Sheet and <b>reload it</b> (press F5, or ⌘R on a Mac). Wait a few seconds: a new menu <b>🏠 Family Dashboard</b> appears along the top, after Help.</li>' +
+                '<li>Click <b>🏠 Family Dashboard</b> → <b>▶ Set up &amp; connect my screen and phones</b>. In the box that appears, click <b>Carry on with setup</b>. ' +
+                    'This page then opens again, already connected, at the next step.</li></ol>' +
+                '<p class="mute">Google may ask for permission once more the first time you use the menu – allow it the same way.</p>' + helpLink('setup') +
+                '<div id="connStatus"></div></div>' + otherWay();
+            function packAndPair() {
+                return (S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
                     '<p>The screen showing <b>' + esc(S.pairCode) + '</b> is waiting. Connect it to this family now?</p><button class="btn" id="pairSend">Connect the screen</button><div id="pairStatus" class="mute"></div></div>' : '') +
-                (connected() && S.pack ? '<div class="card big" id="packCard" style="border-color:var(--acc)"><h3>📦 Bring your family’s information across</h3>' +
+                (S.pack ? '<div class="card big" id="packCard" style="border-color:var(--acc)"><h3>📦 Bring your family’s information across</h3>' +
                     '<p>This copies everything from your old Google account’s dashboard – people, points, tasks, lists, notes, settings and your licence – into this new one. ' +
-                    'Your screen and phones then switch over by themselves.</p><button class="btn" id="packGo">Bring everything across</button><div id="packStatus" class="mute"></div></div>' : '') +
-                (connected() ? '<div class="card big" id="licCard"><h3>🔑 Your licence key</h3><p class="mute">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
-                    '<div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
-                    '<button class="btn" id="licGo">Check and save</button></div><div id="licStatus" class="mute">Checking…</div></div>' : '') +
-                '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>Or paste the Web app URL here instead</summary>' +
-                '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
-                '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
-                '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
+                    'Your screen and phones then switch over by themselves.</p><button class="btn" id="packGo">Bring everything across</button><div id="packStatus" class="mute"></div></div>' : '');
+            }
+            function otherWay() {
+                return '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>The menu didn’t work? Paste the Web app URL here instead</summary>' +
+                    '<p class="mute">In Apps Script: <b>Deploy → Manage deployments</b>, copy the <b>Web app URL</b> (it ends in /exec).</p>' +
+                    '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
+                    '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
+                    '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
+            }
         }, wire: function () {
             $('connect').onclick = function () {
                 var u = $('url').value.trim();
@@ -205,45 +233,39 @@
                     toast('Moved ✅'); setTimeout(render, 2500);
                 }, function (e) { b.disabled = false; $('packStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'This new dashboard’s script is out of date – update it first (Updates step).' : e.message); });
             };
-            if ($('licCard')) {
-                var show = function (L) {
-                    $('licStatus').innerHTML = !L || !L.required ? '<span class="mute">Licence keys aren’t needed yet.</span>' : okLine(L.ok, L.message + (L.key ? ' (key …' + L.key + ')' : ''));
-                };
-                post({ action: 'licence' }).then(function (d) {
-                    show(d.licence);
-                    // Key from the order email's link: check and save it by itself.
-                    if (S.licKey && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
-                }, function (e) { $('licStatus').textContent = /Unknown action/.test(e.message) ? 'Update your Google script to use licence keys.' : e.message; });
-                $('licGo').onclick = function () {
-                    var k = $('licKey').value.trim(); if (!k) return;
-                    $('licStatus').textContent = 'Checking…'; $('licGo').disabled = true;
-                    post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; $('licKey').value = ''; show(d.licence); S.licensed = true; S.licKey = ''; save(); },
-                        function (e) { $('licGo').disabled = false; $('licStatus').innerHTML = okLine(false, e.message); });
-                };
-            }
-        }, ready: function () { return connected(); }, blocked: 'Connect to your Sheet first (the menu in your Sheet, or paste the address)' },
+        }, ready: function () { return connected(); }, blocked: 'Finish this step first: the last line is the 🏠 Family Dashboard menu in your Sheet' },
 
-        { id: 'devices', title: 'Connect your devices', render: function () {
-            if (!connected()) return '<h1>4. Connect your screen and phones</h1>' + needConnect();
-            return '<h1>4. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
-                '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button></div>' +
-                (S.dev === 'other' ? '<div class="card big"><p>Open this address full screen on the device:</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + qr(screenUrl()) +
-                    '<div class="grid2"><div><h3>Raspberry Pi</h3><ol class="howto"><li>Raspberry Pi OS with desktop.</li><li>Terminal:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "PASTE-THE-LINK"</code></li>' +
-                    '<li>To start automatically, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' +
-                    '<div><h3>Android / Fire tablet</h3><ol class="howto"><li>Install <b>Fully Kiosk Browser</b>.</li><li>Scan the code above with the tablet and set it as the Start URL.</li><li>Turn on Kiosk mode and Keep screen on.</li></ol></div></div></div>'
-                  : '<div class="card big"><ol class="howto"><li><button class="btn" id="bat">Download my start file</button> and put it in <b>Documents\\Family Dashboard</b> (replace the one from step 1).</li>' +
-                    '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
-                    '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
-                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>') +
-                '<h2>Phones</h2><div class="grid2">' +
-                '<div class="card"><h3>⚙ Family Admin (parents)</h3>' + qr(linkFor('admin')) + copyBox('la', 'Admin link', linkFor('admin'), 3) + '</div>' +
-                '<div class="card"><h3>📅 Family Calendar (everyone)</h3>' + qr(linkFor('calendar')) + copyBox('lc', 'Calendar link', linkFor('calendar'), 3) + '</div></div>' +
-                '<div class="card"><b>Not installed yet?</b> Scan the code, then add to the home screen (Safari: Share → Add to Home Screen; Chrome: ⋮ → Install app).' +
-                '<br><b>Already installed from step 1?</b> Open the app: it asks you to connect – send yourself the link above (e.g. by message), copy it and paste it into the app.</div>';
+        { id: 'licence', title: 'Your licence key', render: function () {
+            if (!connected()) return '<h1>3. Your licence key</h1>' + needConnect();
+            return '<h1>3. Your licence key</h1><p class="lead">Your key is in the email you got when you bought the dashboard. It starts <b>FD-</b>.</p>' +
+                '<div class="card big" id="licCard"><div id="licStatus" class="status">Checking…</div>' +
+                '<div id="licForm"><label>Licence key</label><div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
+                '<button class="btn" id="licGo">Check and save</button></div>' +
+                '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
+                '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
+                'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
+                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in the Family Admin app → Settings → System → Licence.</p></details>' + helpLink('licence');
         }, wire: function () {
             if (!connected()) return;
-            $('devTabs').onclick = function (e) { var b = e.target.closest('[data-dev]'); if (b) { S.dev = b.getAttribute('data-dev'); save(); render(); } };
-            if ($('bat')) $('bat').onclick = function () { download('Start Family Dashboard.bat', batFile(screenUrl())); };
+            var show = function (L) {
+                var good = !L || !L.required || (L.ok && L.state !== 'trial');
+                S.licOk = good; save(); renderSteps();
+                $('licStatus').innerHTML = !L || !L.required ? okLine(true, 'Licence keys aren’t needed yet – press Next.')
+                    : L.ok && L.state !== 'trial' ? okLine(true, L.message + (L.key ? ' (key …' + L.key + ')' : '') + ' – all done, press Next.')
+                    : L.state === 'trial' ? '<div class="status">⏳ ' + esc(L.message) + '</div>' : okLine(false, L.message);
+                $('licForm').style.display = good ? 'none' : '';
+            };
+            post({ action: 'licence' }).then(function (d) {
+                show(d.licence);
+                // Key from the order email's link: check and save it by itself.
+                if (S.licKey && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
+            }, function (e) { $('licStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'Your Google script needs updating first – see the Updates step.' : e.message); });
+            $('licGo').onclick = function () {
+                var k = $('licKey').value.trim(); if (!k) { toast('Paste your key in first', true); return; }
+                $('licStatus').innerHTML = '<div class="status">Checking your key with the licence server…</div>'; $('licGo').disabled = true;
+                post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; S.licensed = true; S.licKey = ''; save(); show(d.licence); toast('Licence saved ✅'); },
+                    function (e) { $('licGo').disabled = false; S.licKey = ''; save(); $('licStatus').innerHTML = okLine(false, e.message); });
+            };
         } },
 
         { id: 'family', title: 'Family & calendar', render: function () {
@@ -416,6 +438,29 @@
                     (pk.length && off.length ? ' Not on it: ' + names(off) + ' (their points are kept if you tick them again).' : '');
             }
         } },
+        { id: 'devices', title: 'Connect your devices', render: function () {
+            if (!connected()) return '<h1>4. Connect your screen and phones</h1>' + needConnect();
+            return '<h1>4. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
+                '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button></div>' +
+                (S.dev === 'other' ? '<div class="card big"><p>Open this address full screen on the device:</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + qr(screenUrl()) +
+                    '<div class="grid2"><div><h3>Raspberry Pi</h3><ol class="howto"><li>Raspberry Pi OS with desktop.</li><li>Terminal:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "PASTE-THE-LINK"</code></li>' +
+                    '<li>To start automatically, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' +
+                    '<div><h3>Android / Fire tablet</h3><ol class="howto"><li>Install <b>Fully Kiosk Browser</b>.</li><li>Scan the code above with the tablet and set it as the Start URL.</li><li>Turn on Kiosk mode and Keep screen on.</li></ol></div></div></div>'
+                  : '<div class="card big"><ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button> and move the file somewhere you’ll find it, such as <b>Documents</b>. Doing this on a different computer? Copy the file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
+                    '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
+                    '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
+                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>') +
+                '<h2>Phones</h2><div class="grid2">' +
+                '<div class="card"><h3>⚙ Family Admin (parents)</h3>' + qr(linkFor('admin')) + copyBox('la', 'Admin link', linkFor('admin'), 3) + '</div>' +
+                '<div class="card"><h3>📅 Family Calendar (everyone)</h3>' + qr(linkFor('calendar')) + copyBox('lc', 'Calendar link', linkFor('calendar'), 3) + '</div></div>' +
+                '<div class="card"><b>Not installed yet?</b> Scan the code, then add to the home screen (Safari: Share → Add to Home Screen; Chrome: ⋮ → Install app).' +
+                '<br><b>Scanning connects it too</b> – the code holds your family’s private link. Already have the app? Open it: it asks you to connect – send yourself the link above (e.g. by message), copy it and paste it in.</div>' + helpLink('connect');
+        }, wire: function () {
+            if (!connected()) return;
+            $('devTabs').onclick = function (e) { var b = e.target.closest('[data-dev]'); if (b) { S.dev = b.getAttribute('data-dev'); save(); render(); } };
+            if ($('bat')) $('bat').onclick = function () { download('Start Family Dashboard.bat', batFile(screenUrl())); };
+        } },
+
         { id: 'keys', title: 'Free API keys', render: function () {
             if (!connected()) return '<h1>6. Free keys for live data</h1>' + needConnect();
             S.keys = S.keys || {}; S.skip = S.skip || {};
@@ -606,7 +651,7 @@
     function typeName(t) { return TYPE_NAMES[t] || t; }
     function summary(w, v) {
         if (v == null) return 'Works on the screen itself';
-        if (v.needLogin) return v.hasClient ? 'Keys saved – now Connect Spotify in the Family Admin app' : 'Add Spotify keys (step 5)';
+        if (v.needLogin) return v.hasClient ? 'Keys saved – now Connect Spotify in the Family Admin app' : 'Add Spotify keys (the “Free API keys” step)';
         switch (w.type) {
             case 'weather': return v.now ? v.now.temp + '° and ' + (v.days || []).length + ' days of forecast' : '';
             case 'traffic': return (v.routes || []).map(function (r) { return r.name + (r.error ? ' ⚠ ' + r.error : ' ' + r.mins + ' min'); }).join(' · ');
@@ -628,7 +673,7 @@
     /* ------------------------------------------------------------ frame */
 
     function isDone(id) {
-        return { welcome: S.privacy === P.version, apps: S.step > 1, sheet: connected() || S.step > 2, publish: connected(), devices: !!S.devicesSeen, family: !!S.familyDone,
+        return { welcome: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, family: !!S.familyDone,
             keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, update: false }[id];
     }
     function renderSteps() {
@@ -641,7 +686,7 @@
         var st = STEPS[S.step];
         if (st.id === 'devices' && connected()) S.devicesSeen = true;
         var pg = $('page'); pg.onclick = pg.oninput = pg.onchange = null; pg.classList.remove('show-match');
-        $('page').innerHTML = st.render();
+        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'update' ? '<h1>' + S.step + '. ' : '<h1>');
         if (st.wire) st.wire();
         $('back').style.visibility = S.step ? 'visible' : 'hidden';
         $('next').style.visibility = S.step < STEPS.length - 1 ? 'visible' : 'hidden';
@@ -697,7 +742,7 @@
             var ids = STEPS.map(function (x) { return x.id; });
             if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family') S.fam = null; S.step = S.privacy === P.version ? ids.indexOf(goTo) : 0; }
             else if (wantUpdate) S.step = ids.indexOf('update');
-            else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? STEPS.map(function (x) { return x.id; }).indexOf('devices') : 0;
+            else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : 0;
             render();
             if (p.from === 'sheet' && connected()) toast('Connected to your Family Dashboard Sheet \u2705');
         };

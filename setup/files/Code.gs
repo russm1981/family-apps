@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.36';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.37';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -178,9 +178,10 @@ const WIDGET_TYPES = {
       { k: 'Rows', label: 'Trains to show', type: 'number', def: 3, min: 1, max: 7, help: 'A half-height widget fits 3; full height fits 7.' },
     ],
     data: (s) => trains_(s.From, s.To) },
-  agenda: { name: 'Today & tomorrow', icon: '\uD83D\uDCC5', sizes: ['half', 'full'], calendar: true, about: 'Calendar entries for today and tomorrow.',
+  agenda: { name: 'Today & tomorrow', icon: '\uD83D\uDCC5', sizes: ['half', 'full'], calendar: true, about: 'Calendar entries for today and tomorrow, and a look at the coming weekend.',
     settings: [
-      { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 4, min: 2, max: 10 },
+      { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 3, min: 2, max: 10, help: 'With the weekend showing, a half-height widget fits 3.' },
+      { k: 'Weekend', label: 'Show the coming weekend underneath', type: 'bool', def: true },
     ],
     data: () => agenda_(), nocache: true },
   bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in Family Admin → Bins → Set up bin days.',
@@ -1962,17 +1963,24 @@ function binsSouthGlos_(s, id) {
   return days;
 }
 
-/** Today's and tomorrow's calendar entries. */
+/** Today's and tomorrow's calendar entries, and a look at the coming weekend (its days that aren't already today or tomorrow). */
 function agenda_() {
   const now = new Date();
-  const today = fmt_(now, 'yyyy-MM-dd');
-  const tomorrow = Utilities.formatDate(new Date(Date.parse(today + 'T12:00:00Z') + 86400000), 'UTC', 'yyyy-MM-dd');
-  const after = Utilities.formatDate(new Date(Date.parse(today + 'T12:00:00Z') + 2 * 86400000), 'UTC', 'yyyy-MM-dd');
-  const cal = getCalendar_(today, after);
+  const today = fmt_(now, 'yyyy-MM-dd'), noon = Date.parse(today + 'T12:00:00Z');
+  const day = n => Utilities.formatDate(new Date(noon + n * 86400000), 'UTC', 'yyyy-MM-dd');
+  const tomorrow = day(1);
+  // Saturday is 0 days away on a Saturday, 6 on a Sunday, 1 on a Friday. On a Saturday the whole weekend is
+  // already showing, so it's the next one; on a Friday, just the Sunday is left.
+  const toSat = (6 - new Date(noon).getUTCDay() + 7) % 7;
+  let wk = [toSat, toSat + 1].filter(n => n >= 2);
+  if (!wk.length) wk = [toSat + 7, toSat + 8];
+  const cal = getCalendar_(today, day(wk[wk.length - 1] + 1));
   if (cal.error) return { error: cal.error };
   const bh = cal.bankHolidays || {};
+  const wDays = wk.map(day);
   return { today: today, tomorrow: tomorrow, days: { today: cal.days[today] || [], tomorrow: cal.days[tomorrow] || [] },
-    bankHolidays: { today: bh[today] || '', tomorrow: bh[tomorrow] || '' } };
+    bankHolidays: { today: bh[today] || '', tomorrow: bh[tomorrow] || '' },
+    weekend: { days: wDays, next: wk[0] >= 7, events: wDays.map(d => cal.days[d] || []), bankHolidays: wDays.map(d => bh[d] || '') } };
 }
 
 /* ------------------------------------------------------------- flights */
@@ -3102,9 +3110,9 @@ function menuConnect() {
     return;
   }
   const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
-  dialog_('Connect your screen and phones', '<p>✅ Your Family Dashboard is published.</p>' +
-    '<p>Open the setup app to connect the screen and phones – it already knows your Sheet, so there’s nothing to type:</p>' +
-    '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Open the setup app</a></p>' +
+  dialog_('Published ✅', '<p>✅ Your Family Dashboard is published.</p>' +
+    '<p>Click the button to carry on with setup. It opens the setup page already connected to this Sheet – nothing to type:</p>' +
+    '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Carry on with setup</a></p>' +
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
 }
 /** Opens the setup app straight at "Family & calendar": people, groups, categories and the children's page. */
