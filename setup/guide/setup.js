@@ -14,6 +14,9 @@
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function toast(t, bad) { var el = $('toast'); el.textContent = t; el.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(function () { el.className = 'toast'; }, 3500); }
     var appsBase = location.href.replace(/setup\/.*$/, '');
+    // Opened from Setup → Reconfigure (…&only): just that one page, not a step in the wizard.
+    var SOLO = /[#&]only(&|=|$)/.test(location.hash);
+    if (SOLO) document.body.classList.add('solo');
 
     /* ------------------------------------------------------------ talking to the user's Google script */
 
@@ -718,7 +721,7 @@
         var st = STEPS[S.step];
         if (st.id === 'devices' && connected()) S.devicesSeen = true;
         var pg = $('page'); pg.onclick = pg.oninput = pg.onchange = null; pg.classList.remove('show-match');
-        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'update' ? '<h1>' + S.step + '. ' : '<h1>');
+        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'update' && !SOLO ? '<h1>' + S.step + '. ' : '<h1>');
         if (st.wire) st.wire();
         $('back').style.visibility = S.step ? 'visible' : 'hidden';
         $('next').style.visibility = S.step < STEPS.length - 1 ? 'visible' : 'hidden';
@@ -726,7 +729,8 @@
         var ok = !st.ready || st.ready();
         $('next').classList.toggle('off', !ok);
         $('next').title = ok ? '' : st.blocked || '';
-        $('where').textContent = st.id === 'update' ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
+        $('where').textContent = st.id === 'update' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
+        if (SOLO) { $('back').style.visibility = 'hidden'; $('next').style.visibility = 'visible'; $('next').classList.remove('off'); $('next').textContent = 'Done – back to Setup'; }
         renderSteps();
         window.scrollTo(0, 0);
     }
@@ -741,7 +745,7 @@
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
     $('back').onclick = function () { S.step--; render(); };
-    $('next').onclick = function () { go(S.step + 1); };
+    $('next').onclick = function () { if (SOLO) { location.href = '../#/tools'; return; } go(S.step + 1); };
     document.addEventListener('click', function (e) {
         var c = e.target.closest('[data-copy]');
         if (c) { var t = $(c.getAttribute('data-copy')); navigator.clipboard.writeText(t.value).then(function () { toast('Copied'); }, function () { t.select(); toast('Press Ctrl+C to copy'); }); }
@@ -772,7 +776,7 @@
         render();
         var after = function () {
             var ids = STEPS.map(function (x) { return x.id; });
-            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family') S.fam = null; S.step = S.privacy === P.version ? ids.indexOf(goTo) : 0; }
+            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family') S.fam = null; S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : 0; if (goTo === 'check') S.autoCheck = true; }
             else if (wantUpdate) S.step = ids.indexOf('update');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : 0;
             render();

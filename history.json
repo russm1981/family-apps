@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.71",
+    "date": "2026-11-12",
+    "notes": [
+      "Setup → Screen layout: widgets that don’t fit are shown underneath, ready to drag elsewhere or click to remove; calendar and points screens are drawn at the same size (without your data), and the points screen explains that extra screens are added for more children",
+      "Setup → Reconfigure opens each page on its own (no step list), with “Back to Setup”",
+      "The Family tab has a “Reconfigure the family” link – on the phone it points to Setup"
+    ]
+  },
+  {
     "version": "2026.11.70",
     "date": "2026-11-12",
     "notes": [

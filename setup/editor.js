@@ -61,14 +61,43 @@
         for (var i = shown.length; i < n; i++) body += '<div class="ed-col empty"><div class="ed-slot end">' + (i === shown.length ? 'Drop a widget here' : '') + '</div></div>';
         return '<div class="ed-frame ' + cls + '">' + (label ? '<div class="ed-flabel">' + esc(label) + '</div>' : '') + '<div class="ed-grid" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' + body + '</div></div>';
     }
+    /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
+    function mockFrame(p, fmt, n) {
+        var inner;
+        if (p.type === 'calendar') {
+            var cols = fmt === 'standard' ? 7 : 14, rows = 3, cells = '';
+            for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
+                var k = (r * 7 + c * 3) % 9;
+                cells += '<div class="mk-day">' + (k < 3 ? '<i style="background:' + ['#3fa9f5', '#a855f7', '#d97757'][k] + '"></i>' : '') + (k === 1 ? '<i style="background:#22c55e;width:60%"></i>' : '') + '</div>';
+            }
+            inner = '<div class="mk-cal"><div class="mk-top"><b>📅 The family calendar</b><span>3 months · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' +
+                '<div class="mk-grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + cells + '</div></div>';
+        } else {
+            var cards = '';
+            for (var i = 0; i < n; i++) cards += '<div class="mk-kid"><b>Child ' + (i + 1) + '</b><span class="mk-pts">123</span><small>points</small><i></i><i></i><i></i></div>';
+            for (var j = n; j < 3; j++) cards += '<div class="mk-kid empty"></div>';
+            inner = '<div class="mk-kids">' + cards + '</div>';
+        }
+        return '<div class="ed-frame ' + (fmt === 'standard' ? 'tab' : 'wide') + ' mock">' + inner + '</div>';
+    }
+    function otherView(p) {
+        var fmt = load(KEY_F, 'wide'), out = '';
+        if (p.type === 'calendar') {
+            out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : mockFrame(p, fmt);
+            return out + '<p class="mute small">The family calendar fills the screen. It opens on the view chosen in this screen’s settings; on a tablet or computer it also has a whole-year wall planner.</p>';
+        }
+        var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
+        for (var k = 0; k < screens; k++) {
+            var nHere = Math.min(3, kids - k * 3), f = mockFrame(p, fmt === 'computer' ? 'wide' : fmt, nHere);
+            frames += '<div class="ed-mockwrap">' + (screens > 1 ? '<div class="ed-flabel">' + esc(p.title) + ' ' + (k + 1) + '</div>' : '') + (fmt === 'computer' ? '<div class="ed-monitor">' + f + '</div>' : f) + '</div>';
+        }
+        return '<div class="ed-tabs' + (fmt === 'standard' ? '' : ' one') + '">' + frames + '</div>' +
+            '<p class="mute small">One card for each child on the points page, up to 3 a screen. With more children, extra screens are added by themselves (' + esc(p.title) + ' 1, ' + esc(p.title) + ' 2…). ' +
+            'Who’s on the points page is set in <b>Reconfigure → Family &amp; calendar</b>.</p>';
+    }
     function screenView(p) {
         var fmt = load(KEY_F, 'wide'), cols = pack(onPage(p.id));
-        if (p.type !== 'widgets') {
-            var what = p.type === 'calendar' ? ['📅', 'The family calendar, full screen', 'Opens on: ' + ((p.settings || {}).DefaultView || '3 months')]
-                : ['★', 'The children’s points – up to 3 children a screen', 'Cash in at ' + ((p.settings || {}).CashInPoints || 500) + ' points'];
-            return '<div class="ed-frame ' + (fmt === 'standard' ? 'tab' : fmt) + '"><div class="ed-whole"><span>' + what[0] + '</span><b>' + esc(what[1]) + '</b><small>' + esc(what[2]) + '</small>' +
-                '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Settings for this screen</button></div></div>';
-        }
+        if (p.type !== 'widgets') return otherView(p);
         var out = '', over = cols.length - 4;
         if (fmt === 'standard') {
             var n = Math.max(1, Math.ceil(Math.min(cols.length, 4) / 2));
@@ -77,9 +106,10 @@
         } else if (fmt === 'computer') {
             out = '<div class="ed-monitor">' + frame(cols, 4, '', 'wide') + '</div>';
         } else out = frame(cols, 4, '', 'wide');
-        if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen: ' +
-            cols.slice(4).map(function (c) { return c.map(function (w) { return H.typeOf(w.type).name; }).join(' + '); }).join(', ') +
-            '. Make some widgets half height, hide them, or drag them to another screen.</div>';
+        // What doesn't fit: shown underneath, to drag elsewhere or click to remove
+        if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen. Drag ' + (over > 1 ? 'them' : 'it') +
+            ' onto another screen on the left, make widgets half height, or click one to hide or remove it.</div>' +
+            '<div class="ed-overflow"><div class="ed-grid" style="grid-template-columns:repeat(' + Math.max(over, 2) + ',minmax(0,1fr))">' + cols.slice(4).map(column).join('') + '</div></div>';
         var hidden = onPage(p.id, true).filter(function (w) { return !w.show; });
         if (hidden.length) out += '<div class="ed-hidden"><h4>Hidden on this screen <small>– drag one onto the screen to show it</small></h4>' +
             hidden.map(function (w) {
@@ -106,9 +136,9 @@
             '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
             (p.type === 'widgets' ? '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height, When to show (a widget at some times, another at others), or to remove it.</p>' : '') + '</section>' +
-            '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' + (D().types || []).map(function (T) {
+            (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' + (D().types || []).map(function (T) {
                 return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
-            }).join('') + '</aside></div></div>';
+            }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>';
         wire(p);
     }
 

@@ -196,9 +196,9 @@
     function renderTools() {
         title('Reconfigure');
         var c = FD.config(), base = guideUrl();
-        var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + (step ? '&' + step : ''); };
+        var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + (step ? '&' + step : '') + (step && step !== 'go=welcome' ? '&only' : ''); };
         var row = function (ico, name, what, href, go) {
-            return '<a class="mrow" ' + (go ? 'data-go="' + go + '" href="#"' : 'href="' + esc(href) + '" target="_blank" rel="noopener"') + '><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>';
+            return '<a class="mrow" ' + (go ? 'data-go="' + go + '" href="#"' : 'href="' + esc(href) + '"' + (href.indexOf(base) === 0 && /&only/.test(href) ? '' : ' target="_blank" rel="noopener"')) + '><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>';
         };
         $('body').innerHTML = '<p class="mute small help">Step-by-step guides. Each opens the setup app at the right step, already connected to your family.</p>' +
             card('Your dashboard', '<div class="menu">' +
@@ -272,7 +272,7 @@
     /** A link into the setup app at one step, already connected to this family's Sheet. */
     function setupLink(step) {
         var c = FD.config(), base = guideUrl();
-        return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&go=' + step;
+        return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&go=' + step + (step === 'welcome' ? '' : '&only');
     }
     function L() { return (DATA && DATA.limits) || { reminder: 12, boyName: 10, task: 22, todo: 22, destination: 16, reason: 30, maxPoints: 999 }; }
     function typeOf(t) { return (DATA.types || []).filter(function (x) { return x.type === t; })[0] || { name: t, icon: '', settings: [], sizes: ['full'] }; }
@@ -328,7 +328,7 @@
             (cp ? '<button class="tile" id="calSet"><span class="t-ico">⚙</span><b>Calendar page</b><small>' + esc((cp.settings || {}).DefaultView || 'Which view it opens on') + '</small></button>' : '') +
             fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') + '</div>' +
             (pp && pp.show !== false ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
-            '<a class="link-card" data-go="s/family" href="#"><b>👪 Family & calendar settings ›</b><span class="mute small">Who’s in the family, who’s on the points page, groups, colours and which Google calendars.</span></a>';
+            (DESK ? '<a class="link-card" href="' + esc(setupLink('family')) + '"><b>👪 Reconfigure the family ›</b><span class="mute small">Who’s in the family, who’s on the points page, calendar groups and colours, which Google calendars.</span></a>' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, the points page, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
         if ($('calSet')) $('calSet').onclick = function () { pageSheet(cp); };
         if (pp && pp.show !== false) $('body').onclick = pointsClick;
         fetchGlance();

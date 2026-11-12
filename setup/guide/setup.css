@@ -111,3 +111,10 @@ label.tick.sm { margin: 0; font-weight: 600; font-size: 14px; white-space: nowra
 
 .status.warn { color: #ffd27a; font-weight: 600; }
 .bigaddr { font: 700 1.25rem ui-monospace, Menlo, Consolas, monospace; background: #fff; color: #111; padding: 10px 14px; border-radius: 10px; margin: 8px 0; display: inline-block; word-break: break-all; }
+
+/* Opened on its own from Setup → Reconfigure: no list of steps */
+body.solo .side { display: none; }
+body.solo .main { max-width: 980px; margin: 0 auto; }
+body.solo .solo-bar { display: flex; }
+.solo-bar { display: none; align-items: center; gap: 12px; padding: 14px 24px 0; }
+.solo-bar a { color: var(--acc); text-decoration: none; font-weight: 600; }
