@@ -195,6 +195,12 @@
                 '<li>Go back to the tab with your Sheet and <b>reload it</b> (press F5, or ⌘R on a Mac). Wait a few seconds: a new menu <b>🏠 Family Dashboard</b> appears along the top, after Help.</li>' +
                 '<li>Click <b>🏠 Family Dashboard</b> → <b>▶ Set up &amp; connect my screen and phones</b>. In the box that appears, click <b>Carry on with setup</b>. ' +
                     'This page then opens again, already connected, at the next step.</li></ol>' +
+                '<details class="card"><summary>Deploy just spins, or Google keeps asking for permission?</summary><ol class="howto">' +
+                '<li>This is nearly always because the browser is signed in to <b>more than one Google account</b>. Open a private window (Chrome: Ctrl+Shift+N, or ⌘+Shift+N on a Mac), ' +
+                'sign in with <b>only</b> the account your Sheet is in, open the Sheet from <a href="https://drive.google.com" target="_blank" rel="noopener">drive.google.com</a> and do this step again there.</li>' +
+                '<li>Use <b>Chrome</b> or <b>Edge</b>, and allow pop-ups if the browser asks – Google’s permission window is a pop-up.</li>' +
+                '<li>In Apps Script, press <b>Save</b> (the 💾 icon) once before <b>Deploy</b>.</li>' +
+                '<li>Still spinning? Make a fresh copy (step 1) and try again in the private window – a new copy usually deploys straight away.</li></ol></details>' +
                 '<div class="note"><b>The menu only says “Load the dashboard program”?</b> That happens on a brand-new copy. Click <b>🏠 Family Dashboard → Load the dashboard program</b>, ' +
                 'allow it if Google asks (the same way as above), wait for “Loaded version …”, click <b>OK</b>, then reload the Sheet again. The full menu, with <b>▶ Set up &amp; connect my screen and phones</b>, is then there.</div>' +
                 '<p class="mute">Google may ask for permission once more the first time you use the menu – allow it the same way.</p>' + helpLink('setup') +

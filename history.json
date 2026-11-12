@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.59",
+    "date": "2026-11-12",
+    "notes": [
+      "Setup and help: what to do if Deploy just spins or Google keeps asking for permission"
+    ]
+  },
+  {
     "version": "2026.11.58",
     "date": "2026-11-12",
     "notes": [
