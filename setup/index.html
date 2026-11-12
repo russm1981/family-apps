@@ -8,15 +8,12 @@
     <link rel="icon" href="../admin/icons/icon-192.png">
     <script>
     // One address for everything set-up. Links into a particular step of the step-by-step guide (from the licence
-    // email, the Sheet's menu, Family Admin, the pairing page) – and anyone with no family connected yet – go to the
-    // guide; everyone else gets the Setup website (screen layout, settings, and the guide's steps under "Setup & tools").
+    // email, the Sheet's menu, Family Admin, the pairing page) go to the guide.
     (function () {
         var h = location.hash || '', q = location.search || '';
         if (/[?&]connect\b/.test(q)) return;                                   // "connect this computer" by code
         if (/(^|[#&])(key|from|go|update|pair|pack)(=|&|$)/.test(h)) { location.replace('guide/' + h); return; }
-        var has = /api=/.test(h);
-        try { ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'].forEach(function (k) { var c = JSON.parse(localStorage.getItem(k) || 'null'); if (c && c.url && c.code) has = true; }); } catch (e) { /* none */ }
-        if (!has) location.replace('guide/' + h);
+        // Everything else stays here: the Setup website (with its First-time setup tab, or a choice if this computer isn't connected yet).
     })();
     </script>
     <link rel="stylesheet" href="../shared/base.css">

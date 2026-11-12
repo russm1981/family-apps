@@ -28,7 +28,8 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
+    var TABS = DESK ? [['start', '🚀', 'First-time setup'], ['layout', '▦', 'Screen layout'], ['tools', '🧭', 'Reconfigure'], ['settings', '⚙', 'Settings'],
+        ['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
         : [['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
@@ -130,10 +131,10 @@
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
         if (h[0] === 'points') return { pts: true, tab: 'family' };
-        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'layout' : 'family' };
+        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'start' : 'family' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: 'settings' };
-        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'layout' : 'family') };
+        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'start' : 'family') };
     }
     function go(where) { if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
@@ -166,15 +167,34 @@
         else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
-        else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools })[r.tab]();
+        else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         privacyCheck();
     }
     function title(t) { $('title').textContent = t; }
+    var HOW_IT_WORKS = '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
+        'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
+        '<p>The software reaches your Sheet with a <b>private access code</b> that setup created for you. The code stays on your own screen, phones and this computer, ' +
+        'and isn’t sent anywhere else – so your family’s information stays private.</p>';
+    /** Setup website, first tab: where you are, how it works, and what each tab is for. */
+    function renderStart() {
+        title('First-time setup');
+        var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }).slice(0, 6).join(', ');
+        $('body').innerHTML = card('✔ Your dashboard is set up', '<p>This computer is connected to the dashboard of <b>' + esc(ppl || 'your family') + '</b>.</p>' +
+                '<p class="mute small">Google script ' + esc(DATA.scriptVersion || '?') + (DATA.licence ? ' · ' + esc(DATA.licence.message || '') : '') + '</p>') +
+            card('What each tab is for', '<div class="menu">' +
+                '<a class="mrow" data-go="layout" href="#"><span class="m-ico">▦</span><span class="m-tx"><b>Screen layout</b><small>Add screens, drag widgets about, see it as on the Corsair, a tablet or a computer</small></span><i>›</i></a>' +
+                '<a class="mrow" data-go="tools" href="#"><span class="m-ico">🧭</span><span class="m-tx"><b>Reconfigure</b><small>Go through any setup step again: family & calendar, connecting screens and phones, keys, licence, checks, updates</small></span><i>›</i></a>' +
+                '<a class="mrow" data-go="settings" href="#"><span class="m-ico">⚙</span><span class="m-tx"><b>Settings</b><small>Everything in detail: home & places, API keys, screen sleep, licence, your Google data, diagnostics</small></span><i>›</i></a>' +
+                '<a class="mrow" data-go="family" href="#"><span class="m-ico">👪</span><span class="m-tx"><b>Family, Notes, Lists, Widgets</b><small>The everyday things – the same as Family Admin on your phone</small></span><i>›</i></a></div>') +
+            card('How it works', HOW_IT_WORKS) +
+            card('Setting up a different family?', '<p class="small">A new Google Sheet for someone else – this family’s dashboard stays exactly as it is.</p>' +
+                '<a class="btn ghost wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start first-time setup for a new family</a>');
+    }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
     function renderTools() {
-        title('Setup & tools');
+        title('Reconfigure');
         var c = FD.config(), base = guideUrl();
         var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + (step ? '&' + step : ''); };
         var row = function (ico, name, what, href, go) {
@@ -1555,7 +1575,7 @@
     var devPick = 'calendar';
     function secDevices() {
         var c = FD.config(), base = location.href.replace(/admin\/.*$/, '');
-        var APPS = { calendar: ['📅 Family Calendar', 'for everyone – the calendar and adding events'], admin: ['⚙ Family Admin', 'for parents – this app: points, lists, settings'] };
+        var APPS = { calendar: ['📅 Family Calendar', 'for everyone – the calendar and adding events'], admin: ['⚙ Family Admin', 'for adults – this app: points, notes, lists, settings'] };
         $('body').innerHTML =
             card('Add another person’s phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +
                 '<p class="mute small">' + esc(APPS[devPick][1]) + '</p>' +
@@ -1691,5 +1711,12 @@
     FD.registerSW();
     // The website on a computer that's already been used for setup (or has Family Admin) connects by itself.
     if (DESK && !FD.configured() && window.FDPairSend) { var sv = FDPairSend.saved(); if (sv) FD.setConfig(sv.url, sv.code); }
-    if (FD.configured()) start(); else FD.setupScreen($('app'), DESK ? 'Family Dashboard setup' : 'Family Admin', start);
+    if (FD.configured()) start();
+    else if (DESK && !/[?&]connect\b/.test(location.search)) {
+        $('app').innerHTML = '<div class="desk-welcome"><h1>Family Dashboard setup</h1>' +
+            '<div class="dw-cards"><a class="dw-card first" href="guide/"><span>🚀</span><b>First-time setup</b><small>New to Family Dashboard? Set up your family’s dashboard, one step at a time (about 30 minutes).</small><i class="btn">Start</i></a>' +
+            '<a class="dw-card" href="?connect"><span>🔗</span><b>Already set up?</b><small>Connect this computer to your family’s dashboard to change the screen layout, settings and more. You’ll need your phone with Family Admin.</small><i class="btn ghost">Connect this computer</i></a></div>' +
+            '<section class="card"><h2>How it works</h2>' + HOW_IT_WORKS.replace('setup created', 'setup creates') + '</section>' +
+            '<p class="mute small center"><a href="../">Family Dashboard home page</a> · <a href="../help/">Help</a></p></div>';
+    } else FD.setupScreen($('app'), DESK ? 'Family Dashboard setup' : 'Family Admin', start);
 })();

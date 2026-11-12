@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.69",
+    "date": "2026-11-12",
+    "notes": [
+      "Setup website: tabs along the top – First-time setup, Screen layout, Reconfigure, Settings, then Family, Notes, Lists and Widgets. A computer that isn’t connected yet gets a choice: first-time setup, or connect this computer",
+      "The licence email and setup explain in plain English how it works (your data stays in your own Google account, reached only with your private access code) and what each step does, including what an API key is",
+      "Family Admin is described as for adults"
+    ]
+  },
+  {
     "version": "2026.11.68",
     "date": "2026-11-12",
     "notes": [

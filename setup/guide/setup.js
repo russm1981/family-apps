@@ -121,14 +121,20 @@
                 (connected() ? '' : '<p class="mute">Already have a Family Dashboard, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
                 '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
                 'You can stop at any point – this page remembers where you got to.</p>' +
+                '<div class="card big"><h3>How it works</h3>' +
+                '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
+                'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
+                '<p>The software reaches your Sheet with a <b>private access code</b> that setup creates for you. The code stays on your own screen and phones and isn’t sent ' +
+                'anywhere else, so your family’s information stays private – nobody else can see it.</p></div>' +
                 '<div class="card big"><h3>The steps</h3><ol class="howto">' +
-                '<li><b>Make your own copy of the Family Dashboard Sheet</b> in your Google account – one click. <span class="mute">(2 minutes)</span></li>' +
-                '<li><b>Publish it</b>, so your screen and phones can reach it. Google asks you to allow it. <span class="mute">(5 minutes – the only fiddly bit, and the page shows you every click)</span></li>' +
-                '<li><b>Your licence key</b> – from your order email. <span class="mute">(1 minute)</span></li>' +
-                '<li><b>Your family</b> – names and colours for the calendar and the children’s points. <span class="mute">(5 minutes)</span></li>' +
-                '<li><b>Connect your screen and phones.</b> <span class="mute">(5 minutes)</span></li>' +
-                '<li><b>Live data</b> such as traffic and trains – optional; skip any you don’t want. <span class="mute">(up to 10 minutes)</span></li>' +
-                '<li><b>Check everything works.</b></li></ol></div>' +
+                '<li><b>Your own copy.</b> We make your family’s Google Sheet from a blank template, in your Google account. <span class="mute">(2 minutes)</span></li>' +
+                '<li><b>Switching it on.</b> You “publish” your Sheet so your screen and phones can talk to it. Google asks you to allow this – that’s normal. <span class="mute">(5 minutes – the page shows you every click)</span></li>' +
+                '<li><b>Your licence key.</b> From your order email – usually filled in for you. <span class="mute">(1 minute)</span></li>' +
+                '<li><b>Your family.</b> Names and colours for the calendar and the children’s points. <span class="mute">(5 minutes)</span></li>' +
+                '<li><b>Your screen and phones.</b> Each is connected with a short code or by scanning a QR code. <span class="mute">(5 minutes)</span></li>' +
+                '<li><b>Live information</b> (optional). Trains, buses and traffic come from other services through an “API” – a way for the dashboard to fetch information from them. ' +
+                    'Most need a free account with that service, which gives you your own key. Skip any you don’t want. <span class="mute">(up to 10 minutes)</span></li>' +
+                '<li><b>A final check</b> that everything works.</li></ol></div>' +
                 '<div class="grid2"><div class="card"><h3>What you need</h3><ul>' +
                 '<li>This page open on a <b>computer</b>.</li><li>A <b>Google (Gmail) account</b> – the one the family calendar is in.</li>' +
                 '<li>Your <b>licence email</b> (it has your key).</li>' +
@@ -136,7 +142,7 @@
                 '<div class="card"><h3>What you’ll end up with</h3><ul>' +
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
-                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (parents).</li></ul></div></div>' +
+                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (adults).</li></ul></div></div>' +
                 '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
                 '<div class="card privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
                 '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
@@ -160,7 +166,7 @@
 
         { id: 'sheet', title: 'Make your Google Sheet', render: function () {
             var tpl = CFG.templateId;
-            return '<h1>1. Make your own Google Sheet</h1><p class="lead">Everything your dashboard shows is kept in a Google Sheet in your own Google account. This makes yours.</p>' +
+            return '<h1>1. Make your own Google Sheet</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account. It’s where everything your dashboard shows is kept – only you can see it.</p>' +
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span></li>' +
                     '<li>If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
@@ -184,7 +190,8 @@
                 '<li>It all runs as you, inside your own Google account.</li></ul></details>';
             if (connected()) return '<h1>2. Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your Family Dashboard Sheet.') + '<p>Press <b>Next</b>.</p>' +
                 '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
-            return '<h1>2. Publish it and connect</h1><p class="lead">This lets your screen and phones talk to your Sheet. You do it once. Follow each line in order – it’s mostly clicking.</p>' +
+            return '<h1>2. Publish it and connect</h1><p class="lead">Your Sheet comes with a small program inside it. “Publishing” switches that program on, so your screen and phones can talk to your Sheet – ' +
+                'using the private access code, and nothing else. You do it once. Follow each line in order – it’s mostly clicking.</p>' +
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
                 '<li>In the menu along the top of the Sheet, click <b>Extensions</b> → <b>Apps Script</b>. A new tab opens with some code in it. <span class="mute">You don’t need to change anything.</span></li>' +
                 '<li>Top right, click the blue <b>Deploy</b> button → <b>New deployment</b>.</li>' +
@@ -469,7 +476,7 @@
                     '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
                     '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>') +
                 '<h2>Phones</h2><div class="grid2">' +
-                '<div class="card"><h3>⚙ Family Admin (parents)</h3>' + qr(linkFor('admin')) + copyBox('la', 'Admin link', linkFor('admin'), 3) + '</div>' +
+                '<div class="card"><h3>⚙ Family Admin (adults)</h3>' + qr(linkFor('admin')) + copyBox('la', 'Admin link', linkFor('admin'), 3) + '</div>' +
                 '<div class="card"><h3>📅 Family Calendar (everyone)</h3>' + qr(linkFor('calendar')) + copyBox('lc', 'Calendar link', linkFor('calendar'), 3) + '</div></div>' +
                 '<div class="card"><b>Not installed yet?</b> Scan the code, then add to the home screen (Safari: Share → Add to Home Screen; Chrome: ⋮ → Install app).' +
                 '<br><b>Scanning connects it too</b> – the code holds your family’s private link. Already have the app? Open it: it asks you to connect – send yourself the link above (e.g. by message), copy it and paste it in.</div>' + helpLink('connect');
@@ -487,7 +494,9 @@
         { id: 'keys', title: 'Free API keys', render: function () {
             if (!connected()) return '<h1>6. Free keys for live data</h1>' + needConnect();
             S.keys = S.keys || {}; S.skip = S.skip || {};
-            return '<h1>5. Free keys for live data</h1><p class="lead">Each one turns on a widget. They’re all free; skip any you don’t want and that widget is hidden.</p>' +
+            return '<h1>5. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
+                'a way for one computer system to ask another for information. Each service wants to know who’s asking, so you make a free account with it and it gives you a <b>key</b> ' +
+                '(a bit like a licence) to paste in here. They’re all free. Skip any you don’t want – that widget is just hidden.</p>' +
                 '<p class="mute">Weather, bins, news, flights, quotes and photos need no key at all.</p>' +
                 KEYS.map(function (x, i) {
                     var done = S.keys[x.k], skipped = S.skip[x.k];

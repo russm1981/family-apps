@@ -1,8 +1,21 @@
 /* The settings website on a computer: the phone app's pages, wider. */
 body.desk .main { max-width: 980px; margin: 0 auto; }
 body.desk .top-row { max-width: 980px; margin: 0 auto; }
-body.desk .tabbar { left: 50%; right: auto; transform: translateX(-50%); width: min(980px, 100%); border-radius: 14px 14px 0 0; }
+body.desk #app { display: flex; flex-direction: column; }
+body.desk .top { order: 0; } body.desk .tabbar { order: 1; } body.desk .main { order: 2; padding-bottom: 40px; }
+body.desk .tabbar { position: sticky; top: 61px; left: auto; right: auto; bottom: auto; transform: none; width: 100%; border-radius: 0; border-top: 0; border-bottom: 1px solid var(--line); justify-content: center; padding-bottom: 0; }
+body.desk .tabbar button { flex: 0 1 140px; }
 body.desk .tabbar button { flex-direction: row; justify-content: center; gap: 8px; font-size: 14px; padding: 12px 0; }
 body.desk .tabbar button i { font-size: 18px; }
 body.desk .sheet-bg { align-items: center; justify-content: center; }
 body.desk .sheet { max-width: 620px; border-radius: 18px; max-height: 88vh; }
+
+.desk-welcome { max-width: 860px; margin: 0 auto; padding: 40px 16px; }
+.desk-welcome h1 { font-size: 28px; margin: 0 0 20px; }
+.dw-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 18px; }
+.dw-card { display: flex; flex-direction: column; gap: 8px; padding: 22px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); color: var(--text); text-decoration: none; }
+.dw-card.first { border-color: var(--acc); }
+.dw-card span { font-size: 34px; } .dw-card b { font-size: 19px; } .dw-card small { color: var(--mute); font-size: 14px; line-height: 1.45; flex: 1; }
+.dw-card i { font-style: normal; align-self: flex-start; margin-top: 6px; }
+.dw-card:hover { border-color: var(--acc); }
+body.desk .tabbar button { font-size: 13px; }
