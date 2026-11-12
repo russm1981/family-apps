@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.72",
+    "date": "2026-11-12",
+    "notes": [
+      "Setup → Screen layout: a 🗑 on each widget, and a bin to drag widgets onto, to remove them; removing (from there or the widget’s own box) happens straight away, and a “won’t fit” box disappears as soon as it’s empty"
+    ]
+  },
+  {
     "version": "2026.11.71",
     "date": "2026-11-12",
     "notes": [

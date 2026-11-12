@@ -38,18 +38,19 @@
     function tile(w) {
         var T = H.typeOf(w.type), W = w.when, B = W && W.OtherTimes ? H.typeOf(W.OtherTimes) : null;
         var cls = 'ed-tile ' + (w.size === 'full' ? 'full' : 'half') + (w.pending ? ' pending' : '');
+        var bin = w.pending ? '' : '<button class="ed-del" data-del="' + esc(w.id) + '" title="Remove this widget">🗑</button>';
         if (W && B) {
-            return '<div class="' + cls + ' split" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' +
+            return '<div class="' + cls + ' split" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin +
                 '<div class="sp-a"><span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b></div>' +
                 '<div class="sp-b"><span class="ico">' + esc(B.icon) + '</span><b>' + esc(B.name) + '</b></div>' +
                 '<svg class="sp-line" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="100" y1="0" x2="0" y2="100"/></svg>' +
                 '<div class="sp-time">' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + '<small>other times →</small></div></div>';
         }
         if (W) {   // limited times, nothing in its place
-            return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '"><span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
+            return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
                 '<small class="when">⏰ ' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + ' · empty otherwise</small></div>';
         }
-        return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move"><span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
+        return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
             '<small>' + esc(H.summary(w) || '') + '</small></div>';
     }
     function column(c) {
@@ -135,7 +136,8 @@
             '<button class="btn sm" id="edAdd">Add</button></div></aside>' +
             '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
-            (p.type === 'widgets' ? '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height, When to show (a widget at some times, another at others), or to remove it.</p>' : '') + '</section>' +
+            (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it</div>' +
+                '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height and When to show (a widget at some times, another at others). The 🗑 on each widget removes it – its settings are kept.</p>' : '') + '</section>' +
             (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' + (D().types || []).map(function (T) {
                 return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
             }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>';
@@ -170,12 +172,20 @@
         H.act({ action: 'addWidget', page: pid, type: type, at: i }, 'Added – click it for its height and settings').catch(function () { /* the app reloads */ });
     }
 
+    function remove(id) {
+        var w = (D().widgets || []).filter(function (x) { return x.id === id; })[0]; if (!w) return;
+        if (!confirm('Remove the ' + H.typeOf(w.type).name + ' widget from the screen? Its settings are kept, in case you add it again.')) return;
+        D().widgets = D().widgets.filter(function (x) { return x.id !== id; });
+        H.setData(D());
+        H.act({ action: 'deleteWidget', id: id }, 'Removed').catch(function () { /* the app reloads and puts it back, with the reason */ });
+    }
     function wire(p) {
         el.querySelector('.ed').onclick = function (e) {
             var t;
             if ((t = e.target.closest('[data-fmt]'))) { store(KEY_F, t.getAttribute('data-fmt')); render(); return; }
             if ((t = e.target.closest('[data-pm]'))) { var a = t.getAttribute('data-pm').split(':'); H.act({ action: 'movePage', id: a[0], dir: +a[1] }); return; }
             if ((t = e.target.closest('[data-pedit]'))) { H.pageSheet(t.getAttribute('data-pedit')); return; }
+            if ((t = e.target.closest('[data-del]'))) { e.stopPropagation(); remove(t.getAttribute('data-del')); return; }
             if ((t = e.target.closest('.ed-page'))) { store(KEY_P, t.getAttribute('data-page')); render(); return; }
             if ((t = e.target.closest('.ed-tile, .ed-chip')) && !t.classList.contains('pending')) { H.widgetSheet(t.getAttribute('data-id')); return; }
         };
@@ -195,16 +205,18 @@
             d.addEventListener('dragend', function () { d.classList.remove('dragging'); dragging = null; clearOver(); });
         });
         function clearOver() { el.querySelectorAll('.over').forEach(function (x) { x.classList.remove('over'); }); }
-        function target(e) { return e.target.closest('.ed-tile, .ed-slot, .ed-page, .ed-col.empty'); }
+        function target(e) { return e.target.closest('.ed-tile, .ed-slot, .ed-page, .ed-col.empty, .ed-trash'); }
         el.ondragover = function (e) {
             var t = target(e); if (!t || !dragging) return;
             if (t.classList.contains('ed-page') && (dragging.type || t.getAttribute('data-page') === p.id)) return;
+            if (t.classList.contains('ed-trash') && !dragging.id) return;
             e.preventDefault(); clearOver(); t.classList.add('over');
         };
         el.ondrop = function (e) {
             var t = target(e); if (!t || !dragging) return;
             e.preventDefault(); clearOver();
             var d = dragging; dragging = null;
+            if (t.classList.contains('ed-trash')) { if (d.id) remove(d.id); return; }
             if (t.classList.contains('ed-page')) { var to = t.getAttribute('data-page'), pg = pages().filter(function (x) { return x.id === to; })[0];
                 if (!pg || pg.type !== 'widgets') { H.toast('Widgets go on widget screens', true); return; }
                 if (d.id) place(d.id, to); return; }

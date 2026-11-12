@@ -87,3 +87,9 @@ body.desk .top-row { max-width: 1500px; }
 .mk-kid.empty { border: 1px dashed #2a3140; background: transparent; }
 .mk-pts { font-size: 26px; font-weight: 800; color: #3fa9f5; line-height: 1; } .mk-kid small { color: #64748b; }
 .mk-kid i { display: block; height: 8px; border-radius: 4px; background: #1f2633; margin-top: 4px; }
+
+.ed-del { position: absolute; top: 5px; right: 5px; z-index: 3; width: 26px; height: 26px; border-radius: 50%; border: 1px solid #3a4252; background: rgba(12,14,18,.85); font-size: 13px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity .15s; }
+.ed-tile:hover .ed-del, .ed-chip:hover .ed-del { opacity: 1; }
+.ed-del:hover { border-color: #ef4444; background: rgba(239,68,68,.25); }
+.ed-trash { margin-top: 10px; border: 2px dashed #3a4252; border-radius: 12px; padding: 12px; text-align: center; color: #64748b; font-size: 13px; }
+.ed-trash.over { border-color: #ef4444; color: #fca5a5; background: rgba(239,68,68,.12); outline: none; }

@@ -1127,7 +1127,10 @@
                 .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
         $('wDel').onclick = function () {
-            if (confirm('Remove the ' + T.name + ' widget and its settings?')) act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { closeSheet(); if (route().w) go('layout'); }, function () {});
+            if (!confirm('Remove the ' + T.name + ' widget from the screen? Its settings are kept, in case you add it again.')) return;
+            // Gone from the layout straight away; if the Google script says no (e.g. it's another widget's backup), it comes back with the reason.
+            DATA.widgets = DATA.widgets.filter(function (x) { return x.id !== w.id; }); closeSheet(); setData(DATA);
+            act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { if (route().w) go('layout'); }, function () {});
         };
     }
     /** The widgets this one stands in for at other times ("When to show"), by name – or ''. */
