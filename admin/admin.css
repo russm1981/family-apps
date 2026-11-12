@@ -192,3 +192,5 @@ a.mrow { text-decoration: none; color: inherit; }
 
 details.when { border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; margin: 10px 0; }
 details.when summary { font-weight: 600; cursor: pointer; }
+
+.wrow.pending { opacity: .5; pointer-events: none; }

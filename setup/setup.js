@@ -80,8 +80,8 @@
     function screenUrl() { return appsBase + 'screen/#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
     function qr(text) {
         if (!window.qrcode) return '';
-        var q = window.qrcode(0, 'M'); q.addData(text); q.make();
-        return '<div class="qr">' + q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) + '</div>';
+        var q = window.qrcode(0, 'L'); q.addData(text); q.make();
+        return '<div class="qr">' + q.createSvgTag({ cellSize: 6, margin: 4, scalable: true }) + '</div>';
     }
 
     /* ------------------------------------------------------------ the steps */
@@ -451,10 +451,18 @@
             if (!connected()) return '<h1>4. Connect your screen and phones</h1>' + needConnect();
             return '<h1>4. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
                 '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button></div>' +
-                (S.dev === 'other' ? '<div class="card big"><p>Open this address full screen on the device:</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + qr(screenUrl()) +
-                    '<div class="grid2"><div><h3>Raspberry Pi</h3><ol class="howto"><li>Raspberry Pi OS with desktop.</li><li>Terminal:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "PASTE-THE-LINK"</code></li>' +
-                    '<li>To start automatically, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' +
-                    '<div><h3>Android / Fire tablet</h3><ol class="howto"><li>Install <b>Fully Kiosk Browser</b>.</li><li>Scan the code above with the tablet and set it as the Start URL.</li><li>Turn on Kiosk mode and Keep screen on.</li></ol></div></div></div>'
+                (S.dev === 'other' ? '<div class="card big"><h3>Android / Fire tablet</h3><ol class="howto">' +
+                    '<li>On the tablet, install <b>Fully Kiosk Browser</b> (Google Play, or the Amazon Appstore on a Fire tablet).</li>' +
+                    '<li>Open it. Where it asks for a <b>Start URL</b> (or in its Settings → Web Content Settings → Start URL), type this short address:' +
+                    '<div class="bigaddr">' + esc(appsBase.replace(/^https:\/\//, '') + 'screen/') + '</div>' +
+                    '<span class="mute">Or scan this with the tablet’s camera – it’s the same short address:</span>' + qr(appsBase + 'screen/') + '</li>' +
+                    '<li>The tablet shows <b>“Connect this screen”</b> and a code like <b>K7Q2-M9XD</b>. Type that code here and click <b>Connect</b>:' +
+                    '<div class="row" style="margin-top:8px"><input id="tabCode" placeholder="e.g. K7Q2-M9XD" autocapitalize="characters" spellcheck="false" style="max-width:16rem"><button class="btn" id="tabGo">Connect</button></div><div id="tabStatus" class="mute"></div>' +
+                    'The tablet shows your dashboard within a few seconds and remembers it.</li>' +
+                    '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' +
+                    '<details class="card"><summary>Raspberry Pi</summary><ol class="howto"><li>Raspberry Pi OS with desktop.</li><li>Terminal:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'screen/"</code></li>' +
+                    '<li>It shows a code: type it in the box above and click Connect.</li><li>To start automatically, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></details>' +
+                    '<details class="card"><summary>Or use the private screen link instead of a code</summary>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>'
                   : '<div class="card big"><ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button> and move the file somewhere you’ll find it, such as <b>Documents</b>. Doing this on a different computer? Copy the file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
                     '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
                     '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
@@ -466,6 +474,11 @@
                 '<br><b>Scanning connects it too</b> – the code holds your family’s private link. Already have the app? Open it: it asks you to connect – send yourself the link above (e.g. by message), copy it and paste it in.</div>' + helpLink('connect');
         }, wire: function () {
             if (!connected()) return;
+            if ($('tabGo')) $('tabGo').onclick = function () {
+                var b = this; b.disabled = true; $('tabStatus').textContent = 'Sending…';
+                FDPairSend.send($('tabCode').value, { url: S.url, code: S.code }).then(function () { $('tabStatus').innerHTML = okLine(true, 'Sent – the tablet connects within a few seconds.'); b.disabled = false; },
+                    function (e) { b.disabled = false; $('tabStatus').innerHTML = okLine(false, e.message); });
+            };
             $('devTabs').onclick = function (e) { var b = e.target.closest('[data-dev]'); if (b) { S.dev = b.getAttribute('data-dev'); save(); render(); } };
             if ($('bat')) $('bat').onclick = function () { download('Start Family Dashboard.bat', batFile(screenUrl())); };
         } },

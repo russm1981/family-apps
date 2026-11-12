@@ -53,7 +53,7 @@ details.key[open] summary { margin-bottom: 8px; }
 .tabs { display: flex; gap: 6px; margin: 14px 0; }
 .tabs button { background: var(--panel); border: 1px solid var(--line); color: var(--mute); padding: 10px 16px; border-radius: 999px; font: inherit; font-weight: 700; cursor: pointer; }
 .tabs button.on { background: var(--acc); border-color: var(--acc); color: #fff; }
-.qr { width: 180px; height: 180px; background: #fff; border-radius: 12px; padding: 8px; margin: 10px 0; }
+.qr { width: 240px; height: 240px; background: #fff; border-radius: 12px; padding: 8px; margin: 10px 0; }
 .qr svg { width: 100%; height: 100%; }
 table.check { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 15px; }
 table.check th { text-align: left; color: var(--mute); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); }
@@ -110,3 +110,4 @@ label.tick.sm { margin: 0; font-weight: 600; font-size: 14px; white-space: nowra
 @media (max-width: 760px) { .prow { grid-template-columns: minmax(0, 1fr) 54px 40px; } .prow .ptb { grid-column: 1 / -1; grid-row: 2; justify-self: end; } }
 
 .status.warn { color: #ffd27a; font-weight: 600; }
+.bigaddr { font: 700 1.25rem ui-monospace, Menlo, Consolas, monospace; background: #fff; color: #111; padding: 10px 14px; border-radius: 10px; margin: 8px 0; display: inline-block; word-break: break-all; }

@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.42';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.43';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1374,6 +1374,7 @@ function saveWidget_(w) {
   checkWidget_(type, merged);
   // "When to show"
   const whenOut = {};
+  let size_ = '';
   if (w.when) {
     const defs = whenSettings_(), cur = settingsFor_(w.id, defs), next = Object.assign({}, cur);
     Object.keys(w.when).forEach(k => {
@@ -1388,6 +1389,7 @@ function saveWidget_(w) {
   }
   {   // whatever shows at other times must fit the same space: half height with half height, full with full
     const W = Object.assign(settingsFor_(w.id, whenSettings_()), {}), size = w.size !== undefined ? w.size : String(data[r][head.indexOf('Size')]).trim().toLowerCase() || T.sizes[0];
+    size_ = size;
     if (w.when && w.when.OtherTimes !== undefined) W.OtherTimes = w.when.OtherTimes;
     const AT = WIDGET_TYPES[W.OtherTimes];
     if (AT && AT.sizes.indexOf(size) < 0) throw new Error(AT.name + ' can’t be ' + (size === 'full' ? 'full' : 'half') + ' height, so it can’t share this space – pick another for other times, or change the height');
@@ -1400,6 +1402,13 @@ function saveWidget_(w) {
   if (w.size !== undefined) sh.getRange(r + 1, head.indexOf('Size') + 1).setValue(w.size);
   if (w.show !== undefined) sh.getRange(r + 1, head.indexOf('Show') + 1).setValue(w.show ? 'Yes' : 'No');
   setWsetMany_(w.id, Object.assign({}, out, whenOut));
+  // The widget shown at other times needs a widget of its kind to hold its settings: add one (hidden) if there isn't one.
+  if (whenOut.OtherTimes && WIDGET_TYPES[whenOut.OtherTimes] && !rows_('widgets').some(x => String(x.Type).trim() === whenOut.OtherTimes)) {
+    const ids = rows_('widgets').map(x => String(x.Widget).trim()), t = whenOut.OtherTimes;
+    let n = 1; while (ids.indexOf(t + n) >= 0) n++;
+    const pg = w.page !== undefined ? w.page : String(data[r][head.indexOf('Page')]).trim();
+    sheet_('widgets').appendRow([t + n, pg, 999, t, WIDGET_TYPES[t].sizes.indexOf(size_) >= 0 ? size_ : WIDGET_TYPES[t].sizes[0], 'No']);
+  }
   renumber_('widgets');
   bumpVersions_();
   // Only lists, to-dos and the Weasley clock show live data in the admin app; everything else just needs the layout back.
@@ -1407,6 +1416,15 @@ function saveWidget_(w) {
 }
 /** After a change to pages or widgets: just the new layout (quick), rather than everything the admin app shows. */
 function layoutOnly_() { const L = layout_(); return { ok: true, layoutOnly: true, pages: L.pages, widgets: L.widgets }; }
+/** Which widgets are another widget's backup ("At other times show"): { backupId: [ids it stands in for] }. */
+function backups_(widgets) {
+  const out = {};
+  widgets.filter(w => w.when && w.when.OtherTimes).forEach(w => {
+    const src = widgets.find(x => x.type === w.when.OtherTimes);
+    if (src) (out[src.id] = out[src.id] || []).push(w.id);
+  });
+  return out;
+}
 
 function addWidget_(pageId, type) {
   const T = WIDGET_TYPES[type];
@@ -1422,6 +1440,13 @@ function addWidget_(pageId, type) {
 }
 
 function deleteWidget_(id) {
+  const L = layout_(), me = L.widgets.find(x => x.id === id);
+  if (me) {
+    const users = L.widgets.filter(x => x.when && x.when.OtherTimes === me.type);
+    if (users.length && L.widgets.filter(x => x.type === me.type).length === 1)
+      throw new Error('This ' + WIDGET_TYPES[me.type].name + ' is shown in place of ' + users.map(x => WIDGET_TYPES[x.type].name).join(' and ') +
+        ' at other times, and holds its settings. Untick “Show on the screen” to hide it, or change that widget’s “When to show” first.');
+  }
   deleteWhere_('widgets', r => String(r[0]).trim() === id);
   deleteWhere_('wset', r => String(r[0]).trim() === id);
   bumpVersions_();

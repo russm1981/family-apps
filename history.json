@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.61",
+    "date": "2026-11-12",
+    "notes": [
+      "Tablets connect with a short address and a code typed on the computer – no long link to scan; setup’s QR codes are bigger and easier to scan",
+      "When to show: picking a widget for other times adds a hidden one to hold its settings if there isn’t one, and it can’t be removed while it’s in use; the list says which is which",
+      "Adding a widget shows straight away in Family Admin"
+    ]
+  },
+  {
     "version": "2026.11.60",
     "date": "2026-11-12",
     "notes": [

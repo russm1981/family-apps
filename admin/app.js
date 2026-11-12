@@ -934,8 +934,9 @@
                     '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Edit</button></div>' +
                     (isW ? preview(p.id) + '<div class="wl">' + ws.map(function (w, j) {
                         var T = typeOf(w.type);
-                        return '<div class="wrow' + (w.show ? '' : ' off') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + esc(T.icon) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
-                            esc(summary(w)) + '</small></span><span class="badge">' + (w.show ? w.size : 'hidden') + '</span></button>' +
+                        var bk = backupFor(w), tm = w.when ? '⏰ ' + w.when.ShowDays + ' ' + w.when.ShowFrom + '–' + w.when.ShowUntil + (w.when.OtherTimes ? ', then ' + typeOf(w.when.OtherTimes).name : '') : '';
+                        return '<div class="wrow' + (w.show ? '' : ' off') + (w.pending ? ' pending' : '') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + esc(T.icon) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
+                            esc(bk ? '⏰ Shown in place of ' + bk + ' at other times' : tm || summary(w)) + '</small></span><span class="badge">' + (w.show ? w.size : 'hidden') + '</span></button>' +
                             '<button class="mini" data-wmove="' + esc(w.id) + ':-1"' + (j ? '' : ' disabled') + '>▲</button><button class="mini" data-wmove="' + esc(w.id) + ':1"' + (j < ws.length - 1 ? '' : ' disabled') + '>▼</button></div>';
                     }).join('') + '</div><button class="btn ghost wide" data-wadd="' + esc(p.id) + '">+ Add a widget to ' + esc(p.title) + '</button>' : '') +
                     '</section>';
@@ -1041,6 +1042,12 @@
             if (confirm('Remove the ' + T.name + ' widget and its settings?')) act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { closeSheet(); if (route().w) go('layout'); }, function () {});
         };
     }
+    /** The widgets this one stands in for at other times ("When to show"), by name – or ''. */
+    function backupFor(w) {
+        var src = (DATA.widgets || []).filter(function (x) { return x.type === w.type && !x.pending; })[0];
+        if (!src || src.id !== w.id) return '';
+        return (DATA.widgets || []).filter(function (x) { return x.when && x.when.OtherTimes === w.type; }).map(function (x) { return typeOf(x.type).name; }).join(' and ');
+    }
     /** Show a change on the phone at once and close the form, while it's saved in the background. */
     function savingNow(w, apply) {
         apply(); closeSheet(); setData(DATA);
@@ -1094,7 +1101,11 @@
         $('aCancel').onclick = closeSheet;
         $('sheet').querySelector('.types').onclick = function (e) {
             var b = e.target.closest('[data-type]'); if (!b) return;
-            act({ action: 'addWidget', page: pid, type: b.getAttribute('data-type') }, 'Added – its settings are on its page in Family, Lists or Other').then(closeSheet, function () {});
+            var ty = b.getAttribute('data-type'), T = typeOf(ty);
+            // On the phone straight away (greyed until the Google script has added it).
+            DATA.widgets.push({ id: 'new-' + Date.now(), page: pid, type: ty, size: T.sizes[0], show: true, order: 999, settings: {}, when: null, pending: true });
+            closeSheet(); setData(DATA); FD.toast('Adding…');
+            act({ action: 'addWidget', page: pid, type: ty }, 'Added – its settings are on its page in Family, Lists or Other').catch(function () { /* load() puts it back */ });
         };
     }
     function pageSheet(p) {
