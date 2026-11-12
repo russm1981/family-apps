@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.68",
+    "date": "2026-11-12",
+    "notes": [
+      "Notes: up to 6, shown two at a time on the screen with “Page 1 of 3”, turning by themselves every 8 seconds (tap the page number to turn now)",
+      "Family Admin: the Memos tab is now Notes, showing the notes as they look on the screen, with a box to add one underneath"
+    ]
+  },
+  {
     "version": "2026.11.67",
     "date": "2026-11-12",
     "notes": [

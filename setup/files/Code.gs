@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.45';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.46';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -75,7 +75,7 @@ const LIMITS = {
   eventNote: 300,
   category: 14,
   listItem: 30,       // shopping list item
-  memo: 80,           // a note on the Memo widget
+  memo: 80, maxNotes: 6,           // a note on the Memo widget
   pageTitle: 10,      // fits under the icon in the side bar
   maxPoints: 999,     // a task, bonus or penalty
   maxCashIn: 9999,
@@ -3019,6 +3019,8 @@ function memo_(b) {
   if (b.op === 'add') {
     const t = checkLen_('Note', b.text, LIMITS.memo);
     if (!t) throw new Error('Write something first');
+    const mw = layout_().widgets.find(x => x.type === 'memo');
+    if (memos_(mw ? mw.settings : { KeepDays: 7 }).items.length >= LIMITS.maxNotes) throw new Error('There are already ' + LIMITS.maxNotes + ' notes (3 pages on the screen) – remove one first');
     sheet_('memos').appendRow([newId_(), t, checkLen_('From', b.from || '', 12), new Date()]);
   } else if (b.op === 'remove') deleteWhere_('memos', r => String(r[0]) === String(b.id));
   else throw new Error('Unknown memo action');

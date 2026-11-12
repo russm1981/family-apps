@@ -28,8 +28,8 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
-        : [['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
+    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
+        : [['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
@@ -404,7 +404,7 @@
     function row(left, right, sub, cls) { return '<div class="r' + (cls ? ' ' + cls : '') + '"><span class="r-l">' + left + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right != null ? '<b class="r-r">' + right + '</b>' : '') + '</div>'; }
 
     var VIEWS = {
-        memo: function () { return card('Notes on the screen', memoEditor()); },
+        memo: function () { return memoEditor(); },
         list: function (w) { return card('On the list', listEditor(w)); },
         todo: function (w) { return card('To do', listEditor(w)); },
         whereabouts: function (w) { return card('Where is everyone now?', whereEditor(w)); },
@@ -842,7 +842,7 @@
 
     /* ================================================================ lists: notes, shopping, to-dos together */
 
-    function renderMemos() { renderListsOf('Memos', function (w) { return w.type === 'memo'; }, 'No memos on the screen', 'Add a Memo widget'); }
+    function renderMemos() { renderListsOf('Notes', function (w) { return w.type === 'memo'; }, 'No notes on the screen', 'Add a Memo (notes) widget'); }
     function renderLists() { renderListsOf('Lists', function (w) { return w.type === 'list' || w.type === 'todo'; }, 'No lists on the screen', 'Add a List or To-do widget'); }
     function renderListsOf(name, which, none, how) {
         title(name);
@@ -893,26 +893,32 @@
     }
 
     /* Memo widget: notes added from the phone */
+    var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff'];
+    /** The notes as they look on the screen (sticky notes, newest last), each with ✕ – then a box to add one. */
     function memoEditor() {
-        return '<div class="ls-add"><input id="mmNew" maxlength="' + (L().memo || 80) + '" placeholder="Write a note…" autocomplete="off"></div>' +
-            '<div class="ls-add"><input id="mmFrom" maxlength="12" placeholder="From (optional)" value="' + esc(localStorage.getItem('fdadmin.from') || '') + '" autocomplete="off"><button class="btn sm" id="mmAdd">Add</button></div>' +
-            '<div id="mmItems">' + memoItems() + '</div>';
+        var max = L().maxNotes || 6, n = (DATA.memos || []).length;
+        return '<div id="mmItems">' + memoItems() + '</div>' +
+            card('Add a note', n >= max ? '<p class="mute small">There are ' + max + ' notes – the most that fit (3 pages on the screen). Remove one to add another.</p>' :
+                '<div class="ls-add"><input id="mmNew" maxlength="' + (L().memo || 80) + '" placeholder="Write a note…" autocomplete="off"></div>' +
+                '<div class="ls-add"><input id="mmFrom" maxlength="12" placeholder="From (optional)" value="' + esc(localStorage.getItem('fdadmin.from') || '') + '" autocomplete="off"><button class="btn sm" id="mmAdd">Add</button></div>' +
+                '<p class="mute small">' + n + ' of ' + max + ' notes. The screen shows two at a time and turns the page by itself.</p>');
     }
     function memoItems() {
         var m = DATA.memos || [];
-        return m.length ? m.slice().reverse().map(function (x) {
-            return '<div class="ls-row"><span class="mm-x"><b>' + esc(x.text) + '</b><small>' + (x.from ? esc(x.from) + ' · ' : '') + esc(x.added) + '</small></span><button class="x" data-mrm="' + esc(x.id) + '">✕</button></div>';
-        }).join('') : '<div class="mute small">No notes</div>';
+        return m.length ? '<div class="stickies">' + m.map(function (x, i) {
+            return '<div class="sticky" style="--nc:' + NOTE_COLOURS[i % NOTE_COLOURS.length] + ';--rot:' + ((i % 3) - 1) * 1.2 + 'deg"><span>' + esc(x.text) + '</span><small>' + (x.from ? '— ' + esc(x.from) + ', ' : '') + esc(x.added) + '</small>' +
+                '<button class="x" data-mrm="' + esc(x.id) + '" aria-label="Remove">✕</button></div>';
+        }).join('') + '</div>' : card('', '<div class="mute small">No notes on the screen</div>');
     }
     function wireMemo() {
-        function after() { return load().then(function () { if ($('mmItems')) $('mmItems').innerHTML = memoItems(); }); }
-        $('mmAdd').onclick = function () {
+        function after() { return load(); }
+        if ($('mmAdd')) $('mmAdd').onclick = function () {
             var t = $('mmNew').value.trim(), f = $('mmFrom').value.trim(); if (!t) return;
             try { localStorage.setItem('fdadmin.from', f); } catch (e) { /* ignore */ }
             $('mmNew').value = '';
             act({ action: 'memo', op: 'add', text: t, from: f }, 'Note added').then(after, function () {});
         };
-        $('mmNew').onkeydown = function (e) { if (e.key === 'Enter') $('mmAdd').onclick(); };
+        if ($('mmNew')) $('mmNew').onkeydown = function (e) { if (e.key === 'Enter') $('mmAdd').onclick(); };
         $('mmItems').onclick = function (e) { var b = e.target.closest('[data-mrm]'); if (b) act({ action: 'memo', op: 'remove', id: b.getAttribute('data-mrm') }, 'Removed').then(after, function () {}); };
     }
 

@@ -1,14 +1,13 @@
 {
-  "app": "2026.11.67",
-  "script": "2026.11.45",
+  "app": "2026.11.68",
+  "script": "2026.11.46",
   "date": "2026-11-08",
   "notes": [
+    "Notes: up to 6, shown two at a time on the screen with “Page 1 of 3”, turning by themselves every 8 seconds (tap the page number to turn now)",
+    "Family Admin: the Memos tab is now Notes, showing the notes as they look on the screen, with a box to add one underneath",
     "The Google script now checks GitHub for a newer version itself every few minutes, the same way as the “Update now” button, and the Updates page shows when it last checked and what happened",
     "The screen retries a script update quietly every 3 minutes, instead of asking you to update by hand",
-    "Family Admin → Widgets: hidden widgets are listed too, and a “Not in use” section has the settings of every widget that isn’t on a screen. Removing a widget keeps its settings; adding it again brings them back",
-    "Family Admin: Settings → Updates is back on the phone, with “Update the Google script now” if it hasn’t updated itself",
-    "Family Admin: separate Memos and Lists tabs, and the Other tab is now called Widgets",
-    "The website for computers is now called Setup, at one address – russm1981.github.io/family-apps/setup – with first-time setup, every step-by-step guide, the screen layout and the rarer settings. Old links (licence emails, the Sheet’s menu, …/settings) still work"
+    "Family Admin → Widgets: hidden widgets are listed too, and a “Not in use” section has the settings of every widget that isn’t on a screen. Removing a widget keeps its settings; adding it again brings them back"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

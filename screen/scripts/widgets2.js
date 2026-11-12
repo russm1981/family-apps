@@ -40,7 +40,7 @@
                 }).join('') + '</div>';
         }
         var t = setInterval(function () { if (data) render(); }, 30 * 60000);
-        return { update: function (d) { data = d; render(); }, destroy: function () { clearInterval(t); } };
+        return { update: function (d) { data = d; render(); }, destroy: function () { clearInterval(t); clearInterval(turner); } };
     };
 
     /* ========================================================= WEASLEY CLOCK */
@@ -252,20 +252,28 @@
     var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff'];
     T.memo = function (el, w) {
         var s = w.settings, full = w.size === 'full', data = null;
-        el.innerHTML = '<div class="mm-head"><h3>Notes</h3>' + (s.AddOnScreen ? '<button class="ls-btn" data-m="add">+ Note</button>' : '') + '</div><div class="mm-notes">' + loading() + '</div>';
+        el.innerHTML = '<div class="mm-head"><h3>Notes</h3><button class="mm-page" data-m="page" style="display:none"></button>' + (s.AddOnScreen ? '<button class="ls-btn" data-m="add">+ Note</button>' : '') + '</div><div class="mm-notes">' + loading() + '</div>';
         var box = el.querySelector('.mm-notes');
+        // Two notes a page (four at full height); more than that turn over by themselves every 8 seconds – tap the page number to turn now.
+        var pg = 0, turner = null;
         function render() {
-            if (!data || data.error) { box.innerHTML = errBox(data ? data.error : 'No notes'); return; }
-            var fit = full ? 6 : 4, items = data.items, cut = items.length > fit ? fit - 1 : items.length;
-            box.innerHTML = items.length ? items.slice(0, cut).map(function (m, i) {
+            if (!data || data.error) { box.innerHTML = errBox(data ? data.error : 'No notes'); setPager(''); return; }
+            var per = full ? 4 : 2, items = data.items, pages = Math.max(1, Math.ceil(items.length / per));
+            if (pg >= pages) pg = 0;
+            box.innerHTML = items.length ? items.slice(pg * per, pg * per + per).map(function (m, k) {
+                var i = pg * per + k;
                 return '<button class="mm-note" data-m="open" data-id="' + esc(m.id) + '" style="--nc:' + NOTE_COLOURS[i % NOTE_COLOURS.length] + ';--rot:' + ((i % 3) - 1) * 1.2 + 'deg">' +
                     '<span class="mm-tx">' + esc(m.text) + '</span><small>' + (m.from ? '— ' + esc(m.from) + ', ' : '') + esc(ago(m.at)) + '</small></button>';
-            }).join('') + (items.length > cut ? '<button class="mm-note more" data-m="all">+' + (items.length - cut) + ' more</button>' : '')
-                : '<div class="empty">No notes. Add one from the Family Admin app' + (s.AddOnScreen ? ' or tap + Note' : '') + '.</div>';
+            }).join('') : '<div class="empty">No notes. Add one from the Family Admin app' + (s.AddOnScreen ? ' or tap + Note' : '') + '.</div>';
+            setPager(pages > 1 ? 'Page ' + (pg + 1) + ' of ' + pages : '');
+            clearInterval(turner);
+            if (pages > 1) turner = setInterval(function () { pg = (pg + 1) % pages; render(); }, 8000);
         }
+        function setPager(t) { var p = el.querySelector('.mm-page'); if (p) { p.textContent = t; p.style.display = t ? '' : 'none'; } }
         function click(e) {
             var b = e.target.closest('[data-m]'); if (!b || !data) return;
             var a = b.getAttribute('data-m');
+            if (a === 'page') { pg++; render(); return; }
             if (a === 'open') {
                 var m = data.items.filter(function (x) { return x.id === b.getAttribute('data-id'); })[0]; if (!m) return;
                 pop('Note', '<p class="mm-big">' + esc(m.text) + '</p><p class="foot">' + (m.from ? 'From ' + esc(m.from) + ' · ' : '') + esc(ago(m.at)) + '</p>' +
@@ -288,7 +296,7 @@
                 var t = document.querySelector('#popBody .mm-in').value.trim(), f = document.querySelector('#popBody .mm-from').value.trim();
                 if (!t) return;
                 closePop();
-                post({ action: 'memo', op: 'add', text: t, from: f }, function (r) { data = r.data; render(); }).catch(function () {});
+                post({ action: 'memo', op: 'add', text: t, from: f }, function (r) { data = r.data; render(); }).catch(function (err) { pop('Note', '<p class="mm-big" style="font-size:1.2rem">' + esc(err.message || 'Couldn’t add the note') + '</p>'); });
             }
         }
         el.addEventListener('click', click);
