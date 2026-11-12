@@ -191,19 +191,18 @@
                 '<li>Under <b>Who has access</b>, choose <b>Anyone</b> <span class="mute">(not “Anyone with Google account”)</span>. Leave <b>Execute as</b> on <b>Me</b>. Click <b>Deploy</b>.</li>' +
                 '<li>Google asks for permission. Click <b>Authorize access</b> and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
                     'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
-                '<li>Google shows a <b>Web app URL</b>. <b>Click it once</b> – a page opens; you can close it. Then click <b>Done</b>.</li>' +
-                '<li>Go back to the tab with your Sheet and <b>reload it</b> (press F5, or ⌘R on a Mac). Wait a few seconds: a new menu <b>🏠 Family Dashboard</b> appears along the top, after Help.</li>' +
-                '<li>Click <b>🏠 Family Dashboard</b> → <b>▶ Set up &amp; connect my screen and phones</b>. In the box that appears, click <b>Carry on with setup</b>. ' +
-                    'This page then opens again, already connected, at the next step.</li></ol>' +
+                '<li>Google shows <b>“New deployment”</b> with a <b>Web app URL</b>. Click <b>Copy</b> under the URL.</li>' +
+                '<li>Come back to this tab, paste it in the box below (Ctrl+V, or ⌘V on a Mac) and click <b>Connect</b>. ' +
+                    '<span class="mute">Then go back to Apps Script and click <b>Done</b>.</span></li></ol>' +
+                '<div class="row" style="margin-top:10px"><input id="url" placeholder="Paste the Web app URL here – https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
+                '<p class="mute">Don’t deploy again if it says “Deployment successfully updated” – that means it worked; just copy that URL.</p>' +
                 '<details class="card"><summary>Deploy just spins, or Google keeps asking for permission?</summary><ol class="howto">' +
                 '<li>This is nearly always because the browser is signed in to <b>more than one Google account</b>. Open a private window (Chrome: Ctrl+Shift+N, or ⌘+Shift+N on a Mac), ' +
                 'sign in with <b>only</b> the account your Sheet is in, open the Sheet from <a href="https://drive.google.com" target="_blank" rel="noopener">drive.google.com</a> and do this step again there.</li>' +
                 '<li>Use <b>Chrome</b> or <b>Edge</b>, and allow pop-ups if the browser asks – Google’s permission window is a pop-up.</li>' +
                 '<li>In Apps Script, press <b>Save</b> (the 💾 icon) once before <b>Deploy</b>.</li>' +
                 '<li>Still spinning? Make a fresh copy (step 1) and try again in the private window – a new copy usually deploys straight away.</li></ol></details>' +
-                '<div class="note"><b>The menu only says “Load the dashboard program”?</b> That happens on a brand-new copy. Click <b>🏠 Family Dashboard → Load the dashboard program</b>, ' +
-                'allow it if Google asks (the same way as above), wait for “Loaded version …”, click <b>OK</b>, then reload the Sheet again. The full menu, with <b>▶ Set up &amp; connect my screen and phones</b>, is then there.</div>' +
-                '<p class="mute">Google may ask for permission once more the first time you use the menu – allow it the same way.</p>' + helpLink('setup') +
+                helpLink('setup') +
                 '<div id="connStatus"></div></div>' + otherWay();
             function packAndPair() {
                 return (S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
@@ -213,9 +212,11 @@
                     'Your screen and phones then switch over by themselves.</p><button class="btn" id="packGo">Bring everything across</button><div id="packStatus" class="mute"></div></div>' : '');
             }
             function otherWay() {
-                return '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>The menu didn’t work? Paste the Web app URL here instead</summary>' +
-                    '<p class="mute">In Apps Script: <b>Deploy → Manage deployments</b>, copy the <b>Web app URL</b> (it ends in /exec).</p>' +
-                    '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
+                return '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>Lost the URL, or it asks for an access code?</summary>' +
+                    '<p class="mute">The URL: in Apps Script, <b>Deploy → Manage deployments</b>, and copy the <b>Web app URL</b> (it ends in /exec)' +
+                    (connected() ? '' : ' – then paste it in the box above') + '.</p>' +
+                    (connected() ? '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' : '') +
+                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>.</p>' +
                     '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
                     '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
             }
@@ -241,7 +242,7 @@
                     toast('Moved ✅'); setTimeout(render, 2500);
                 }, function (e) { b.disabled = false; $('packStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'This new dashboard’s script is out of date – update it first (Updates step).' : e.message); });
             };
-        }, ready: function () { return connected(); }, blocked: 'Finish this step first: the last line is the 🏠 Family Dashboard menu in your Sheet' },
+        }, ready: function () { return connected(); }, blocked: 'Paste the Web app URL in the box and click Connect first' },
 
         { id: 'licence', title: 'Your licence key', render: function () {
             if (!connected()) return '<h1>3. Your licence key</h1>' + needConnect();
