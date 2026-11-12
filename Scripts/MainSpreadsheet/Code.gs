@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.39';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.40';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1185,9 +1185,9 @@ function whenShowing_(W, now) {
 /** What fills a widget's space when it's outside its times: another kind of widget, or nothing. */
 function whenAlt_(w, widgets) {
   const t = w.when && w.when.OtherTimes, T = WIDGET_TYPES[t];
-  if (!T || t === w.type) return null;
+  if (!T || t === w.type || T.sizes.indexOf(w.size) < 0) return null;      // only one that fits the same space
   const src = widgets.find(x => x.type === t && !x.alt);
-  return { id: w.id + '~alt', page: w.page, order: w.order, type: t, size: T.sizes.indexOf(w.size) >= 0 ? w.size : T.sizes[0], show: true,
+  return { id: w.id + '~alt', page: w.page, order: w.order, type: t, size: w.size, show: true,
     settings: src ? src.settings : settingsFor_('', T.settings, {}), alt: true, src: src ? src.id : '' };
 }
 /** The layout as the screen sees it right now: widgets outside their times swapped or left out. */
@@ -1367,6 +1367,12 @@ function saveWidget_(w) {
     Object.keys(w.when).forEach(k => { const f = defs.find(x => x.k === k); if (!f) return; whenOut[k] = cleanSetting_(f, w.when[k]); next[k] = coerce_(f, String(whenOut[k]).replace(/^'/, '')); });
     if (next.ShowFrom >= next.ShowUntil) throw new Error('“Until” has to be later than “From”');
     if (next.OtherTimes === type) throw new Error('Pick a different kind of widget for other times');
+  }
+  {   // whatever shows at other times must fit the same space: half height with half height, full with full
+    const W = Object.assign(settingsFor_(w.id, whenSettings_()), {}), size = w.size !== undefined ? w.size : String(data[r][head.indexOf('Size')]).trim().toLowerCase() || T.sizes[0];
+    if (w.when && w.when.OtherTimes !== undefined) W.OtherTimes = w.when.OtherTimes;
+    const AT = WIDGET_TYPES[W.OtherTimes];
+    if (AT && AT.sizes.indexOf(size) < 0) throw new Error(AT.name + ' can’t be ' + (size === 'full' ? 'full' : 'half') + ' height, so it can’t share this space – pick another for other times, or change the height');
   }
   if (type === 'bins' && (merged.Postcode !== current.Postcode || merged.House !== current.House) && !('UPRN' in (w.settings || {}) && w.settings.UPRN !== current.UPRN)) out.UPRN = '';
   if (w.page !== undefined && w.page !== String(data[r][head.indexOf('Page')]).trim()) {

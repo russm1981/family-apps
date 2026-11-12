@@ -996,6 +996,16 @@
             '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>' +
             '<button class="btn ghost wide" data-go="w/' + esc(w.id) + '">' + esc(widgetName(w)) + ' settings ›</button>' +
             '<div class="sheet-actions"><button class="btn bad" id="wDel">Remove this widget</button></div>');
+        // At other times: only kinds of widget that can be this height.
+        var fitElse = function () {
+            var z = $('wSize').value;
+            Array.prototype.forEach.call($('whElse').options, function (o) {
+                var ok = !o.value || (o.getAttribute('data-sizes') || '').split(' ').indexOf(z) >= 0;
+                o.hidden = !ok; o.disabled = !ok;
+                if (!ok && o.selected) $('whElse').value = '';
+            });
+        };
+        $('wSize').onchange = fitElse; fitElse();
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
             act({ action: 'saveWidget', widget: { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked,
@@ -1016,8 +1026,8 @@
             '<div class="two"><div><label>From</label><input id="whFrom" value="' + esc(W.ShowFrom) + '" placeholder="00:00" inputmode="numeric"></div>' +
             '<div><label>Until</label><input id="whUntil" value="' + esc(W.ShowUntil) + '" placeholder="24:00" inputmode="numeric"></div></div>' +
             '<label>At other times show</label><select id="whElse"><option value="">Nothing – leave the space empty</option>' +
-            DATA.types.filter(function (x) { return x.type !== w.type; }).map(function (x) { return '<option value="' + esc(x.type) + '"' + (x.type === W.OtherTimes ? ' selected' : '') + '>' + esc(x.icon + ' ' + x.name) + '</option>'; }).join('') + '</select>' +
-            '<p class="mute small">It uses the settings of your existing widget of that kind, if you have one. Midnight to midday is 00:00 until 12:00.</p></details>';
+            DATA.types.filter(function (x) { return x.type !== w.type; }).map(function (x) { return '<option value="' + esc(x.type) + '" data-sizes="' + esc(x.sizes.join(' ')) + '"' + (x.type === W.OtherTimes ? ' selected' : '') + '>' + esc(x.icon + ' ' + x.name) + '</option>'; }).join('') + '</select>' +
+            '<p class="mute small">Only widgets that can be the same height are offered. It uses the settings of your existing widget of that kind, if you have one. Midnight to midday is 00:00 until 12:00.</p></details>';
     }
     /** A widget's own settings (from its page in Family / Lists / Other). Where it goes is on the Screen tab. */
     function settingsSheet(w) {

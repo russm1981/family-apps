@@ -1,14 +1,13 @@
 {
-  "app": "2026.11.54",
-  "script": "2026.11.39",
+  "app": "2026.11.55",
+  "script": "2026.11.40",
   "date": "2026-11-08",
   "notes": [
+    "When to show: the widget shown at other times has to be the same height (half with half, full with full)",
     "Any widget can show only on certain days and times, with another widget in its space the rest of the time (Family Admin → Screen → the widget → When to show)",
     "Trains: disruption messages only about your route, all of them, or off",
     "Today & tomorrow: something on both days of the weekend is labelled ALL",
-    "Today & tomorrow: the weekend is grouped under one heading with each entry’s day – “This weekend” Monday to Thursday, in place of tomorrow on Fridays, and “Next weekend” on Saturdays and Sundays",
-    "Family Calendar and Family Admin say clearly when a licence key is needed, with a box to type it in, instead of just not loading",
-    "Today & tomorrow: up to 3 things a day, with the coming weekend’s Saturday and Sunday underneath"
+    "Today & tomorrow: the weekend is grouped under one heading with each entry’s day – “This weekend” Monday to Thursday, in place of tomorrow on Fridays, and “Next weekend” on Saturdays and Sundays"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

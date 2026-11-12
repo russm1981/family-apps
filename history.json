@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.55",
+    "date": "2026-11-12",
+    "notes": [
+      "When to show: the widget shown at other times has to be the same height (half with half, full with full)"
+    ]
+  },
+  {
     "version": "2026.11.54",
     "date": "2026-11-12",
     "notes": [
