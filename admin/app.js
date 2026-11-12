@@ -31,7 +31,7 @@
     var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
         : [['family', '👪', 'Family'], ['memos', '📌', 'Memos'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
-    var PHONE_S = { screen: 1, licence: 1, devices: 1 };
+    var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
     function deskUrl() { return appsRoot() + 'setup/'; }
     function guideUrl() { return appsRoot() + 'setup/guide/'; }
@@ -225,7 +225,7 @@
         if (DATA.moving && r.s !== 'updates') out += '<div class="banner warn"><b>Moving to a new Sheet isn’t finished.</b> <button class="link" data-go="s/updates">What to do</button></div>';
         else if (DESK && DATA.versions && DATA.versions.warn && r.s !== 'updates' && !r.w) out += '<div class="banner warn"><b>The Google script has used ' + DATA.versions.used + ' of its ' + DATA.versions.max + ' saved versions.</b> <button class="link" data-go="s/updates">Sort it out</button></div>';
         if (DATA.codeWeak && r.tab === 'family' && !r.w && !r.pts) out += '<div class="banner warn"><b>Your access code is weak.</b> <button class="link" data-go="s/mydata">Fix it</button></div>';
-        if (DESK && LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion) && r.s !== 'updates' && !r.w && (r.tab === 'layout' || r.tab === 'settings'))
+        if (LATEST && DATA.scriptVersion && newer(LATEST.script, DATA.scriptVersion) && r.s !== 'updates' && !r.w && (r.tab === 'layout' || r.tab === 'settings'))
             out += '<div class="banner"><b>Google script update available</b> (' + esc(LATEST.script) + '). <button class="link" data-go="s/updates">Update now</button></div>';
         return out;
     }

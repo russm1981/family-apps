@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.66",
+    "date": "2026-11-12",
+    "notes": [
+      "Family Admin: Settings → Updates is back on the phone, with “Update the Google script now” if it hasn’t updated itself"
+    ]
+  },
+  {
     "version": "2026.11.65",
     "date": "2026-11-12",
     "notes": [
