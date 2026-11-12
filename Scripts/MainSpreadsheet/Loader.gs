@@ -1,4 +1,4 @@
-/* Family Dashboard – Google script – LOADER (version 1.1)
+/* Family Dashboard – Google script – LOADER (version 1.2)
  *
  * This small file is all that lives in this Apps Script project's "Code" file. Each time the script runs it fetches
  * the real program from where the apps are hosted (GitHub Pages), keeps a copy for a few hours so it stays quick,
@@ -13,7 +13,7 @@
  * same-named function in the program.
  */
 const FD_LOADER = (function () {
-  const VERSION = '1.1';   // compared with version.json "loader": a higher number there asks families to paste this file again
+  const VERSION = '1.2';   // compared with version.json "loader": a higher number there asks families to paste this file again
   const DEFAULT_BASE = 'https://russm1981.github.io/family-apps/';
   const CODE = 'setup/files/Code.gs', HTML = 'setup/files/Admin.html';           // relative to the apps address
   const VKEY = 'script', VDECL = /const SCRIPT_VERSION = '([^']+)'/;  // version.json key, and how the program states its version
@@ -144,7 +144,14 @@ function fdRepair() {
 function onOpen(e) {
   try { fdCall_('onOpen', [e]); }
   catch (err) {
-    try { SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard').addItem('Load the dashboard program', 'fdRepair').addToUi(); } catch (x) { /* no UI */ }
+    // A brand-new copy can't download the program while the Sheet is opening (Google doesn't allow it yet), so this
+    // menu has the same first steps: each one loads the program when it's clicked.
+    try {
+      SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
+        .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
+        .addItem('Change family & calendar', 'menuFamily')
+        .addSeparator().addItem('Load the dashboard program', 'fdRepair').addToUi();
+    } catch (x) { /* no UI */ }
   }
 }
 // Names Google calls: the web app, the menu, the timer.

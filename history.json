@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.57",
+    "date": "2026-11-12",
+    "notes": [
+      "New Sheets: the Family Dashboard menu has “▶ Set up & connect my screen and phones” straight away (loader 1.2), and setup explains what to do if the menu only says “Load the dashboard program”"
+    ]
+  },
+  {
     "version": "2026.11.56",
     "date": "2026-11-12",
     "notes": [

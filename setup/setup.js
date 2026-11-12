@@ -195,6 +195,8 @@
                 '<li>Go back to the tab with your Sheet and <b>reload it</b> (press F5, or ⌘R on a Mac). Wait a few seconds: a new menu <b>🏠 Family Dashboard</b> appears along the top, after Help.</li>' +
                 '<li>Click <b>🏠 Family Dashboard</b> → <b>▶ Set up &amp; connect my screen and phones</b>. In the box that appears, click <b>Carry on with setup</b>. ' +
                     'This page then opens again, already connected, at the next step.</li></ol>' +
+                '<div class="note"><b>The menu only says “Load the dashboard program”?</b> That happens on a brand-new copy. Click <b>🏠 Family Dashboard → Load the dashboard program</b>, ' +
+                'allow it if Google asks (the same way as above), wait for “Loaded version …”, click <b>OK</b>, then reload the Sheet again. The full menu, with <b>▶ Set up &amp; connect my screen and phones</b>, is then there.</div>' +
                 '<p class="mute">Google may ask for permission once more the first time you use the menu – allow it the same way.</p>' + helpLink('setup') +
                 '<div id="connStatus"></div></div>' + otherWay();
             function packAndPair() {
