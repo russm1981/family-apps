@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.58",
+    "date": "2026-11-12",
+    "notes": [
+      "Family Admin: moving widgets and pages happens instantly, and saved changes show straight away while they’re saved in the background – several quick taps are all kept, in order",
+      "Changes to the screen layout save much faster",
+      "When to show: times are picked from a list (no colon needed)"
+    ]
+  },
+  {
     "version": "2026.11.57",
     "date": "2026-11-12",
     "notes": [

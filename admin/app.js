@@ -60,18 +60,40 @@
             .catch(function (e) { sync('err'); FD.toast(e.message, true); render(); });
     }
     /** Run an action. Actions that return points state update the points page; others return all admin data. */
+    // Changes go to the Google script one after another. A tap while one is still on its way waits its turn –
+    // it's never dropped (dropping it used to close the form as if it had been saved).
+    var queue = Promise.resolve(), pending = 0;
     function act(body, okText, undoable) {
-        if (busy) return Promise.resolve();
-        busy = true; sync('busy');
-        return FD.post(body).then(function (d) {
-            sync('ok');
-            if (d.state && !d.tasks) { DATA.state = d.state; setData(DATA); }
-            else if (d.tasks) setData(d);
-            else if (d.data && d.id && DATA.lists) { DATA.lists[d.id] = d.data; setData(DATA); }
-            if (okText) FD.toast(okText, false, undoable && d.id ? function () { act({ action: 'undo', id: d.id }, 'Undone'); } : null);
-            return d;
-        }).catch(function (e) { sync('err'); FD.toast(e.message, true); throw e; })
-          .finally(function () { busy = false; });
+        pending++; busy = true; sync('busy');
+        var run = function () {
+            return FD.post(body).then(function (d) {
+                if (d.layoutOnly) { if (pending === 1) { DATA.pages = d.pages; DATA.widgets = d.widgets; setData(DATA); } }     // later changes still on their way: keep what's on the phone
+                else if (d.state && !d.tasks) { DATA.state = d.state; setData(DATA); }
+                else if (d.tasks) setData(d);
+                else if (d.data && d.id && DATA.lists) { DATA.lists[d.id] = d.data; setData(DATA); }
+                if (okText) FD.toast(okText, false, undoable && d.id ? function () { act({ action: 'undo', id: d.id }, 'Undone'); } : null);
+                return d;
+            });
+        };
+        var p = queue.then(run, run);
+        queue = p.catch(function () { /* the next change still goes */ });
+        return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); } return d; },
+            function (e) { if (--pending === 0) busy = false; sync('err'); FD.toast(e.message, true); load(); throw e; });
+    }
+    /** Move a widget or page straight away on this phone, then tell the Google script. */
+    function moveNow(kind, id, dir) {
+        var list = kind === 'w' ? DATA.widgets : DATA.pages, me = list.filter(function (x) { return x.id === id; })[0];
+        if (!me) return;
+        var same = kind === 'w' ? list.filter(function (x) { return x.page === me.page; }) : list.slice();
+        same.sort(function (a, b) { return a.order - b.order; });
+        var i = same.indexOf(me), j = i + (dir < 0 ? -1 : 1);
+        if (j < 0 || j >= same.length) return;
+        var t = same[i].order; same[i].order = same[j].order; same[j].order = t;
+        if (same[i].order === same[j].order) same[i].order += dir;
+        var pi = {}; DATA.pages.forEach(function (pg, k) { pi[pg.id] = k; });
+        list.sort(function (a, b) { return kind === 'w' ? ((pi[a.page] || 0) - (pi[b.page] || 0)) || (a.order - b.order) : a.order - b.order; });
+        setData(DATA);
+        act({ action: kind === 'w' ? 'moveWidget' : 'movePage', id: id, dir: dir }).catch(function () { /* load() puts it back */ });
     }
     /** Live data for the glance tiles: one request per widget page (the same as the screen asks for). */
     function fetchGlance(force) {
@@ -923,8 +945,8 @@
         $('body').onclick = function (e) {
             var el;
             if ((el = e.target.closest('[data-w]'))) widgetSheet(widgetOf(el.getAttribute('data-w')));
-            else if ((el = e.target.closest('[data-wmove]'))) { var a = el.getAttribute('data-wmove').split(':'); act({ action: 'moveWidget', id: a[0], dir: +a[1] }); }
-            else if ((el = e.target.closest('[data-pmove]'))) { var b = el.getAttribute('data-pmove').split(':'); act({ action: 'movePage', id: b[0], dir: +b[1] }); }
+            else if ((el = e.target.closest('[data-wmove]'))) { var a = el.getAttribute('data-wmove').split(':'); moveNow('w', a[0], +a[1]); }
+            else if ((el = e.target.closest('[data-pmove]'))) { var b = el.getAttribute('data-pmove').split(':'); moveNow('p', b[0], +b[1]); }
             else if ((el = e.target.closest('[data-pedit]'))) pageSheet(pageOf(el.getAttribute('data-pedit')));
             else if ((el = e.target.closest('[data-wadd]'))) addWidgetSheet(el.getAttribute('data-wadd'));
         };
@@ -1008,13 +1030,28 @@
         $('wSize').onchange = fitElse; fitElse();
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
-            act({ action: 'saveWidget', widget: { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked,
-                when: { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.trim() || '00:00', ShowUntil: $('whUntil').value.trim() || '24:00', OtherTimes: $('whElse').value } } }, 'Saved – the screen updates within a minute')
-                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+            var body = { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked,
+                when: { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.slice(0, 5) || '00:00', ShowUntil: $('whUntil').value.slice(0, 5) || '24:00', OtherTimes: $('whElse').value } };
+            // Shown on the phone straight away; the Google script catches up in the background (an error puts it back).
+            savingNow(w, function () { w.page = body.page; w.size = body.size; w.show = body.show; w.when = body.when.ShowDays === 'Every day' && body.when.ShowFrom === '00:00' && body.when.ShowUntil === '24:00' ? null : body.when; });
+            act({ action: 'saveWidget', widget: body }, 'Saved – the screen updates within a minute')
+                .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
         $('wDel').onclick = function () {
             if (confirm('Remove the ' + T.name + ' widget and its settings?')) act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { closeSheet(); if (route().w) go('layout'); }, function () {});
         };
+    }
+    /** Show a change on the phone at once and close the form, while it's saved in the background. */
+    function savingNow(w, apply) {
+        apply(); closeSheet(); setData(DATA);
+        FD.toast('Saving…');
+    }
+    /** A time picked from a list (every half hour) – phone keyboards often have no colon. */
+    function timeSel(id, v, end) {
+        var opts = [];
+        for (var m = end ? 30 : 0; m <= (end ? 1440 : 1410); m += 30) opts.push(('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + m % 60).slice(-2));
+        if (v && opts.indexOf(v) < 0) { opts.push(v); opts.sort(); }
+        return '<select id="' + id + '">' + opts.map(function (t) { return '<option value="' + t + '"' + (t === v ? ' selected' : '') + '>' + t + (t === '24:00' ? ' (midnight)' : t === '00:00' ? ' (midnight)' : t === '12:00' ? ' (midday)' : '') + '</option>'; }).join('') + '</select>';
     }
     /** "When to show": only some days and times, with another kind of widget in its space at other times. */
     function whenHtml(w, T) {
@@ -1023,8 +1060,8 @@
         return '<details class="when"' + (w.when ? ' open' : '') + '><summary>⏰ When to show' + (w.when ? ': ' + esc(W.ShowDays) + ', ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) : ' (always)') + '</summary>' +
             '<p class="mute small">For example, trains on weekday mornings only, with the holiday countdown in the same space the rest of the time.</p>' +
             '<label>Show on</label><select id="whDays">' + days.map(function (d) { return '<option' + (d === W.ShowDays ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select>' +
-            '<div class="two"><div><label>From</label><input id="whFrom" value="' + esc(W.ShowFrom) + '" placeholder="00:00" inputmode="numeric"></div>' +
-            '<div><label>Until</label><input id="whUntil" value="' + esc(W.ShowUntil) + '" placeholder="24:00" inputmode="numeric"></div></div>' +
+            '<div class="two"><div><label>From</label>' + timeSel('whFrom', W.ShowFrom, false) + '</div>' +
+            '<div><label>Until</label>' + timeSel('whUntil', W.ShowUntil, true) + '</div></div>' +
             '<label>At other times show</label><select id="whElse"><option value="">Nothing – leave the space empty</option>' +
             DATA.types.filter(function (x) { return x.type !== w.type; }).map(function (x) { return '<option value="' + esc(x.type) + '" data-sizes="' + esc(x.sizes.join(' ')) + '"' + (x.type === W.OtherTimes ? ' selected' : '') + '>' + esc(x.icon + ' ' + x.name) + '</option>'; }).join('') + '</select>' +
             '<p class="mute small">Only widgets that can be the same height are offered. It uses the settings of your existing widget of that kind, if you have one. Midnight to midday is 00:00 until 12:00.</p></details>';
@@ -1042,8 +1079,10 @@
         if ($('wBins')) $('wBins').onclick = function () { binWizard(w); };
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
-            act({ action: 'saveWidget', widget: { id: w.id, settings: readFields() } }, 'Saved – the screen updates within a minute')
-                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+            var vals = readFields();
+            savingNow(w, function () { Object.keys(vals).forEach(function (k) { w.settings[k] = vals[k]; }); });
+            act({ action: 'saveWidget', widget: { id: w.id, settings: vals } }, 'Saved – the screen updates within a minute')
+                .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
     }
     function addWidgetSheet(pid) {

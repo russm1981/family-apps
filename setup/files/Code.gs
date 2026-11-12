@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.41';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.42';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1145,6 +1145,18 @@ function pageSettings_(pageType) {
   const p = rows_('pages').find(r => String(r.Type).toLowerCase() === pageType);
   return settingsFor_(p ? String(p.Page).trim() : pageType, PAGE_TYPES[pageType].settings);
 }
+/** Several settings of one widget or page in one go (reads the tab once). */
+function setWsetMany_(owner, vals) {
+  const keys = Object.keys(vals || {});
+  if (!keys.length) return;
+  const sh = sheet_('wset'), data = sh.getDataRange().getValues(), add = [];
+  keys.forEach(k => {
+    let i = 1; for (; i < data.length; i++) if (String(data[i][0]).trim() === owner && String(data[i][1]).trim() === k) break;
+    if (i < data.length) { if (String(data[i][2]) !== String(vals[k]).replace(/^'/, '')) sh.getRange(i + 1, 3).setValue(vals[k]); }
+    else add.push([owner, k, vals[k]]);
+  });
+  if (add.length) sh.getRange(sh.getLastRow() + 1, 1, add.length, 3).setValues(add);
+}
 function setWset_(owner, k, v) {
   const sh = sheet_('wset');
   const data = sh.getDataRange().getValues();
@@ -1364,7 +1376,11 @@ function saveWidget_(w) {
   const whenOut = {};
   if (w.when) {
     const defs = whenSettings_(), cur = settingsFor_(w.id, defs), next = Object.assign({}, cur);
-    Object.keys(w.when).forEach(k => { const f = defs.find(x => x.k === k); if (!f) return; whenOut[k] = cleanSetting_(f, w.when[k]); next[k] = coerce_(f, String(whenOut[k]).replace(/^'/, '')); });
+    Object.keys(w.when).forEach(k => {
+      const f = defs.find(x => x.k === k); if (!f) return;
+      const v = cleanSetting_(f, w.when[k]); next[k] = coerce_(f, String(v).replace(/^'/, ''));
+      if (next[k] !== cur[k]) whenOut[k] = v;        // only what changed (nothing is written for a widget left on "always")
+    });
     const okTime = t => /^([01]\d|2[0-3]):[0-5]\d$|^24:00$/.test(t);
     if (!okTime(next.ShowFrom) || !okTime(next.ShowUntil)) throw new Error('Times look like 07:30 (24-hour clock); “Until” can be 24:00 for midnight');
     if (next.ShowFrom >= next.ShowUntil) throw new Error('“Until” has to be later than “From”');
@@ -1383,12 +1399,14 @@ function saveWidget_(w) {
   }
   if (w.size !== undefined) sh.getRange(r + 1, head.indexOf('Size') + 1).setValue(w.size);
   if (w.show !== undefined) sh.getRange(r + 1, head.indexOf('Show') + 1).setValue(w.show ? 'Yes' : 'No');
-  Object.keys(out).forEach(k => setWset_(w.id, k, out[k]));
-  Object.keys(whenOut).forEach(k => setWset_(w.id, k, whenOut[k]));
+  setWsetMany_(w.id, Object.assign({}, out, whenOut));
   renumber_('widgets');
   bumpVersions_();
-  return getAdmin_();
+  // Only lists, to-dos and the Weasley clock show live data in the admin app; everything else just needs the layout back.
+  return ['list', 'todo', 'whereabouts'].indexOf(type) >= 0 && Object.keys(out).length ? getAdmin_() : layoutOnly_();
 }
+/** After a change to pages or widgets: just the new layout (quick), rather than everything the admin app shows. */
+function layoutOnly_() { const L = layout_(); return { ok: true, layoutOnly: true, pages: L.pages, widgets: L.widgets }; }
 
 function addWidget_(pageId, type) {
   const T = WIDGET_TYPES[type];
@@ -1400,14 +1418,14 @@ function addWidget_(pageId, type) {
   sheet_('widgets').appendRow([type + n, pageId, 999, type, T.sizes[0], 'Yes']);
   renumber_('widgets');
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function deleteWidget_(id) {
   deleteWhere_('widgets', r => String(r[0]).trim() === id);
   deleteWhere_('wset', r => String(r[0]).trim() === id);
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function moveWidget_(id, dir) {
@@ -1420,7 +1438,7 @@ function moveWidget_(id, dir) {
   const order = {}; same.forEach((w, k) => { order[String(w.Widget).trim()] = k + 1; });
   setColumn_('widgets', 'Order', r => order[String(r[0]).trim()]);
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function savePage_(p) {
@@ -1442,7 +1460,7 @@ function savePage_(p) {
   Object.keys(updates).forEach(col => setColumn_('pages', col, r => String(r[0]).trim() === p.id ? updates[col] : undefined));
   Object.keys(out).forEach(k => setWset_(p.id, k, out[k]));
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function addPage_(title) {
@@ -1456,7 +1474,7 @@ function addPage_(title) {
   const icon = PAGE_ICONS.find(i => used.indexOf(i) < 0) || '\u25C8';
   sheet_('pages').appendRow([id + n, t, 'widgets', icon, pages.length + 1, 'Yes']);
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function deletePage_(id) {
@@ -1469,7 +1487,7 @@ function deletePage_(id) {
   deleteWhere_('wset', r => String(r[0]).trim() === id);
   renumber_('pages');
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function movePage_(id, dir) {
@@ -1480,7 +1498,7 @@ function movePage_(id, dir) {
   const order = {}; ps.forEach((p, k) => { order[String(p.Page).trim()] = k + 1; });
   setColumn_('pages', 'Order', r => order[String(r[0]).trim()]);
   bumpVersions_();
-  return getAdmin_();
+  return layoutOnly_();
 }
 
 function saveInstall_(values) {
