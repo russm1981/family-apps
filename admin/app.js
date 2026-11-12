@@ -28,7 +28,7 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (settings/, window.FD_DESK): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other']]
+    var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other']]
         : [['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1 };
@@ -164,12 +164,34 @@
         else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
-        else ({ family: renderFamily, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings })[r.tab]();
+        else ({ family: renderFamily, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         privacyCheck();
     }
     function title(t) { $('title').textContent = t; }
+    /** The settings website's guided steps (the setup app), each opening at the right place, already connected. */
+    function renderTools() {
+        title('Setup & tools');
+        var c = FD.config(), base = deskUrl().replace(/settings\/$/, '') + 'setup/';
+        var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + (step ? '&' + step : ''); };
+        var row = function (ico, name, what, href, go) {
+            return '<a class="mrow" ' + (go ? 'data-go="' + go + '" href="#"' : 'href="' + esc(href) + '" target="_blank" rel="noopener"') + '><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>';
+        };
+        $('body').innerHTML = '<p class="mute small help">Step-by-step guides. Each opens the setup app at the right step, already connected to your family.</p>' +
+            card('Your dashboard', '<div class="menu">' +
+                row('👪', 'Family & calendar', 'Who’s in the family, the calendar groups and colours, which Google calendars', link('go=family')) +
+                row('📺', 'Connect a screen, tablet or phone', 'Start file for the Corsair PC, a tablet by code, QR codes for phones', link('go=devices')) +
+                row('🔑', 'Free keys for live data', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
+                row('🎫', 'Licence key', 'Add or check your licence key', link('go=licence')) +
+                row('✅', 'Check everything', 'Asks your Sheet to fetch every widget and reports anything that needs attention', link('go=check')) +
+                row('⟳', 'Google script and updates', 'Which version you have, and the loader file', link('update')) +
+                row('🧭', 'Go through the whole setup again', 'Every step, with what you’ve already filled in', link('go=welcome')) + '</div>') +
+            card('Starting again or moving', '<div class="menu">' +
+                row('🗂️', 'My data (Google)', 'Your access code, starting afresh in a new Sheet, moving to another Google account', '', 's/mydata') +
+                row('🆕', 'Set up a different family from scratch', 'A new Google Sheet for someone else – this family’s stays as it is', base) + '</div>') +
+            card('Help', '<div class="menu">' + row('❓', 'Help centre', 'Plain-English answers, step by step', helpUrl()) + '</div>');
+    }
     /** On the phone: a page that's on the computer website instead. */
     function renderOnComputer(what) {
         title(what);
@@ -942,6 +964,12 @@
     }
     function renderLayout() {
         title('Screen layout');
+        // The settings website has the drag-and-drop editor (settings/editor.js).
+        if (DESK && window.FDEditor) {
+            window.FDEditor.render($('body'), { data: function () { return DATA; }, act: act, setData: setData, esc: esc, typeOf: typeOf, pageTypeOf: pageTypeOf,
+                widgetSheet: function (id) { widgetSheet(widgetOf(id)); }, pageSheet: function (id) { pageSheet(pageOf(id)); }, summary: summary, toast: FD.toast });
+            return;
+        }
         var pages = DATA.pages || [];
         $('body').innerHTML = '<p class="mute small help">Which widgets go on each page, and how tall. Each widget is a quarter of the screen wide, full or half height; two half-height widgets share a column. ' +
             'Tap a widget to move, resize or hide it – its own settings are on its page in Family, Lists or Other.</p>' +

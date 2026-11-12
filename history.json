@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.63",
+    "date": "2026-11-12",
+    "notes": [
+      "Settings website: a drag-and-drop screen layout editor – screens down the left (add widget, calendar or points screens), widgets to drag in on the right, and a preview as on the Corsair, a tablet or a computer. Widgets with “When to show” are drawn split diagonally with their times",
+      "Settings website: a Setup & tools tab with every guided step (family & calendar, connecting devices, keys, licence, check everything, updates, starting again)",
+      "The home page shows the three places: the dashboard, Family Admin (phone) and the settings website (computer)"
+    ]
+  },
+  {
     "version": "2026.11.62",
     "date": "2026-11-12",
     "notes": [

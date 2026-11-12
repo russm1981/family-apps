@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.43';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.44';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -685,11 +685,12 @@ function dispatch_(b) {
     case 'saveFamily': return saveFamily_(b);
     case 'saveInstall': return saveInstall_(b.values);
     case 'saveWidget': return saveWidget_(b.widget);
-    case 'addWidget': return addWidget_(b.page, b.type);
+    case 'addWidget': return addWidget_(b.page, b.type, b.at);
+    case 'arrangeWidgets': return arrangeWidgets_(b.page, b.ids);
     case 'deleteWidget': return deleteWidget_(b.id);
     case 'moveWidget': return moveWidget_(b.id, Number(b.dir));
     case 'savePage': return savePage_(b.page);
-    case 'addPage': return addPage_(b.title);
+    case 'addPage': return addPage_(b.title, b.type);
     case 'deletePage': return deletePage_(b.id);
     case 'movePage': return movePage_(b.id, Number(b.dir));
     case 'listItem': return listItem_(b);
@@ -1426,7 +1427,7 @@ function backups_(widgets) {
   return out;
 }
 
-function addWidget_(pageId, type) {
+function addWidget_(pageId, type, at) {
   const T = WIDGET_TYPES[type];
   if (!T) throw new Error('Unknown widget');
   const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
@@ -1435,6 +1436,33 @@ function addWidget_(pageId, type) {
   let n = 1; while (ids.indexOf(type + n) >= 0) n++;
   sheet_('widgets').appendRow([type + n, pageId, 999, type, T.sizes[0], 'Yes']);
   renumber_('widgets');
+  if (at !== undefined && at !== null && isFinite(Number(at))) {     // dropped in a particular place (the settings website)
+    const ids = rows_('widgets').filter(w => String(w.Page).trim() === pageId).sort((a, b) => (Number(a.Order) || 99) - (Number(b.Order) || 99))
+      .map(w => String(w.Widget).trim()).filter(x => x !== type + n);
+    ids.splice(Math.max(0, Math.min(ids.length, Number(at))), 0, type + n);
+    arrangeWidgets_(pageId, ids, true);
+  }
+  bumpVersions_();
+  return layoutOnly_();
+}
+/** The settings website's drag and drop: these widgets, in this order, on this page (they may come from other pages). */
+function arrangeWidgets_(pageId, ids, quiet) {
+  const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
+  if (!p || String(p.Type).toLowerCase() !== 'widgets') throw new Error('Widgets can only go on widget pages');
+  ids = (ids || []).map(String);
+  const all = rows_('widgets'), known = {}; all.forEach(w => { known[String(w.Widget).trim()] = 1; });
+  if (ids.some(x => !known[x])) throw new Error('Widget not found – refresh the page');
+  // Widgets on this page that weren't mentioned keep their place after the ones that were.
+  const rest = all.filter(w => String(w.Page).trim() === pageId && ids.indexOf(String(w.Widget).trim()) < 0).sort((a, b) => (Number(a.Order) || 99) - (Number(b.Order) || 99)).map(w => String(w.Widget).trim());
+  const order = {}; ids.concat(rest).forEach((x, i) => { order[x] = i + 1; });
+  const sh = sheet_('widgets'), data = sh.getDataRange().getValues(), head = data[0].map(String);
+  const cP = head.indexOf('Page'), cO = head.indexOf('Order');
+  const pages = data.map(r => [r[cP]]), orders = data.map(r => [r[cO]]);
+  for (let i = 1; i < data.length; i++) { const id = String(data[i][0]).trim(); if (order[id]) { pages[i][0] = pageId; orders[i][0] = order[id]; } }
+  sh.getRange(2, cP + 1, data.length - 1, 1).setValues(pages.slice(1));
+  sh.getRange(2, cO + 1, data.length - 1, 1).setValues(orders.slice(1));
+  renumber_('widgets');
+  if (quiet) return null;
   bumpVersions_();
   return layoutOnly_();
 }
@@ -1488,16 +1516,25 @@ function savePage_(p) {
   return layoutOnly_();
 }
 
-function addPage_(title) {
+function addPage_(title, type) {
+  type = PAGE_TYPES[type] ? type : 'widgets';
+  const pages = rows_('pages');
+  if (PAGE_TYPES[type].single) {      // one calendar page, one points page: if it's hidden, show it again
+    const have = pages.find(p => String(p.Type).toLowerCase() === type);
+    if (have) {
+      if (yes_(have.Show, true)) throw new Error('There’s already a ' + PAGE_TYPES[type].name + ' page');
+      setColumn_('pages', 'Show', r => String(r[0]).trim() === String(have.Page).trim() ? 'Yes' : undefined);
+      bumpVersions_(); return layoutOnly_();
+    }
+  }
   const t = checkLen_('Page name', title, LIMITS.pageTitle);
   if (!t) throw new Error('Give the page a name');
-  const pages = rows_('pages');
   if (pages.length >= 8) throw new Error('At most 8 pages fit down the side of the screen');
   let id = t.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'page', n = '';
   while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
   const used = pages.map(p => String(p.Icon));
   const icon = PAGE_ICONS.find(i => used.indexOf(i) < 0) || '\u25C8';
-  sheet_('pages').appendRow([id + n, t, 'widgets', icon, pages.length + 1, 'Yes']);
+  sheet_('pages').appendRow([id + n, t, type, icon, pages.length + 1, 'Yes']);
   bumpVersions_();
   return layoutOnly_();
 }
