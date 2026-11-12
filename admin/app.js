@@ -26,13 +26,15 @@
     try { GL = JSON.parse(localStorage.getItem('fdadmin.glance') || '{}') || {}; } catch (e) { GL = {}; }
 
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
-    // (settings/, window.FD_DESK): also the screen layout and the rarely-used settings – the phone links to it.
+    // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
     var TABS = DESK ? [['layout', '▦', 'Screen layout'], ['settings', '⚙', 'Settings'], ['tools', '🧭', 'Setup & tools'], ['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other']]
         : [['family', '👪', 'Family'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1 };
-    function deskUrl() { return location.href.replace(/[#?].*$/, '').replace(/admin\/.*$/, '').replace(/settings\/.*$/, '') + 'settings/'; }
+    function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
+    function deskUrl() { return appsRoot() + 'setup/'; }
+    function guideUrl() { return appsRoot() + 'setup/guide/'; }
     function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
     var FAMILY_W = { agenda: 1, countdown: 1, whereabouts: 1 }, LIST_W = { memo: 1, list: 1, todo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
@@ -136,7 +138,7 @@
     function go(where) { if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard settings' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard setup' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>'; }).join('') + '</nav>' +
@@ -170,10 +172,10 @@
         privacyCheck();
     }
     function title(t) { $('title').textContent = t; }
-    /** The settings website's guided steps (the setup app), each opening at the right place, already connected. */
+    /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
     function renderTools() {
         title('Setup & tools');
-        var c = FD.config(), base = deskUrl().replace(/settings\/$/, '') + 'setup/';
+        var c = FD.config(), base = guideUrl();
         var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + (step ? '&' + step : ''); };
         var row = function (ico, name, what, href, go) {
             return '<a class="mrow" ' + (go ? 'data-go="' + go + '" href="#"' : 'href="' + esc(href) + '" target="_blank" rel="noopener"') + '><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>';
@@ -195,14 +197,14 @@
     /** On the phone: a page that's on the computer website instead. */
     function renderOnComputer(what) {
         title(what);
-        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is set on the Family Dashboard settings website. On a computer, open:</p>' +
+        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on <b>Setup</b>, the Family Dashboard website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
             '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Settings → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
     function deskCard() {
-        return card('💻 More settings on a computer', '<p class="small">Screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data and diagnostics are on the settings website:</p>' +
+        return card('💻 More on Setup, on a computer', '<p class="small">The screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data, diagnostics and every step-by-step guide are on <b>Setup</b>:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>');
     }
 
@@ -249,7 +251,7 @@
 
     /** A link into the setup app at one step, already connected to this family's Sheet. */
     function setupLink(step) {
-        var c = FD.config(), base = location.href.replace(/admin\/.*$/, '') + 'setup/';
+        var c = FD.config(), base = guideUrl();
         return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&go=' + step;
     }
     function L() { return (DATA && DATA.limits) || { reminder: 12, boyName: 10, task: 22, todo: 22, destination: 16, reason: 30, maxPoints: 999 }; }
@@ -964,7 +966,7 @@
     }
     function renderLayout() {
         title('Screen layout');
-        // The settings website has the drag-and-drop editor (settings/editor.js).
+        // The Setup website has the drag-and-drop editor (setup/editor.js).
         if (DESK && window.FDEditor) {
             window.FDEditor.render($('body'), { data: function () { return DATA; }, act: act, setData: setData, esc: esc, typeOf: typeOf, pageTypeOf: pageTypeOf,
                 widgetSheet: function (id) { widgetSheet(widgetOf(id)); }, pageSheet: function (id) { pageSheet(pageOf(id)); }, summary: summary, toast: FD.toast });
@@ -1192,7 +1194,7 @@
             var x = SECTIONS[k];
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
-            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard settings' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard setup' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);
@@ -1256,7 +1258,7 @@
         wireSaveInstall('scSave');
     }
     function secMyData() {
-        var fresh = location.href.replace(/admin\/.*$/, '') + 'setup/';
+        var fresh = guideUrl();
         $('body').innerHTML = '<p class="mute small help">Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>' +
             card('Reconfigure', '<p class="mute small">Go through the setup steps again with everything you already have filled in – change what you like, keep the rest. Easiest on a computer.</p>' +
                 [['welcome', 'Go through setup again', 'all the steps, already filled in'], ['family', 'Just the family step', 'people, groups and calendars'], ['check', 'Check everything', 'tests every widget'], ['keys', 'Key guides', 'how to get each API key']].map(function (x) {
@@ -1671,5 +1673,5 @@
     FD.registerSW();
     // The website on a computer that's already been used for setup (or has Family Admin) connects by itself.
     if (DESK && !FD.configured() && window.FDPairSend) { var sv = FDPairSend.saved(); if (sv) FD.setConfig(sv.url, sv.code); }
-    if (FD.configured()) start(); else FD.setupScreen($('app'), DESK ? 'Family Dashboard settings' : 'Family Admin', start);
+    if (FD.configured()) start(); else FD.setupScreen($('app'), DESK ? 'Family Dashboard setup' : 'Family Admin', start);
 })();

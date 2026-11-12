@@ -46,12 +46,12 @@
      };
      $('no').onclick = function () {
        $('other').innerHTML = '<div class="card"><p><b>Then they need their own dashboard.</b> On their computer or phone they go through setup (about 30 minutes) with their own Google account – it connects this screen at the end:</p>' +
-         '<a class="btn" href="../setup/#pair=' + encodeURIComponent(code) + '">Start their setup</a>' +
+         '<a class="btn" href="../setup/guide/#pair=' + encodeURIComponent(code) + '">Start their setup</a>' +
          '<p style="color:var(--mute);font-size:13px">If they’re already set up, they type the code into <b>their</b> Family Admin: Settings → Devices → Connect by code.</p></div>';
      };
    } else {
      $('box').innerHTML = '<div class="card"><h2 style="margin-top:0">New to Family Dashboard?</h2><p>Set up first – about 30 minutes, easiest on a computer, but a phone works. At the end it connects this screen for you.</p>' +
-       '<a class="btn" href="../setup/#pair=' + encodeURIComponent(code) + '">Start setup</a></div>' +
+       '<a class="btn" href="../setup/guide/#pair=' + encodeURIComponent(code) + '">Start setup</a></div>' +
        '<div class="card"><h2 style="margin-top:0">Already set up?</h2><p>Open <b>Family Admin</b> on your phone → <b>Settings → Devices → Connect by code</b>, and type <b class="code" style="font-size:18px">' + code + '</b>.</p>' +
        '<p style="color:var(--mute);font-size:13px">(Phones keep apps added to the home screen separate from the web browser, which is why this page can’t see it.)</p></div>';
    }

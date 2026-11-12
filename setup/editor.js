@@ -1,4 +1,4 @@
-/* The screen layout editor on the settings website (computer only).
+/* The screen layout editor on the Setup website (computer only).
  *   left    the screens (pages): pick one, reorder, add one (widgets, calendar or children's points)
  *   middle  the chosen screen as it will look on a Corsair XENEON EDGE, a tablet or a computer – drag widgets about
  *   right   every kind of widget: drag one onto the screen to add it

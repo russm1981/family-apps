@@ -75,8 +75,8 @@
     <p>The screen itself: weather, traffic, trains, bins, the calendar, the children’s points and more. Touch to use.</p><span class="btn ghost">Open the dashboard</span></a>
    <a class="tile" href="admin/"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – everyday</span></span></div>
     <p>Points and tasks, notes, lists, the calendar, and simple settings such as train stations, traffic routes and screen sleep.</p><span class="btn ghost">Open Family Admin</span></a>
-   <a class="tile" href="settings/"><div class="thead"><span class="ico">💻</span><span><b>Settings website</b><span class="who">On a computer – set-up and configuration</span></span></div>
-    <p>The screen layout (drag and drop), family &amp; calendar set-up, API keys, updates, and every guided step: first-time setup, connecting devices, checking everything, starting again.</p><span class="btn ghost">Open the settings website</span></a>
+   <a class="tile" href="setup/"><div class="thead"><span class="ico">💻</span><span><b>Setup</b><span class="who">On a computer – russm1981.github.io/family-apps/setup</span></span></div>
+    <p>First-time setup and every step-by-step guide, the screen layout (drag and drop), family &amp; calendar set-up, API keys, updates and your Google data.</p><span class="btn ghost">Open Setup</span></a>
   </div>
  </section>
 
@@ -84,7 +84,7 @@
   <h2>Get started</h2>
   <p class="sub">Choose the one that fits.</p>
   <div class="tiles three">
-   <a class="tile first" href="setup/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used Family Dashboard before</span></span></div>
+   <a class="tile first" href="setup/guide/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used Family Dashboard before</span></span></div>
     <p>Setup takes you through everything, one step at a time: it makes your family’s own private Google Sheet, connects your screen and phones, and adds your family, calendars and the free keys. About 30 minutes.</p>
     <span class="btn">Start setup</span></a>
    <div class="tile"><span class="step grey">Already set up</span><div class="thead"><span class="ico">🔗</span><span><b>Connect this device, or another</b><span class="who">Add a phone, tablet or screen to your family</span></span></div>
@@ -96,7 +96,7 @@
     <span class="who" id="pasteMsg"></span><span class="who">Phones don’t count towards your licence; screens do – a new screen can take over from an old one.</span><a class="more" href="help/#connect">How to connect devices ›</a></div>
    <div class="tile"><span class="step grey">Start again</span><div class="thead"><span class="ico">🔄</span><span><b>Start again</b><span class="who">Same apps, a fresh Google Sheet</span></span></div>
     <p><b>From scratch:</b> set up a new family from nothing – your old Sheet stays in Google Drive as a backup.<br><b>Another Google account:</b> move everything – people, points, lists, settings, licence – to, say, a Gmail account just for the dashboard (Family Admin → Settings → My data).</p>
-    <div class="two-btns"><a class="btn ghost" href="setup/">From scratch</a><a class="btn ghost" href="help/#account">Move account</a></div>
+    <div class="two-btns"><a class="btn ghost" href="setup/guide/">From scratch</a><a class="btn ghost" href="help/#account">Move account</a></div>
     <a class="more" href="help/#afresh">Starting again ›</a><a class="more" href="help/#account">Moving to another Google account ›</a></div>
   </div>
  </section>
@@ -109,9 +109,9 @@
     <p>See the family calendar and add entries.</p><div class="qr" data-qr="calendar/"></div><a class="btn" href="calendar/">Open Family Calendar</a></div>
    <div class="tile"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for parents</span></span></div>
     <p>Points and tasks, lists, notes, and each widget’s everyday settings (stations, routes, screen sleep).</p><div class="qr" data-qr="admin/"></div><a class="btn" href="admin/">Open Family Admin</a></div>
-   <div class="tile"><div class="thead"><span class="ico">💻</span><span><b>Settings website</b><span class="who">On a computer</span></span></div>
-    <p>The screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates and your Google data.</p><a class="btn" href="settings/">Open the settings website</a>
-    <span class="who">russm1981.github.io/family-apps/settings</span></div>
+   <div class="tile"><div class="thead"><span class="ico">💻</span><span><b>Setup</b><span class="who">On a computer</span></span></div>
+    <p>The screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data and every step-by-step guide.</p><a class="btn" href="setup/">Open Setup</a>
+    <span class="who">russm1981.github.io/family-apps/setup</span></div>
    <div class="tile"><div class="thead"><span class="ico">🖥</span><span><b>Screen – Windows PC</b><span class="who">Corsair XENEON EDGE or any screen</span></span></div>
     <p>Download, unzip and double-click the start file. It runs full-screen, starts with the PC if you like, and updates itself.</p>
     <a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a>
@@ -181,8 +181,8 @@
    // From the order email: …/#key=FD-…  – Setup fills the licence key in by itself.
    var km = /[#&]key=([^&#\s]+)/.exec(location.hash);
    // (Older emails link here rather than to setup: go straight on to setup.)
-   if (km) { location.replace('setup/#key=' + km[1]); }
-   if (km) { var key = decodeURIComponent(km[1]); document.querySelector('.tile.first').href = 'setup/#key=' + encodeURIComponent(key);
+   if (km) { location.replace('setup/guide/#key=' + km[1]); }
+   if (km) { var key = decodeURIComponent(km[1]); document.querySelector('.tile.first').href = 'setup/guide/#key=' + encodeURIComponent(key);
      var kn = document.createElement('p'); kn.className = 'sub'; kn.innerHTML = '🔑 Your licence key <b>' + esc(key) + '</b> is ready – Setup will fill it in for you.'; document.querySelector('.tiles.three').before(kn); }
    // A link straight to this page (…/#api=…&code=…) connects it too.
    var fromLink = parse(location.hash);
@@ -210,11 +210,11 @@
      var items = [
        ['admin/' + hash, 'admin/icons/icon-192.png', 'Family Admin', 'Points, lists, widgets, settings'],
        ['calendar/' + hash, 'calendar/icons/icon-192.png', 'Family Calendar', 'See and add entries'],
-       ['setup/' + hash + '&go=family', '👪', 'Family & calendar', 'People, groups, categories, children’s page'],
-       ['setup/' + hash + '&go=devices', '📱', 'Connect devices', 'QR codes, links and the PC start file'],
-       ['setup/' + hash + '&go=keys', '🔑', 'Free API keys', 'Maps, trains, buses, NASA, Spotify'],
-       ['setup/' + hash + '&go=check', '✅', 'Check everything', 'Tests every widget'],
-       ['setup/' + hash + '&go=update', '⬆', 'Updates', 'Is your Google script up to date?'],
+       ['setup/guide/' + hash + '&go=family', '👪', 'Family & calendar', 'People, groups, categories, children’s page'],
+       ['setup/guide/' + hash + '&go=devices', '📱', 'Connect devices', 'QR codes, links and the PC start file'],
+       ['setup/guide/' + hash + '&go=keys', '🔑', 'Free API keys', 'Maps, trains, buses, NASA, Spotify'],
+       ['setup/guide/' + hash + '&go=check', '✅', 'Check everything', 'Tests every widget'],
+       ['setup/guide/' + hash + '&go=update', '⬆', 'Updates', 'Is your Google script up to date?'],
        ['help/', '❓', 'Help', 'Step-by-step answers'],
        ['screen/' + hash, '🖥', 'Open the screen', 'The dashboard, on this device'],
      ];

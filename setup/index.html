@@ -3,28 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Family Dashboard Setup</title>
+    <title>Family Dashboard setup</title>
     <meta name="theme-color" content="#0c0e12">
     <link rel="icon" href="../admin/icons/icon-192.png">
-    <link rel="stylesheet" href="setup.css?v=20261163">
+    <script>
+    // One address for everything set-up. Links into a particular step of the step-by-step guide (from the licence
+    // email, the Sheet's menu, Family Admin, the pairing page) – and anyone with no family connected yet – go to the
+    // guide; everyone else gets the Setup website (screen layout, settings, and the guide's steps under "Setup & tools").
+    (function () {
+        var h = location.hash || '', q = location.search || '';
+        if (/[?&]connect\b/.test(q)) return;                                   // "connect this computer" by code
+        if (/(^|[#&])(key|from|go|update|pair|pack)(=|&|$)/.test(h)) { location.replace('guide/' + h); return; }
+        var has = /api=/.test(h);
+        try { ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'].forEach(function (k) { var c = JSON.parse(localStorage.getItem(k) || 'null'); if (c && c.url && c.code) has = true; }); } catch (e) { /* none */ }
+        if (!has) location.replace('guide/' + h);
+    })();
+    </script>
+    <link rel="stylesheet" href="../shared/base.css">
+    <link rel="stylesheet" href="../admin/admin.css">
+    <link rel="stylesheet" href="desk.css">
+    <link rel="stylesheet" href="editor.css">
 </head>
-<body>
-    <div class="shell">
-        <aside class="side">
-            <div class="brand"><span class="logo">▦</span><div><b>Family Dashboard</b><small>Setup</small></div></div>
-            <ol id="steps" class="steps"></ol>
-            <p class="side-foot">Your progress is saved in this browser, so you can stop and come back.</p>
-            <p class="side-foot"><a href="../settings/">💻 Settings website ›</a><br><a href="../">Home page ›</a></p>
-        </aside>
-        <main class="main"><div id="page" class="page"></div>
-            <footer class="nav"><button class="btn ghost" id="back">← Back</button><span id="where" class="where"></span><button class="btn" id="next">Next →</button></footer>
-        </main>
-    </div>
-    <div id="toast" class="toast"></div>
-    <script src="config.js"></script>
-    <script src="../shared/privacy.js"></script>
+<body class="desk">
+    <!-- The Setup website: the same app as Family Admin, plus the screen layout, the rarely-used settings and the guide. -->
+    <div id="app"></div>
+    <script>window.FD_DESK = true;</script>
+    <script src="../shared/fd.js"></script>
     <script src="../shared/pair.js"></script>
     <script src="../shared/qrcode.js"></script>
-    <script src="setup.js?v=20261163"></script>
+    <script src="../shared/privacy.js"></script>
+    <script src="editor.js"></script>
+    <script src="../admin/app.js"></script>
 </body>
 </html>

@@ -1,14 +1,12 @@
 {
-  "app": "2026.11.63",
+  "app": "2026.11.64",
   "script": "2026.11.44",
   "date": "2026-11-08",
   "notes": [
+    "The website for computers is now called Setup, at one address – russm1981.github.io/family-apps/setup – with first-time setup, every step-by-step guide, the screen layout and the rarer settings. Old links (licence emails, the Sheet’s menu, …/settings) still work",
     "Settings website: a drag-and-drop screen layout editor – screens down the left (add widget, calendar or points screens), widgets to drag in on the right, and a preview as on the Corsair, a tablet or a computer. Widgets with “When to show” are drawn split diagonally with their times",
     "Settings website: a Setup & tools tab with every guided step (family & calendar, connecting devices, keys, licence, check everything, updates, starting again)",
-    "The home page shows the three places: the dashboard, Family Admin (phone) and the settings website (computer)",
-    "Family Admin on the phone is for everyday use: points, lists, notes, the calendar and each widget’s everyday settings. The screen layout and rare settings (family & calendar set-up, places, API keys, updates, your Google data, diagnostics) are on the new settings website for a computer: russm1981.github.io/family-apps/settings",
-    "Tablets connect with a short address and a code typed on the computer – no long link to scan; setup’s QR codes are bigger and easier to scan",
-    "When to show: picking a widget for other times adds a hidden one to hold its settings if there isn’t one, and it can’t be removed while it’s in use; the list says which is which"
+    "The home page shows the three places: the dashboard, Family Admin (phone) and the settings website (computer)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.13",

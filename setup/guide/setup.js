@@ -51,13 +51,13 @@
             '<textarea id="' + id + '" readonly rows="' + (rows || 3) + '">' + esc(text || '') + '</textarea></div>';
     }
     function filesBox(name, label) {
-        return '<div class="copy"><div class="copy-top"><b>' + esc(label) + '</b><button class="btn sm" data-copyfile="files/' + name + '">Copy the code</button>' +
-            '<a class="btn sm ghost" href="files/' + name + '" download>Download</a></div></div>';
+        return '<div class="copy"><div class="copy-top"><b>' + esc(label) + '</b><button class="btn sm" data-copyfile="../files/' + name + '">Copy the code</button>' +
+            '<a class="btn sm ghost" href="../files/' + name + '" download>Download</a></div></div>';
     }
     function okLine(ok, text) { return '<div class="status ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✔ ' : '⚠ ') + esc(text) + '</div>'; }
     function connected() { return !!(S.url && S.code && S.connected); }
     function needConnect() { return connected() ? '' : '<div class="note bad">Connect to your Google Sheet first (step 2, “Publish & connect”).</div>'; }
-    function helpLink(topic) { return '<p class="mute help-l">Stuck? <a href="../help/#' + topic + '" target="_blank" rel="noopener">Help with this step</a></p>'; }
+    function helpLink(topic) { return '<p class="mute help-l">Stuck? <a href="../../help/#' + topic + '" target="_blank" rel="noopener">Help with this step</a></p>'; }
     function phoneish() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820) || /iPhone|Android.+Mobile/.test(navigator.userAgent); }
     /** Family as the server sends it → the form, remembering each name so renames can be followed. */
     function fromServer(f) {
@@ -118,6 +118,7 @@
                 (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done on Google’s website, which doesn’t work properly on a phone. ' +
                     'Open your licence email on your computer and click the link there, or send this page to yourself: <button class="btn sm" id="suSend">Copy this page’s link</button></div>' : '') +
                 '<h1>Let’s set up your Family Dashboard</h1>' +
+                (connected() ? '' : '<p class="mute">Already have a Family Dashboard, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
                 '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
                 'You can stop at any point – this page remembers where you got to.</p>' +
                 '<div class="card big"><h3>The steps</h3><ol class="howto">' +
@@ -136,7 +137,7 @@
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
                 '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (parents).</li></ul></div></div>' +
-                '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
+                '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
                 '<div class="card privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
                 '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
                 '<label class="tick"><input type="checkbox" id="pvOk"' + (S.privacy === P.version ? ' checked' : '') + '> I have read and accept the privacy notice (version ' + esc(P.version) + ', ' + esc(P.updated || '') + ')</label></div>';
@@ -589,7 +590,7 @@
         return false;
     }
     function refreshVersions() {
-        return fetch('../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+        return fetch('../../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
             .then(function (v) { LATEST = v; return connected() ? get('ping').then(function (p) { S.scriptVersion = p.version || ''; S.autoUpdate = !!p.autoUpdate; S.loader = p.loader || ''; save(); }).catch(function () {}) : null; });
     }
     /** Connect with S.url (+ S.code if known): fetch the code once if needed, check it works, record privacy acceptance. */
