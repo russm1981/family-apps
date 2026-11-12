@@ -342,8 +342,9 @@
                         '\u2013' + DOW[d1.getDay()] + ' ' + d1.getDate() + ' ' + MON[d1.getMonth()] + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
                     (W.events || []).forEach(function (evs, i) {
                         plain(evs).forEach(function (x) {
-                            var id = x.e.id || x.e.full || x.e.t; if (seen[id]) return; seen[id] = 1;     // an event over both days shows once
-                            x.day = DOW[ds[i].getDay()]; wRows.push(x);
+                            var id = x.e.id || x.e.full || x.e.t;
+                            if (seen[id]) { seen[id].day = 'All'; return; }     // on both days: shows once, as "All"
+                            seen[id] = x; x.day = DOW[ds[i].getDay()]; wRows.push(x);
                         });
                     });
                 }

@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.54",
+    "date": "2026-11-12",
+    "notes": [
+      "Any widget can show only on certain days and times, with another widget in its space the rest of the time (Family Admin → Screen → the widget → When to show)",
+      "Trains: disruption messages only about your route, all of them, or off",
+      "Today & tomorrow: something on both days of the weekend is labelled ALL"
+    ]
+  },
+  {
     "version": "2026.11.53",
     "date": "2026-11-12",
     "notes": [

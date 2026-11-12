@@ -992,17 +992,32 @@
             '<div class="two"><div><label>Page</label><select id="wPage">' + pages.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === w.page ? ' selected' : '') + '>' + esc(p.title) + '</option>'; }).join('') + '</select></div>' +
             '<div><label>Height</label><select id="wSize"' + (T.sizes.length < 2 ? ' disabled' : '') + '>' + T.sizes.map(function (z) { return '<option value="' + z + '"' + (z === w.size ? ' selected' : '') + '>' + (z === 'full' ? 'Full height' : 'Half height') + '</option>'; }).join('') + '</select></div></div>' +
             '<label class="tog"><input type="checkbox" id="wShow"' + (w.show ? ' checked' : '') + '><span>Show on the screen</span></label>' +
+            whenHtml(w, T) +
             '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>' +
             '<button class="btn ghost wide" data-go="w/' + esc(w.id) + '">' + esc(widgetName(w)) + ' settings ›</button>' +
             '<div class="sheet-actions"><button class="btn bad" id="wDel">Remove this widget</button></div>');
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
-            act({ action: 'saveWidget', widget: { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked } }, 'Saved – the screen updates within a minute')
+            act({ action: 'saveWidget', widget: { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked,
+                when: { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.trim() || '00:00', ShowUntil: $('whUntil').value.trim() || '24:00', OtherTimes: $('whElse').value } } }, 'Saved – the screen updates within a minute')
                 .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
         $('wDel').onclick = function () {
             if (confirm('Remove the ' + T.name + ' widget and its settings?')) act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { closeSheet(); if (route().w) go('layout'); }, function () {});
         };
+    }
+    /** "When to show": only some days and times, with another kind of widget in its space at other times. */
+    function whenHtml(w, T) {
+        var W = w.when || { ShowDays: 'Every day', ShowFrom: '00:00', ShowUntil: '24:00', OtherTimes: '' };
+        var days = ['Every day', 'Monday to Friday', 'Monday to Thursday', 'Weekends'];
+        return '<details class="when"' + (w.when ? ' open' : '') + '><summary>⏰ When to show' + (w.when ? ': ' + esc(W.ShowDays) + ', ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) : ' (always)') + '</summary>' +
+            '<p class="mute small">For example, trains on weekday mornings only, with the holiday countdown in the same space the rest of the time.</p>' +
+            '<label>Show on</label><select id="whDays">' + days.map(function (d) { return '<option' + (d === W.ShowDays ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select>' +
+            '<div class="two"><div><label>From</label><input id="whFrom" value="' + esc(W.ShowFrom) + '" placeholder="00:00" inputmode="numeric"></div>' +
+            '<div><label>Until</label><input id="whUntil" value="' + esc(W.ShowUntil) + '" placeholder="24:00" inputmode="numeric"></div></div>' +
+            '<label>At other times show</label><select id="whElse"><option value="">Nothing – leave the space empty</option>' +
+            DATA.types.filter(function (x) { return x.type !== w.type; }).map(function (x) { return '<option value="' + esc(x.type) + '"' + (x.type === W.OtherTimes ? ' selected' : '') + '>' + esc(x.icon + ' ' + x.name) + '</option>'; }).join('') + '</select>' +
+            '<p class="mute small">It uses the settings of your existing widget of that kind, if you have one. Midnight to midday is 00:00 until 12:00.</p></details>';
     }
     /** A widget's own settings (from its page in Family / Lists / Other). Where it goes is on the Screen tab. */
     function settingsSheet(w) {

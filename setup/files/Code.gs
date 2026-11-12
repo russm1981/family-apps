@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.38';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.39';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -176,8 +176,10 @@ const WIDGET_TYPES = {
       { k: 'From', label: 'From station (code)', type: 'crs', def: 'BPW', help: 'Three-letter code, e.g. BPW for Bristol Parkway. Find codes at nationalrail.co.uk.' },
       { k: 'To', label: 'To station (code)', type: 'crs', def: 'PAD', help: 'e.g. PAD for London Paddington.' },
       { k: 'Rows', label: 'Trains to show', type: 'number', def: 3, min: 1, max: 7, help: 'A half-height widget fits 3; full height fits 7.' },
+      { k: 'Disruption', label: 'Disruption messages', type: 'select', def: 'Only about this route', options: ['Only about this route', 'Everything at the station', 'Off'],
+        help: '“Only about this route” shows a message only if it mentions one of the stations your trains call at.' },
     ],
-    data: (s) => trains_(s.From, s.To) },
+    data: (s) => trains_(s.From, s.To, s.Disruption) },
   agenda: { name: 'Today & tomorrow', icon: '\uD83D\uDCC5', sizes: ['half', 'full'], calendar: true, about: 'Calendar entries for today and tomorrow, and a look at the coming weekend.',
     settings: [
       { k: 'MaxPerDay', label: 'Entries per day before "+ more"', type: 'number', def: 3, min: 2, max: 10, help: 'With the weekend showing, a half-height widget fits 3.' },
@@ -618,7 +620,7 @@ function doGet(e) {
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v, p);
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
-      if (p.action === 'layout') { const blocked = screenCheck_(p); return Object.assign({ ok: true }, layout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) }); }
+      if (p.action === 'layout') { const blocked = screenCheck_(p); return Object.assign({ ok: true }, screenLayout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) }); }
       if (p.action === 'calendar') return getCalendar_(p.start, p.end);
       // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Ben&place=School  or  &lat=..&lon=..
       if (p.action === 'where') return withLock_(() => setWhere_(p));
@@ -1159,6 +1161,43 @@ function bumpVersions_() {
 function dataVer_() { return PropertiesService.getScriptProperties().getProperty('dataVer') || '0'; }
 
 /** Pages (in order) and the widgets on them, with settings. Shared with the screen and the admin apps. */
+/*
+ * "When to show" (any widget, from Family Admin → Screen → the widget): show it only on some days and between two
+ * times; at other times the screen shows another kind of widget in the same space (using the settings of the first
+ * widget of that kind, so it needn't be set up twice), or leaves the space empty.
+ */
+const WHEN_DAYS = { 'Every day': [1, 2, 3, 4, 5, 6, 7], 'Monday to Friday': [1, 2, 3, 4, 5], 'Monday to Thursday': [1, 2, 3, 4], 'Weekends': [6, 7] };
+function whenSettings_() {
+  return [
+    { k: 'ShowDays', label: 'Show on', type: 'select', def: 'Every day', options: Object.keys(WHEN_DAYS) },
+    { k: 'ShowFrom', label: 'From', type: 'time', def: '00:00' },
+    { k: 'ShowUntil', label: 'Until', type: 'time', def: '24:00' },
+    { k: 'OtherTimes', label: 'At other times show', type: 'select', def: '', options: [''].concat(Object.keys(WIDGET_TYPES)) },
+  ];
+}
+function whenLimited_(W) { return !!W && (W.ShowDays !== 'Every day' || W.ShowFrom !== '00:00' || W.ShowUntil !== '24:00'); }
+function whenShowing_(W, now) {
+  if (!whenLimited_(W)) return true;
+  now = now || new Date();
+  const day = Number(fmt_(now, 'u')), hm = fmt_(now, 'HH:mm');
+  return (WHEN_DAYS[W.ShowDays] || WHEN_DAYS['Every day']).indexOf(day) >= 0 && hm >= W.ShowFrom && hm < W.ShowUntil;
+}
+/** What fills a widget's space when it's outside its times: another kind of widget, or nothing. */
+function whenAlt_(w, widgets) {
+  const t = w.when && w.when.OtherTimes, T = WIDGET_TYPES[t];
+  if (!T || t === w.type) return null;
+  const src = widgets.find(x => x.type === t && !x.alt);
+  return { id: w.id + '~alt', page: w.page, order: w.order, type: t, size: T.sizes.indexOf(w.size) >= 0 ? w.size : T.sizes[0], show: true,
+    settings: src ? src.settings : settingsFor_('', T.settings, {}), alt: true, src: src ? src.id : '' };
+}
+/** The layout as the screen sees it right now: widgets outside their times swapped or left out. */
+function screenLayout_() {
+  const L = layout_(), now = new Date();
+  L.widgets = L.widgets.map(w => !w.show || whenShowing_(w.when, now) ? w : whenAlt_(w, L.widgets)).filter(Boolean);
+  L.version = hash_(JSON.stringify([L.pages, L.widgets]));
+  return L;
+}
+
 function layout_() {
   const all = wsetAll_();
   const pages = rows_('pages').filter(p => String(p.Page || '').trim() && PAGE_TYPES[String(p.Type || 'widgets').toLowerCase()])
@@ -1174,9 +1213,10 @@ function layout_() {
     .map(w => {
       const type = String(w.Type).trim(), T = WIDGET_TYPES[type], id = String(w.Widget).trim();
       const size = String(w.Size || '').trim().toLowerCase();
+      const when = settingsFor_(id, whenSettings_(), all);
       return { id: id, page: String(w.Page || '').trim(), order: Number(w.Order) || 99, type: type,
         size: T.sizes.indexOf(size) >= 0 ? size : T.sizes[0], show: yes_(w.Show, true),
-        settings: settingsFor_(id, T.settings, all) };
+        settings: settingsFor_(id, T.settings, all), when: whenLimited_(when) ? when : null };
     }).sort((a, b) => ((pageOrder[a.page] || 0) - (pageOrder[b.page] || 0)) || (a.order - b.order));
   return { pages: pages, widgets: widgets, tomtomKey: String(inst_('TomTomKey') || ''), columns: LIMITS.columns,
     version: hash_(JSON.stringify([pages, widgets])), scriptVersion: SCRIPT_VERSION,
@@ -1188,7 +1228,7 @@ function layout_() {
 function getPage_(pageId, force, screenVer, p) {
   if (screenVer) seen_('screenSeen', screenVer);
   const blocked = screenCheck_(p || {});
-  const L = Object.assign({}, layout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) });
+  const L = Object.assign({}, screenLayout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) });
   const page = L.pages.find(p => p.id === pageId) || L.pages.find(p => p.type === 'widgets' && p.show);
   const data = {};
   if (page && page.type === 'widgets' && L.licence.ok && !blocked) {      // no licence: the screen shows how to add one instead
@@ -1197,7 +1237,9 @@ function getPage_(pageId, force, screenVer, p) {
   return { ok: true, layout: L, page: page ? page.id : '', data: data, serverTime: new Date().toISOString() };
 }
 function getWidget_(id, force) {
-  const w = layout_().widgets.find(x => x.id === id);
+  const all = layout_().widgets;
+  let w = all.find(x => x.id === id);
+  if (!w && /~alt$/.test(id)) { const base = all.find(x => x.id === id.replace(/~alt$/, '')); w = base && whenAlt_(base, all); }
   if (!w) throw new Error('No widget called ' + id);
   return { ok: true, id: id, data: widgetData_(w, force) };
 }
@@ -1318,6 +1360,14 @@ function saveWidget_(w) {
     merged[k] = coerce_(f, String(out[k]).replace(/^'/, ''));
   });
   checkWidget_(type, merged);
+  // "When to show"
+  const whenOut = {};
+  if (w.when) {
+    const defs = whenSettings_(), cur = settingsFor_(w.id, defs), next = Object.assign({}, cur);
+    Object.keys(w.when).forEach(k => { const f = defs.find(x => x.k === k); if (!f) return; whenOut[k] = cleanSetting_(f, w.when[k]); next[k] = coerce_(f, String(whenOut[k]).replace(/^'/, '')); });
+    if (next.ShowFrom >= next.ShowUntil) throw new Error('“Until” has to be later than “From”');
+    if (next.OtherTimes === type) throw new Error('Pick a different kind of widget for other times');
+  }
   if (type === 'bins' && (merged.Postcode !== current.Postcode || merged.House !== current.House) && !('UPRN' in (w.settings || {}) && w.settings.UPRN !== current.UPRN)) out.UPRN = '';
   if (w.page !== undefined && w.page !== String(data[r][head.indexOf('Page')]).trim()) {
     sh.getRange(r + 1, head.indexOf('Page') + 1).setValue(w.page);
@@ -1326,6 +1376,7 @@ function saveWidget_(w) {
   if (w.size !== undefined) sh.getRange(r + 1, head.indexOf('Size') + 1).setValue(w.size);
   if (w.show !== undefined) sh.getRange(r + 1, head.indexOf('Show') + 1).setValue(w.show ? 'Yes' : 'No');
   Object.keys(out).forEach(k => setWset_(w.id, k, out[k]));
+  Object.keys(whenOut).forEach(k => setWset_(w.id, k, whenOut[k]));
   renumber_('widgets');
   bumpVersions_();
   return getAdmin_();
@@ -1634,7 +1685,7 @@ function thin_(pts, max) {
  *  - a Rail Data Marketplace consumer key (raildata.org.uk, "Live Departure Board").
  * If the first kind tried is refused, the other is tried.
  */
-function trains_(fromCrs, toCrs) {
+function trains_(fromCrs, toCrs, disruption) {
   const key = String(inst_('RailDataKey') || '').trim();
   if (!key) throw new Error('Add a National Rail key on the Installation tab of the admin app');
   const from = String(fromCrs || 'BPW').toUpperCase(), to = String(toCrs || '').toUpperCase();
@@ -1645,10 +1696,11 @@ function trains_(fromCrs, toCrs) {
     try { d = order[i](key, from, to); } catch (err) { if (!first) first = err; if (!err.auth) throw err; }
   }
   if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it on the Installation tab.');
+  const route = {};      // every station the trains call at on the way, for "only about this route"
   const services = (d.trainServices || []).map(s => {
     let arrive = null, calls = [];
     (s.subsequentCallingPoints || []).forEach(list => (list.callingPoint || []).forEach(cp => {
-      if (!arrive) calls.push(cp.locationName);
+      if (!arrive) { calls.push(cp.locationName); route[cp.locationName] = 1; }
       if (cp.crs === to && !arrive) arrive = { st: cp.st, et: cp.et || cp.at || '' };
     }));
     calls = calls.slice(0, -1);
@@ -1664,7 +1716,21 @@ function trains_(fromCrs, toCrs) {
   });
   const messages = (d.nrccMessages || []).map(m => String(typeof m === 'string' ? m : (m.value || m.Value || m.message || ''))
     .replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean);
-  return { from: d.locationName || from, to: d.filterLocationName || to, services: services, messages: messages };
+  route[d.locationName || ''] = 1; route[d.filterLocationName || ''] = 1;
+  return { from: d.locationName || from, to: d.filterLocationName || to, services: services, messages: trainMessages_(messages, Object.keys(route), disruption) };
+}
+/** Disruption messages: all, none, or only those that name a station on the route (or, for longer names, its last word – "Paddington"). */
+function trainMessages_(messages, names, mode) {
+  if (mode === 'Off') return [];
+  if (mode === 'Everything at the station') return messages;
+  const generic = /^(road|parkway|central|international|junction|street|park|halt|town|city|airport|bridge|north|south|east|west|parkway)$/i;
+  const words = [];
+  names.filter(Boolean).forEach(n => {
+    words.push(n.toLowerCase());
+    const last = n.split(/\s+/).pop();
+    if (n.indexOf(' ') > 0 && last.length >= 5 && !generic.test(last)) words.push(last.toLowerCase());
+  });
+  return messages.filter(m => { const t = m.toLowerCase(); return words.some(w => t.indexOf(w) >= 0); });
 }
 function railErr_(msg, auth) { const e = new Error(msg); e.auth = !!auth; return e; }
 
