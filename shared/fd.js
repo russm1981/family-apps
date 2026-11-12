@@ -138,11 +138,43 @@
                 opts.moved = true;
                 return fetchJson(d.moved + url.slice(old.length), opts);
             }
-            if (d && d.ok === false) throw new Error(d.error || 'Request failed');
+            if (d && d.ok === false) {
+                if (/^Licence needed: /.test(d.error || '')) licenceNeeded(d.error.replace(/^Licence needed: /, ''));
+                throw new Error(d.error || 'Request failed');
+            }
             return d;
         }, function (e) {
             throw new Error(e && e.name === 'AbortError' ? 'No reply – check your signal' : (e.message === 'Failed to fetch' ? 'Can’t reach the Google Sheet' : e.message));
         }).finally(function () { clearTimeout(t); });
+    }
+
+    /** The dashboard has no working licence: say so clearly, once, with a box to put the key in, rather than leaving things blank. */
+    function licenceNeeded(msg) {
+        if (document.getElementById('fdLic')) return;
+        var d = document.createElement('div');
+        d.id = 'fdLic';
+        d.setAttribute('style', 'position:fixed;inset:0;z-index:99999;background:rgba(5,8,12,.88);display:flex;align-items:center;justify-content:center;padding:16px;font-family:system-ui,-apple-system,sans-serif');
+        d.innerHTML = '<div style="background:#161b22;color:#eef1f3;border:1px solid #2f373f;border-radius:16px;max-width:440px;width:100%;padding:22px 20px;text-align:center">' +
+            '<div style="font-size:42px">🔑</div><h2 style="margin:6px 0 8px;font-size:20px">Licence key needed</h2>' +
+            '<p style="margin:0 0 10px;line-height:1.45">' + FD.esc(msg) + '</p>' +
+            '<p style="margin:0 0 8px;color:#9aa6b1;font-size:14px">Your key is in your order email. It starts FD-.</p>' +
+            '<input id="fdLicIn" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocapitalize="characters" spellcheck="false" autocomplete="off" ' +
+            'style="width:100%;box-sizing:border-box;font:600 17px ui-monospace,Menlo,Consolas,monospace;padding:12px;border-radius:10px;border:1px solid #2f373f;background:#0c0f15;color:#fff;text-transform:uppercase">' +
+            '<button id="fdLicGo" style="margin-top:10px;width:100%;padding:12px;border:0;border-radius:10px;background:#3fa9f5;color:#fff;font-weight:700;font-size:16px">Check and save</button>' +
+            '<p id="fdLicMsg" style="min-height:1.3em;margin:10px 0 0;font-size:14px"></p>' +
+            '<p style="margin:6px 0 0;color:#9aa6b1;font-size:13px">No key, or it says it’s in use? Contact the person who sold you the dashboard.</p>' +
+            '<button id="fdLicX" style="margin-top:8px;background:none;border:0;color:#9aa6b1;text-decoration:underline;font-size:13px">Not now</button></div>';
+        document.body.appendChild(d);
+        var go = function () {
+            var k = document.getElementById('fdLicIn').value.trim(), m = document.getElementById('fdLicMsg');
+            if (!k) { m.textContent = 'Type or paste your key in first.'; return; }
+            m.textContent = 'Checking…';
+            FD.post({ action: 'setLicence', key: k }).then(function () { m.textContent = '✔ Licence saved'; setTimeout(function () { location.reload(); }, 900); },
+                function (e) { m.textContent = '⚠ ' + e.message; });
+        };
+        document.getElementById('fdLicGo').onclick = go;
+        document.getElementById('fdLicIn').onkeydown = function (e) { if (e.key === 'Enter') go(); };
+        document.getElementById('fdLicX').onclick = function () { d.remove(); };
     }
 
     var FD = window.FD = {
@@ -152,7 +184,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.51',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.52',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });

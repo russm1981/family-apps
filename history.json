@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.52",
+    "date": "2026-11-12",
+    "notes": [
+      "Family Calendar and Family Admin say clearly when a licence key is needed, with a box to type it in, instead of just not loading"
+    ]
+  },
+  {
     "version": "2026.11.51",
     "date": "2026-11-12",
     "notes": [
