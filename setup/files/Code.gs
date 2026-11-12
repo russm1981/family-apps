@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.40';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.41';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1365,6 +1365,8 @@ function saveWidget_(w) {
   if (w.when) {
     const defs = whenSettings_(), cur = settingsFor_(w.id, defs), next = Object.assign({}, cur);
     Object.keys(w.when).forEach(k => { const f = defs.find(x => x.k === k); if (!f) return; whenOut[k] = cleanSetting_(f, w.when[k]); next[k] = coerce_(f, String(whenOut[k]).replace(/^'/, '')); });
+    const okTime = t => /^([01]\d|2[0-3]):[0-5]\d$|^24:00$/.test(t);
+    if (!okTime(next.ShowFrom) || !okTime(next.ShowUntil)) throw new Error('Times look like 07:30 (24-hour clock); “Until” can be 24:00 for midnight');
     if (next.ShowFrom >= next.ShowUntil) throw new Error('“Until” has to be later than “From”');
     if (next.OtherTimes === type) throw new Error('Pick a different kind of widget for other times');
   }

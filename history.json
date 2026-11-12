@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.56",
+    "date": "2026-11-12",
+    "notes": [
+      "Fixes from a full review: QR codes in setup and on the home page no longer depend on an outside website",
+      "Today & tomorrow on a tablet: the weekend list is one column so names aren’t cut short; a repeating event on Saturday and Sunday shows on both days",
+      "When to show: times are checked properly (24-hour clock, 24:00 for midnight)"
+    ]
+  },
+  {
     "version": "2026.11.55",
     "date": "2026-11-12",
     "notes": [

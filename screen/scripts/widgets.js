@@ -342,7 +342,7 @@
                         '\u2013' + DOW[d1.getDay()] + ' ' + d1.getDate() + ' ' + MON[d1.getMonth()] + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
                     (W.events || []).forEach(function (evs, i) {
                         plain(evs).forEach(function (x) {
-                            var id = x.e.id || x.e.full || x.e.t;
+                            var id = (x.e.id || x.e.full || x.e.t) + '|' + (x.e.s || '');      // a repeating event's Saturday and Sunday are separate
                             if (seen[id]) { seen[id].day = 'All'; return; }     // on both days: shows once, as "All"
                             seen[id] = x; x.day = DOW[ds[i].getDay()]; wRows.push(x);
                         });
@@ -360,8 +360,11 @@
                 q('.ag-wk').style.display = hasWk ? '' : 'none';
                 if (!hasWk) return;
                 q('.ag-h3').innerHTML = wHead;
-                q('.l3').innerHTML = list(wRows, W.days[0], max * 2);      // two columns of entries
-                q('.l3').style.gridTemplateRows = 'repeat(' + Math.min(max, Math.ceil(Math.min(wRows.length, max * 2) / 2)) + ', auto)';
+                // Two columns of entries when there's room (Corsair, computer); one on a narrower widget (tablet).
+                var two = el.clientWidth / (parseFloat(getComputedStyle(el).fontSize) || 16) >= 25;     // in text widths, so it's the same at any scale
+                q('.l3').innerHTML = list(wRows, W.days[0], two ? max * 2 : max);
+                q('.l3').style.gridTemplateColumns = two ? '' : '1fr';
+                q('.l3').style.gridTemplateRows = 'repeat(' + (two ? Math.min(max, Math.ceil(Math.min(wRows.length, max * 2) / 2)) : Math.min(max, Math.max(1, wRows.length))) + ', auto)';
             },
         };
     };
