@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.113",
+  "app": "2026.11.114",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Reminders on a date: a button showing the date in words (“Fri, 4 December 2026 📅”) – press it and a calendar opens to pick the date, instead of typing dd/mm/yyyy"
+    "Reminders: the switch-time note says “with a preview of tomorrow”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

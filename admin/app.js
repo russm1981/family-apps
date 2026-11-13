@@ -1163,7 +1163,7 @@
     function remFrom() { var pp = pointsPage(); return String(((pp && pp.settings) || {}).TomorrowFrom || '17:00'); }
     function remFromRow() {
         return '<div class="rem-from"><label for="remFrom">Switch to tomorrow’s reminders at</label><input type="time" id="remFrom" value="' + esc(remFrom()) + '">' +
-            '<p class="mute small">Until this time the screen shows today’s reminders (with a peek at tomorrow’s); from this time, tomorrow’s – so school things can be got ready the evening before.</p></div>';
+            '<p class="mute small">Until this time the screen shows today’s reminders (with a preview of tomorrow); from this time, tomorrow’s – so school things can be got ready the evening before.</p></div>';
     }
     function wireListFold(k) {
         var box = $('f_' + k);
