@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.122",
+    "date": "2026-11-13",
+    "notes": [
+      "Reminders: a “Clear expired reminders” button deletes every one-date reminder whose date has passed (it lists them and asks first; weekly ones are kept) – on the computer and in the phone app"
+    ]
+  },
+  {
     "version": "2026.11.121",
     "date": "2026-11-13",
     "notes": [

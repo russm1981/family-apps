@@ -1159,7 +1159,8 @@
             (DESK ? '' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
             (DESK ? '<div class="lhead l-' + k + '">' + (cfg.ordered ? '<span></span>' : '') + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
             '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
-            '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button>' + (k === 'timetable' ? remFromRow() : '') +
+            (k === 'timetable' ? '<div class="ladd-row"><button class="btn ghost" data-ladd="' + k + '">+ Add</button><button class="btn ghost" data-lclear title="Deletes every reminder whose date has passed. Weekly ones are kept.">🧹 Clear expired reminders</button></div>' + remFromRow()
+                : '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button>') +
             '<button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
     }
     /** When the screen switches from today's reminders to tomorrow's (a Rewards setting, set with the reminders). */
@@ -1202,6 +1203,19 @@
                 dp.querySelector('.dp-say').textContent = daysSay(on);
             }
             else if (e.target.closest('[data-ladd]')) $('rows_' + k).insertAdjacentHTML('beforeend', rowCard(k, {}));
+            else if (e.target.closest('[data-lclear]')) {      // one-date reminders whose date has gone (weekly ones never expire)
+                var d0 = new Date(), today = d0.getFullYear() * 1e4 + (d0.getMonth() + 1) * 100 + d0.getDate();
+                var old = Array.prototype.filter.call(box.querySelectorAll('.lrow'), function (r) {
+                    var m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(((r.querySelector('.rp-val') || {}).value || '').trim());
+                    return m && +m[3] * 1e4 + +m[2] * 100 + +m[1] < today;
+                });
+                if (!old.length) { FD.toast('No reminders have expired – nothing to clear'); return; }
+                var names = old.map(function (r) { var i = r.querySelector('[data-k=Reminder]'); return i && i.value.trim() || 'a reminder'; });
+                if (!confirm('Delete ' + (old.length === 1 ? 'this reminder, whose date has passed' : 'these ' + old.length + ' reminders, whose dates have passed') + '?\n\n• ' + names.join('\n• '))) return;
+                old.forEach(function (r) { r.remove(); });
+                if (!box.querySelector('.lrow')) $('rows_' + k).insertAdjacentHTML('beforeend', rowCard(k, {}));
+                box.querySelector('[data-lsave]').click();
+            }
             else if (e.target.closest('[data-lsave]')) {
                 var out = Array.prototype.map.call(box.querySelectorAll('.lrow'), function (r, i) {
                     var o = {}; r.querySelectorAll('[data-k]').forEach(function (inp) { o[inp.getAttribute('data-k')] = inp.value.trim(); });

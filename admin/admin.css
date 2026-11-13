@@ -351,3 +351,5 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .rw-some .dpick { flex-wrap: nowrap; }
 .rw-span input[type=time] { padding-left: 10px; padding-right: 8px; min-width: 0; }
 @media (max-width: 640px) { .rw-some { flex-wrap: wrap; } }
+.ladd-row { display: flex; gap: 10px; margin: 10px 0; }
+.ladd-row .btn { flex: 1; margin: 0; }

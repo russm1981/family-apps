@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.121",
+  "app": "2026.11.122",
   "script": "2026.11.68",
   "date": "2026-11-13",
   "notes": [
-    "Configurator: Reminders is its own page under Apps (and on the Home page). Reminders in the Rewards menu takes you there"
+    "Reminders: a “Clear expired reminders” button deletes every one-date reminder whose date has passed (it lists them and asks first; weekly ones are kept) – on the computer and in the phone app"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",
