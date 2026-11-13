@@ -1198,3 +1198,14 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .ap-actions { display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; }
 .ap-actions .cal-btn { height: 2.8rem; padding: 0 1.2rem; font-size: 1.05rem; }
 .ap-pop .ab-tabs { margin-right: 0; }
+
+/* Child widget: no scroll bars. It scrolls up and down by touch; a small ⌄⌄ / ⌃⌃ tab shows when there's more below or above. */
+.boy.compact { position: relative; }
+.boy.compact .boy-body { overflow-x: hidden; scrollbar-width: none; padding-right: 0; }
+.boy.compact .boy-body::-webkit-scrollbar { display: none; }
+.boy.compact::before, .boy.compact::after { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; pointer-events: none; opacity: 0; transition: opacity .2s;
+    font-size: 1.05rem; font-weight: 800; line-height: 0.5; white-space: pre; text-align: center; color: var(--c);
+    background: var(--panel-2, #1c2028); border: 1px solid var(--line); border-radius: 0.6rem; padding: 0.3rem 0.9rem 0.45rem; box-shadow: 0 0 0.8rem 0.4rem var(--panel); }
+.boy.compact::before { content: '⌃\A⌃'; top: var(--bodyTop, 3.3rem); padding: 0.45rem 0.9rem 0.3rem; }
+.boy.compact::after { content: '⌄\A⌄'; bottom: 0.3rem; }
+.boy.compact.more-up::before, .boy.compact.more-down::after { opacity: 1; }

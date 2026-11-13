@@ -4,7 +4,9 @@
     var FD = window.FD, esc = FD.esc, ink = FD.ink, ymd = FD.ymd, P = FD.parse, add = FD.addDays;
     var $ = function (id) { return document.getElementById(id); };
 
-    var view = 'month';                   // month | week | list
+    var view = 'month';                   // month | week | list | year (year: on a computer or a wide window only)
+    function wideEnough() { return window.innerWidth >= 900; }
+    try { if (localStorage.getItem('fdcal.view') === 'year' && wideEnough()) view = 'year'; } catch (e) { /* fine */ }
     var anchor = new Date();              // a day inside what's shown
     var selected = ymd(new Date());       // highlighted day in month view
     var cache = {}, loading = '', lastErr = '';
@@ -16,6 +18,7 @@
     function range() {
         if (view === 'week') { var m = FD.monday(anchor); return { start: ymd(m), end: ymd(add(m, 7)) }; }
         if (view === 'list') { var t = new Date(); return { start: ymd(t), end: ymd(add(t, 56)) }; }
+        if (view === 'year') return { start: anchor.getFullYear() + '-01-01', end: (anchor.getFullYear() + 1) + '-01-01' };
         var first = new Date(anchor.getFullYear(), anchor.getMonth(), 1), g = FD.monday(first);
         return { start: ymd(g), end: ymd(add(g, 42)) };
     }
@@ -27,7 +30,16 @@
         if (cache[key] && !force && Date.now() - cache[key].at < 120000) return;
         loading = key; sync('busy');
         if (PAGE) r.page = PAGE;
-        FD.get('calendar', r).then(function (d) {
+        // A year is fetched a quarter at a time (the Google script answers up to about four months at once), then put together.
+        var fetch = view !== 'year' ? FD.get('calendar', r) : Promise.all([0, 3, 6, 9].map(function (m) {
+            var y = anchor.getFullYear(), q = { start: ymd(new Date(y, m, 1)), end: ymd(new Date(y, m + 3, 1)) }; if (PAGE) q.page = PAGE;
+            return FD.get('calendar', q);
+        })).then(function (all) {
+            var out = { days: {}, bankHolidays: {} };
+            all.forEach(function (d) { Object.assign(out.days, d.days || {}); Object.assign(out.bankHolidays, d.bankHolidays || {}); if (d.categories) { out.categories = d.categories; out.addable = d.addable; } });
+            return out;
+        });
+        fetch.then(function (d) {
             cache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
             if (d.categories) { legend = d.categories; addable = d.addable || []; try { localStorage.setItem('fdcal.legend', JSON.stringify(legend)); localStorage.setItem('fdcal.addable', JSON.stringify(addable)); } catch (e) { /* ignore */ } }
             lastErr = ''; sync('ok');
@@ -49,7 +61,7 @@
             '<header class="top">' +
               '<div class="top-row"><button class="icon-btn" id="prev">‹</button><h1 id="title"></h1><span class="sync" id="sync"></span>' +
               '<button class="icon-btn" id="next">›</button></div>' +
-              '<div class="top-row row2"><div class="seg" id="views"><button data-v="month">Month</button><button data-v="week">Week</button><button data-v="list">List</button></div>' +
+              '<div class="top-row row2"><div class="seg" id="views"><button data-v="month">Month</button><button data-v="week">Week</button><button data-v="list">List</button><button data-v="year" id="vYear">Year</button></div>' +
               '<button class="btn ghost sm" id="today">Today</button><button class="icon-btn" id="who" aria-label="Which family">⚙</button></div>' +
               '<div class="legend" id="legend"></div>' +
             '</header>' +
@@ -68,7 +80,8 @@
             FD.get('whose').then(function (d) { var ppl = (d.people || []).slice(0, 8).join(', '); $('whoTx').innerHTML = 'Connected to ' + (d.familyName ? 'the <b>' + esc(d.familyName) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl ? ' (' + esc(ppl) + ')' : '') + '.'; }, function () { /* fine */ });
             $('whoOut').onclick = function () { if (confirm('Disconnect this app from this family’s dashboard?')) { FD.clearConfig(); location.reload(); } };
         };
-        $('views').onclick = function (e) { var b = e.target.closest('[data-v]'); if (b) { view = b.getAttribute('data-v'); load(); } };
+        $('views').onclick = function (e) { var b = e.target.closest('[data-v]'); if (b) { view = b.getAttribute('data-v'); try { localStorage.setItem('fdcal.view', view); } catch (x) { /* fine */ } load(); } };
+        window.addEventListener('resize', function () { var y = $('vYear'); if (y) y.style.display = wideEnough() ? '' : 'none'; if (view === 'year' && !wideEnough()) { view = 'month'; load(); } });
         $('fab').onclick = function () { openAdd(view === 'month' ? selected : ymd(new Date())); };
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         $('body').onclick = function (e) {
@@ -76,6 +89,7 @@
             if (ev && EVS[+ev.getAttribute('data-ev')]) { openEvent(EVS[+ev.getAttribute('data-ev')]); return; }
             var d = e.target.closest('[data-day]'); if (!d) return;
             var ds = d.getAttribute('data-day');
+            if (view === 'year') { view = 'month'; anchor = P(ds); selected = ds; load(); return; }
             if (view === 'month') { selected = ds; render(); var dl = $('dayList'); if (dl) dl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
             else openAdd(ds);
         };
@@ -92,6 +106,7 @@
     function step(dir) {
         if (view === 'week') anchor = add(anchor, 7 * dir);
         else if (view === 'month') anchor = new Date(anchor.getFullYear(), anchor.getMonth() + dir, 1);
+        else if (view === 'year') anchor = new Date(anchor.getFullYear() + dir, 0, 1);
         else return;
         load();
     }
@@ -105,7 +120,9 @@
             return '<span class="lg"><i class="' + (c.bar ? 'bar' : '') + '" style="background:' + esc(c.colour) + '"></i>' + esc(c.name) + '</span>';
         }).join('');
         var c = current(), today = ymd(new Date());
+        var yb = $('vYear'); if (yb) yb.style.display = wideEnough() ? '' : 'none';
         if (view === 'month') renderMonth(c, today);
+        else if (view === 'year') renderYear(c, today);
         else if (view === 'week') renderWeek(c, today);
         else renderList(c, today);
     }
@@ -150,6 +167,30 @@
             '<button class="btn ghost wide" data-add="' + selected + '">+ Add on this day</button></section>';
         $('body').innerHTML = html;
         var ab = document.querySelector('[data-add]'); if (ab) ab.onclick = function (e) { e.stopPropagation(); openAdd(selected); };
+    }
+
+    /** Year: a wall planner – a row for each month, a column for each day of the month. Click a day for that month. */
+    function renderYear(c, today) {
+        var y = anchor.getFullYear();
+        $('title').textContent = String(y);
+        var html = '<div class="ygrid"><div class="yrow yhead"><span class="ym"></span>';
+        for (var n = 1; n <= 31; n++) html += '<b>' + n + '</b>';
+        html += '</div>';
+        for (var m = 0; m < 12; m++) {
+            var dim = new Date(y, m + 1, 0).getDate();
+            html += '<div class="yrow"><span class="ym">' + FD.MON[m] + '</span>';
+            for (var d = 1; d <= 31; d++) {
+                if (d > dim) { html += '<span class="ycell none"></span>'; continue; }
+                var dt = new Date(y, m, d), ds = ymd(dt), p = parts(c, ds), wd = (dt.getDay() + 6) % 7;
+                var dots = p.evs.slice(0, 4).map(function (e) { return '<i style="background:' + esc(e.c) + '"></i>'; }).join('');
+                var tip = FD.DAY[dt.getDay()] + ' ' + d + ' ' + FD.MON[m] + (p.bh ? ' – ' + p.bh : '') + (p.bar ? ' – ' + p.bar.k : '') + p.evs.map(function (e) { return '\n• ' + e.t; }).join('');
+                html += '<button class="ycell' + (wd > 4 || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + '" data-day="' + ds + '" title="' + esc(tip) + '">' +
+                    '<span class="yd">' + ['M', 'T', 'W', 'T', 'F', 'S', 'S'][wd] + '</span><span class="yev">' + dots + '</span>' +
+                    (p.bar ? '<span class="ybar" style="background:' + esc(p.bar.c) + '"></span>' : '') + '</button>';
+            }
+            html += '</div>';
+        }
+        $('body').innerHTML = html + '</div><p class="ynote">Click a day to open that month.</p>';
     }
 
     function renderWeek(c, today) {

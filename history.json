@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.130",
+    "date": "2026-11-14",
+    "notes": [
+      "Screens: deleting a screen deletes the widgets on it too (it says how many and asks first) – no need to remove them one by one",
+      "Screens: in the list on the left, a bigger ✕ to delete, with a gap after ▲ ▼; and a red “Delete this screen” button at the top of each screen",
+      "Family Calendar on a computer (and the Configurator’s Calendar tab): a Year view – a wall planner with a row for each month; click a day to open that month",
+      "Children’s points cards: no scroll bars – they scroll by touch, with a small ⌄⌄ / ⌃⌃ tab when there’s more below or above"
+    ]
+  },
+  {
     "version": "2026.11.129",
     "date": "2026-11-14",
     "notes": [

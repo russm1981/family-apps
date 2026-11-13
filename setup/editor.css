@@ -325,3 +325,8 @@
 /* The rail on the calendar and children's pictures works like on the widget screens: click to go to that screen */
 .ed-frame.mock .ed-rail { pointer-events: auto; }
 .ed-rb[data-page] { cursor: pointer; }
+/* The screens list: ▲ ▼, a gap, then a bigger ✕ to delete. The screen's own red Delete button. */
+.ed-page .pm button.pm-x { font-size: 17px; margin-left: 10px; padding: 0 4px; line-height: 1; }
+.ed-page .pm button.pm-x:hover { color: #ef4444; }
+.ed-head .ed-delpg { background: #ef4444; border-color: #ef4444; color: #fff; margin-left: 8px; }
+.ed-head .ed-delpg:hover { background: #dc2626; }

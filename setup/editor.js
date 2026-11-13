@@ -214,14 +214,14 @@
                 return '<div class="ed-page' + (x.id === p.id ? ' on' : '') + (x.show ? '' : ' off') + '" data-page="' + esc(x.id) + '"><span class="pi">' + esc(x.icon) + '</span>' +
                     '<span class="pt"><b>' + esc(x.title) + '</b><small>' + esc(x.type === 'widgets' ? onPage(x.id).length + ' widgets' : H.pageTypeOf(x.type).name) + (x.show ? '' : ' · hidden') + '</small></span>' +
                     '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + ' title="Move up">▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + ' title="Move down">▼</button>' +
-                    (canDelete(x) ? '<button data-pdel="' + esc(x.id) + '" title="Delete this screen">🗑</button>' : '') + '</span></div>';
+                    (canDelete(x) ? '<button class="pm-x" data-pdel="' + esc(x.id) + '" title="Delete this screen">✕</button>' : '') + '</span></div>';
             }).join('') +
             (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair. Remove one to add another.</p>' :
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
             '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
-            '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' +
+            '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button>' + (canDelete(p) ? '<button class="btn sm ed-delpg" data-pdel="' + esc(p.id) + '">Delete this screen</button>' : '') + '</div>' +
             (p.type === 'widgets' ? '<p class="ed-how">✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
                 'Drag one up from the list underneath to add it. Click a widget for its height, When to show and its settings.</p>' : '') +
             screenView(p) +
@@ -296,8 +296,7 @@
                 e.stopPropagation();
                 var pid = t.getAttribute('data-pdel'), pg = pages().filter(function (x) { return x.id === pid; })[0]; if (!pg) return;
                 var n = onPage(pid).length;
-                if (n) { H.toast('Move or remove the ' + (n === 1 ? 'widget' : n + ' widgets') + ' on ' + pg.title + ' first – drag them to another screen or onto the bin', true); return; }
-                if (!confirm('Delete the ' + pg.title + ' screen?')) return;
+                if (!confirm('Delete the ' + pg.title + ' screen' + (n ? ' and the ' + (n === 1 ? 'widget' : n + ' widgets') + ' on it' : '') + '?' + (n ? '\n\nTo keep a widget, drag it to another screen first.' : ''))) return;
                 if (load(KEY_P, '') === pid) store(KEY_P, '');
                 H.act({ action: 'deletePage', id: pid }, pg.title + ' deleted').catch(function () { /* the app reloads */ });
                 return;

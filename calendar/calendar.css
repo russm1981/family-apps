@@ -84,3 +84,19 @@
   .mcell { min-height: 52px; }
   .fab { width: 48px; height: 48px; border-radius: 16px; bottom: 12px; }
 }
+
+/* Year view (computer): a wall planner – a row a month, a column a day */
+.ygrid { display: flex; flex-direction: column; gap: 3px; overflow-x: auto; }
+.yrow { display: grid; grid-template-columns: 44px repeat(31, minmax(0, 1fr)); gap: 2px; align-items: stretch; }
+.yhead b { font-size: 11px; color: var(--mute); text-align: center; font-weight: 600; }
+.ym { font-weight: 700; font-size: 13px; display: flex; align-items: center; }
+.ycell { position: relative; min-height: 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 2px 1px 5px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; font: inherit; color: inherit; }
+.ycell.we { background: var(--wk); }
+.ycell.none { background: none; border-color: transparent; cursor: default; }
+.ycell.today { border-color: var(--acc); border-width: 2px; }
+.ycell:hover { border-color: var(--acc); }
+.yd { font-size: 9px; color: var(--mute); }
+.yev { display: flex; flex-direction: column; gap: 2px; width: 100%; padding: 0 2px; }
+.yev i { display: block; height: 5px; border-radius: 3px; }
+.ybar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 0 0 4px 4px; }
+.ynote { color: var(--mute); font-size: 13px; text-align: center; margin: 10px 0 0; }

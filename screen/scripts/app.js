@@ -486,3 +486,15 @@
     // Fallback so the widget also runs in a normal browser for testing (?api=...&code=...)
     window.addEventListener('load', function () { setTimeout(start, 300); });
 })();
+
+/* Child widget cards: show ⌃⌃ / ⌄⌄ when there's more to scroll up or down to (there are no scroll bars). */
+(function () {
+    function mark(b) {
+        var card = b.closest('.boy.compact'); if (!card) return;
+        var up = b.scrollTop > 4, down = b.scrollTop + b.clientHeight < b.scrollHeight - 4;
+        card.classList.toggle('more-up', up); card.classList.toggle('more-down', down);
+        if (up) card.style.setProperty('--bodyTop', b.offsetTop + 'px');      // the ⌃⌃ tab sits at the top of the part that scrolls
+    }
+    document.addEventListener('scroll', function (e) { if (e.target && e.target.classList && e.target.classList.contains('boy-body')) mark(e.target); }, true);
+    setInterval(function () { Array.prototype.forEach.call(document.querySelectorAll('.boy.compact .boy-body'), mark); }, 1000);
+})();

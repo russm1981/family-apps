@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.68';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.69';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1752,10 +1752,8 @@ function deletePage_(id) {
     renumber_('pages'); bumpVersions_(); return layoutOnly_();
   }
   if (rType !== 'widgets') throw new Error('The ' + row.Title + ' page can be hidden but not deleted');
-  const shown = rows_('widgets').filter(w => String(w.Page).trim() === id && yes_(w.Show, true));
-  if (shown.length) throw new Error('Move or remove the ' + (shown.length === 1 ? 'widget' : shown.length + ' widgets') + ' on the ' + row.Title + ' screen first');
   if (rows_('pages').filter(p => String(p.Type).toLowerCase() === 'widgets').length < 2) throw new Error('Keep at least one widget page');
-  // Widgets taken off this screen earlier (hidden, settings kept) go with it.
+  // Its widgets – on it now, or taken off it earlier (hidden, settings kept) – go with it.
   const gone = rows_('widgets').filter(w => String(w.Page).trim() === id).map(w => String(w.Widget).trim());
   deleteWhere_('widgets', r => String(r[1]).trim() === id);
   if (gone.length) deleteWhere_('wset', r => gone.indexOf(String(r[0]).trim()) >= 0);
