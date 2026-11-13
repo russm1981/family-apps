@@ -213,7 +213,8 @@
             '<h3>Screens <span class="mute small">' + ps.length + ' of ' + MAX_SCREENS + '</span></h3>' + ps.map(function (x, i) {
                 return '<div class="ed-page' + (x.id === p.id ? ' on' : '') + (x.show ? '' : ' off') + '" data-page="' + esc(x.id) + '"><span class="pi">' + esc(x.icon) + '</span>' +
                     '<span class="pt"><b>' + esc(x.title) + '</b><small>' + esc(x.type === 'widgets' ? onPage(x.id).length + ' widgets' : H.pageTypeOf(x.type).name) + (x.show ? '' : ' · hidden') + '</small></span>' +
-                    '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + '>▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + '>▼</button></span></div>';
+                    '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + ' title="Move up">▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + ' title="Move down">▼</button>' +
+                    (canDelete(x) ? '<button data-pdel="' + esc(x.id) + '" title="Delete this screen">🗑</button>' : '') + '</span></div>';
             }).join('') +
             (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair. Remove one to add another.</p>' :
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
@@ -236,6 +237,8 @@
     }
 
     var REWARD_T = { child: 1 };
+    /** A widget screen (if there's another) or a second calendar page can be deleted. */
+    function canDelete(x) { var same = pages().filter(function (y) { return y.type === x.type; }).length; return (x.type === 'widgets' || x.type === 'calendar') && same > 1; }
     function typeTile(T) {
         return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
     }
@@ -289,6 +292,16 @@
         el.querySelector('.ed').onclick = function (e) {
             var t;
             if ((t = e.target.closest('[data-fmt]'))) { store(KEY_F, t.getAttribute('data-fmt')); render(); return; }
+            if ((t = e.target.closest('[data-pdel]'))) {
+                e.stopPropagation();
+                var pid = t.getAttribute('data-pdel'), pg = pages().filter(function (x) { return x.id === pid; })[0]; if (!pg) return;
+                var n = onPage(pid).length;
+                if (n) { H.toast('Move or remove the ' + (n === 1 ? 'widget' : n + ' widgets') + ' on ' + pg.title + ' first – drag them to another screen or onto the bin', true); return; }
+                if (!confirm('Delete the ' + pg.title + ' screen?')) return;
+                if (load(KEY_P, '') === pid) store(KEY_P, '');
+                H.act({ action: 'deletePage', id: pid }, pg.title + ' deleted').catch(function () { /* the app reloads */ });
+                return;
+            }
             if ((t = e.target.closest('[data-pm]'))) { var a = t.getAttribute('data-pm').split(':'); H.act({ action: 'movePage', id: a[0], dir: +a[1] }); return; }
             if ((t = e.target.closest('[data-pedit]'))) { H.pageSheet(t.getAttribute('data-pedit')); return; }
             if ((t = e.target.closest('[data-psave]'))) {

@@ -299,3 +299,8 @@ body:not(.desk) .adj-row .adj-bal { margin-left: auto; font-weight: 700; }
 body:not(.desk) .tabbar button { min-width: 0; }
 /* The status dot by the title: always a round dot */
 .top .sync { display: inline-block; width: 10px; height: 10px; min-width: 10px; padding: 0; border-radius: 50%; aspect-ratio: 1; align-self: center; cursor: pointer; margin: 0 4px; }
+
+/* Saving to Google: an hourglass, and nothing can be changed until it's saved */
+body.acting, body.acting * { cursor: wait !important; }
+body.acting #body, body.acting #bodyOuter, body.acting #sheet, body.acting #tabs { pointer-events: none; }
+body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1b2029; border: 1px solid #3fa9f5; color: #e8ecf2; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }

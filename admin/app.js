@@ -69,7 +69,7 @@
         if (k === 'err') syncWhy = why || syncWhy || 'Couldn’t reach the Google Sheet';
         s.title = k === 'ok' ? 'Up to date with your Google Sheet' : k === 'busy' ? 'Talking to your Google Sheet…' : 'Last try didn’t work: ' + syncWhy + ' – tap to try again';
         clearTimeout(syncRetry);
-        if (k === 'err') syncRetry = setTimeout(function () { if (!pending) load(); }, 60000);
+        if (k === 'err') syncRetry = setTimeout(function () { if (!pending) load(true); }, 60000);
     }
     function setData(d) {
         DATA = d;
@@ -77,10 +77,12 @@
         if (hasEdits()) { stale = true; return; }      // never redraw over changes you haven't saved yet
         render();
     }
-    function load() {
+    // quiet: a refresh nobody asked for (coming back to the window, a retry) – if it fails, the dot goes red but no
+    // message pops up; the Google script can take a while to wake up, so it has a minute to answer.
+    function load(quiet) {
         sync('busy');
-        return FD.post({ action: 'admin' }).then(function (d) { sync('ok'); setData(d); })
-            .catch(function (e) { sync('err', e.message); FD.toast(e.message, true); if (!hasEdits()) render(); });
+        return FD.post({ action: 'admin' }, 60000).then(function (d) { sync('ok'); setData(d); })
+            .catch(function (e) { sync('err', e.message); if (quiet !== true) FD.toast(e.message, true); if (!hasEdits()) render(); });
     }
 
     /* ---- Unsaved changes and saving.
@@ -134,10 +136,18 @@
     // Changes go to the Google script one after another. A tap while one is still on its way waits its turn –
     // it's never dropped (dropping it used to close the form as if it had been saved).
     var queue = Promise.resolve(), pending = 0;
+    // While a change is on its way to Google: an hourglass, a "Saving…" note, and nothing else can be changed until
+    // it's saved (shown only if it takes more than a moment, so quick ones don't flicker).
+    var actingT = null;
+    function acting(on) {
+        clearTimeout(actingT);
+        if (on) actingT = setTimeout(function () { document.body.classList.add('acting'); }, 250);
+        else document.body.classList.remove('acting');
+    }
     function act(body, okText, undoable) {
-        pending++; actsAt++; busy = true; sync('busy');
+        pending++; actsAt++; busy = true; sync('busy'); acting(true);
         var run = function () {
-            return FD.post(body).then(function (d) {
+            return FD.post(body, 60000).then(function (d) {
                 if (d.saved && d.rows) { DATA[d.saved] = d.rows; setData(DATA); }      // a list on its own: quicker
                 else if (d.layoutOnly) { if (pending === 1) { DATA.pages = d.pages; DATA.widgets = d.widgets; setData(DATA); } }     // later changes still on their way: keep what's on the phone
                 else if (d.state && !d.tasks) { DATA.state = d.state; setData(DATA); }
@@ -149,8 +159,8 @@
         };
         var p = queue.then(run, run);
         queue = p.catch(function () { /* the next change still goes */ });
-        return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); unlock(false); } return d; },
-            function (e) { if (--pending === 0) busy = false; sync('err', e.message); unlock(true); FD.toast(e.message, true); load(); throw e; });
+        return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); unlock(false); acting(false); } return d; },
+            function (e) { if (--pending === 0) { busy = false; acting(false); } sync('err', e.message); unlock(true); FD.toast(e.message, true); load(true); throw e; });
     }
     /** Move a widget or page straight away on this phone, then tell the Google script. */
     function moveNow(kind, id, dir) {
@@ -218,7 +228,7 @@
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">1 · Set up</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">2 · Apps</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">Set up</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">Apps</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -229,7 +239,7 @@
         $('refresh').onclick = function () { load(); fetchGlance(true); var r = route(); if (r.w) fetchWidget(r.w); };
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         window.addEventListener('hashchange', function () { closeSheet(); render(); window.scrollTo(0, 0); });
-        document.addEventListener('visibilitychange', function () { if (!document.hidden) { load(); fetchGlance(); } });
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) { load(true); fetchGlance(); } });
     }
     function sheet(html) { $('sheet').classList.remove('wide'); $('sheet').innerHTML = '<div class="grab"></div>' + html; $('sheetBg').classList.add('on'); }
     function closeSheet() { if ($('sheetBg')) $('sheetBg').classList.remove('on'); }
