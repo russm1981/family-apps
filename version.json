@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.128",
+  "app": "2026.11.129",
   "script": "2026.11.68",
   "date": "2026-11-14",
   "notes": [
-    "Setup wizard page: the box is called “Start full wizard”, the first button says “(setting up for the first time)”, and the note under the buttons is simpler, with more space above it"
+    "Advanced menu: “External data keys”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

@@ -523,7 +523,7 @@
     function renderAdvanced(sub) {
         var line = function (k) { try { return sectionLine(k); } catch (e) { return ''; } };
         var items = [['info', 'ℹ️', 'About these settings'],
-            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data (API) keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
+            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
             ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)'],
             ['-', 'My devices'], ['devices', '📱', 'Devices and Phones'],
             ['-', 'System'], ['support', '🩺', 'About & diagnostics']];
