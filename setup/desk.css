@@ -159,3 +159,11 @@ body.desk .tabbar { box-sizing: border-box; }
 .fp-add { width: auto !important; padding-left: 18px; padding-right: 18px; margin-top: 6px; }
 .fp-notes { margin-top: 22px; }
 .fp-notes p { margin: 0 0 6px; }
+
+/* Breathing room in explanations: paragraphs and bullets spaced out */
+body.desk .card p { line-height: 1.6; margin: 0 0 14px; }
+body.desk .card p:last-child { margin-bottom: 0; }
+body.desk .card ul, body.desk .card ol { margin: 6px 0 14px; padding-left: 22px; }
+body.desk .card li { line-height: 1.6; margin-bottom: 12px; }
+body.desk .card li:last-child { margin-bottom: 0; }
+body.desk .card.explain summary { margin-bottom: 14px; }
