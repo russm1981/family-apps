@@ -205,7 +205,9 @@
             var bi = -1;
             s.boys.forEach(function (b, i) { if (bi < 0 && String(b.name).toLowerCase() === name.toLowerCase()) bi = i; });
             if (bi < 0 && !name && s.boys.length) bi = 0;
+            var old = el.querySelector('.boy-body'), top = old ? old.scrollTop : 0;      // keep where it was scrolled to
             el.innerHTML = bi < 0 ? '<div class="child-msg"><b>' + esc(name || 'No child picked') + '</b><br>isn’t on the points list – pick a child in this widget’s settings.</div>' : boyCard(s.boys[bi], bi, s, true);
+            var nb = el.querySelector('.boy-body'); if (nb && top) nb.scrollTop = top;
         });
     }
     function boyCard(b, bi, s, compact) {     // compact: the child widget (a quarter of the screen) – two tasks, not three
@@ -213,7 +215,7 @@
         {
             var pct = Math.max(0, Math.min(100, (b.balance / target) * 100));
             var canCash = b.balance >= target;
-            var shownTasks = compact ? b.tasks.slice(0, 2) : b.tasks;
+            var shownTasks = b.tasks;
             var tasks = shownTasks.length ? shownTasks.map(function (t) { return taskBtn(bi, t); }).join('') : '<div class="empty">No tasks waiting 🎉</div>';
             var nTasks = b.openTaskCount || b.tasks.length;
             // Only 3 to-dos fit: show what's still to do first, then the rest as "+2 more".
@@ -248,6 +250,24 @@
                     (l.points > 0 ? '+' : '') + l.points + '</span></div>';
             }).join('') || '<div class="empty">No points yet</div>';
             var cashKey = 'cash:' + bi;
+            var cashBtn = '<button class="cash' + (canCash ? ' ready' : '') + (isArmed(cashKey) ? ' armed' : '') + '" data-act="cash" data-boy="' + bi + '"' + (canCash ? '' : ' disabled') + '>' +
+                (isArmed(cashKey) ? 'Tap again: cash ' + target + ' for £' + s.cashIn.value : 'Cash in £' + s.cashIn.value) + '</button>';
+            var tasksHead = '<h3>Next tasks' + (nTasks > shownTasks.length ? '<button class="more-btn" data-act="panel" data-sec="tasks" data-boy="' + bi + '" title="All ' + nTasks + ' tasks">\u203a\u203a\u203a</button>' : '') + '</h3>';
+            var todoHead = '<h3>This morning' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>';
+            if (compact) {     // the child widget: the at-a-glance things first, in one column that scrolls if it needs to
+                return '<article class="boy compact" style="--c:' + esc(b.colour) + '">' +
+                    '<header class="boy-head"><span class="dot"></span><h2>' + esc(b.name) + '</h2></header>' +
+                    '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>' +
+                    '<div class="boy-body">' +
+                        '<div class="cb-top"><div class="score"><span class="num">' + b.balance + '</span><span class="lbl">points</span></div>' + cashBtn + '</div>' +
+                        tasksHead + '<div class="tasks">' + tasks + '</div>' +
+                        todoHead + '<div class="todos">' + todos + '</div>' +
+                        '<div class="cb-bottom"><div class="bar"><span style="width:' + pct + '%"></span></div>' +
+                            '<div class="bar-lbl">' + (canCash ? 'Ready to cash in!' : (target - b.balance) + ' more for £' + s.cashIn.value) + '</div>' +
+                            '<div class="pens">' + pens + '</div></div>' +
+                    '</div>' +
+                '</article>';
+            }
             return '<article class="boy" style="--c:' + esc(b.colour) + '">' +
                 '<header class="boy-head"><span class="dot"></span><h2>' + esc(b.name) + '</h2></header>' +
                 '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>' +

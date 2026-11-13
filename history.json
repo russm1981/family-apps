@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.76",
+    "date": "2026-11-13",
+    "notes": [
+      "Child points widgets, rearranged for at-a-glance: name, reminders, points with the Cash in button beside them, three next tasks, this morning – then the progress bar and penalty buttons at the bottom. Drag up and down to scroll if there’s more"
+    ]
+  },
+  {
     "version": "2026.11.75",
     "date": "2026-11-13",
     "notes": [
