@@ -198,10 +198,11 @@
             if ((t = e.target.closest('[data-pm]'))) { var a = t.getAttribute('data-pm').split(':'); H.act({ action: 'movePage', id: a[0], dir: +a[1] }); return; }
             if ((t = e.target.closest('[data-pedit]'))) { H.pageSheet(t.getAttribute('data-pedit')); return; }
             if ((t = e.target.closest('[data-psave]'))) {
-                var box = t.closest('.ed-pset'), vals = {};
+                var box = t.closest('.ed-pset'), vals = {}, inst = {};
                 Array.prototype.forEach.call(box.querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
+                Array.prototype.forEach.call(box.querySelectorAll('[data-set]'), function (i) { inst[i.getAttribute('data-set')] = i.value.trim(); });
                 t.disabled = true; t.textContent = 'Saving…';
-                H.savePageSettings(t.getAttribute('data-psave'), vals).then(function () { render(); }, function () { render(); });
+                H.savePageSettings(t.getAttribute('data-psave'), vals, inst).then(function () { render(); }, function () { render(); });
                 return;
             }
             if ((t = e.target.closest('[data-del]'))) { e.stopPropagation(); remove(t.getAttribute('data-del')); return; }

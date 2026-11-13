@@ -100,3 +100,4 @@ body.desk .top-row { max-width: 1500px; }
 .ed-pset h3 { margin: 0 0 6px; font-size: 1rem; }
 .ed-pset .btn { margin-top: 10px; }
 .ed-pset a { color: #3fa9f5; }
+.ed-pset .ps-h { margin: 14px 0 4px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mute, #8b95a5); }

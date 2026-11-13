@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.80",
+    "date": "2026-11-13",
+    "notes": [
+      "Family tab in three parts: Family links and apps · Set up children’s points, tasks and reminders (Set up tasks, morning to-dos, reminders, points rules – each opens on its own) · Each child as they’ll show on the dashboard",
+      "Morning to-dos and reminders: one line each on a computer",
+      "The family’s Google calendars are set on the calendar page in Screen layout (not in Reconfigure → Family)"
+    ]
+  },
+  {
     "version": "2026.11.79",
     "date": "2026-11-13",
     "notes": [

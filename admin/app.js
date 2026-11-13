@@ -130,7 +130,7 @@
     function route() {
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
-        if (h[0] === 'points') return { pts: true, tab: 'family' };
+        if (h[0] === 'points') return { pts: true, sec: h[1] || '', tab: 'family' };
         if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'start' : 'family' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: 'settings' };
@@ -330,13 +330,20 @@
         // Calendar (the calendar app – a new tab on the computer), today & tomorrow, where is everyone, and reconfiguring the family.
         var cal = appsRoot() + 'calendar/';
         var fam = distinct(function (w) { return FAMILY_W[w.type]; });
-        $('body').innerHTML = '<div class="tiles fam-tiles">' +
+        var nTasks = (DATA.tasks || []).length, nTodos = (DATA.todos || []).length, nRem = (DATA.timetable || []).length, S = DATA.state;
+        $('body').innerHTML = '<h3 class="sec">Family links and apps</h3><div class="tiles fam-tiles">' +
             '<a class="tile" href="' + esc(cal) + '"' + (DESK ? ' target="_blank" rel="noopener"' : '') + '><span class="t-ico">📅</span><b>Family Calendar</b><small>' + (DESK ? 'Opens in a new tab' : 'Opens the calendar app') + ' – see and add events</small></a>' +
             fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') +
             (DESK ? '<a class="tile" href="' + esc(setupLink('family')) + '"><span class="t-ico">👪</span><b>Reconfigure the family</b><small>Who’s in the family, who has points, calendar groups and colours</small></a>' : '') + '</div>' +
-            (pp && pointsOn() ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points, tasks &amp; reminders ›</button></h3><div class="boys-row">' + boysCards() + '</div>' : '') +
+            (pp && pointsOn() ? '<h3 class="sec">Set up children’s points, tasks and reminders</h3><div class="tiles fam-tiles">' +
+                tile('points/tasks', '✅', 'Set up tasks', nTasks + ' task' + (nTasks === 1 ? '' : 's') + ' – what earns points') +
+                tile('points/todos', '☀️', 'Set up morning to-dos', nTodos + ' – ticked off each morning') +
+                tile('points/timetable', '🎒', 'Set up reminders', nRem + ' – PE kit, library books…') +
+                '<button class="tile" id="ptsRules"><span class="t-ico">⚖️</span><b>Set up points rules</b><small>' + (S ? S.cashIn.points + ' points = £' + S.cashIn.value + ' · penalties ' + esc(S.penalties.join(', ')) : 'Cash-in and penalties') + '</small></button></div>' +
+                '<h3 class="sec">Each child as they’ll show on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>' : '') +
             (DESK ? '' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, who has points, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
         if (pp && pointsOn()) $("body").onclick = pointsClick;
+        if ($('ptsRules')) $('ptsRules').onclick = function (e) { e.stopPropagation(); rulesSheet(); };
         fetchGlance();
     }
     function renderOther() {
@@ -698,7 +705,7 @@
         return s.boys.map(function (b, i) {
             var pct = Math.min(100, b.balance / target * 100), can = b.balance >= target;
             return '<section class="card boy" style="--c:' + esc(b.colour) + '">' +
-                '<div class="boy-top"><h2>' + esc(b.name) + '</h2><button class="link" data-go="points">Set up points ›</button></div>' + reminders(b) +
+                '<div class="boy-top"><h2>' + esc(b.name) + '</h2></div>' + reminders(b) +
                 '<div class="score"><b>' + b.balance + '</b><span>points</span><span class="to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' to £' + s.cashIn.value) + '</span></div>' +
                 '<div class="bar"><span style="width:' + pct + '%"></span></div>' +
                 '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
@@ -719,32 +726,40 @@
     var openBoys = {};
     document.addEventListener('toggle', function (e) { var d = e.target; if (d.classList && d.classList.contains('boy-more')) openBoys[d.getAttribute('data-boy')] = d.open; }, true);
     /** Setting up the points page: tasks, morning to-dos, reminders, rules. */
+    /** Setting up one part of the children's points (from the Family tab): tasks, morning to-dos or reminders. */
     function renderPointsSetup() {
-        var pp = pointsPage(), s = DATA.state;
-        title('Set up ' + (pp ? pp.title : 'points'));
+        var s = DATA.state, sec = route().sec || 'tasks';
+        var names = { tasks: 'Set up tasks', todos: 'Set up morning to-dos', timetable: 'Set up reminders' };
+        title(names[sec] || 'Set up tasks');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
-        var target = s.cashIn.points;
         var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
-        $('body').innerHTML = '<p class="mute small help">What the children earn points for, what they tick off each morning, their reminders, and the rules.</p>' +
-            '<details class="card fold" id="fTasks"><summary><b>Tasks</b><span class="mute">' + tasks.length + ' · what earns points</span></summary>' +
+        var other = Object.keys(names).filter(function (k) { return k !== sec; }).map(function (k) { return '<button class="chip" data-go="points/' + k + '">' + names[k] + '</button>'; }).join('') +
+            '<button class="chip" id="rules">Set up points rules</button>';
+        var body = sec === 'tasks' ? '<details class="card fold" id="fTasks" open><summary><b>Tasks</b><span class="mute">' + tasks.length + ' · what earns points</span></summary>' +
                 '<button class="btn wide top-btn" id="newTask">+ New task</button>' + (tasks.length ? tasks.map(function (t) {
                     return '<div class="trow' + (t.Active ? '' : ' paused') + '"><div class="tmain"><b>' + esc(t.Task) + '</b><span class="mute">' + esc(t.Boy || 'All') + ' · ' +
                         esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
-                }).join('') : '<div class="empty">No tasks yet</div>') + '<p class="mute small">Each child sees their next three open tasks on the screen, lowest order first.</p></details>' +
-            listFold('todos') + listFold('timetable') +
-            '<details class="card fold"><summary><b>Points rules</b><span class="mute">' + target + ' points = £' + s.cashIn.value + ' · penalties ' + esc(s.penalties.join(', ')) + '</span></summary>' +
-                '<p class="mute small">How many points make a cash-in, what it’s worth, and the penalty buttons.</p><button class="btn ghost wide" id="rules">Change the rules</button></details>' +
-            '<a class="link-card" data-go="s/family" href="#"><b>Who’s on the points page ›</b><span class="mute small">Add or rename children, or take someone off the points page, in Settings → Family & calendar.</span></a>';
+                }).join('') : '<div class="empty">No tasks yet</div>') + '<p class="mute small">Each child sees their next three open tasks on the screen, lowest order first.</p></details>'
+            : listFold(sec).replace('<details class="card fold"', '<details class="card fold" open');
+        $('body').innerHTML = body + '<div class="chips pts-more">' + other + '</div>';
         $('body').onclick = pointsClick;
-        $('newTask').onclick = function () { taskSheet(null); };
-        $('rules').onclick = function () { pageSheet(pp); };
-        wireListFold('todos'); wireListFold('timetable');
+        if ($('newTask')) $('newTask').onclick = function () { taskSheet(null); };
+        $('rules').onclick = rulesSheet;
+        if (sec !== 'tasks') wireListFold(sec);
+    }
+    /** The points rules: points for a cash-in, what it's worth, the penalty buttons. */
+    function rulesSheet() {
+        var pp = pointsPage(); if (!pp) return;
+        sheet('<h2>Points rules</h2><p class="mute small">How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.</p>' + fields(pageTypeOf('boys').settings, pp.settings || {}) +
+            '<div class="sheet-actions"><button class="btn ghost" id="rCancel">Cancel</button><button class="btn good" id="rSave">Save</button></div>');
+        $('rCancel').onclick = closeSheet;
+        $('rSave').onclick = function () { act({ action: 'savePage', page: { id: pp.id, settings: readFields() } }, 'Saved – the screen updates within a minute').then(closeSheet, function () {}); };
     }
     var LISTS = {
         todos: { title: 'Morning to-dos', what: 'ticked off each morning', help: 'For: a name, names separated by commas, or All. Days: Mon-Fri, Mon,Wed, Weekends, Daily…',
             cols: [['Item', 'Item'], ['Boy', 'For'], ['Days', 'Days'], ['Order', 'Order']] },
-        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on the points page on the day, and from 5pm the evening before. Day: Tue, Mon-Fri, Mon,Thu… or a date for a one-off, e.g. 23/09.',
+        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from 5pm the evening before. Day: Tue, Mon-Fri, Mon,Thu… or a date for a one-off, e.g. 23/09.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For'], ['Day', 'Day or date']] },
     };
     function listFold(k) {
@@ -776,7 +791,7 @@
     function rowCard(k, r) {
         return '<div class="lrow"><button class="x" data-x>✕</button>' + LISTS[k].cols.map(function (c) {
             var n = maxFor(k, c[0]);
-            return '<label>' + esc(c[1]) + (n ? ' <span class="cnt">max ' + n + '</span>' : '') + '</label><input data-k="' + c[0] + '" value="' + esc(r[c[0]]) + '"' + (n ? ' maxlength="' + n + '"' : '') + ' autocomplete="off">';
+            return '<div class="lc"><label>' + esc(c[1]) + (n ? ' <span class="cnt">max ' + n + '</span>' : '') + '</label><input data-k="' + c[0] + '" value="' + esc(r[c[0]]) + '"' + (n ? ' maxlength="' + n + '"' : '') + ' autocomplete="off"></div>';
         }).join('') + '</div>';
     }
     /** Today's and tomorrow's reminders; from 5pm only tomorrow's. */
@@ -1013,10 +1028,16 @@
             window.FDEditor.render($('body'), { data: function () { return DATA; }, act: act, setData: setData, esc: esc, typeOf: typeOf, pageTypeOf: pageTypeOf,
                 widgetSheet: function (id) { widgetSheet(widgetOf(id)); }, pageSheet: function (id) { pageSheet(pageOf(id)); }, summary: summary, toast: FD.toast,
                 // A calendar page's own settings, shown under its picture in the editor.
-                pageForm: function (id) { var p = pageOf(id); return p ? fields(pageTypeOf(p.type).settings, p.settings || {}) : ''; },
+                // The first calendar page also holds the family's calendars (Today & tomorrow, the countdown and the phone app use them too).
+                pageForm: function (id) {
+                    var p = pageOf(id); if (!p) return '';
+                    var main = calPage() && calPage().id === id, defs = pageTypeOf(p.type).settings.filter(function (f) { return !main || (f.k !== 'Calendars' && f.k !== 'AddTo'); });
+                    return (main ? '<h4 class="ps-h">The family’s Google calendars</h4><p class="mute small">This page shows them, and so do Today &amp; tomorrow, the holiday countdown and the phone Family Calendar app.</p>' + installFields('calendar') + '<h4 class="ps-h">How this page looks</h4>' : '') + fields(defs, p.settings || {});
+                },
                 afterForm: applyWhen, familyLink: function () { return setupLink('family'); },
-                savePageSettings: function (id, vals) { var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
-                    return act({ action: 'savePage', page: { id: id, settings: vals } }, 'Saved – the screen updates within a minute'); } });
+                savePageSettings: function (id, vals, inst) { var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
+                    var first = inst && Object.keys(inst).length ? act({ action: 'saveInstall', values: inst }) : Promise.resolve();
+                    return first.then(function () { return act({ action: 'savePage', page: { id: id, settings: vals } }, 'Saved – the screen updates within a minute'); }); } });
             return;
         }
         var pages = DATA.pages || [];
@@ -1694,11 +1715,7 @@
             '<label class="tog"><input type="checkbox" id="showMatch"><span>Show matching words (advanced)</span></label>' +
             '<p class="mute small">Events go in a category by the name at the start of their title – “Ben – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Josh.</p>' +
             '<p class="mute small" id="famNote"></p><button class="btn wide" id="famSave">Save family</button></div>' +
-            '<a class="link-card" data-go="points" href="#"><b>★ Points set-up ›</b><span class="mute small">Tasks, morning to-dos, reminders and the rules – under the points page.</span></a>' +
-            card('Which Google calendars', installFields('calendar') + saveInstallBtn('cSave', 'Save calendars'), 'sx-cal') +
-            (calPage() ? card('Calendar page on the screen', '<p class="mute small">Which view it opens on, and lining up the weekends in the 3-month views.</p><button class="btn ghost wide" id="calPage">Calendar page settings</button>') : '');
-        wireSaveInstall('cSave', document.querySelector('.sx-cal'));
-        if ($('calPage')) $('calPage').onclick = function () { pageSheet(calPage()); };
+            '<p class="mute small">Which Google calendars are shown, and each calendar page’s settings, are in <b>Screen layout</b> – pick the calendar page.</p>';
         var form = $('famForm');
         $('showMatch').onchange = function () { form.classList.toggle('show-match', this.checked); };
         $('addP').onclick = function () {

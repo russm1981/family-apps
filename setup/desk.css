@@ -37,3 +37,8 @@ body.desk .ws-place { padding-right: 26px; border-right: 1px solid var(--line, #
 body.desk .boys-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
 body.desk .boys-row .card { margin: 0; }
 body.desk .fam-tiles { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+/* Lists of morning to-dos and reminders: one line each on a computer */
+body.desk .lrow { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; padding: 6px 48px 10px 12px; }
+body.desk .lrow .x { top: 50%; transform: translateY(-20%); }
+body.desk .lrow .lc label { margin-top: 4px; }

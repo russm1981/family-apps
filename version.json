@@ -1,14 +1,14 @@
 {
-  "app": "2026.11.79",
+  "app": "2026.11.80",
   "script": "2026.11.51",
   "date": "2026-11-13",
   "notes": [
+    "Family tab in three parts: Family links and apps · Set up children’s points, tasks and reminders (Set up tasks, morning to-dos, reminders, points rules – each opens on its own) · Each child as they’ll show on the dashboard",
+    "Morning to-dos and reminders: one line each on a computer",
+    "The family’s Google calendars are set on the calendar page in Screen layout (not in Reconfigure → Family)",
     "Setup → Screen layout: a calendar page’s settings sit under its picture – which Google calendars it shows, where new events go, what it opens on, lining up weekdays",
     "You can have more than one calendar page, each showing different Google calendars (add one with “Add a screen” → Calendar)",
-    "Widgets tab: the children’s points widgets aren’t listed (they’re on the Family tab)",
-    "Holiday countdown: clearer help for “Your own dates” – one per line as name | date, e.g. Orlando | 3/4/2027, or Christmas | 25 Dec (no year) for one that comes round every year",
-    "Setup → Family: four buttons at the top – Family Calendar (opens in a new tab), Today & tomorrow, Where is everyone and Reconfigure the family – then the children side by side with everything showing",
-    "Setup: the tabs are in two groups, “Set up” and “Everyday”"
+    "Widgets tab: the children’s points widgets aren’t listed (they’re on the Family tab)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",
