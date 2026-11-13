@@ -1,5 +1,16 @@
 [
   {
+    "version": "2026.11.91",
+    "date": "2026-11-13",
+    "notes": [
+      "Calendar page: uses the full width (no empty column on the right)",
+      "“Line up days of the week in the 3-month views” – tick or untick it and the picture underneath shows the difference straight away",
+      "Categories, much simpler, and the same on every calendar page: one row each – name, colour, as a line, shown, and how it will look. General categories first, then the people ones (Family, then your groups with their people underneath, then anyone not in a group)",
+      "A category that isn’t shown goes in Other; Other itself can now be switched off. The separate key editor has gone – the key is made from what’s shown",
+      "The list of which colour to pick in Google Calendar has gone"
+    ]
+  },
+  {
     "version": "2026.11.90",
     "date": "2026-11-13",
     "notes": [

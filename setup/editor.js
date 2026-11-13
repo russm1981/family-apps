@@ -93,17 +93,27 @@
         for (var i = shown.length; i < n; i++) body += '<div class="ed-col empty"><div class="ed-slot end">' + (i === shown.length ? 'Drop a widget here' : '') + '</div></div>';
         return '<div class="ed-frame has-rail ' + cls + '">' + (label ? '<div class="ed-flabel">' + esc(label) + '</div>' : '') + rail(p, part) + '<div class="ed-grid" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' + body + '</div></div>';
     }
+    /** The 3-month view: three months of days (no real entries). Lined up, each month starts under its weekday, so the
+     * weekends (shaded) form columns; not lined up, every month starts at the left. */
+    function calInner(fmt, align) {
+        var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], now = new Date(), months = '';
+        for (var m = 0; m < 3; m++) {
+            var d1 = new Date(now.getFullYear(), now.getMonth() + m, 1), days = new Date(d1.getFullYear(), d1.getMonth() + 1, 0).getDate();
+            var lead = align ? (d1.getDay() + 6) % 7 : 0, cells = '';
+            for (var g = 0; g < lead; g++) cells += '<i class="gap"></i>';
+            for (var d = 1; d <= days; d++) {
+                var dow = (d1.getDay() + d - 1) % 7, k = (d * 5 + m * 3) % 11;
+                cells += '<i class="' + (dow === 0 || dow === 6 ? 'we' : '') + (k < 3 ? ' ev" style="--ec:' + ['#3fa9f5', '#a855f7', '#d97757'][k] : '') + '"></i>';
+            }
+            months += '<div class="mk3-m"><b>' + MON[d1.getMonth()] + '</b><div class="mk3-g">' + cells + '</div></div>';
+        }
+        return '<div class="mk-cal"><div class="mk-top"><b>📅 The family calendar</b><span>3 months · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div><div class="mk3">' + months + '</div></div>';
+    }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {
         var inner;
         if (p.type === 'calendar') {
-            var cols = fmt === 'standard' ? 7 : 14, rows = 3, cells = '';
-            for (var r = 0; r < rows; r++) for (var c = 0; c < cols; c++) {
-                var k = (r * 7 + c * 3) % 9;
-                cells += '<div class="mk-day">' + (k < 3 ? '<i style="background:' + ['#3fa9f5', '#a855f7', '#d97757'][k] + '"></i>' : '') + (k === 1 ? '<i style="background:#22c55e;width:60%"></i>' : '') + '</div>';
-            }
-            inner = '<div class="mk-cal"><div class="mk-top"><b>📅 The family calendar</b><span>3 months · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' +
-                '<div class="mk-grid" style="grid-template-columns:repeat(' + cols + ',1fr)">' + cells + '</div></div>';
+            inner = calInner(fmt, (p.settings || {}).AlignWeekdays !== false);
         } else {
             var cards = '';
             for (var i = 0; i < n; i++) cards += '<div class="mk-kid"><b>Child ' + (i + 1) + '</b><span class="mk-pts">123</span><small>points</small><i></i><i></i><i></i></div>';
@@ -162,7 +172,7 @@
             '<div class="ed-top"><span class="mute">Show it as on a</span>' + FORMATS.map(function (f) {
                 return '<button class="ed-fmt' + (f[0] === fmt ? ' on' : '') + '" data-fmt="' + f[0] + '"><b>' + esc(f[1]) + '</b><small>' + esc(f[2]) + '</small></button>';
             }).join('') + '</div>' +
-            '<div class="ed-main">' +
+            '<div class="ed-main' + (info || p.type !== 'widgets' ? ' nopal' : '') + '">' +
             '<aside class="ed-pages"><div class="ed-page info' + (info ? ' on' : '') + '" data-page="__info"><span class="pi">ℹ️</span><span class="pt"><b>How this works</b><small>Start here</small></span></div>' +
             '<h3>Screens <span class="mute small">' + ps.length + ' of ' + MAX_SCREENS + '</span></h3>' + ps.map(function (x, i) {
                 return '<div class="ed-page' + (x.id === p.id ? ' on' : '') + (x.show ? '' : ' off') + '" data-page="' + esc(x.id) + '"><span class="pi">' + esc(x.icon) + '</span>' +
@@ -172,7 +182,7 @@
             (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair. Remove one to add another.</p>' :
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
             '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
-            (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section><aside class="ed-palette ed-blank"></aside></div></div>' : '') +
+            (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
             (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it</div>' +
@@ -181,7 +191,7 @@
                 '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
                 '<h3 class="ed-h2">⭐ Add a child’s rewards</h3><p class="mute small">A child’s rewards card (one each), or every child’s reminders together. The rewards themselves are set up on the Rewards tab.</p>' +
                 '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
-                '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>');
+                '</aside>' : '') + '</div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
         var csb = el.querySelector('.cs-box'); if (csb && H.calSetup) H.calSetup(csb, csb.getAttribute('data-cs'));
@@ -230,6 +240,11 @@
         H.act({ action: 'deleteWidget', id: id }, 'Removed').catch(function () { /* the app reloads and puts it back, with the reason */ });
     }
     function wire(p) {
+        // Ticking "line up the days of the week" shows it on the picture straight away.
+        el.querySelector('.ed').addEventListener('change', function (e) {
+            if (e.target.getAttribute && e.target.getAttribute('data-f') === 'AlignWeekdays')
+                Array.prototype.forEach.call(el.querySelectorAll('.ed-frame.mock .mk-in'), function (m) { m.innerHTML = calInner(load(KEY_F, 'wide'), e.target.checked); });
+        });
         el.querySelector('.ed').onclick = function (e) {
             var t;
             if ((t = e.target.closest('[data-fmt]'))) { store(KEY_F, t.getAttribute('data-fmt')); render(); return; }

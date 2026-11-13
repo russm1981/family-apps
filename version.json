@@ -1,9 +1,13 @@
 {
-  "app": "2026.11.90",
-  "script": "2026.11.60",
+  "app": "2026.11.91",
+  "script": "2026.11.61",
   "date": "2026-11-13",
   "notes": [
-    "The time the screen switches to tomorrow’s reminders is now set on the Reminders page, under the reminders (it’s saved with them), not in Reward rules"
+    "Calendar page: uses the full width (no empty column on the right)",
+    "“Line up days of the week in the 3-month views” – tick or untick it and the picture underneath shows the difference straight away",
+    "Categories, much simpler, and the same on every calendar page: one row each – name, colour, as a line, shown, and how it will look. General categories first, then the people ones (Family, then your groups with their people underneath, then anyone not in a group)",
+    "A category that isn’t shown goes in Other; Other itself can now be switched off. The separate key editor has gone – the key is made from what’s shown",
+    "The list of which colour to pick in Google Calendar has gone"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

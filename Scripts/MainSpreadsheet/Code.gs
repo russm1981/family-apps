@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.60';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.61';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -147,7 +147,7 @@ const PAGE_TYPES = {
       help: 'Blank = the family’s calendars (the same as Today & tomorrow and the phone Calendar app). Or: default = your main calendar, all = every calendar, or calendar IDs separated by commas – so a second calendar page can show different calendars.' },
     { k: 'AddTo', label: 'Calendar for new events', type: 'text', def: '', max: 200, help: 'Where + Add on this page saves events. Blank = the family’s setting.' },
     { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', '3 months (scroll)', 'Month', 'Week'] },
-    { k: 'AlignWeekdays', label: 'Line up weekdays in the 3-month views', type: 'bool', def: true, help: 'Each month starts under its weekday, so the weekends form columns.' },
+    { k: 'AlignWeekdays', label: 'Line up days of the week in the 3-month views', type: 'bool', def: true, help: 'Each month starts under its weekday, so the weekends form columns.' },
   ] },
 };
 
@@ -2651,7 +2651,7 @@ function calKey_(pageId, M) {
   const slots = (Array.isArray(k.slots) ? k.slots : def).filter(has).slice(0, CAL.key - 1);
   const lines = (Array.isArray(k.lines) ? k.lines : M.generals.filter(g => g.line).map(g => g.name)).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
   const hide = (Array.isArray(k.hide) ? k.hide : []).filter(n => has(n) && slots.indexOf(n) < 0);
-  return { page: pg ? String(pg.Page).trim() : '', slots: slots, lines: lines, hide: hide, saved: Array.isArray(k.slots) };
+  return { page: pg ? String(pg.Page).trim() : '', slots: slots, lines: lines, hide: hide, other: k.other !== false, saved: Array.isArray(k.slots) };
 }
 /** Which category an event is in: "(Name)" at the end → that person; otherwise its Google colour; otherwise the old way ("Ben – Drums", matching words). */
 function evCat_(ev, title, M, legacy) {
@@ -2681,7 +2681,7 @@ function calSlot_(r, M, K) {
     if (r.person.group && K.hide.indexOf(r.person.group) >= 0) return null;
     slot = r.person.group && K.slots.indexOf(r.person.group) >= 0 ? r.person.group : K.slots.indexOf('Family') >= 0 ? 'Family' : '';
   }
-  return slot || 'Other';
+  return slot || (K.other === false ? null : 'Other');      // Other can be left off altogether
 }
 function calColour_(name, M) {
   const c = M.cats.find(x => x.name === name) || M.people.find(x => x.name === name);
@@ -2943,6 +2943,13 @@ function saveCalCats_(b) {
   const people = M.people.map(p => Object.assign({}, p, { group: groupOf[p.name] || '' }));
   writeCats_(people, groups, generals);
   groups.concat(generals).forEach(c => { if (c.was && c.was !== c.name) renameInKeys_(c.was, c.name); });
+  // How each category looks (shown, as a line, Other on or off) – the same on every calendar page.
+  if (b.key) {
+    const names = groups.concat(generals).map(c => c.name).concat(people.map(p => p.name)), ok = n => names.indexOf(n) >= 0;
+    const slots = (b.key.slots || []).map(String).filter(ok).slice(0, CAL.key - 1), lines = (b.key.lines || []).map(String).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
+    rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').forEach(r =>
+      setWset_(String(r.Page).trim(), 'Key', JSON.stringify({ slots: slots, lines: lines, hide: [], other: b.key.other !== false })));
+  }
   bumpCalVersion_(); bumpVersions_();
   return getAdmin_();
 }
@@ -2954,8 +2961,9 @@ function saveCalKey_(b) {
   const slots = (b.slots || []).map(String).filter(ok), lines = (b.lines || []).map(String).filter(n => slots.indexOf(n) >= 0), hide = (b.hide || []).map(String).filter(n => ok(n) && slots.indexOf(n) < 0);
   if (slots.length > CAL.key - 1) throw new Error('Up to ' + (CAL.key - 1) + ' on the key, plus Other');
   if (lines.length > 2) throw new Error('Up to two can show as lines (they’re drawn under each day)');
-  setWset_(id, 'Key', JSON.stringify({ slots: slots, lines: lines, hide: hide }));
+  setWset_(id, 'Key', JSON.stringify({ slots: slots, lines: lines, hide: hide, other: b.other !== false }));
   bumpCalVersion_(); bumpVersions_();
+  if (b.quick) return { ok: true };      // the website saves the same key on every calendar page, one after another
   return getAdmin_();
 }
 /**
