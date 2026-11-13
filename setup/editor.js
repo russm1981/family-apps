@@ -79,13 +79,17 @@
     // The screen's own menu, exactly as the screen builds it: every screen that's shown (the points screen too, one button
     // for each 3 children), and on a tablet a widget screen with more than two columns in two parts (Home 1, Home 2).
     // Then the microphone with its status dot, and the version.
+    // The screen's calendar button: a calendar outline with today's date, in the button's own colour.
+    var CAL_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/>' +
+        '<path d="M3 9.5h18" stroke="currentColor" stroke-width="1.8"/><path d="M8 2.5v4M16 2.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<text x="12" y="18.3" text-anchor="middle" font-size="8.5" font-weight="700" font-family="system-ui,sans-serif" fill="currentColor">' + new Date().getDate() + '</text></svg>';
     function rail(p, part) {
         var tab = load(KEY_F, 'wide') === 'standard', out = '', all = (D().pages || []).slice().sort(function (a, b) { return a.order - b.order; });
         all.filter(function (x) { return x.show || x.id === p.id; }).forEach(function (x) {
             var n = x.type === 'boys' ? Math.max(1, Math.ceil((x.children || 0) / 3)) : tab && x.type === 'widgets' && pack(onPage(x.id)).length > 2 ? 2 : 1;
             for (var k = 0; k < n; k++) {
                 var t = n > 1 ? x.title + ' ' + (k + 1) : x.title, on = x.id === p.id && (n === 1 || k === (part || 0));
-                out += '<div class="' + (x.type === 'boys' ? '' : 'ed-page ') + 'ed-rb' + (on ? ' on' : '') + '" data-page="' + esc(x.id) + '" title="' + esc(t) + '"><span>' + esc(x.type === 'calendar' ? '📅' : x.icon) + '</span><small>' + esc(t) + '</small></div>';
+                out += '<div class="' + (x.type === 'boys' ? '' : 'ed-page ') + 'ed-rb' + (on ? ' on' : '') + '" data-page="' + esc(x.id) + '" title="' + esc(t) + '"><span>' + (x.type === 'calendar' ? CAL_ICON : esc(x.icon)) + '</span>' + (tab ? '' : '<small>' + esc(t) + '</small>') + '</div>';
             }
         });
         var ver = (window.FD && window.FD.VERSION) || '';
@@ -139,7 +143,7 @@
             title = MON[now.getMonth()] + ' – ' + MON[(now.getMonth() + 2) % 12];
             body = '<div class="mk3' + (scroll ? ' scroll' : '') + '">' + rows + (scroll ? '<span class="mk-drag">⟵ drag along ⟶</span>' : '') + '</div>';
         }
-        return '<div class="mk-cal"><div class="mk-top"><b>📅 ' + esc(title) + '</b><span>3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' + body + '</div>';
+        return '<div class="mk-cal"><div class="mk-top"><b>' + esc(title) + '</b><span>3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' + body + '</div>';
     }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {
@@ -204,7 +208,7 @@
             '<div class="ed-top"><span class="mute">Show it as on a</span>' + FORMATS.map(function (f) {
                 return '<button class="ed-fmt' + (f[0] === fmt ? ' on' : '') + '" data-fmt="' + f[0] + '"><b>' + esc(f[1]) + '</b><small>' + esc(f[2]) + '</small></button>';
             }).join('') + '</div>' +
-            '<div class="ed-main' + (info || p.type !== 'widgets' ? ' nopal' : '') + '">' +
+            '<div class="ed-main nopal">' +
             '<aside class="ed-pages"><div class="ed-page info' + (info ? ' on' : '') + '" data-page="__info"><span class="pi">ℹ️</span><span class="pt"><b>How this works</b><small>Start here</small></span></div>' +
             '<h3>Screens <span class="mute small">' + ps.length + ' of ' + MAX_SCREENS + '</span></h3>' + ps.map(function (x, i) {
                 return '<div class="ed-page' + (x.id === p.id ? ' on' : '') + (x.show ? '' : ' off') + '" data-page="' + esc(x.id) + '"><span class="pi">' + esc(x.icon) + '</span>' +
@@ -216,20 +220,22 @@
             '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
-            '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
-            (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it</div>' +
-                '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height and When to show (a widget at some times, another at others). The 🗑 on each widget removes it – its settings are kept.</p>' : '') + '</section>' +
-            (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' +
+            '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' +
+            (p.type === 'widgets' ? '<p class="ed-how">✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
+                'Drag one up from the list underneath to add it. Click a widget for its height, When to show and its settings.</p>' : '') +
+            screenView(p) +
+            (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it – its settings are kept</div>' +
+                '<div class="ed-palette ed-below"><h3>Add a widget</h3><p class="mute small">Drag one up onto the screen.</p>' +
                 '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
-                '<h3 class="ed-h2">⭐ Add a child’s rewards</h3><p class="mute small">A child’s rewards card (one each), or every child’s reminders together. The rewards themselves are set up on the Rewards tab.</p>' +
-                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
-                '</aside>' : '') + '</div></div>');
+                '<h3 class="ed-h2">⭐ Add a child’s rewards card</h3><p class="mute small">One for each child who takes part in rewards. The rewards themselves are set up on the Rewards tab.</p>' +
+                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div></div>' : '') +
+            '</section></div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
         var csb = el.querySelector('.cs-box'); if (csb && H.calSetup) H.calSetup(csb, csb.getAttribute('data-cs'));
     }
 
-    var REWARD_T = { child: 1, kidrem: 1 };
+    var REWARD_T = { child: 1 };
     function typeTile(T) {
         return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
     }

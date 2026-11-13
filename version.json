@@ -1,10 +1,11 @@
 {
-  "app": "2026.11.95",
+  "app": "2026.11.96",
   "script": "2026.11.64",
   "date": "2026-11-13",
   "notes": [
-    "Family Admin app: the buttons along the bottom are now Calendar, Notes, Lists, Rewards, Apps (was Widgets) and More – and it opens on Calendar",
-    "More: the Configurator box has its own heading, Advanced"
+    "Screens: a widget screen now looks like the calendar page – the instructions under its title, then the screen, as wide as the page, then the bin, then the widgets to add underneath (drag one up onto the screen)",
+    "Screens: only a child’s rewards card is in a list of its own; the Reminders widget is with the others",
+    "The menu in the screen pictures is drawn as on the screen: grey icons and names (no names on a tablet), the calendar icon with today’s date, and the screen you’re on in blue"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.16",
