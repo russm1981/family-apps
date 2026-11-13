@@ -155,3 +155,7 @@ body.desk .hdr-help:hover, body.desk .hdr-help.on { border-color: #3fa9f5; color
 
 /* The tab bar lines up with the title bar too */
 body.desk .tabbar { box-sizing: border-box; }
+/* Family: a small Add button straight under the list, then the notes, then Save */
+.fp-add { width: auto !important; padding-left: 18px; padding-right: 18px; margin-top: 6px; }
+.fp-notes { margin-top: 22px; }
+.fp-notes p { margin: 0 0 6px; }

@@ -396,8 +396,9 @@
                 '<p>Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
             card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “MacMillan” for “The MacMillan family”.</p><input id="fpName" maxlength="30" placeholder="e.g. MacMillan" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
             card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
-                (famEdit.length < 10 ? '<button class="btn ghost wide" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
-                '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p>' +
+                (famEdit.length < 10 ? '<button class="btn ghost fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
+                '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, tasks, daily to-dos and reminders, with a rewards card of their own.</p>' +
+                '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p></div>' +
                 '<div class="sheet-actions"><button class="btn good" id="fpSave">Save the family</button><button class="btn ghost" id="fpUndo">Undo changes</button></div>');
         $('fpRows').oninput = function (e) { var t = e.target, k;
             if ((k = t.getAttribute('data-fn')) !== null) famEdit[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) famEdit[+k].colour = t.value; };

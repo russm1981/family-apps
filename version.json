@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.108",
+  "app": "2026.11.109",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Family: Save the family is on the left and Undo changes on the right"
+    "Family: + Add a person is a smaller button straight under the list, then a gap and two notes – what ticking ⭐ Rewards does, and what renaming or taking someone out keeps – then Save the family (left) and Undo changes (right)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",
