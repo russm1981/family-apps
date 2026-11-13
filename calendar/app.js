@@ -181,13 +181,20 @@
     /* ------------------------------------------------------------ add */
 
     var form = null;
+    /** The categories to pick from: general ones, family groups and one person – under headings when the Google script sorts them. */
+    function catChips(cats) {
+        var one = function (c) { return '<button class="chip' + (form.cat === c.name ? ' on' : '') + '" data-cat="' + esc(c.name) + '" style="--ec:' + esc(c.colour) + ';--et:' + ink(c.colour) + '">' + esc(c.name) + '</button>'; };
+        if (!cats.some(function (c) { return c.kind; })) return cats.map(one).join('');
+        return [['general', 'General'], ['group', 'Family groups'], ['person', 'One person']].map(function (k) {
+            var list = cats.filter(function (c) { return c.kind === k[0]; });
+            return list.length ? '<div class="chip-h">' + k[1] + '</div>' + list.map(one).join('') : '';
+        }).join('');
+    }
     function openAdd(ds) {
         form = { cat: form && form.cat || '', start: ds, end: ds };
         var cats = addable.length ? addable : legend.filter(function (c) { return c.name !== 'Other'; });
         $('sheet').innerHTML = '<div class="grab"></div><h2>New entry</h2>' +
-            '<label>Who / what</label><div class="chips" id="fCats">' + cats.map(function (c) {
-                return '<button class="chip' + (form.cat === c.name ? ' on' : '') + '" data-cat="' + esc(c.name) + '" style="--ec:' + esc(c.colour) + ';--et:' + ink(c.colour) + '">' + esc(c.name) + '</button>';
-            }).join('') + '</div>' +
+            '<label>Who / what</label><div class="chips" id="fCats">' + catChips(cats) + '</div>' +
             '<label>Title</label><input id="fTitle" maxlength="40" placeholder="e.g. Drums" autocomplete="off">' +
             '<label>Notes or time (optional)</label><input id="fNote" maxlength="300" placeholder="e.g. 12:00 at the music school" autocomplete="off">' +
             '<div class="dates"><div><label>From</label><input type="date" id="fFrom" value="' + ds + '"></div><div><label>To</label><input type="date" id="fTo" value="' + ds + '"></div></div>' +
@@ -196,7 +203,7 @@
         $('fCats').onclick = function (e) {
             var b = e.target.closest('[data-cat]'); if (!b) return;
             form.cat = b.getAttribute('data-cat');
-            Array.prototype.forEach.call($('fCats').children, function (x) { x.classList.toggle('on', x === b); });
+            Array.prototype.forEach.call($('fCats').querySelectorAll('[data-cat]'), function (x) { x.classList.toggle('on', x === b); });
         };
         $('fFrom').onchange = function () { if ($('fTo').value < $('fFrom').value) $('fTo').value = $('fFrom').value; };
         $('fCancel').onclick = closeSheet;

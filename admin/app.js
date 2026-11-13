@@ -168,6 +168,7 @@
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
         $('back').style.display = r.w || r.s || r.pts ? '' : 'none';
         $('body').onclick = null;
+        if (r.tab !== 'famcfg') famEdit = null;      // unsaved changes on the Family page go when you leave it
         if (!DATA) { $('title').textContent = 'Family Admin'; $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         if (!DATA.widgets) { $('body').innerHTML = '<div class="empty">Update the Google Apps Script to the latest version.</div>'; return; }
         if (!DESK && ((r.s && !PHONE_S[r.s]) || (!r.s && !r.w && !r.pts && r.tab === 'layout'))) renderOnComputer(r.s ? SECTIONS[r.s][1] : 'Screen layout');
@@ -197,6 +198,9 @@
                 '<a class="mrow" data-go="rewards" href="#"><span class="m-ico">⭐</span><span class="m-tx"><b>Rewards</b><small>Tasks, morning to-dos, reminders and the rules – and each child’s points</small></span><i>›</i></a>' +
                 '<a class="mrow" data-go="advanced" href="#"><span class="m-ico">⚙</span><span class="m-tx"><b>Advanced</b><small>Home & places, data keys, screen sleep, licence, updates, your Google data, devices, diagnostics</small></span><i>›</i></a>' +
                 '<a class="mrow" data-go="calendar" href="#"><span class="m-ico">📅</span><span class="m-tx"><b>Calendar, Notes, Lists, Widgets</b><small>The apps – the same as on your phone</small></span><i>›</i></a></div>') +
+            card('📅 Your calendar’s categories', '<p class="small">Using a Google Calendar you already had? Set up its categories (the family groups and the general ones, each one of Google’s event colours) and what the screen’s key shows, ' +
+                'then <b>tidy up the calendar</b> so every event is in a category: it lists the ones that aren’t, or whose titles are too long, with a fix for each.</p>' +
+                '<button class="btn wide" id="goCalSetup">Set up the calendar</button>') +
             stepsCard() +
             card('How it works', HOW_IT_WORKS) +
             card('Setting up a different family?', '<p class="small">A new Google Sheet for someone else – this family’s dashboard stays exactly as it is.</p>' +
@@ -224,6 +228,11 @@
                 row('🆕', 'Set up a different family from scratch', 'A new Google Sheet for someone else – this family’s stays as it is', base) + '</div>') +
             card('Help', '<div class="menu">' + row('❓', 'Help centre', 'Plain-English answers, step by step', helpUrl()) + '</div>');
     }
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest || !e.target.closest('#goCalSetup')) return;
+        var cp = calPage(); try { if (cp) localStorage.setItem('fdedit.page', cp.id); } catch (x) { /* fine */ }
+        go('layout');
+    });
     /** First-time setup tab: any single step of the guided setup again, already connected. */
     function stepsCard() {
         var c = FD.config(), base = guideUrl();
@@ -238,14 +247,43 @@
             row('🧭', 'Go through the whole setup again', 'Every step, with what you’ve already filled in', link('go=welcome')) + '</div>');
     }
     function explain(t, html) { return '<details class="card explain" open><summary><b>ℹ️ ' + t + '</b></summary>' + html + '</details>'; }
-    /** Family: who's in it, their colours, who takes part in rewards. */
+    /** Family: who's in it, their colours, who takes part in rewards. (Groups and categories are on the calendar page.) */
+    var famEdit = null;
     function renderFamCfg() {
-        secFamily();
         title('Family');
-        $('body').insertAdjacentHTML('afterbegin', explain('How the family works',
-            '<p>Add up to <b>' + 10 + ' people</b>. Each gets a colour of their own – it’s used for them on the calendar, and you can change it.</p>' +
-            '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for tasks, morning to-dos and reminders, and a card of their own to put on the screen. That’s the only thing it changes.</p>' +
-            '<p>Grouping people for the calendar (e.g. “the boys”) is part of the calendar set-up.</p>'));
+        var F = DATA.family || {}, PAL = ['#3fa9f5', '#f5a623', '#7ed321', '#a855f7', '#f472b6', '#22d3ee', '#facc15', '#fb7185', '#34d399', '#c084fc'];
+        if (!famEdit) famEdit = (F.people || []).map(function (p) { return { name: p.name, was: p.name, colour: p.colour, rewards: !!p.points }; });
+        var row = function (p, i) {
+            return '<div class="fp-row" data-i="' + i + '"><input type="color" data-fc="' + i + '" value="' + esc(p.colour) + '" title="Their colour">' +
+                '<input data-fn="' + i + '" maxlength="10" value="' + esc(p.name) + '" placeholder="Name" autocomplete="off">' +
+                '<button type="button" class="ptb' + (p.rewards ? ' on' : '') + '" data-fr="' + i + '">⭐ Rewards</button>' +
+                '<button class="cs-x" data-fx="' + i + '" title="Remove">✕</button></div>';
+        };
+        $('body').innerHTML = explain('How the family works',
+                '<p>Add up to <b>10 people</b>. Each has a colour of their own – it’s used for them on the calendar when they have their own place on its key – and you can change it.</p>' +
+                '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for tasks, a morning to-do list and reminders, and a card of their own to put on a screen. That’s the only thing it changes.</p>' +
+                '<p>Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
+            card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
+                (famEdit.length < 10 ? '<button class="btn ghost wide" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
+                '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p>' +
+                '<div class="sheet-actions"><button class="btn ghost" id="fpUndo">Undo changes</button><button class="btn good" id="fpSave">Save the family</button></div>');
+        $('fpRows').oninput = function (e) { var t = e.target, k;
+            if ((k = t.getAttribute('data-fn')) !== null) famEdit[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) famEdit[+k].colour = t.value; };
+        $('fpRows').onclick = function (e) { var t;
+            if ((t = e.target.closest('[data-fr]'))) { var p = famEdit[+t.getAttribute('data-fr')]; p.rewards = !p.rewards; t.classList.toggle('on', p.rewards); }
+            else if ((t = e.target.closest('[data-fx]'))) { var q = famEdit[+t.getAttribute('data-fx')];
+                if (q.was && !confirm('Take ' + (q.name || 'this person') + ' out of the family?' + (q.rewards ? ' Their points are kept.' : ''))) return;
+                famEdit.splice(+t.getAttribute('data-fx'), 1); renderFamCfg(); } };
+        if ($('fpAdd')) $('fpAdd').onclick = function () {
+            var used = famEdit.map(function (p) { return p.colour; }), c = PAL.filter(function (x) { return used.indexOf(x) < 0; })[0] || PAL[famEdit.length % PAL.length];
+            famEdit.push({ name: '', colour: c, rewards: false }); renderFamCfg();
+            var ins = document.querySelectorAll('[data-fn]'); if (ins.length) ins[ins.length - 1].focus();
+        };
+        $('fpUndo').onclick = function () { famEdit = null; renderFamCfg(); };
+        $('fpSave').onclick = function () {
+            var list = famEdit.filter(function (p) { return p.name.trim(); });
+            act({ action: 'saveFamilyPeople', people: list }, 'Family saved').then(function () { famEdit = null; render(); }, function () {});
+        };
     }
     /** Rewards: everything about the reward system on one page. */
     function renderRewards() {
@@ -855,6 +893,16 @@
         $('rules').onclick = rulesSheet;
         if (sec !== 'tasks') wireListFold(sec);
     }
+    /** Picking a Google calendar from the ones the family's Google account can see. */
+    function calPick(label, attr, cur, family) {
+        var list = ((DATA.calSetup || {}).calendars || []), o = [];
+        if (family) o.push(['', 'The family’s calendar (as on the main calendar page)']);
+        o.push(['default', 'Your main Google calendar' + (list.filter(function (c) { return c.main; }).map(function (c) { return ' (' + c.name + ')'; })[0] || '')]);
+        list.filter(function (c) { return !c.main; }).forEach(function (c) { o.push([c.id, c.name]); });
+        o.push(['all', 'Every calendar you can see']);
+        if (cur && !o.some(function (x) { return x[0] === cur; })) o.push([cur, cur]);
+        return '<label>' + esc(label) + '</label><select ' + attr + '>' + o.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0] === cur ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    }
     /** The points rules: points for a cash-in, what it's worth, the penalty buttons. */
     function rulesSheet() {
         var pp = pointsPage(); if (!pp) return;
@@ -1138,10 +1186,16 @@
                 // The first calendar page also holds the family's calendars (Today & tomorrow, the countdown and the phone app use them too).
                 pageForm: function (id) {
                     var p = pageOf(id); if (!p) return '';
-                    var main = calPage() && calPage().id === id, defs = pageTypeOf(p.type).settings.filter(function (f) { return !main || (f.k !== 'Calendars' && f.k !== 'AddTo'); });
-                    return (main ? '<h4 class="ps-h">The family’s Google calendars</h4><p class="mute small">This page shows them, and so do Today &amp; tomorrow, the holiday countdown and the phone Family Calendar app.</p>' + installFields('calendar') + '<h4 class="ps-h">How this page looks</h4>' : '') + fields(defs, p.settings || {});
+                    var main = calPage() && calPage().id === id, defs = pageTypeOf(p.type).settings.filter(function (f) { return f.k !== 'Calendars' && f.k !== 'AddTo' && f.k !== 'Key'; });
+                    var inst = function (k) { return ((DATA.install || []).filter(function (f) { return f.k === k; })[0] || {}).value || ''; };
+                    return '<h4 class="ps-h">Which Google calendar</h4>' + (main
+                        ? '<p class="mute small">The family’s calendar – this page shows it, and so do Today &amp; tomorrow, the holiday countdown and the phone Family Calendar app.</p>' +
+                            calPick('Calendar to show', 'data-set="CalendarIds"', inst('CalendarIds') || 'default', false) + calPick('New events go in', 'data-set="AddToCalendar"', inst('AddToCalendar') || 'default', false)
+                        : calPick('Calendar to show', 'data-f="Calendars"', (p.settings || {}).Calendars || '', true) + calPick('New events go in', 'data-f="AddTo"', (p.settings || {}).AddTo || '', true)) +
+                        '<h4 class="ps-h">How this page looks</h4>' + fields(defs, p.settings || {});
                 },
-                afterForm: applyWhen, familyLink: function () { return setupLink('family'); },
+                afterForm: applyWhen, familyLink: function () { return '#/famcfg'; },
+                calSetup: function (el, id) { if (window.FDCalSetup) window.FDCalSetup.render(el, id, { data: function () { return DATA; }, act: act, toast: FD.toast }); },
                 savePageSettings: function (id, vals, inst) { var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
                     var first = inst && Object.keys(inst).length ? act({ action: 'saveInstall', values: inst }) : Promise.resolve();
                     return first.then(function () { return act({ action: 'savePage', page: { id: id, settings: vals } }, 'Saved – the screen updates within a minute'); }); } });

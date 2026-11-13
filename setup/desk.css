@@ -58,3 +58,9 @@ body.desk .lrow .lc label { margin-top: 4px; }
 .frame-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .desk-frame { width: 100%; height: calc(100vh - 190px); min-height: 520px; border: 1px solid var(--line, #2a303b); border-radius: 14px; background: #0b0d12; }
 body.desk .main:has(.desk-frame) { max-width: 1500px; }
+
+/* Family: one line per person */
+.fp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.fp-row input[type=color] { width: 44px; height: 40px; padding: 3px; flex: none; }
+.fp-row input[data-fn] { flex: 1; max-width: 280px; }
+.fp-row .ptb { flex: none; }

@@ -1,5 +1,18 @@
 [
   {
+    "version": "2026.11.82",
+    "date": "2026-11-13",
+    "notes": [
+      "Calendar categories now use Google Calendar’s own event colours (on your main calendar): pick the colour on an event in Google Calendar or Gmail and it lands in that category. Up to 10 categories – family groups and general ones",
+      "Events for one person: Graphite, with their name in brackets at the end – “Drums (Ben)”. They show in that person’s colour, their group’s, or Family’s",
+      "Setup → Screens → a calendar page: the categories (drag people into groups), and that page’s own key – up to 9 plus Other, up to two shown as lines under each day, or hidden",
+      "“Tidy up your Google calendar”: lists events in the old “Ben – Drums” form, with no category or with titles too long, and fixes the ones you tick",
+      "Adding an event: pick General, a group or one person",
+      "Picking the Google calendar for a page from a list",
+      "Family: just the people, their colours and ⭐ Rewards"
+    ]
+  },
+  {
     "version": "2026.11.81",
     "date": "2026-11-13",
     "notes": [

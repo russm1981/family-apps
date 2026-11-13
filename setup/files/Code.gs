@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.52';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.53';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -28,7 +28,7 @@ const SHEETS = {
   todos: ['Boy', 'Item', 'Days', 'Order'],
   todoLog: ['Date', 'Boy', 'Item'],
   timetable: ['Boy', 'Day', 'Reminder'],
-  categories: ['Category', 'Colour', 'Match', 'Group', 'Show', 'Kind'],
+  categories: ['Category', 'Colour', 'Match', 'Group', 'Show', 'Kind', 'Google'],
   install: ['Setting', 'Value', 'Notes'],
   pages: ['Page', 'Title', 'Type', 'Icon', 'Order', 'Show'],
   widgets: ['Widget', 'Page', 'Order', 'Type', 'Size', 'Show'],
@@ -50,13 +50,23 @@ const TAB = {
 // Kind  = child / adult (a person), children / adults (the two groups), family, holiday, special. Set by the setup app.
 // A new Sheet starts with just the fixed categories; the setup app adds the family.
 const DEFAULT_CATEGORIES = [
-  ['Children', '#22d3ee', '', '', '', 'children'],
-  ['Adults', '#a855f7', '', '', '', 'adults'],
-  ['Family', '#c08457', '', '', '', 'family'],
-  ['Holiday', '#ef4444', 'flight', '', '', 'holiday'],
-  ['School holiday', '#facc15', 'half term, inset, school holiday', '', 'bar', 'special'],
-  ['Birthday', '#ffffff', 'birthday', '', '', 'special'],
+  ['Children', '#22d3ee', '', '', '', 'group', '7'],
+  ['Adults', '#a855f7', '', '', '', 'group', '3'],
+  ['Family', '#c08457', '', '', '', 'group', '6'],
+  ['Holiday', '#ef4444', 'flight', '', 'bar', 'general', '11'],          // new families: holidays and school holidays as lines
+  ['School holiday', '#facc15', 'half term, inset, school holiday', '', 'bar', 'general', '5'],
+  ['Birthday', '#ffffff', 'birthday', '', '', 'general', '1'],
 ];
+/**
+ * Calendar categories live on Google Calendar's own event colours (on the family's main calendar), so an event made in
+ * Google Calendar or Gmail lands in the right category. Google has 11 colours: Graphite is kept for events that belong to
+ * one person – their name goes in brackets at the end of the title, "Drums (Ben)" – which leaves 10 for categories
+ * (the family groups and the general ones). An event with no colour is "Other".
+ */
+const GCOLOURS = { '1': ['Lavender', '#7986cb'], '2': ['Sage', '#33b679'], '3': ['Grape', '#8e24aa'], '4': ['Flamingo', '#e67c73'], '5': ['Banana', '#f6bf26'],
+  '6': ['Tangerine', '#f4511e'], '7': ['Peacock', '#039be5'], '8': ['Graphite', '#616161'], '9': ['Blueberry', '#3f51b5'], '10': ['Basil', '#0b8043'], '11': ['Tomato', '#d50000'] };
+const PERSON_G = '8';
+const CAL = { cats: 10, groups: 3, key: 10, name: 14 };   // categories with a colour · groups besides Family · key slots (the last is Other) · name length
 // How many the calendar key can hold neatly: children's group, adults' group, Family, Holiday, up to 3 special, Other.
 const FAMILY_LIMITS = { people: 10, children: 6, specials: 3, name: 10, group: 14, special: 16, match: 120 };
 const OTHER_COLOUR = '#8a93a3';
@@ -337,7 +347,7 @@ Object.assign(WIDGET_TYPES, {
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '8';   // 8: each child is a widget (the separate points page is hidden; its settings stay on it) · 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
+const LAYOUT_VER = '9';   // 9: calendar categories on Google colours (the Google column, the new kinds) · 8   // 8: each child is a widget (the separate points page is hidden; its settings stay on it) · 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
@@ -555,6 +565,8 @@ function upgradeLayout_() {
       PropertiesService.getScriptProperties().getProperty('autoUpdateChosen') !== 'off') {
     try { setAutoUpdate_(true); } catch (err) { console.warn('Automatic updates: ' + err.message); }
   }
+  // Version 9 (Nov 2026): calendar categories on Google Calendar's event colours.
+  if (was < 9) { try { normaliseCats_(); } catch (err) { console.warn('Calendar categories: ' + err.message); } }
   // Version 8 (Nov 2026): the points page becomes one widget per child, on a widget page in the same place.
   // The old page stays (hidden) because it holds the cash-in and penalty settings.
   if (was < 8) {
@@ -752,6 +764,11 @@ function dispatch_(b) {
     case 'saveBoys': return saveList_('boys', b.rows);
     case 'family': return { ok: true, family: family_(), home: String(inst_('HomeAddress') || '') };
     case 'saveFamily': return saveFamily_(b);
+    case 'saveFamilyPeople': return saveFamilyPeople_(b);
+    case 'saveCalCats': return saveCalCats_(b);
+    case 'saveCalKey': return saveCalKey_(b);
+    case 'calScan': return calScan_(b);
+    case 'calFix': return calFix_(b);
     case 'saveInstall': return saveInstall_(b.values);
     case 'saveWidget': return saveWidget_(b.widget);
     case 'addWidget': return addWidget_(b.page, b.type, b.at);
@@ -943,7 +960,7 @@ function getAdmin_() {
     pages: L.pages, widgets: L.widgets, lists: lists, unused: unusedWidgets_(L.widgets),
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
-    family: family_(),
+    family: family_(), calSetup: calSetup_(),
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
@@ -2534,6 +2551,106 @@ function upgradeCategories_() {
   }
 }
 
+/* ------------------------------------------------------ calendar categories (Google colours) */
+
+/** What each row of the Categories tab is: a person, a family group (Family is everyone) or a general category. */
+function catType_(c, raw) {
+  const k = c.kind;
+  if (k === 'person' || k === 'child' || k === 'adult') return 'person';
+  if (k === 'group' || k === 'children' || k === 'adults' || k === 'family') return 'group';
+  if (k === 'general' || k === 'holiday' || k === 'special') return 'general';
+  if (c.group && norm_(c.group) !== norm_(c.name)) return 'person';
+  if (norm_(c.name) === 'family' || raw.some(x => x.group && norm_(x.group) === norm_(c.name) && norm_(x.name) !== norm_(c.name))) return 'group';
+  return 'general';
+}
+/** The calendar's people, groups and general categories. */
+function calModel_() {
+  const raw = rows_('categories').filter(r => String(r.Category || '').trim()).map(r => ({
+    name: String(r.Category).trim(), colour: String(r.Colour || OTHER_COLOUR).trim(), match: String(r.Match || '').trim(),
+    group: String(r.Group || '').trim(), show: String(r.Show || '').trim().toLowerCase(), kind: String(r.Kind || '').trim().toLowerCase(), g: String(r.Google || '').trim() }));
+  raw.forEach(c => { c.type = catType_(c, raw); });
+  const people = raw.filter(c => c.type === 'person').map(c => ({ name: c.name, colour: c.colour, match: c.match, group: norm_(c.group) === norm_(c.name) ? '' : c.group }));
+  const groups = raw.filter(c => c.type === 'group').map(c => ({ name: c.name, colour: c.colour, match: c.match, g: c.g, fixed: norm_(c.name) === 'family',
+    members: norm_(c.name) === 'family' ? people.map(p => p.name) : people.filter(p => norm_(p.group) === norm_(c.name)).map(p => p.name) }));
+  if (!groups.some(x => x.fixed)) groups.push({ name: 'Family', colour: '#c08457', match: '', g: '', fixed: true, members: people.map(p => p.name) });
+  const generals = raw.filter(c => c.type === 'general').map(c => ({ name: c.name, colour: c.colour, match: c.match, g: c.g, line: c.show === 'bar' }));
+  return { people: people, groups: groups, generals: generals, cats: groups.concat(generals) };
+}
+/** The Google colour nearest to a colour (for giving an existing category its Google colour). */
+function nearestG_(hex, used) {
+  const rgb = h => { const m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h || ''); return m ? [1, 2, 3].map(i => parseInt(m[i], 16)) : [128, 128, 128]; };
+  const a = rgb(hex);
+  return Object.keys(GCOLOURS).filter(k => k !== PERSON_G && used.indexOf(k) < 0)
+    .sort((x, y) => { const d = k => rgb(GCOLOURS[k][1]).reduce((n, v, i) => n + (v - a[i]) * (v - a[i]), 0); return d(x) - d(y); })[0] || '';
+}
+/** Bring the Categories tab up to date: the Google column, the new kinds, and a Google colour for every category. */
+function normaliseCats_() {
+  const sh = sheet_('categories');
+  if (sh.getLastRow() < 1) return;
+  const head = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), 1)).getValues()[0].map(String);
+  ['Kind', 'Google'].forEach(k => { if (head.indexOf(k) < 0) { head.push(k); sh.getRange(1, head.length).setValue(k).setFontWeight('bold'); } });
+  if (sh.getLastRow() < 2) return;
+  const data = sh.getRange(1, 1, sh.getLastRow(), head.length).getValues(), H = data[0].map(String);
+  const col = k => H.indexOf(k);
+  const raw = data.slice(1).map(r => ({ name: String(r[col('Category')] || '').trim(), group: String(r[col('Group')] || '').trim(), kind: String(r[col('Kind')] || '').trim().toLowerCase(), colour: String(r[col('Colour')] || '') }));
+  const used = data.slice(1).map(r => String(r[col('Google')] || '').trim()).filter(Boolean);
+  for (let i = 1; i < data.length; i++) {
+    const c = raw[i - 1]; if (!c.name) continue;
+    const t = catType_(c, raw);
+    if (String(data[i][col('Kind')]) !== t) sh.getRange(i + 1, col('Kind') + 1).setValue(t);
+    const g = String(data[i][col('Google')] || '').trim();
+    if (t === 'person' && g) sh.getRange(i + 1, col('Google') + 1).setValue('');
+    if (t !== 'person' && !g) { const n = nearestG_(c.colour, used); if (n) { used.push(n); sh.getRange(i + 1, col('Google') + 1).setValue(n); } }
+  }
+}
+/** A calendar page's key: which categories (or people) have a place on it, which show as lines, which are hidden. */
+function calKey_(pageId, M) {
+  const pages = rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar');
+  const pg = pages.find(r => String(r.Page).trim() === String(pageId || '')) || pages[0];
+  let k = {};
+  try { k = JSON.parse(String(pg ? (wsetAll_()[String(pg.Page).trim()] || {}).Key || '' : '') || '{}') || {}; } catch (e) { k = {}; }
+  const known = M.cats.map(c => c.name).concat(M.people.map(p => p.name));
+  const has = n => known.indexOf(n) >= 0;
+  const def = M.groups.filter(g => !g.fixed && g.members.length).map(g => g.name).concat(M.groups.filter(g => g.fixed).map(g => g.name), M.generals.map(g => g.name));
+  const slots = (Array.isArray(k.slots) ? k.slots : def).filter(has).slice(0, CAL.key - 1);
+  const lines = (Array.isArray(k.lines) ? k.lines : M.generals.filter(g => g.line).map(g => g.name)).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
+  const hide = (Array.isArray(k.hide) ? k.hide : []).filter(n => has(n) && slots.indexOf(n) < 0);
+  return { page: pg ? String(pg.Page).trim() : '', slots: slots, lines: lines, hide: hide, saved: Array.isArray(k.slots) };
+}
+/** Which category an event is in: "(Name)" at the end → that person; otherwise its Google colour; otherwise the old way ("Ben – Drums", matching words). */
+function evCat_(ev, title, M, legacy) {
+  const raw = String(title || '').trim();
+  const m = raw.match(/^(.*\S)\s*\(([^()]{1,24})\)\s*$/);
+  if (m) { const p = M.people.find(x => norm_(x.name) === norm_(m[2])); if (p) return { name: p.name, person: p, text: m[1] }; }
+  let g = ''; try { g = String(ev && ev.getColor ? ev.getColor() || '' : ''); } catch (e) { g = ''; }
+  if (g && g !== PERSON_G) {
+    const c = M.cats.find(x => x.g === g);
+    if (c) { const pm = raw.match(/^(.{1,40}?)\s*[–—:-]\s+(.+)$/); return { name: c.name, cat: c, text: pm && norm_(pm[1]) === norm_(c.name) ? pm[2] : raw }; }
+  }
+  const old = classify_(raw, legacy || categories_());
+  if (old.cat) {
+    const p = M.people.find(x => norm_(x.name) === norm_(old.cat.name));
+    if (p) return { name: p.name, person: p, text: old.text };
+    const c = M.cats.find(x => norm_(x.name) === norm_(old.cat.name));
+    if (c) return { name: c.name, cat: c, text: old.text };
+  }
+  return { name: '', text: raw };
+}
+/** Where an event shows on a page's key: its own place, its person's group, Family, or Other – or nowhere (hidden). */
+function calSlot_(r, M, K) {
+  if (r.name && K.hide.indexOf(r.name) >= 0) return null;
+  let slot = '';
+  if (r.name && K.slots.indexOf(r.name) >= 0) slot = r.name;
+  else if (r.person) {
+    if (r.person.group && K.hide.indexOf(r.person.group) >= 0) return null;
+    slot = r.person.group && K.slots.indexOf(r.person.group) >= 0 ? r.person.group : K.slots.indexOf('Family') >= 0 ? 'Family' : '';
+  }
+  return slot || 'Other';
+}
+function calColour_(name, M) {
+  const c = M.cats.find(x => x.name === name) || M.people.find(x => x.name === name);
+  return c ? c.colour : OTHER_COLOUR;
+}
 /** Category list from the Categories tab. */
 function categories_() {
   return rows_('categories').filter(r => r.Category).map(r => ({
@@ -2563,6 +2680,12 @@ function family_() {
   const kids = rows_('boys').map(b => norm_(b.Name)).filter(Boolean);
   const groupNames = {};
   raw.forEach(c => { if (c.group && c.group !== c.name) groupNames[c.group] = (groupNames[c.group] || []).concat(c.name); });
+  // The newer kinds (person / group / general) as the older parts of the app see them.
+  raw.forEach(c => {
+    if (c.kind === 'person') c.kind = kids.indexOf(norm_(c.name)) >= 0 || (c.group && (groupNames[c.group] || []).some(n => kids.indexOf(norm_(n)) >= 0)) ? 'child' : 'adult';
+    else if (c.kind === 'group') c.kind = norm_(c.name) === 'family' ? 'family' : (groupNames[c.name] || []).some(n => kids.indexOf(norm_(n)) >= 0) ? 'children' : 'adults';
+    else if (c.kind === 'general') c.kind = norm_(c.name) === 'holiday' || norm_(c.name) === 'holidays' ? 'holiday' : 'special';
+  });
   const groupKind = {};
   Object.keys(groupNames).forEach(g => { groupKind[g] = groupNames[g].some(n => kids.indexOf(norm_(n)) >= 0) ? 'children' : 'adults'; });
   raw.forEach(c => {
@@ -2658,6 +2781,8 @@ function saveFamily_(b) {
 
   {   // (already inside the request lock)
     const sh = sheet_('categories');
+    const prevG = {}; rows_('categories').forEach(r => { prevG[norm_(r.Category)] = String(r.Google || ''); });
+    rows.forEach(r => { while (r.length < SHEETS.categories.length - 1) r.push(''); r.push(prevG[norm_(r[0])] || ''); });
     sh.clearContents();
     sh.getRange(1, 1, 1, SHEETS.categories.length).setValues([SHEETS.categories]).setFontWeight('bold');
     sh.getRange(2, 1, rows.length, SHEETS.categories.length).setValues(rows);
@@ -2678,9 +2803,175 @@ function saveFamily_(b) {
     setColumn_('pages', 'Title', r => String(r[2]).toLowerCase() === 'boys' || (oldTitle && kidPages[String(r[0]).trim()] && String(r[1]) === oldTitle) ? title : undefined);
     const renamed = {}; kids.forEach(k => { if (k.was) renamed[k.name] = 1; });
     syncChildWidgets_(childNames_().filter(n => before.indexOf(n) < 0 && !renamed[n]));
+    normaliseCats_();
     bumpCalVersion_(); bumpVersions_();
     return { ok: true, family: family_() };
   }
+}
+
+/* ------------------------------------------------------ the family (people only) and the calendar set-up */
+
+function catName_(what, v, max) {
+  v = String(v == null ? '' : v).replace(/\s+/g, ' ').trim();
+  if (!v) throw new Error(what + ' needs a name');
+  if (v.length > max) throw new Error('“' + v + '” is too long – up to ' + max + ' characters fit on the calendar key');
+  if (/[–—:\-|,()]/.test(v)) throw new Error('“' + v + '” can’t contain a dash, colon, comma, brackets or |');
+  if (!norm_(v)) throw new Error('“' + v + '” needs some letters');
+  return v;
+}
+function catColour_(what, c) { c = String(c || '').trim(); if (!/^#[0-9a-f]{6}$/i.test(c)) throw new Error('Colour for ' + what + ' must look like #3fa9f5'); return c; }
+/** Rename a category or person everywhere a calendar page's key mentions it. */
+function renameInKeys_(was, name) {
+  rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').forEach(r => {
+    const id = String(r.Page).trim(), raw = String((wsetAll_()[id] || {}).Key || '');
+    if (!raw) return;
+    try {
+      const k = JSON.parse(raw);
+      ['slots', 'lines', 'hide'].forEach(f => { if (Array.isArray(k[f])) k[f] = k[f].map(n => n === was ? name : n); });
+      setWset_(id, 'Key', JSON.stringify(k));
+    } catch (e) { /* leave it */ }
+  });
+}
+/** Write the Categories tab from people, groups and general categories. */
+function writeCats_(people, groups, generals) {
+  const rows = [];
+  people.forEach(p => rows.push([p.name, p.colour, p.match || '', p.group || '', '', 'person', '']));
+  groups.forEach(g => rows.push([g.name, g.colour, g.match || '', '', '', 'group', g.g || '']));
+  generals.forEach(g => rows.push([g.name, g.colour, g.match || '', '', g.line ? 'bar' : '', 'general', g.g || '']));
+  const sh = sheet_('categories');
+  sh.clearContents();
+  sh.getRange(1, 1, 1, SHEETS.categories.length).setValues([SHEETS.categories]).setFontWeight('bold');
+  if (rows.length) sh.getRange(2, 1, rows.length, SHEETS.categories.length).setValues(rows);
+}
+/** The Family page: who's in the family, their colours, and who takes part in rewards. Groups and categories stay as they are. */
+function saveFamilyPeople_(b) {
+  const M = calModel_(), L = FAMILY_LIMITS, used = {};
+  M.cats.forEach(c => { used[norm_(c.name)] = 'category'; });
+  const people = (b.people || []).filter(p => p && String(p.name || '').trim());
+  if (!people.length) throw new Error('Add at least one person');
+  if (people.length > L.people) throw new Error('Up to ' + L.people + ' people');
+  const ppl = people.map(p => {
+    const name = catName_('Each person', p.name, L.name), k = norm_(name);
+    if (used[k]) throw new Error('“' + name + '” is used twice' + (used[k] === 'category' ? ' (there’s a calendar category called that)' : '') + ' – every name needs to be different');
+    used[k] = 'person';
+    const old = M.people.find(x => x.name === (p.was || name));
+    return { name: name, was: p.was, colour: catColour_(name, p.colour), match: old ? old.match : '', group: old ? old.group : '', rewards: !!p.rewards };
+  });
+  const onPoints = ppl.filter(p => p.rewards);
+  if (onPoints.length > L.children) throw new Error('Up to ' + L.children + ' people can take part in rewards');
+  writeCats_(ppl, M.groups, M.generals);
+  const before = childNames_();
+  ppl.forEach(p => { if (p.was && p.was !== p.name) { renameChild_(p.was, p.name); renameInKeys_(p.was, p.name); } });
+  const bs = sheet_('boys');
+  if (bs.getLastRow() > 1) bs.getRange(2, 1, bs.getLastRow() - 1, SHEETS.boys.length).clearContent();
+  if (onPoints.length) bs.getRange(2, 1, onPoints.length, 2).setValues(onPoints.map(k => [k.name, k.colour]));
+  const renamed = {}; ppl.forEach(p => { if (p.was) renamed[p.name] = 1; });
+  syncChildWidgets_(childNames_().filter(n => before.indexOf(n) < 0 && !renamed[n]));
+  bumpCalVersion_(); bumpVersions_();
+  return getAdmin_();
+}
+/** The calendar's categories: the family groups (Family is everyone) with who's in each, and the general categories. */
+function saveCalCats_(b) {
+  const M = calModel_(), used = {}, gUsed = {};
+  M.people.forEach(p => { used[norm_(p.name)] = 'person'; });
+  const one = (what, x) => {
+    const name = catName_(what, x.name, CAL.name), k = norm_(name);
+    if (used[k]) throw new Error('“' + name + '” is used twice' + (used[k] === 'person' ? ' (someone in the family is called that)' : '') + ' – every name needs to be different');
+    used[k] = 1;
+    const g = String(x.g || '').trim();
+    if (!GCOLOURS[g] || g === PERSON_G) throw new Error('Pick a Google colour for ' + name + (g === PERSON_G ? ' (Graphite is kept for one person’s own events)' : ''));
+    if (gUsed[g]) throw new Error(name + ' and ' + gUsed[g] + ' both use ' + GCOLOURS[g][0] + ' – each category needs its own Google colour');
+    gUsed[g] = name;
+    return { name: name, was: x.was, colour: catColour_(name, x.colour), g: g, match: x.match != null ? String(x.match).slice(0, FAMILY_LIMITS.match) : ((M.cats.find(c => c.name === (x.was || name)) || {}).match || ''), line: !!x.line };
+  };
+  const groupsIn = (b.groups || []).filter(x => x && String(x.name || '').trim());
+  const fam = groupsIn.find(x => x.fixed) || { name: 'Family', colour: '#c08457', g: '6', fixed: true };
+  const others = groupsIn.filter(x => !x.fixed);
+  if (others.length > CAL.groups) throw new Error('Up to ' + CAL.groups + ' groups besides Family');
+  const groups = others.map(x => Object.assign(one('Each group', x), { members: (x.members || []).map(String) })).concat([Object.assign(one('Family', Object.assign({}, fam, { name: 'Family' })), { fixed: true })]);
+  const generals = (b.generals || []).filter(x => x && String(x.name || '').trim()).map(x => one('Each category', x));
+  if (groups.length + generals.length > CAL.cats) throw new Error('Up to ' + CAL.cats + ' categories (groups and general ones together) – Google Calendar has 11 colours and one is kept for people’s own events');
+  const groupOf = {};
+  groups.forEach(g => { if (!g.fixed) g.members.forEach(n => { if (groupOf[n]) throw new Error(n + ' is in two groups – each person can be in one (as well as Family)'); groupOf[n] = g.name; }); });
+  const people = M.people.map(p => Object.assign({}, p, { group: groupOf[p.name] || '' }));
+  writeCats_(people, groups, generals);
+  groups.concat(generals).forEach(c => { if (c.was && c.was !== c.name) renameInKeys_(c.was, c.name); });
+  bumpCalVersion_(); bumpVersions_();
+  return getAdmin_();
+}
+/** One calendar page's key: what has a place on it (the last place is always Other), which show as lines, which are hidden. */
+function saveCalKey_(b) {
+  const M = calModel_(), id = String(b.page || '');
+  if (!rows_('pages').some(r => String(r.Page).trim() === id && String(r.Type).toLowerCase() === 'calendar')) throw new Error('Pick a calendar page');
+  const known = M.cats.map(c => c.name).concat(M.people.map(p => p.name)), ok = n => known.indexOf(n) >= 0;
+  const slots = (b.slots || []).map(String).filter(ok), lines = (b.lines || []).map(String).filter(n => slots.indexOf(n) >= 0), hide = (b.hide || []).map(String).filter(n => ok(n) && slots.indexOf(n) < 0);
+  if (slots.length > CAL.key - 1) throw new Error('Up to ' + (CAL.key - 1) + ' on the key, plus Other');
+  if (lines.length > 2) throw new Error('Up to two can show as lines (they’re drawn under each day)');
+  setWset_(id, 'Key', JSON.stringify({ slots: slots, lines: lines, hide: hide }));
+  bumpCalVersion_(); bumpVersions_();
+  return getAdmin_();
+}
+/**
+ * Tidying up the family's Google calendar so every event is in a category the dashboard understands: each event of the
+ * next year (and the last three months) that isn't in the new form yet – a category with no colour, an old "Ben – " title,
+ * no category at all, or a title too long for the screen – with what it would become.
+ */
+function calScan_(b) {
+  const M = calModel_(), legacy = categories_();
+  const from = new Date(Date.now() - 90 * 86400000), to = new Date(Date.now() + 365 * 86400000);
+  const out = [], seen = {}, tz = Session.getScriptTimeZone();
+  let total = 0, skipped = 0;
+  calendarsFrom_(String(inst_('CalendarIds') || 'default')).forEach(cal => {
+    let mine = true; try { mine = cal.isOwnedByMe(); } catch (e) { mine = true; }
+    cal.getEvents(from, to).forEach(ev => {
+      const id = ev.getId();
+      if (seen[id]) return; seen[id] = 1; total++;
+      if (!mine) { skipped++; return; }
+      const title = ev.getTitle() || '', r = evCat_(ev, title, M, legacy);
+      let g = ''; try { g = String(ev.getColor() || ''); } catch (e) { g = ''; }
+      const want = r.person ? r.text + ' (' + r.person.name + ')' : r.text, wantG = r.person ? PERSON_G : r.cat ? r.cat.g : '';
+      const problem = !r.name ? 'No category' : want.length > LIMITS.eventTitle ? 'Title too long' : '';
+      if (!problem && want === title && (wantG || '') === g) return;
+      const allDay = ev.isAllDayEvent(), st = allDay ? ev.getAllDayStartDate() : ev.getStartTime();
+      out.push({ id: id, cal: cal.getId(), date: Utilities.formatDate(st, allDay ? tz : TZ, 'yyyy-MM-dd'), time: allDay ? '' : fmt_(st, 'HH:mm'),
+        title: title, text: r.text, cat: r.name, rec: ev.isRecurringEvent(), problem: problem });
+    });
+  });
+  out.sort((a, b2) => (a.problem ? 0 : 1) - (b2.problem ? 0 : 1) || (a.date < b2.date ? -1 : 1));
+  return { ok: true, total: total, skipped: skipped, rows: out.slice(0, 400), more: Math.max(0, out.length - 400), max: LIMITS.eventTitle,
+    choices: M.generals.map(c => ({ name: c.name, kind: 'general' })).concat(M.groups.map(c => ({ name: c.name, kind: 'group' })), M.people.map(c => ({ name: c.name, kind: 'person' }))) };
+}
+/** Apply the tidy-up to some events (up to 60 at a time): the title, and the category's Google colour. Repeating events change as a whole. */
+function calFix_(b) {
+  const M = calModel_(), items = (b.items || []).slice(0, 60), done = [], failed = [];
+  items.forEach(x => {
+    try {
+      const cat = M.people.find(p => p.name === x.cat) || M.cats.find(c => c.name === x.cat);
+      const person = M.people.indexOf(cat) >= 0;
+      const text = String(x.text || '').replace(/\s+/g, ' ').trim().slice(0, LIMITS.eventTitle);
+      if (!text) throw new Error('No title');
+      const cal = CalendarApp.getCalendarById(x.cal);
+      if (!cal) throw new Error('Can’t open that calendar');
+      const ev = x.rec ? cal.getEventSeriesById(x.id) : cal.getEventById(x.id);
+      if (!ev) throw new Error('Not found (deleted?)');
+      ev.setTitle(person ? text + ' (' + cat.name + ')' : text);
+      if (cat) ev.setColor(person ? PERSON_G : cat.g); else ev.resetColor && ev.resetColor();
+      done.push(x.id);
+    } catch (e) { failed.push({ id: x.id, error: String(e && e.message || e).slice(0, 120) }); }
+  });
+  bumpCalVersion_();
+  return { ok: true, done: done, failed: failed };
+}
+/** For the set-up page: the categories, the Google colours, and each calendar page's key. */
+function calSetup_() {
+  const M = calModel_();
+  // The Google calendars this account can see, for picking from a list.
+  const calendars = cached_(CacheService.getScriptCache(), 'calList', 600, false, () => {
+    const def = CalendarApp.getDefaultCalendar().getId();
+    return CalendarApp.getAllCalendars().map(c => ({ id: c.getId(), name: c.getName(), main: c.getId() === def })).slice(0, 40);
+  });
+  return { people: M.people, groups: M.groups, generals: M.generals, gcolours: GCOLOURS, personG: PERSON_G, limits: CAL, calendars: calendars,
+    keys: rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').map(r => calKey_(String(r.Page).trim(), M)) };
 }
 
 /** A child has been renamed: move their points, tasks, to-dos and reminders to the new name. */
@@ -2794,7 +3085,8 @@ function getCalendar_(start, end, pageId) {
   if (to - from > 125 * 86400000 || to <= from) throw new Error('Range too long');
   const cache = CacheService.getScriptCache();
   const spec = pageCals_(pageId);
-  return cached_(cache, 'cal:' + calVersion_() + ':' + hash_(spec) + ':' + start + ':' + end, 3 * 60, false, () => {
+  const M = calModel_(), K = calKey_(pageId, M);
+  return cached_(cache, 'cal:' + calVersion_() + ':' + hash_(spec + JSON.stringify(K)) + ':' + start + ':' + end, 3 * 60, false, () => {
     const cats = categories_();
     const scriptTz = Session.getScriptTimeZone();
     const qFrom = new Date(from.getTime() - 86400000), qTo = new Date(to.getTime() + 86400000);
@@ -2806,8 +3098,9 @@ function getCalendar_(start, end, pageId) {
         if (seen[key]) return; seen[key] = 1;
         const allDay = ev.isAllDayEvent();
         const title = ev.getTitle() || '(busy)';
-        const c = classify_(title, cats);
-        if (!c.cat) other = true;
+        const r = evCat_(ev, title, M, cats), slot = calSlot_(r, M, K);
+        if (!slot) return;          // hidden on this page
+        if (slot === 'Other') other = true;
         // All-day dates are calendar dates, so read them in the script's own time zone.
         const tz = allDay ? scriptTz : TZ;
         const s = allDay ? ev.getAllDayStartDate() : ev.getStartTime();
@@ -2817,10 +3110,10 @@ function getCalendar_(start, end, pageId) {
         // The same event copied into two calendars (e.g. birthdays) only shows once.
         const same = first + '|' + title.toLowerCase();
         if (dupe[same]) return; dupe[same] = 1;
-        const cat = c.cat;
-        const inGroup = cat && cat.group !== cat.name;
-        const item = { t: c.text + (inGroup ? ' (' + cat.name + ')' : ''), full: title,
-          c: cat ? cat.groupColour : OTHER_COLOUR, k: cat ? cat.group : 'Other', cat: cat ? cat.name : 'Other', bar: !!(cat && cat.bar), allDay: allDay,
+        const text = r.cat && norm_(r.cat.name) === 'birthday' ? tidyBirthday_(r.text, r.cat) : r.text;
+        const line = K.lines.indexOf(slot) + 1;
+        const item = { t: text + (r.person && slot !== r.person.name ? ' (' + r.person.name + ')' : ''), full: title,
+          c: calColour_(slot, M), k: slot, cat: r.name || 'Other', bar: line || 0, allDay: allDay,
           time: allDay ? '' : fmt_(s, 'HH:mm'), note: String(ev.getDescription() || '').slice(0, 300),
           id: ev.getId(), cal: cal.getId(), s: s.getTime(), rec: ev.isRecurringEvent() };   // for deleting
         let d = first, guard = 0;
@@ -2831,10 +3124,11 @@ function getCalendar_(start, end, pageId) {
       });
     });
     Object.keys(days).forEach(k => days[k].sort((a, b) => (a.allDay === b.allDay ? (a.time < b.time ? -1 : 1) : a.allDay ? -1 : 1)));
-    const legend = [], seenG = {};
-    cats.forEach(c => { if (!seenG[c.group]) { seenG[c.group] = 1; legend.push({ name: c.group, colour: c.groupColour, bar: c.bar }); } });
-    if (other) legend.push({ name: 'Other', colour: OTHER_COLOUR, bar: false });
-    const addable = cats.map(c => ({ name: c.name, colour: c.groupColour }));
+    const legend = K.slots.map(n => ({ name: n, colour: calColour_(n, M), bar: K.lines.indexOf(n) + 1 || 0 }));
+    if (other) legend.push({ name: 'Other', colour: OTHER_COLOUR, bar: 0 });
+    // Adding an entry: a general category, a family group, or one person.
+    const addable = M.generals.map(c => ({ name: c.name, colour: c.colour, kind: 'general' }))
+      .concat(M.groups.map(c => ({ name: c.name, colour: c.colour, kind: 'group' })), M.people.map(c => ({ name: c.name, colour: c.colour, kind: 'person' })));
     const bh = {}, all = bankHolidays_();
     Object.keys(all).forEach(d => { if (d >= start && d < end) bh[d] = all[d]; });
     return { ok: true, start: start, end: end, days: days, categories: legend, addable: addable, bankHolidays: bh };
@@ -2843,9 +3137,12 @@ function getCalendar_(start, end, pageId) {
 
 /** New all-day event (one day or a run of days), saved as "Category – Title". Birthdays repeat every year. */
 function addEvent_(b) {
-  const cat = categories_().find(c => c.name === b.category);
+  const M = calModel_();
+  const person = M.people.find(c => c.name === b.category), cat = person || M.cats.find(c => c.name === b.category);
   if (!cat) throw new Error('Pick a category');
   const text = checkLen_('Title', b.title, LIMITS.eventTitle);
+  // One person: "(Name)" at the end and Graphite. A category: its Google colour (or, without one, the old "Category – " start).
+  const full = t => person ? t + ' (' + person.name + ')' : cat.g ? t : cat.name + ' – ' + t, gcol = person ? PERSON_G : cat.g;
   if (!text) throw new Error('Give the event a name');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(b.start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(b.end || b.start)) throw new Error('Pick the day(s)');
   let a = b.start, z = b.end || b.start;
@@ -2863,15 +3160,16 @@ function addEvent_(b) {
   if (time && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(time)) throw new Error('Time should look like 14:30');
   if (norm_(cat.name) === 'birthday') {
     const title = /birthday/i.test(text) ? text : text + '’s birthday';
-    ev = cal.createAllDayEventSeries(title, startDate, CalendarApp.newRecurrence().addYearlyRule(), opts);
+    ev = cal.createAllDayEventSeries(person ? full(title) : title, startDate, CalendarApp.newRecurrence().addYearlyRule(), opts);
   } else if (time) {
     // A timed entry (from the voice assistant: "Ben drums at 12 on Saturday"). One hour unless told otherwise.
     const st = Utilities.parseDate(a + ' ' + time, tz, 'yyyy-MM-dd HH:mm');
     const mins = Math.max(5, Math.min(24 * 60, Number(b.mins) || 60));
-    ev = cal.createEvent(cat.name + ' – ' + text, st, new Date(st.getTime() + mins * 60000), opts);
+    ev = cal.createEvent(full(text), st, new Date(st.getTime() + mins * 60000), opts);
   } else {
-    ev = cal.createAllDayEvent(cat.name + ' – ' + text, startDate, endExcl, opts);
+    ev = cal.createAllDayEvent(full(text), startDate, endExcl, opts);
   }
+  try { if (gcol) ev.setColor(gcol); } catch (e) { console.warn('Event colour: ' + e.message); }
   bumpCalVersion_();
   return { ok: true, id: ev.getId() };
 }
@@ -2896,9 +3194,12 @@ function countdown_(s) {
   if (want.length) {
     const cats = categories_(), seen = {};
     const from = new Date(), to = new Date(Date.now() + 400 * 86400000);
+    const M = calModel_();
     calendarsFrom_(inst_('CalendarIds')).forEach(cal => cal.getEvents(from, to).forEach(ev => {
-      const c = classify_(ev.getTitle(), cats);
-      if (!c.cat || (want.indexOf(norm_(c.cat.name)) < 0 && want.indexOf(norm_(c.cat.group)) < 0)) return;
+      const r = evCat_(ev, ev.getTitle(), M, cats);
+      const grp = r.person ? r.person.group : '';
+      if (!r.name || (want.indexOf(norm_(r.name)) < 0 && want.indexOf(norm_(grp)) < 0)) return;
+      const c = { text: r.text, cat: { groupColour: calColour_(r.cat ? r.name : grp || r.name, M) } };
       const allDay = ev.isAllDayEvent();
       const d = Utilities.formatDate(allDay ? ev.getAllDayStartDate() : ev.getStartTime(), allDay ? Session.getScriptTimeZone() : TZ, 'yyyy-MM-dd');
       const key = d + '|' + c.text.toLowerCase();

@@ -23,16 +23,23 @@
     try { calCats = JSON.parse(localStorage.getItem('familyDashboard.cats.v2') || '[]'); calAdd = JSON.parse(localStorage.getItem('familyDashboard.add.v2') || '[]'); } catch (e) { calCats = []; calAdd = []; }
 
     /** Split a day into normal entries and the school-holiday style bar (if any). */
+    /** Split a day into normal entries and its lines (up to two, e.g. holidays and school holidays, drawn under the day). */
+    function lineNo(e) { return e.bar === true ? 1 : +e.bar || 0; }
     function dayParts(data, ds) {
-        var all = data[ds] || [], evs = [], bar = null;
-        all.forEach(function (e) { if (e.bar) bar = bar || e; else evs.push(e); });
-        return { evs: evs, bar: bar };
+        var all = data[ds] || [], evs = [], bars = [];
+        all.forEach(function (e) { if (lineNo(e)) bars.push(e); else evs.push(e); });
+        bars.sort(function (a, b) { return lineNo(a) - lineNo(b); });
+        return { evs: evs, bar: bars[0] || null, bars: bars };
     }
+    function lineOn(data, d, n) { return dayParts(data, ymd(d)).bars.filter(function (e) { return lineNo(e) === n; })[0]; }
     function barHtml(data, d) {      // d = Date
-        var ds = ymd(d), p = dayParts(data, ds).bar;
-        if (!p) return { cls: '', html: '' };
-        var prev = dayParts(data, ymd(addDays(d, -1))).bar, next = dayParts(data, ymd(addDays(d, 1))).bar;
-        return { cls: ' hol' + (prev ? '' : ' hol-s') + (next ? '' : ' hol-e'), html: '<span class="holbar" style="--hc:' + esc(p.c) + '"></span>' };
+        var html = '', count = 0;
+        [1, 2].forEach(function (n) {
+            var e = lineOn(data, d, n); if (!e) return;
+            count++;
+            html += '<span class="holbar l' + n + (lineOn(data, addDays(d, -1), n) ? '' : ' s') + (lineOn(data, addDays(d, 1), n) ? '' : ' e') + '" style="--hc:' + esc(e.c) + '"></span>';
+        });
+        return count ? { cls: ' hol' + (count > 1 || lineOn(data, d, 2) ? ' hol2' : ''), html: html } : { cls: '', html: '' };
     }
 
     /** Dark or light text, whichever reads better on a colour. */
@@ -362,11 +369,15 @@
     }
     function renderAddBar() {
         if (!adding) return;
-        var cats = calAdd;
-        $('abCats').innerHTML = cats.length ? cats.map(function (c) {
+        // A general category, a family group or one person – in tabs, when the Google script sorts them.
+        var kinds = [['general', 'General'], ['group', 'Groups'], ['person', 'One person']], typed = calAdd.some(function (c) { return c.kind; });
+        if (typed && !adding.tab) { var cur = calAdd.filter(function (c) { return c.name === adding.cat; })[0]; adding.tab = cur ? cur.kind : 'general'; }
+        var cats = typed ? calAdd.filter(function (c) { return c.kind === adding.tab; }) : calAdd;
+        $('abCats').innerHTML = (typed ? '<span class="ab-tabs">' + kinds.map(function (k) { return '<button class="ab-tab' + (adding.tab === k[0] ? ' on' : '') + '" data-tab="' + k[0] + '">' + k[1] + '</button>'; }).join('') + '</span>' : '') +
+            (cats.length ? cats.map(function (c) {
             var on = adding.cat === c.name;
             return '<button class="ab-cat' + (on ? ' on' : '') + '" data-cat="' + esc(c.name) + '" style="--ec:' + esc(c.colour) + ';--et:' + ink(c.colour) + '">' + esc(c.name) + '</button>';
-        }).join('') : '<span class="ab-hint">Run setup in Apps Script to create the category calendars</span>';
+        }).join('') : '<span class="ab-hint">No categories here yet – set them up on the Setup website</span>');
         var a = adding.start, z = adding.end || adding.start;
         var n = a ? Math.round((parseYmd(z) - parseYmd(a)) / 86400000) + 1 : 0;
         $('abDates').innerHTML = !a ? '<span class="ab-hint">Tap a day below</span>' :
@@ -433,7 +444,7 @@
         $('calDayList').innerHTML = top + (data.length ? data.map(function (e, i) {
             return '<div class="dl-row" data-i="' + i + '" style="--ec:' + esc(e.c) + '"><span class="dl-time">' + (e.allDay ? 'All day' : esc(e.time || '')) + '</span>' +
                 '<span class="dl-main"><span>' + esc(e.t) + '</span>' + (e.note ? '<span class="dl-note">' + esc(e.note) + '</span>' : '') + '</span>' +
-                '<span class="dl-cat" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' + esc(e.k || '') + '</span>' +
+                '<span class="dl-cat" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' + esc(e.k === 'Other' && e.cat && e.cat !== 'Other' ? e.cat : e.k || '') + '</span>' +
                 (e.id ? '<button class="dl-del" data-del="' + i + '" aria-label="Delete">\uD83D\uDDD1</button>' : '') + '</div>';
         }).join('') : (top ? '' : '<div class="empty">Nothing in the calendar</div>'));
         openDayStr = ds;
@@ -499,6 +510,7 @@
                 $('abCancel').addEventListener('click', stopAdding);
                 $('abSave').addEventListener('click', saveEvent);
                 $('abCats').addEventListener('click', function (e) {
+                    var tb = e.target.closest('[data-tab]'); if (tb && adding) { adding.tab = tb.getAttribute('data-tab'); renderAddBar(); return; }
                     var b = e.target.closest('[data-cat]'); if (!b || !adding) return;
                     adding.cat = b.getAttribute('data-cat'); renderAddBar();
                 });

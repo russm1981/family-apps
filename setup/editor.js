@@ -105,8 +105,9 @@
             out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : mockFrame(p, fmt);
             return out + '<p class="mute small">The calendar fills the screen; on a tablet or computer it also has a whole-year wall planner. You can have more than one calendar page, each showing different Google calendars.</p>' +
                 (H.pageForm ? '<section class="ed-pset" data-pset="' + esc(p.id) + '"><h3>This calendar page’s settings</h3>' + H.pageForm(p.id) +
-                    '<p class="mute small">The categories and colours (who’s who on the calendar) are the whole family’s – change them in <a href="' + esc(H.familyLink()) + '">Reconfigure → Family &amp; calendar</a>.</p>' +
-                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '');
+                    '<p class="mute small">The categories, and what goes on this page’s key, are just below.</p>' +
+                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '') +
+                (H.calSetup ? '<div class="cs-box" data-cs="' + esc(p.id) + '"></div>' : '');
         }
         var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
         for (var k = 0; k < screens; k++) {
@@ -168,6 +169,7 @@
             }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
+        var csb = el.querySelector('.cs-box'); if (csb && H.calSetup) H.calSetup(csb, csb.getAttribute('data-cs'));
     }
 
     /* ------------------------------------------------------------------ changes */

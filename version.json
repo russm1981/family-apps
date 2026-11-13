@@ -1,15 +1,15 @@
 {
-  "app": "2026.11.81",
-  "script": "2026.11.52",
+  "app": "2026.11.82",
+  "script": "2026.11.53",
   "date": "2026-11-13",
   "notes": [
-    "The Setup website, reorganised: Set up (First-time setup · Screens · Family · Rewards · Advanced) · Help · Apps (Calendar · Notes · Lists · Widgets)",
-    "Screens & widgets: a “How this works” page at the top of the screens list; at most 6 screens",
-    "Family: who’s in the family (up to 10), their colours, and ⭐ Rewards – with an explainer",
-    "Rewards: everything on one page – tasks, morning to-dos, reminders, rules, changing a child’s points by hand (add, take away, set the balance, statement) and each child’s card",
-    "Advanced: Settings (home & places, data keys, system) · My data · My devices · About & diagnostics",
-    "Calendar and Help open inside the website; with more than one calendar page you can switch between them",
-    "“Points” is now “Rewards”"
+    "Calendar categories now use Google Calendar’s own event colours (on your main calendar): pick the colour on an event in Google Calendar or Gmail and it lands in that category. Up to 10 categories – family groups and general ones",
+    "Events for one person: Graphite, with their name in brackets at the end – “Drums (Ben)”. They show in that person’s colour, their group’s, or Family’s",
+    "Setup → Screens → a calendar page: the categories (drag people into groups), and that page’s own key – up to 9 plus Other, up to two shown as lines under each day, or hidden",
+    "“Tidy up your Google calendar”: lists events in the old “Ben – Drums” form, with no category or with titles too long, and fixes the ones you tick",
+    "Adding an event: pick General, a group or one person",
+    "Picking the Google calendar for a page from a list",
+    "Family: just the people, their colours and ⭐ Rewards"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

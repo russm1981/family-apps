@@ -291,12 +291,14 @@ window.FD_HELP = [
   },
   {
     id: 'calendar', icon: '📅', title: 'Calendar colours and categories',
-    summary: 'Entries are coloured by who they’re for. Start the title with a name – “Ben – Drums” – or a category like “Family – Zoo”.',
+    summary: 'Each category is one of Google Calendar’s event colours. For one person, put their name in brackets at the end: “Drums (Ben)”.',
     body: `
-<p>The dashboard reads your Google Calendar(s). It colours each entry by the <b>name at the start of its title</b>:</p>
-<ul><li>“<b>Ben</b> – Drums” → Ben’s colour</li><li>“<b>Family</b> – Zoo” → Family</li><li>“<b>Holiday</b> – Cornwall” → Holiday (also counted down on the screen)</li></ul>
-<p>Entries without a name are matched by words, e.g. “football” → Josh – set these in <b>Family Admin → Settings → Family &amp; children → Show matching words</b>.</p>
-<p>Which calendars are shown, and which one new entries go into: <b>Settings → Home &amp; calendar</b>.</p>`
+<p>The dashboard reads your family’s Google Calendar. Each <b>category</b> – a family group like “Boys” or “Russ &amp; Becky”, Family (everyone), or a general one like Holiday or School holiday – is one of <b>Google Calendar’s event colours</b>. When you make an event in Google Calendar or Gmail, pick its colour and it lands in that category on the dashboard.</p>
+<ul><li>An event for <b>one person</b>: colour it <b>Graphite</b> and put their name in brackets at the end – “Drums <b>(Ben)</b>”. The dashboard shows it in Ben’s colour, or his group’s.</li>
+<li>An event with <b>no colour</b> goes in <b>Other</b>.</li>
+<li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
+<p>Older events written as “Ben – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Setup → Screens &amp; widgets → your calendar page → Tidy up your Google calendar</b>.</p>
+<p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>Setup → Screens &amp; widgets</b>.</p>`
   },
   {
     id: 'afresh', icon: '🔄', title: 'Starting again: a fresh Sheet, or from scratch',
