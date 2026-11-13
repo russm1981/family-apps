@@ -149,16 +149,17 @@
     /* ------------------------------------------------------------ 3. tidying up */
 
     function tidyHtml() {
-        return '<div class="cs-card"><h3>Tidy up your Google calendar</h3><p class="mute small">Goes through the last three months and the next year of your family calendar and lists anything to put right: ' +
-            'events in the old “Ben – Drums” form (they become “Drums (Ben)”), events with no category, and titles too long for the screen. You choose; nothing changes until you press Apply.</p>' +
+        return '<div class="cs-card"><h3>Tidy up your Google calendar</h3><p class="mute small">Goes through the last three months and the next year of your family calendar and lists what the calendar can’t show properly: ' +
+            'events with no category, and titles too long for the screen. Events like “Ben – Drums” are fine – they show as “Drums (Ben)”. You choose; nothing changes until you press Apply.</p>' +
             '<button class="btn" id="csScan">Check the Google calendar</button></div>';
     }
-    function tidy() {
+    function when(r) { var d = String(r.date || '').split('-'); return (d.length === 3 ? d[2] + '-' + d[1] + '-' + d[0] : r.date) + (r.time ? ' @ ' + r.time : ''); }
+    function tidy(all) {
         var ov = document.createElement('div');
         ov.className = 'cs-ov'; ov.innerHTML = '<div class="cs-modal"><h2>Tidy up your Google calendar</h2><div class="empty">Looking through the calendar…</div></div>';
         document.body.appendChild(ov);
         var close = function () { ov.remove(); };
-        window.FD.post({ action: 'calScan' }).then(function (d) {
+        window.FD.post({ action: 'calScan', all: !!all }, 90000).then(function (d) {
             if (d.error) throw new Error(d.error);
             var rows = d.rows || [], ch = d.choices || [];
             var opts = function (cur) {
@@ -167,9 +168,12 @@
             };
             ov.querySelector('.cs-modal').innerHTML = '<h2>Tidy up your Google calendar</h2>' +
                 '<p class="mute small">' + d.total + ' events looked at' + (d.skipped ? ' (' + d.skipped + ' in calendars you can’t change, e.g. shared ones, left alone)' : '') + '. ' +
-                (rows.length ? rows.length + (d.more ? '+' : '') + ' to put right – problems first. Untick any you’d rather leave. Repeating events change every time they come round.' : 'Nothing to put right – it’s all in order.') + '</p>' +
+                (rows.length ? rows.length + (d.more ? '+' : '') + (d.all ? ' listed – problems first.' : ' the calendar can’t show properly – with no category, or a title too long for the screen.') + ' Untick any you’d rather leave. Repeating events change every time they come round.'
+                    : d.all ? 'Nothing to change.' : 'Nothing to put right – the calendar can show every event properly.') + '</p>' +
+                '<p class="small">' + (d.all ? '<a href="#" id="csTFew">Show only the ones with a problem</a>'
+                    : 'Events like “Ben – Drums” are fine and aren’t listed: the calendar shows them as “Drums (Ben)”, in Ben’s colour. <a href="#" id="csTAllEv">List them too</a> – changing them gives them their colour in Google Calendar as well.') + '</p>' +
                 (rows.length ? '<div class="cs-tablewrap"><table class="cs-table"><thead><tr><th><input type="checkbox" id="csTAll" title="Tick or untick them all"></th><th>When</th><th>Now</th><th>Category</th><th>New title</th><th></th></tr></thead><tbody>' + rows.map(function (r, i) {
-                    return '<tr data-i="' + i + '"><td><input type="checkbox" class="cs-tick"' + (r.cat ? ' checked' : '') + '></td><td class="nowrap">' + esc(r.date) + (r.time ? ' ' + esc(r.time) : '') + (r.rec ? ' ↻' : '') + '</td>' +
+                    return '<tr data-i="' + i + '"><td><input type="checkbox" class="cs-tick"' + (r.cat ? ' checked' : '') + '></td><td class="nowrap">' + esc(when(r)) + (r.rec ? ' ↻' : '') + '</td>' +
                         '<td>' + esc(r.title) + '</td><td><select class="cs-cat">' + opts(r.cat) + '</select></td>' +
                         '<td><input class="cs-title" value="' + esc(r.text) + '" maxlength="80"><small class="cs-len"></small></td><td>' + (r.problem ? '<span class="cs-prob">' + esc(r.problem) + '</span>' : '') + '</td></tr>';
                 }).join('') + '</tbody></table></div>' : '') +
@@ -182,6 +186,9 @@
             };
             Array.prototype.forEach.call(ov.querySelectorAll('tbody tr'), function (tr) { len(tr); tr.oninput = function () { len(tr); }; tr.onchange = function () { len(tr); }; });
             ov.querySelector('#csTClose').onclick = close;
+            var again = function (e, a) { e.preventDefault(); close(); tidy(a); };
+            if (ov.querySelector('#csTAllEv')) ov.querySelector('#csTAllEv').onclick = function (e) { again(e, true); };
+            if (ov.querySelector('#csTFew')) ov.querySelector('#csTFew').onclick = function (e) { again(e, false); };
             var ticks = function () { return Array.prototype.slice.call(ov.querySelectorAll('tbody .cs-tick')); };
             var allBox = ov.querySelector('#csTAll'), sync = function () { if (!allBox) return; var t = ticks(), n = t.filter(function (x) { return x.checked; }).length; allBox.checked = n === t.length && n > 0; allBox.indeterminate = n > 0 && n < t.length; };
             if (allBox) { allBox.onchange = function () { ticks().forEach(function (x) { x.checked = allBox.checked; }); }; ov.querySelector('tbody').addEventListener('change', sync); sync(); }

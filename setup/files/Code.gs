@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.66';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.67';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -3049,13 +3049,15 @@ function calScan_(b) {
       const want = r.person ? r.text + ' (' + r.person.name + ')' : r.text, wantG = r.person ? PERSON_G : r.cat ? r.cat.g : '';
       const problem = !r.name ? 'No category' : want.length > LIMITS.eventTitle ? 'Title too long' : '';
       if (!problem && want === title && (wantG || '') === g) return;
+      // Already understood by the calendar (e.g. "Ben – Drums" shows as "Drums (Ben)" in Ben's colour): only listed if asked for.
+      if (!problem && !b.all) return;
       const allDay = ev.isAllDayEvent(), st = allDay ? ev.getAllDayStartDate() : ev.getStartTime();
       out.push({ id: id, cal: cal.getId(), date: Utilities.formatDate(st, allDay ? tz : TZ, 'yyyy-MM-dd'), time: allDay ? '' : fmt_(st, 'HH:mm'),
         title: title, text: r.text, cat: r.name, rec: ev.isRecurringEvent(), problem: problem });
     });
   });
   out.sort((a, b2) => (a.problem ? 0 : 1) - (b2.problem ? 0 : 1) || (a.date < b2.date ? -1 : 1));
-  return { ok: true, total: total, skipped: skipped, rows: out.slice(0, 400), more: Math.max(0, out.length - 400), max: LIMITS.eventTitle,
+  return { ok: true, all: !!b.all, total: total, skipped: skipped, rows: out.slice(0, 400), more: Math.max(0, out.length - 400), max: LIMITS.eventTitle,
     choices: M.generals.map(c => ({ name: c.name, kind: 'general' })).concat(M.groups.map(c => ({ name: c.name, kind: 'group' })), M.people.map(c => ({ name: c.name, kind: 'person' }))) };
 }
 /** Apply the tidy-up to some events (up to 60 at a time): the title, and the category's Google colour. Repeating events change as a whole. */
