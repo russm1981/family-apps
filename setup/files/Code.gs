@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.56';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.57';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -277,8 +277,8 @@ Object.assign(WIDGET_TYPES, {
   countdown: { name: 'Holiday countdown', icon: '🏖️', sizes: ['half', 'full'], ttl: 15 * 60, calendar: true, about: 'Days to go until the next holiday, from the calendar and your own dates.',
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Holiday countdown', max: 30 },
-      { k: 'Categories', label: 'Calendar categories to count down to', type: 'text', def: 'Holiday', max: 80, help: 'Category names separated by commas, e.g. Holiday, School holiday. Blank = only the dates below.' },
-      { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', help: 'One per line, as  name | date  – for example  Orlando | 3/4/2027  for a one-off, or  Christmas | 25 Dec  (no year) for a date that comes round every year.' },
+      { k: 'Categories', label: 'Calendar categories to count down to', type: 'text', def: 'Holiday', max: 200, ui: 'cats', help: 'Events in these categories on the family calendar are counted down to. None ticked = only your own dates below.' },
+      { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', ui: 'dates', help: 'Up to 6. Tick “every year” for a date that comes round each year, like Christmas.' },
       { k: 'Show', label: 'How many to show', type: 'number', def: 3, min: 1, max: 6 },
     ],
     data: (s) => countdown_(s) },

@@ -25,6 +25,7 @@ body.desk .sheet.wide { max-width: 980px; width: 94vw; }
 .ws-cols { display: grid; gap: 14px; margin-top: 14px; }
 body.desk .ws-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 26px; align-items: start; }
 body.desk .ws-cols.one { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 760px) { body.desk .ws-cols { grid-template-columns: minmax(0, 1fr); } }
 .ws-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mute, #8b95a5); margin: 4px 0 8px; }
 body.desk .ws-place { padding-right: 26px; border-right: 1px solid var(--line, #2a303b); }
 .ws-place #wDel { margin-top: 14px; }

@@ -229,3 +229,18 @@ details.when summary { font-weight: 600; cursor: pointer; }
 .opick { display: flex; flex-direction: column; gap: 6px; } .opick select { width: auto; }
 .op-weekly { display: flex; align-items: center; gap: 8px; }
 .op-daily[hidden], .op-weekly[hidden] { display: none !important; }
+
+/* Holiday countdown: category tick boxes and own-date rows */
+.cd-cats { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+.cd-cat { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--line, #ccc); border-radius: 999px; cursor: pointer; font-size: 15px; margin: 0; }
+.cd-cat input { margin: 0; width: auto; }
+.cd-cat i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+.cd-cat:has(input:checked) { border-color: var(--accent, #3b82f6); background: color-mix(in srgb, var(--accent, #3b82f6) 12%, transparent); font-weight: 600; }
+.cd-dates { margin: 4px 0 6px; }
+.cd-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+.cd-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; align-items: center; }
+.cd-row input.cd-name, .cd-row input.cd-date { margin: 0; min-width: 0; }
+.cd-yr { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; white-space: nowrap; margin: 0; }
+.cd-yr input { margin: 0; width: auto; }
+.cd-x { border: 0; background: none; font-size: 16px; cursor: pointer; color: var(--mute, #888); padding: 6px; }
+@media (max-width: 700px) { .cd-row { grid-template-columns: minmax(0, 1fr) auto auto; } .cd-row .cd-name { grid-column: 1 / -1; } }

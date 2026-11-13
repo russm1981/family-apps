@@ -1440,9 +1440,82 @@
     }
 
     /** Form fields from the setting definitions sent by the Google script. */
+    /** Calendar categories as tick boxes – stored as "Holiday, School holiday". */
+    var MONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    function catsField(f, v, lab, help) {
+        var cs = DATA.calSetup;
+        if (!cs || !cs.groups) return null;
+        var have = String(v == null ? '' : v).split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        var key = function (x) { return String(x).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); };
+        var names = cs.generals.map(function (c) { return c.name; }).concat(cs.groups.map(function (c) { return c.name; }));
+        have.forEach(function (h) { if (!names.some(function (n) { return key(n) === key(h); })) names.push(h); });
+        var colour = function (n) { var c = cs.generals.concat(cs.groups).filter(function (x) { return x.name === n; })[0]; return c ? c.colour : '#999'; };
+        var on = function (n) { return have.some(function (h) { return key(h) === key(n); }); };
+        return lab + '<div class="cd-cats" data-cd="cats">' + (names.length ? names.map(function (n) {
+            return '<label class="cd-cat"><input type="checkbox" value="' + esc(n) + '"' + (on(n) ? ' checked' : '') + '><i style="background:' + esc(colour(n)) + '"></i><span>' + esc(n) + '</span></label>';
+        }).join('') : '<p class="mute small">No calendar categories yet – add them under Calendar.</p>') +
+            '<textarea hidden data-f="' + esc(f.k) + '">' + esc(have.join(', ')) + '</textarea></div>' + help;
+    }
+    /** "Your own dates" as rows: name, date picker, every year – stored as "Name | 3/4/2027" or "Name | 25 Dec". */
+    function datesField(f, v, lab, help) {
+        var rows = String(v == null ? '' : v).split('\n').map(function (line) {
+            var p = line.split('|'); if (p.length < 2) return null;
+            var name = p[0].trim(), spec = p.slice(1).join('|').trim().toLowerCase(), m, y = '', mo = '', d = '';
+            if ((m = spec.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/))) { y = m[1]; mo = m[2]; d = m[3]; }
+            else if ((m = spec.match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/))) { d = m[1]; mo = m[2]; y = m[3] || ''; }
+            else if ((m = spec.match(/^(\d{1,2})(?:st|nd|rd|th)?\s+([a-z]{3})[a-z]*\.?(?:\s+(\d{2,4}))?$/))) { d = m[1]; mo = MONS.map(function (x) { return x.toLowerCase(); }).indexOf(m[2]) + 1; y = m[3] || ''; }
+            if (!d || !mo) return { name: name, iso: '', yearly: false };
+            if (y && y.length === 2) y = '20' + y;
+            var yearly = !y; if (yearly) y = String(new Date().getFullYear());
+            return { name: name, iso: y + '-' + pad(mo) + '-' + pad(d), yearly: yearly };
+        }).filter(Boolean);
+        return lab + '<div class="cd-dates" data-cd="dates" data-max="' + (f.maxLines || 6) + '"><div class="cd-rows">' + rows.map(dateRow).join('') + '</div>' +
+            '<button type="button" class="btn ghost small cd-add"' + (rows.length >= (f.maxLines || 6) ? ' disabled' : '') + '>+ Add a date</button>' +
+            '<textarea hidden data-f="' + esc(f.k) + '">' + esc(v || '') + '</textarea></div>' + help;
+    }
+    function pad(n) { n = String(Number(n)); return n.length < 2 ? '0' + n : n; }
+    function dateRow(r) {
+        r = r || { name: '', iso: '', yearly: false };
+        return '<div class="cd-row"><input class="cd-name" placeholder="e.g. Florida" maxlength="30" value="' + esc(r.name) + '">' +
+            '<input class="cd-date" type="date" value="' + esc(r.iso) + '">' +
+            '<label class="cd-yr" title="Comes round on this date every year"><input type="checkbox"' + (r.yearly ? ' checked' : '') + '><span>Every year</span></label>' +
+            '<button type="button" class="cd-x" title="Remove" aria-label="Remove this date">✕</button></div>';
+    }
+    function cdSync(box) {
+        var out = box.querySelector('[data-f]');
+        if (box.getAttribute('data-cd') === 'cats') {
+            out.value = Array.prototype.filter.call(box.querySelectorAll('input[type=checkbox]'), function (c) { return c.checked; }).map(function (c) { return c.value; }).join(', ');
+            return;
+        }
+        out.value = Array.prototype.map.call(box.querySelectorAll('.cd-row'), function (row) {
+            var name = row.querySelector('.cd-name').value.replace(/\|/g, ' ').trim(), iso = row.querySelector('.cd-date').value, yearly = row.querySelector('.cd-yr input').checked;
+            if (!name || !iso) return '';
+            var p = iso.split('-');
+            return name + ' | ' + (yearly ? Number(p[2]) + ' ' + MONS[Number(p[1]) - 1] : Number(p[2]) + '/' + Number(p[1]) + '/' + p[0]);
+        }).filter(Boolean).join('\n');
+        var add = box.querySelector('.cd-add');
+        add.disabled = box.querySelectorAll('.cd-row').length >= Number(box.getAttribute('data-max'));
+    }
+    document.addEventListener('input', function (e) { var b = e.target.closest && e.target.closest('[data-cd]'); if (b) cdSync(b); });
+    document.addEventListener('change', function (e) { var b = e.target.closest && e.target.closest('[data-cd]'); if (b) cdSync(b); });
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-cd=dates]'); if (!b) return;
+        if (e.target.closest('.cd-add')) {
+            if (b.querySelectorAll('.cd-row').length >= Number(b.getAttribute('data-max'))) return;
+            b.querySelector('.cd-rows').insertAdjacentHTML('beforeend', dateRow());
+            var rs = b.querySelectorAll('.cd-name'); rs[rs.length - 1].focus();
+        } else if (e.target.closest('.cd-x')) e.target.closest('.cd-row').remove();
+        else return;
+        cdSync(b);
+    });
+
     function field(f, v) {
         var id = 'f_' + f.k, help = f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '';
         var lab = '<label for="' + id + '">' + esc(f.label) + (f.max && f.type === 'text' ? ' <span class="cnt">max ' + f.max + '</span>' : '') + '</label>';
+        if (f.ui === 'cats' || f.ui === 'dates') {
+            var lab2 = '<label>' + esc(f.label) + '</label>', h = f.ui === 'cats' ? catsField(f, v, lab2, help) : datesField(f, v, lab2, help);
+            if (h) return h;
+        }
         if (f.type === 'bool') return '<label class="tog"><input type="checkbox" id="' + id + '" data-f="' + esc(f.k) + '"' + (v ? ' checked' : '') + '><span>' + esc(f.label) + '</span></label>' + help;
         if (f.type === 'select') return lab + '<select id="' + id + '" data-f="' + esc(f.k) + '">' + f.options.map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>' + help;
         if (f.type === 'lines') return lab + '<textarea id="' + id + '" data-f="' + esc(f.k) + '" rows="' + Math.max(2, (f.maxLines || 3)) + '">' + esc(v) + '</textarea>' + help;
