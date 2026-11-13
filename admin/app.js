@@ -388,7 +388,7 @@
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
                 '<ul class="small"><li><b>Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
                 '<li><b>Daily to-dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
-                '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from 5 pm the evening before.</li>' +
+                '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set in Reward rules). The <b>Reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
                 '<li><b>Manual edits</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
@@ -400,7 +400,7 @@
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
                 }).join('') : '<div class="empty">No tasks yet</div>') + '</div>';
         } else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
-        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from 5 pm the evening before. Each one is either every week on the days you pick, or on one date.') + flat('timetable');
+        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm, or the time you set in Reward rules). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
             '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions'; }), pp.settings || {}) : '') +
                 '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
@@ -1051,7 +1051,7 @@
     var LISTS = {
         todos: { title: 'Daily to-dos', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
             cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'How often']], ordered: true },
-        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from 5pm the evening before – every week on some days, or on one date.',
+        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time in Reward rules) – every week on some days, or on one date.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
     };
     function listFold(k) {
@@ -1183,9 +1183,11 @@
             '<div class="rp-date"' + (date ? '' : ' hidden') + '><input type="date" class="rp-dt" value="' + esc(iso) + '"><span class="rp-say mute small">' + esc(longDate(iso)) + '</span></div>' +
             '<input type="hidden" class="rp-val" data-k="Day" value="' + esc(date ? dmy(iso) : formatDays(parseDays(v || 'Fri'))) + '"></div>';
     }
-    /** Today's and tomorrow's reminders; from 5pm only tomorrow's. */
+    /** Today's and tomorrow's reminders; from the switch time (5pm unless set in Reward rules) only tomorrow's. */
     function reminders(b) {
-        var evening = new Date().getHours() >= 17, tmr = b.remindersTomorrow || [];
+        var at = String((DATA.state && DATA.state.remindersFrom) || '17:00'), d = new Date();
+        if (at.length === 4) at = '0' + at;
+        var evening = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) >= at, tmr = b.remindersTomorrow || [];
         function grp(label, list, cls) {
             return list.length ? '<div class="rems ' + cls + '"><em>' + label + '</em>' + list.map(function (r) { return '<span class="rem">' + esc(r) + '</span>'; }).join('') + '</div>' : '';
         }
@@ -1606,6 +1608,7 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
+        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set on the <a href="#" data-go="rewards">Rewards</a> tab (Reminders, and Reward rules).</p>';
         if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – tasks, daily to-dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
         var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
             (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';

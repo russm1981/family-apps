@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.88",
+    "date": "2026-11-13",
+    "notes": [
+      "New setting in Rewards → Reward rules: the time the screen switches to tomorrow’s reminders (5pm unless you change it)",
+      "New widget: Reminders (rewards) – every child’s reminders together, half or full height, so you can put them on the Home screen. Today’s, then tomorrow’s from the switch time; full height shows both. Tap a child for their week"
+    ]
+  },
+  {
     "version": "2026.11.87",
     "date": "2026-11-13",
     "notes": [

@@ -1170,3 +1170,16 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .ab-tab { border: 0; background: none; color: var(--mute); font: inherit; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 0.45rem; cursor: pointer; }
 .ab-tab.on { background: rgba(255,255,255,0.16); color: var(--text); font-weight: 700; }
 .todo .wk { font-size: 0.7em; opacity: 0.65; font-weight: 600; margin-left: 0.3em; }
+
+/* Reminders widget: every child's reminders together */
+.kidrem-slot { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+.kr-head h3 { margin: 0 0 6px; }
+.kr-day { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; min-height: 0; }
+.kr-day h4 { margin: 0 0 2px; font-size: .8em; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+.kr-row { display: flex; align-items: center; gap: 10px; background: none; border: 0; color: inherit; font: inherit; text-align: left; padding: 3px 0; cursor: pointer; }
+.kr-name { display: inline-flex; align-items: center; gap: 6px; min-width: 4.5em; font-weight: 600; flex: none; }
+.kr-name .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c); display: inline-block; }
+.kr-chips { display: flex; flex-wrap: wrap; gap: 4px; min-width: 0; }
+.kr-day.now .chip { background: #ffd54a; color: #222; border-color: #ffd54a; }
+.kr-day.next .chip { background: transparent; color: inherit; border: 1px solid rgba(255, 213, 74, .7); }
+.kr-none { opacity: .45; }

@@ -197,7 +197,35 @@
         if (panel) renderPanel();
     }
     /** Child widgets (on any widget page): each shows one child's card, found by name. */
+    function isEvening(s) {
+        var d = new Date(), hm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2), at = String((s && s.remindersFrom) || '17:00');
+        if (at.length === 4) at = '0' + at;
+        return hm >= at;
+    }
+    /** The Reminders widget: every child's reminders together. */
+    function paintReminders() {
+        Array.prototype.forEach.call(document.querySelectorAll('.kidrem-slot'), function (el) {
+            var s = state, full = el.getAttribute('data-full') === '1';
+            if (!cfg.url || !cfg.code) { el.innerHTML = '<div class="child-msg">Not connected yet.</div>'; return; }
+            if (!s) { el.innerHTML = '<div class="child-msg">' + (lastSyncError ? 'Can’t reach the Google Sheet.' : 'Loading…') + '</div>'; return; }
+            var evening = isEvening(s);
+            var day = function (label, key, cls) {
+                var rows = s.boys.map(function (b, bi) {
+                    var list = b[key] || [];
+                    return '<button class="kr-row" data-act="panel" data-sec="rem" data-boy="' + bi + '" style="--c:' + esc(b.colour) + '"><span class="kr-name"><span class="dot"></span>' + esc(b.name) + '</span>' +
+                        '<span class="kr-chips">' + (list.length ? list.map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('') : '<span class="kr-none">–</span>') + '</span></button>';
+                }).join('');
+                if (!s.boys.some(function (b) { return (b[key] || []).length; })) rows = '<div class="kr-none">Nothing to remember ' + label.toLowerCase() + '</div>';
+                return '<div class="kr-day ' + cls + '"><h4>' + label + '</h4>' + rows + '</div>';
+            };
+            el.innerHTML = '<div class="kr-head"><h3>' + esc(el.getAttribute('data-title') || 'Reminders') + '</h3></div>' +
+                (!s.boys.length ? '<div class="empty">No children in rewards yet.</div>'
+                    : evening ? day('Tomorrow', 'remindersTomorrow', 'now')
+                    : day('Today', 'reminders', 'now') + (full ? day('Tomorrow', 'remindersTomorrow', 'next') : ''));
+        });
+    }
     function paintChildren() {
+        paintReminders();
         Array.prototype.forEach.call(document.querySelectorAll('.child-slot'), function (el) {
             var name = el.getAttribute('data-child') || '', s = state;
             if (!cfg.url || !cfg.code) { el.innerHTML = '<div class="child-msg">Not connected yet.</div>'; return; }
@@ -228,8 +256,8 @@
             }).join('') + (order.length > showN ? '<button class="todo-more" data-act="panel" data-sec="todos" data-boy="' + bi + '">+' + (order.length - showN) + ' more \u2013 ' +
                 order.slice(showN).filter(function (ti) { return !b.todos[ti].done; }).length + ' still to do</button>' : '')
                 : '<div class="empty">Nothing this morning</div>';
-            // Before 5pm: today's reminders in yellow, tomorrow's in outline. From 5pm: just tomorrow's, in yellow.
-            var evening = new Date().getHours() >= 17;
+            // Before the switch time (5pm unless set in Reward rules): today's reminders in yellow, tomorrow's in outline. After it: just tomorrow's, in yellow.
+            var evening = isEvening(s);
             // Show at most `max` chips per day; the rest become "+2".
             var group = function (label, list, cls, max) {
                 if (!list.length) return '';

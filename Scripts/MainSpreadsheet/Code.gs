@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.58';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.59';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -140,6 +140,7 @@ const PAGE_TYPES = {
     { k: 'CashInPoints', label: 'Points needed to cash in', type: 'number', def: 500, min: 1, max: LIMITS.maxCashIn },
     { k: 'CashInValue', label: 'Cash-in value (\u00a3)', type: 'number', def: 5, min: 1, max: 100 },
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
+    { k: 'TomorrowFrom', label: 'Switch to tomorrow’s reminders at', type: 'time', def: '17:00', help: 'Until this time the screen shows today’s reminders (with a peek at tomorrow’s); from this time, tomorrow’s – so school things can be got ready the evening before.' },
   ] },
   calendar: { name: 'Calendar', settings: [
     { k: 'Calendars', label: 'Google calendars to show', type: 'text', def: '', max: 400,
@@ -315,6 +316,10 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
+  kidrem: { name: 'Reminders (rewards)', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – PE kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
+    settings: [
+      { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
+    ] },
   child: { name: 'Child (rewards)', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards card – their points, tasks, daily to-dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
@@ -867,6 +872,7 @@ function getState_() {
   return {
     boys: out, today, dow, tomorrow,
     cashIn: { points: threshold, value },
+    remindersFrom: /^\d{1,2}:\d{2}$/.test(String(ps.TomorrowFrom || '')) ? String(ps.TomorrowFrom) : '17:00',
     penalties: String(ps.PenaltyOptions || '10,20,50').split(',').map(n => Math.abs(Number(n))).filter(Boolean),
     serverTime: now.toISOString(),
   };
