@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.48';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.49';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1513,10 +1513,20 @@ function addWidget_(pageId, type, at) {
   const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
   if (!p || String(p.Type).toLowerCase() !== 'widgets') throw new Error('Pick a widget page');
   if (type === 'child' && !childNames_().length) throw new Error('Add the children first (Family tab)');
-  const ids = rows_('widgets').map(w => String(w.Widget).trim());
-  const kept = Object.keys(wsetAll_()).filter(k => new RegExp('^' + type + '\\d+$').test(k) && ids.indexOf(k) < 0).sort()[0];
-  let n = 1; while (ids.indexOf(type + n) >= 0) n++;
-  if (kept) n = kept.slice(type.length);
+  // Settings: another copy of a widget you already have starts with that one's settings; the first of its kind gets back
+  // the settings it had when the last one was removed, or the standard ones.
+  const ids = rows_('widgets').map(w => String(w.Widget).trim()), all = wsetAll_();
+  const same = layout_().widgets.filter(w => w.type === type);
+  let n = 1;
+  if (same.length) {
+    while (ids.indexOf(type + n) >= 0 || all[type + n]) n++;
+    const src = all[same[0].id] || {}, copy = T.settings.filter(f => src[f.k] !== undefined).map(f => { let v = src[f.k]; try { v = cleanSetting_(f, coerce_(f, v)); } catch (e) { /* as it was */ } return [type + n, f.k, v]; });
+    if (copy.length) sheet_('wset').getRange(sheet_('wset').getLastRow() + 1, 1, copy.length, 3).setValues(copy);
+  } else {
+    const kept = Object.keys(all).filter(k => new RegExp('^' + type + '\\d+$').test(k) && ids.indexOf(k) < 0).sort()[0];
+    while (ids.indexOf(type + n) >= 0) n++;
+    if (kept) n = kept.slice(type.length);
+  }
   sheet_('widgets').appendRow([type + n, pageId, 999, type, T.sizes[0], 'Yes']);
   if (type === 'child') {     // the first child who hasn't got a widget yet (or the first child)
     const all = wsetAll_(), names = childNames_(), mine = String((all[type + n] || {}).Child || '');
@@ -1564,7 +1574,11 @@ function deleteWidget_(id) {
         ' at other times, and holds its settings. Untick “Show on the screen” to hide it, or change that widget’s “When to show” first.');
   }
   deleteWhere_('widgets', r => String(r[0]).trim() === id);
-  // Its settings stay (in Widget settings): added again later, it gets the same name and so its settings back.
+  // The last of its kind keeps its settings (in Widget settings): added again later, it gets the same name and so its settings
+  // back. A spare copy's go – a new copy starts from the first one's. Where and when it showed is never kept.
+  const last = !me || !L.widgets.some(x => x.id !== id && x.type === me.type);
+  const when = whenSettings_().map(f => f.k);
+  deleteWhere_('wset', r => String(r[0]).trim() === id && (!last || when.indexOf(String(r[1]).trim()) >= 0));
   bumpVersions_();
   return layoutOnly_();
 }

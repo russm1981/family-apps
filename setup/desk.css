@@ -19,3 +19,13 @@ body.desk .sheet { max-width: 620px; border-radius: 18px; max-height: 88vh; }
 .dw-card i { font-style: normal; align-self: flex-start; margin-top: 6px; }
 .dw-card:hover { border-color: var(--acc); }
 body.desk .tabbar button { font-size: 13px; }
+
+/* The widget box: how it appears on the left, its own settings on the right */
+body.desk .sheet.wide { max-width: 980px; width: 94vw; }
+.ws-cols { display: grid; gap: 14px; margin-top: 14px; }
+body.desk .ws-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 26px; align-items: start; }
+body.desk .ws-cols.one { grid-template-columns: minmax(0, 1fr); }
+.ws-h { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mute, #8b95a5); margin: 4px 0 8px; }
+body.desk .ws-place { padding-right: 26px; border-right: 1px solid var(--line, #2a303b); }
+.ws-place #wDel { margin-top: 14px; }
+.ws-note { background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.4); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }

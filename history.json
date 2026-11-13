@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.77",
+    "date": "2026-11-13",
+    "notes": [
+      "Setup → Screen layout: clicking a widget shows how it appears (height, show, when to show, remove) on the left and its own settings on the right, saved together – no page picker (drag it instead)",
+      "A widget shown in place of another at other times opens straight to its own settings",
+      "Each copy of a widget has its own settings. A new copy starts with the first one’s settings; removing a spare copy drops its settings; removing the last one keeps them for next time"
+    ]
+  },
+  {
     "version": "2026.11.76",
     "date": "2026-11-13",
     "notes": [

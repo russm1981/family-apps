@@ -152,7 +152,7 @@
         window.addEventListener('hashchange', function () { closeSheet(); render(); window.scrollTo(0, 0); });
         document.addEventListener('visibilitychange', function () { if (!document.hidden) { load(); fetchGlance(); } });
     }
-    function sheet(html) { $('sheet').innerHTML = '<div class="grab"></div>' + html; $('sheetBg').classList.add('on'); }
+    function sheet(html) { $('sheet').classList.remove('wide'); $('sheet').innerHTML = '<div class="grab"></div>' + html; $('sheetBg').classList.add('on'); }
     function closeSheet() { if ($('sheetBg')) $('sheetBg').classList.remove('on'); }
 
     function render() {
@@ -1098,17 +1098,30 @@
         return out;
     }
 
+    /** A widget, clicked on the screen layout: how it appears (left) and its own settings (right), saved together.
+     * A widget that only stands in for another at other times gets just its settings – its height and times are the other one's. */
     function widgetSheet(w) {
         if (!w) return;
-        var T = typeOf(w.type), pages = DATA.pages.filter(function (p) { return p.type === 'widgets'; });
-        sheet('<h2>' + esc(T.icon) + ' ' + esc(T.name) + '</h2><p class="mute small">' + esc(T.about) + '</p>' +
-            '<div class="two"><div><label>Page</label><select id="wPage">' + pages.map(function (p) { return '<option value="' + esc(p.id) + '"' + (p.id === w.page ? ' selected' : '') + '>' + esc(p.title) + '</option>'; }).join('') + '</select></div>' +
-            '<div><label>Height</label><select id="wSize"' + (T.sizes.length < 2 ? ' disabled' : '') + '>' + T.sizes.map(function (z) { return '<option value="' + z + '"' + (z === w.size ? ' selected' : '') + '>' + (z === 'full' ? 'Full height' : 'Half height') + '</option>'; }).join('') + '</select></div></div>' +
+        var T = typeOf(w.type), bk = backupFor(w) && !w.show ? backupFor(w) : '';
+        var defs = T.settings, extra = '';
+        if (w.type === 'bins') {   // where the bin days come from is set by "Set up bin days"; only the reminder is a setting
+            defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
+            extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
+        }
+        var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
+            (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';
+        var place = bk ? '' : '<section class="ws-place"><h3 class="ws-h">On the screen</h3>' +
+            '<label>Height</label><select id="wSize"' + (T.sizes.length < 2 ? ' disabled' : '') + '>' + T.sizes.map(function (z) { return '<option value="' + z + '"' + (z === w.size ? ' selected' : '') + '>' + (z === 'full' ? 'Full height' : 'Half height') + '</option>'; }).join('') + '</select>' +
             '<label class="tog"><input type="checkbox" id="wShow"' + (w.show ? ' checked' : '') + '><span>Show on the screen</span></label>' +
             whenHtml(w, T) +
-            '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>' +
-            '<button class="btn ghost wide" data-go="w/' + esc(w.id) + '">' + esc(widgetName(w)) + ' settings ›</button>' +
-            '<div class="sheet-actions"><button class="btn bad" id="wDel">Remove this widget</button></div>');
+            '<button class="btn bad wide" id="wDel">Remove this widget</button></section>';
+        sheet('<h2>' + esc(T.icon) + ' ' + esc(widgetName(w)) + '</h2><p class="mute small">' + esc(T.about) + '</p>' +
+            (bk ? '<p class="ws-note">⏰ Shown in place of <b>' + esc(bk) + '</b> at other times, in the same space – its height and times are set on ' + esc(bk) + '.</p>' : '') +
+            '<div class="ws-cols' + (bk ? ' one' : '') + '">' + place + own + '</div>' +
+            '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>');
+        $('sheet').classList.add('wide');
+        applyWhen();
+        if ($('wBins')) $('wBins').onclick = function () { binWizard(w); };
         // At other times: only kinds of widget that can be this height.
         var fitElse = function () {
             var z = $('wSize').value;
@@ -1118,18 +1131,26 @@
                 if (!ok && o.selected) $('whElse').value = '';
             });
         };
-        $('wSize').onchange = fitElse; fitElse();
+        if ($('wSize')) { $('wSize').onchange = fitElse; fitElse(); }
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
-            var body = { id: w.id, page: $('wPage').value, size: $('wSize').value, show: $('wShow').checked,
-                when: { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.slice(0, 5) || '00:00', ShowUntil: $('whUntil').value.slice(0, 5) || '24:00', OtherTimes: $('whElse').value } };
-            // Shown on the phone straight away; the Google script catches up in the background (an error puts it back).
-            savingNow(w, function () { w.page = body.page; w.size = body.size; w.show = body.show; w.when = body.when.ShowDays === 'Every day' && body.when.ShowFrom === '00:00' && body.when.ShowUntil === '24:00' ? null : body.when; });
+            var vals = readFields(), body = { id: w.id, settings: vals };
+            if (!bk) {
+                body.size = $('wSize').value; body.show = $('wShow').checked;
+                body.when = { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.slice(0, 5) || '00:00', ShowUntil: $('whUntil').value.slice(0, 5) || '24:00', OtherTimes: $('whElse').value };
+            }
+            // Shown straight away; the Google script catches up in the background (an error puts it back).
+            savingNow(w, function () {
+                Object.keys(vals).forEach(function (k) { w.settings[k] = vals[k]; });
+                if (bk) return;
+                w.size = body.size; w.show = body.show; w.when = body.when.ShowDays === 'Every day' && body.when.ShowFrom === '00:00' && body.when.ShowUntil === '24:00' ? null : body.when;
+            });
             act({ action: 'saveWidget', widget: body }, 'Saved – the screen updates within a minute')
                 .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
-        $('wDel').onclick = function () {
-            if (!confirm('Remove the ' + T.name + ' widget from the screen? Its settings are kept, in case you add it again.')) return;
+        if ($('wDel')) $('wDel').onclick = function () {
+            var others = (DATA.widgets || []).some(function (x) { return x.id !== w.id && x.type === w.type; });
+            if (!confirm('Remove the ' + T.name + ' widget from the screen?' + (others ? '' : ' Its settings are kept, in case you add it again.'))) return;
             // Gone from the layout straight away; if the Google script says no (e.g. it's another widget's backup), it comes back with the reason.
             DATA.widgets = DATA.widgets.filter(function (x) { return x.id !== w.id; }); closeSheet(); setData(DATA);
             act({ action: 'deleteWidget', id: w.id }, 'Removed').then(function () { if (route().w) go('layout'); }, function () {});

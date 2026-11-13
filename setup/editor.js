@@ -181,7 +181,8 @@
 
     function remove(id) {
         var w = (D().widgets || []).filter(function (x) { return x.id === id; })[0]; if (!w) return;
-        if (!confirm('Remove the ' + H.typeOf(w.type).name + ' widget from the screen? Its settings are kept, in case you add it again.')) return;
+        var others = (D().widgets || []).some(function (x) { return x.id !== id && x.type === w.type; });
+        if (!confirm('Remove the ' + H.typeOf(w.type).name + ' widget from the screen?' + (others ? '' : ' Its settings are kept, in case you add it again.'))) return;
         D().widgets = D().widgets.filter(function (x) { return x.id !== id; });
         H.setData(D());
         H.act({ action: 'deleteWidget', id: id }, 'Removed').catch(function () { /* the app reloads and puts it back, with the reason */ });
