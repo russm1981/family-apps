@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.115';
+    var APP_VERSION = '2026.11.116';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -212,7 +212,7 @@
                     '<p class="lic-how">Your key is in your order email: FD- then four groups of five letters and numbers. Type it here:</p>' +
                     '<div class="lic-row"><input id="licIn" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="n-btn" id="licSave">Check and save</button></div>' +
                     '<p class="lic-msg" id="licMsg"></p>' +
-                    '<p class="lic-how">Or on your phone: <b>Family Admin → More → Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
+                    '<p class="lic-how">Or on your phone: <b>Family Admin → More → Software Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
                 var go = function () {
                     var inp = document.getElementById('licIn'), k = inp.value.trim(), msg = document.getElementById('licMsg'), btn = document.getElementById('licSave');
                     if (!k) { msg.textContent = 'Type your key in first.'; return; }
@@ -228,7 +228,7 @@
             el.style.display = 'flex';
         } else if (el) el.style.display = 'none';
         if (window.FDHealth) FDHealth.note('licence', lic && lic.required && (!lic.ok || /hasn’t answered/.test(lic.message || '')) ? 'Licence: ' + lic.message : '');
-        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → More → Licence)</span>' : '');
+        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → More → Software Licence)</span>' : '');
     }
     window.FDNotices = {
         version: APP_VERSION,

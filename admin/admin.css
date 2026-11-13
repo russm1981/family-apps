@@ -318,3 +318,30 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .rp-date .rp-say { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--text); font-size: 14px; white-space: nowrap; cursor: pointer; }
 .rp-date .rp-say i { font-style: normal; }
 .rp-date .rp-dt { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; padding: 0; }
+
+/* External data (API) keys: a box for each service, with how to get its key */
+.kcs { display: flex; flex-direction: column; gap: 16px; margin-bottom: 18px; }
+.kc { border: 1px solid var(--line); border-radius: 16px; padding: 16px 20px 18px; background: var(--panel); }
+.kc.needs { border-color: rgba(251,191,36,.6); }
+.kc header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+.kc header div { flex: 1; min-width: 200px; }
+.kc h3 { margin: 0; font-size: 19px; } .kc header small { color: var(--mute); font-size: 14px; }
+.kc-ico { font-size: 26px; }
+.kc-pill { font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--line); color: var(--mute); white-space: nowrap; }
+.kc-pill.ok { color: #22c55e; border-color: rgba(34,197,94,.5); }
+.kc-pill.warn { color: #fbbf24; border-color: rgba(251,191,36,.6); }
+.kc label { margin-top: 12px; }
+.kc-how { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.03); }
+.kc-how summary { cursor: pointer; color: #3fa9f5; font-weight: 700; }
+.kc-how ol { margin: 10px 0 6px; padding-left: 22px; } .kc-how li { margin-bottom: 8px; line-height: 1.55; }
+.kc-how a { color: #3fa9f5; }
+
+/* Software Licence details */
+.lic-dl { display: grid; grid-template-columns: max-content 1fr; gap: 12px 24px; margin: 14px 0 0; }
+.lic-dl dt { color: var(--mute); font-size: 14px; padding-top: 2px; }
+.lic-dl dd { margin: 0; line-height: 1.5; }
+.lic-dl .row-between { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+@media (max-width: 520px) { .lic-dl { grid-template-columns: 1fr; gap: 2px; } .lic-dl dd { margin-bottom: 10px; } }
+.redbox { border: 2px solid #ef4444; background: rgba(239,68,68,.1); color: #f87171; border-radius: 12px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
+.redbox b { color: #ef4444; }
+.setup-links { margin: 6px 0 0 22px; padding-left: 16px; border-left: 3px solid var(--line); }

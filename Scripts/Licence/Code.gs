@@ -20,7 +20,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.17';
+const LS_VERSION = '2026.11.18';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
@@ -224,7 +224,8 @@ function verify_(b) {
   rec[C['Last check']] = now; rec[C.Version] = version; rec[C.Checks] = (Number(rec[C.Checks]) || 0) + 1;
   sh.getRange(row, 1, 1, COLS.length).setValues([rec]);
   const screens = Math.max(1, Number(rec[C.Screens]) || 1);
-  return { ok: true, state: 'active', screens: screens, name: String(rec[C.Name] || ''), message: 'Licensed' + (rec[C.Name] ? ' to ' + rec[C.Name] : '') + ' · ' + screens + ' screen' + (screens > 1 ? 's' : '') };
+  const act = rec[C.Activated] instanceof Date ? rec[C.Activated] : now;
+  return { ok: true, state: 'active', screens: screens, activated: act.getTime(), name: String(rec[C.Name] || ''), message: 'Licensed' + (rec[C.Name] ? ' to ' + rec[C.Name] : '') + ' · ' + screens + ' screen' + (screens > 1 ? 's' : '') };
 }
 
 /** A dashboard moving to a fresh Sheet ("Start afresh") hands its key to the new installation. Only the dashboard the key is on can do this. */

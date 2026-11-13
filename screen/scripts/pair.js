@@ -3,7 +3,7 @@
  * The screen shows a QR code and a short code (e.g. K7Q2-M9XD). On a phone:
  *   - scan the QR code: if that phone already uses Family Admin, one tap connects the screen;
  *     if it's a brand-new family, it goes to first-time setup, and connects the screen at the end;
- *   - or in Family Admin → More → Devices → Connect by code, type the code.
+ *   - or in Family Admin → More → Devices and Phones → Connect by code, type the code.
  * The phone locks the family's link with the code (AES-GCM, key from the code) and leaves it with the seller's
  * licence server for up to 10 minutes; this screen collects it and unlocks it. The server never sees the link.
  */
@@ -59,7 +59,7 @@
             '<ol><li>Scan the code with your phone’s camera.</li>' +
             '<li><b>New to Family Dashboard?</b> Your phone takes you through setting up first (about 30 minutes), then connects this screen.</li>' +
             '<li><b>Already set up?</b> One tap on your phone connects it.</li></ol>' +
-            '<p class="pr-code">Or in Family Admin → More → Devices → <b>Connect by code</b>, and type <span class="pr-c">' + esc(code) + '</span></p>' +
+            '<p class="pr-code">Or in Family Admin → More → Devices and Phones → <b>Connect by code</b>, and type <span class="pr-c">' + esc(code) + '</span></p>' +
             '<p class="pr-state">Waiting for your phone…</p>' +
             '<details class="pr-paste"><summary>Have a keyboard? Paste a screen link instead</summary><div class="connect-row"><input id="pairIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="pairGo">Connect</button></div></details>' +
             '</div></div>';

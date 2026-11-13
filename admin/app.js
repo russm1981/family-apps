@@ -48,10 +48,10 @@
         keys: ['🔑', 'External data (API) keys', 'One place for every key: maps, trains, buses, NASA, Spotify'],
         system: ['🖥️', 'System', 'Screen & sleep, licence and updates'],
         mydata: ['🗂️', 'My data (Google)', 'Reconfigure, start again, move to another Google account, access code'],
-        devices: ['📱', 'Devices', 'This phone, another person’s phone, another screen'],
+        devices: ['📱', 'Devices and Phones', 'This phone, another person’s phone, another screen'],
         support: ['🩺', 'About & diagnostics', 'Every version number, what’s new, and a report for support'],
         screen: ['🌙', 'Screen & sleep', 'When the screen goes to sleep, and night hours', true],
-        licence: ['🎫', 'Licence', 'Your licence key and screens', true],
+        licence: ['🎫', 'Software Licence', 'Your licence key and screens', true],
         updates: ['⟳', 'Software updates', 'The application held within Google (Google script) – its version and automatic updates', true],
     };
     var ALIAS = { access: 'devices', advanced: 'mydata', home: 'places' };   // older links
@@ -517,9 +517,9 @@
     function renderAdvanced(sub) {
         var line = function (k) { try { return sectionLine(k); } catch (e) { return ''; } };
         var items = [['info', 'ℹ️', 'About these settings'],
-            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'Data keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Licence'], ['updates', '⟳', 'Software updates'],
+            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data (API) keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
             ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)'],
-            ['-', 'My devices'], ['devices', '📱', 'Devices'],
+            ['-', 'My devices'], ['devices', '📱', 'Devices and Phones'],
             ['-', 'System'], ['support', '🩺', 'About & diagnostics']];
         if (sub === 'system') sub = 'screen';
         var cur = sidePane('advanced', items, sub);
@@ -528,7 +528,7 @@
         $('body').innerHTML = explain('About these settings',
             '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
             '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
-            '<li><b>Data keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +
+            '<li><b>External data (API) keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +
             '<li><b>Screen &amp; sleep</b> – when the screen dims and sleeps at night.</li><li><b>Licence</b> – your licence key.</li><li><b>Software updates</b> – the version of the application held within Google (Google script), and automatic updates.</li>' +
             '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
             '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
@@ -599,7 +599,7 @@
         title(what);
         $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>Family Dashboard Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
-            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
@@ -2014,12 +2014,51 @@
         return (DATA.install || []).filter(function (f) { return f.group === 'keys' && !f.value && keyNeeded(f.k); }).map(function (f) { return f.label.replace(/ (API )?(key|app ID|app key|Client ID|Client secret)$/i, ''); })
             .filter(function (x, i, a) { return a.indexOf(x) === i; });
     }
+    // Each service, the keys it gives you, what it's for, and how to get them (the same steps as the setup wizard).
+    var KEY_HELP = [
+        { keys: ['TomTomKey'], name: 'TomTom', ico: '🚗', need: 'Traffic times and all the maps (traffic and flights)', free: 'Free: 2,500 requests a day – plenty.',
+          steps: ['Go to <a href="https://developer.tomtom.com/" target="_blank" rel="noopener">developer.tomtom.com</a> and click <b>Register</b> (free).',
+                  'Confirm your email, then sign in and open your <b>Dashboard</b>.',
+                  'Under <b>Keys</b> you’ll see “My first API key” – click it, copy the key and paste it above.'] },
+        { keys: ['RailDataKey'], name: 'National Rail', ico: '🚆', need: 'The live train departure board', free: 'Free.',
+          steps: ['Go to <a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration" target="_blank" rel="noopener">realtime.nationalrail.co.uk/OpenLDBWSRegistration</a> and fill in the form (free).',
+                  'National Rail emails you a <b>token</b> that looks like <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code> – paste it above.',
+                  'Or a <b>Live Departure Board</b> key from <a href="https://raildata.org.uk/" target="_blank" rel="noopener">raildata.org.uk</a> works too.'] },
+        { keys: ['TransportApiId', 'TransportApiKey'], name: 'TransportAPI', ico: '🚌', need: 'Live bus times', free: 'Free: 30 updates a day (the screen spreads them over the school run).',
+          steps: ['Go to <a href="https://developer.transportapi.com/signup" target="_blank" rel="noopener">developer.transportapi.com/signup</a> and sign up for the free plan.',
+                  'Sign in and open <b>Applications</b> (or the Dashboard).',
+                  'Copy the <b>Application ID</b> and the <b>Key</b> into the two boxes above.'] },
+        { keys: ['NasaKey'], name: 'NASA', ico: '🔭', need: 'The NASA picture of the day', free: 'Free. It works for a while without one, but that runs out.',
+          steps: ['Go to <a href="https://api.nasa.gov/" target="_blank" rel="noopener">api.nasa.gov</a> and fill in the short form under <b>Generate API Key</b>.',
+                  'The key appears straight away (and is emailed to you) – copy it above.'] },
+        { keys: ['SpotifyClientId', 'SpotifyClientSecret'], name: 'Spotify', ico: '🎵', need: 'What’s playing, with play, pause and skip (needs Spotify Premium)', free: 'Free; needs a Premium account.',
+          steps: ['Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>, log in and click <b>Create app</b>.',
+                  'Any name and description. For <b>Redirect URI</b> paste your web app address: <button type="button" class="btn ghost sm" data-copyurl>Copy it</button>. Tick <b>Web API</b>, agree and save.',
+                  'Open the app’s <b>Settings</b>: copy the <b>Client ID</b>, then <b>View client secret</b> and copy that too – into the two boxes above.',
+                  'Save here, then in the Family Admin app: Apps → Spotify → <b>Connect Spotify</b> (one-off).'] },
+    ];
     function secKeys() {
         title('External data (API) keys');
-        $('body').innerHTML = '<p class="mute small help">Every key in one place. Each turns on live data for the widgets that use it; the ones marked <span class="need">needed</span> are for widgets on your screen. They’re all free.</p>' +
-            card('', installFields('keys') + saveInstallBtn('kSave', 'Save keys')) +
-            '<a class="link-card" href="' + esc(setupLink('keys')) + '" target="_blank" rel="noopener"><b>How to get each key ›</b><span class="mute small">Step-by-step guides in the setup app (easiest on a computer).</span></a>';
+        var inst = function (k) { return (DATA.install || []).filter(function (f) { return f.k === k; })[0]; };
+        var listed = {};
+        var cards = KEY_HELP.map(function (h) {
+            var fs = h.keys.map(inst).filter(Boolean); if (!fs.length) return '';
+            fs.forEach(function (f) { listed[f.k] = 1; });
+            var have = fs.every(function (f) { return f.value; }), need = fs.some(function (f) { return keyNeeded(f.k); });
+            var pill = have ? '<span class="kc-pill ok">✔ Added</span>' : need ? '<span class="kc-pill warn">Needed – a widget on your screen uses it</span>' : '<span class="kc-pill">Not added – optional</span>';
+            return '<section class="kc' + (have ? ' have' : need ? ' needs' : '') + '"><header><span class="kc-ico">' + h.ico + '</span><div><h3>' + esc(h.name) + '</h3><small>For: ' + esc(h.need) + '</small></div>' + pill + '</header>' +
+                fs.map(function (f) { return '<label>' + esc(f.label) + '</label><input data-set="' + esc(f.k) + '" value="' + esc(f.value) + '" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the ' + esc(f.label.toLowerCase()) + ' here">'; }).join('') +
+                '<details class="kc-how"' + (have ? '' : ' open') + '><summary>' + (have ? 'How to get a new one' : 'How to get one – about 5 minutes') + '</summary><ol>' + h.steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol><p class="mute small">' + esc(h.free) + '</p></details></section>';
+        }).join('');
+        // Any key not described above (a newer one): as a plain box.
+        var rest = (DATA.install || []).filter(function (f) { return f.group === 'keys' && !listed[f.k]; });
+        $('body').innerHTML = '<p class="mute small help">Each service below gives the dashboard live information – it’s free, and you sign up once. The ones marked <span class="need">needed</span> are for widgets on your screen; the others only matter if you add those widgets.</p>' +
+            '<div class="kcs">' + cards + (rest.length ? '<section class="kc"><header><span class="kc-ico">🔑</span><div><h3>Other keys</h3></div></header>' + installFields(null, rest.map(function (f) { return f.k; })) + '</section>' : '') + '</div>' +
+            saveInstallBtn('kSave', 'Save the keys');
         wireSaveInstall('kSave');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-copyurl]'), function (b) {
+            b.onclick = function () { var u = FD.config().url; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', u); }); };
+        });
     }
     /** Widgets whose settings hold an address or a place (weather location, traffic routes, bins, whereabouts…). */
     var PLACE_KEYS = ['Location', 'From', 'Destinations', 'Postcode', 'House', 'Places', 'Centre', 'Stop', 'StopCode', 'Station'];
@@ -2052,13 +2091,13 @@
     function secMyData() {
         var fresh = guideUrl();
         $('body').innerHTML = '<p class="mute small help">Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>' +
-            card('Reconfigure your existing setup', '<p class="mute small">Opens the step-by-step setup with everything you already have filled in – change what you like, keep the rest.</p>' +
+            card('Reconfigure your existing setup', '<p class="mute small">Opens the step-by-step setup with everything you already have filled in – change what you like, keep the rest.</p><div class="setup-links">' +
                 [['welcome', 'Go through the whole setup again', 'every step, already filled in'], ['family', 'Repeat just the family step', 'who’s in the family'], ['check', 'Test all the widgets', 'asks your Sheet to fetch every widget and reports anything that needs attention'], ['keys', 'Step-by-step guide to the external data sources', 'getting the free keys for traffic, trains, buses…']].map(function (x) {
                     return '<a class="setup-link" href="' + setupLink(x[0]) + '" target="_blank" rel="noopener"><b>' + x[1] + '</b><span>' + x[2] + '</span><i>›</i></a>';
-                }).join('')) +
+                }).join('') + '</div>') +
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
-                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
+                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (Advanced → Software Licence), so the new Sheet can use it.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup app for a new family</a>') +
             accessCard();
         wireAfresh(); wireAccess();
@@ -2067,10 +2106,24 @@
     /* ---- licence */
     function secLicence() {
         var Lc = DATA.licence || {};
-        $('body').innerHTML = card('Your licence', !Lc.required ? '<p class="mute">Licence keys aren’t being checked yet. You can still add yours now.</p>'
-                : '<p class="' + (Lc.ok ? (Lc.state === 'trial' ? '' : 'pos') : 'neg') + '"><b>' + (Lc.ok ? (Lc.state === 'trial' ? '⏳ ' : '✔ ') : '⚠ ') + esc(Lc.message) + '</b></p>' +
-                  (DATA.licenceKey ? '<label>Your key</label><div class="row-between"><b class="mono" style="user-select:all">' + esc(DATA.licenceKey) + '</b><button class="btn ghost sm" id="licCopy">Copy</button></div>'
-                    : Lc.key ? '<p class="mute small">Key ending …' + esc(Lc.key) + '</p>' : '')) +
+        title('Software Licence');
+        var day = function (t) { return t ? new Date(t).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''; };
+        var dl = function (rows) { return '<dl class="lic-dl">' + rows.filter(function (r) { return r[1]; }).map(function (r) { return '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>'; }).join('') + '</dl>'; };
+        var n = Lc.screens || 1, used = Lc.screensUsed;
+        var keyHtml = DATA.licenceKey ? '<span class="row-between"><b class="mono" style="user-select:all">' + esc(DATA.licenceKey) + '</b><button class="btn ghost sm" id="licCopy">Copy</button></span>' : Lc.key ? '…' + esc(Lc.key) : '';
+        var details = !Lc.required ? '<p class="mute">Licence keys aren’t being checked yet. You can still add yours now.</p>' + dl([['Your key', keyHtml]])
+            : '<p class="' + (Lc.ok ? (Lc.state === 'trial' ? '' : 'pos') : 'neg') + '"><b>' + (Lc.ok ? (Lc.state === 'trial' ? '⏳ ' : '✔ ') : '⚠ ') + esc(Lc.message) + '</b></p>' +
+              dl(Lc.state === 'active' ? [
+                  ['Licensed to', esc(Lc.name || '')],
+                  ['Your key', keyHtml],
+                  ['Screens', n + ' screen' + (n > 1 ? 's' : '') + ' at once' + (used != null ? ' · ' + used + ' in use now' : '') + ' <a href="#" data-go="s/devices" class="small">see which ›</a><br><span class="mute small">The Corsair, a tablet or a computer showing the dashboard. Phones with the apps don’t count – connect as many as you like.</span>'],
+                  ['Valid until', 'No end date – it’s a one-off purchase, and updates are included'],
+                  ['Activated', day(Lc.activated)],
+                  ['Last checked', Lc.lastOk ? day(Lc.lastOk) + ' <span class="mute small">(checked automatically once a day)</span>' : '']
+                ] : Lc.state === 'trial' ? [['Screens', '1 screen during the trial'], ['Trial ends', day(Date.now() + (Lc.daysLeft || 0) * 864e5)], ['Your key', keyHtml]] : [['Your key', keyHtml]]);
+        $('body').innerHTML = '<p class="mute small help">A licence is your permission to use the Family Dashboard software. You buy it once and get a <b>licence key</b> (FD- then four groups of five letters and numbers) in your order email. ' +
+                'The key is linked to this dashboard – your family’s Google Sheet – and says how many screens can show it. Your family’s information never goes to the seller: only the key and a random installation number are checked.</p>' +
+            card('Your licence', details) +
             card(Lc.key || DATA.licenceKey ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
                 '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(DATA.licenceKey || '') + '" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
                 '<button class="btn wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
@@ -2230,7 +2283,7 @@
             '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
         var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
         if (DATA.loader && !v) return card('Port my data to a different Google account', '<p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
-            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
+            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones switch over by themselves. The new account is emailed the steps.</p>' +
             '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
             '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div>');
         return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
@@ -2241,7 +2294,7 @@
             'The screen and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
             '<button class="btn wide" id="afresh">Start afresh</button></details>') +
             '<details class="adv"><summary>Port my data to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
-            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
+            'Everything comes across – people, points, lists, settings and your licence – and the screen and phones switch over by themselves. The new account is emailed the steps.</p>' +
             '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
             '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
     }
@@ -2258,11 +2311,11 @@
             var b = this; b.disabled = true; b.textContent = 'Making the moving pack…';
             FD.post({ action: 'packForAccount', email: email }).then(function (d) {
                 b.textContent = 'Moving pack made ✔';
-                $('mvOut').innerHTML = '<ol class="small"><li>On a <b>computer</b>, sign in to Google as <b>' + esc(d.email) + '</b> (or open a private window and sign in there).</li>' +
+                $('mvOut').innerHTML = (d.emailed ? '<p class="pos small"><b>✔ Emailed to ' + esc(d.email) + '</b> – the email has these steps, and what happens to your screens and phones. You can also do it now:</p>' : '') + '<ol class="small"><li>On a <b>computer</b>, sign in to Google as <b>' + esc(d.email) + '</b> (or open a private window and sign in there).</li>' +
                     '<li>Open this link – it’s the setup app, in “moving” mode:</li></ol><textarea readonly rows="3" id="mvLink">' + esc(d.setupLink) + '</textarea>' +
                     '<button class="btn ghost wide" id="mvCopy">Copy the link</button>' + (navigator.share ? '<button class="btn ghost wide" id="mvShare">Send it to yourself</button>' : '') +
                     '<ol class="small" start="3"><li>Follow the setup steps for the new account (make the Sheet, publish it). At “Publish &amp; connect” press <b>Bring everything across</b>.</li>' +
-                    '<li>That’s it – the screen, phones and licence switch over by themselves. This Sheet is kept as a backup.</li></ol>';
+                    '<li>That’s it – the screen, phones and licence switch over by themselves within a few minutes; you don’t connect them again. If one is switched off at the time, reload it when it’s back on (if it asks for a code, connect it again from Devices). This Sheet is kept as a backup.</li></ol>';
                 $('mvCopy').onclick = function () { try { navigator.clipboard.writeText(d.setupLink).then(function () { FD.toast('Copied'); }); } catch (e) { $('mvLink').select(); } };
                 if ($('mvShare')) $('mvShare').onclick = function () { navigator.share({ title: 'Move Family Dashboard', text: 'Open on a computer, signed in as ' + d.email + ':', url: d.setupLink }).catch(function () {}); };
             }, function (e) { b.disabled = false; b.textContent = 'Make a moving pack'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
@@ -2311,8 +2364,8 @@
         return '';
     }
     function accessCard() {
-        return card('Access code', '<p class="small"><b>What it is:</b> the access code is your dashboard’s password. Every screen, tablet and phone sends it with each request to your Google Sheet, and the Sheet only answers if it’s right – so nobody else can see or change your family’s information, even if they find your links.</p><p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'Anyone with your links and code can use your dashboard. ' +
-            'After changing it, every other phone and screen needs connecting again (Devices). This phone updates itself.</p>' +
+        return card('Access code', '<p class="small"><b>What it is:</b> the access code is your dashboard’s password. Every screen, tablet and phone sends it with each request to your Google Sheet, and the Sheet only answers if it’s right – so nobody else can see or change your family’s information, even if they find your links.</p>' + (DATA.codeWeak ? '<div class="redbox"><b>⚠ Your access code is weak.</b> It’s easy to guess, and anyone with your links and code can use your dashboard. Make a new strong one below.</div>' : '') +
+            '<p class="mute small">After changing it, every other phone and screen needs connecting again (Devices and Phones). ' + (DESK ? 'This computer' : 'This phone') + ' updates itself.</p>' +
             '<button class="btn wide" id="cNew">Make a new strong code for me</button>' +
             '<label>Or choose your own <span class="cnt">8+ characters, letters, numbers and a special character</span></label>' +
             '<input id="cOwn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. Garden-Gnome-42">' +

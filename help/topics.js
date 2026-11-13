@@ -9,7 +9,7 @@ window.FD_HELP = [
     body: `
 <p><b>The Family Dashboard Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Set up</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
-<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
+<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
@@ -69,7 +69,7 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → More → Devices → Connect by code</b>. For the Windows PC, make a new start file in the setup app (<b>Settings → My data (Google) → Go through setup again</b>, step “Connect your devices”) and replace the old one.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → More → Devices and Phones → Connect by code</b>. For the Windows PC, make a new start file in the setup app (<b>Settings → My data (Google) → Go through setup again</b>, step “Connect your devices”) and replace the old one.</dd>
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
@@ -123,10 +123,10 @@ window.FD_HELP = [
     body: `
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
 <h2>Family Admin or Family Calendar on a computer</h2>
-<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → More → Devices → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
+<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → More → Devices and Phones → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
 <h2>A new phone (Family Admin or Family Calendar)</h2>
 <ol>
-<li>On a phone that’s <b>already connected</b>: <b>Family Admin → More → Devices</b>. This shows QR codes.</li>
+<li>On a phone that’s <b>already connected</b>: <b>Family Admin → More → Devices and Phones</b>. This shows QR codes.</li>
 <li>On the new phone, point the camera at the right QR code and open the link.</li>
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
@@ -138,7 +138,7 @@ window.FD_HELP = [
 <h2>A tablet or Raspberry Pi</h2>
 <p>Open the <b>screen link</b> from the same page in the device’s browser (or scan the “Tablet or Pi screen” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
 <h2>How many screens?</h2>
-<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones with Family Admin or Family Calendar don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → More → Devices</b>.</p>
+<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones with Family Admin or Family Calendar don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → More → Devices and Phones</b>.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
   },
@@ -151,7 +151,7 @@ window.FD_HELP = [
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
 <li><b>New to Family Dashboard?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → Devices → <b>Connect by code</b> and type the code.)</li>
+<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → Devices and Phones → <b>Connect by code</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
@@ -197,7 +197,7 @@ window.FD_HELP = [
 <h2>Entering your key</h2>
 <ol><li>Find your order email – the key looks like <code>FD-AB2CD-EF3GH-JK4LM-NP5QR</code>.</li>
 <li>When you first set up, the setup app has a step <b>“Your licence key”</b> – the link in your email fills it in for you.</li>
-<li>Later: on your phone, <b>Family Admin → More → Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
+<li>Later: on your phone, <b>Family Admin → More → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
 <h2>Messages</h2>
 <dl>
 <dt>“Free trial: N days left”</dt><dd>Everything works; add your key before the trial ends.</dd>
@@ -308,7 +308,7 @@ window.FD_HELP = [
 <p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>the Configurator → Advanced → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
-<ol><li>Free your licence key first: <b>Family Admin → More → Licence → Free up my licence key</b>. Note the key.</li>
+<ol><li>Free your licence key first: <b>Family Admin → More → Software Licence → Free up my licence key</b>. Note the key.</li>
 <li>Run the <a href="../setup/">setup app</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup app shows how).</li></ol>`
   },

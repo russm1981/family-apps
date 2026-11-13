@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.67';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.68';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -4249,7 +4249,29 @@ function packForAccount_(email) {
   cs.getRange(2, 1).setValue(JSON.stringify({ props: props, install: install, token: token, from: from, autoUpdate: autoUpdateOn_(), at: new Date().toISOString() }));
   pack.addEditor(email);
   P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, sheetUrl: pack.getUrl(), packId: pack.getId(), token: token, install: install, at: new Date().toISOString() }));
-  return { ok: true, packId: pack.getId(), email: email, setupLink: appsBase_() + 'setup/#go=import&pack=' + encodeURIComponent(pack.getId()) };
+  const setupLink = appsBase_() + 'setup/#go=import&pack=' + encodeURIComponent(pack.getId());
+  let emailed = false;
+  try { GmailApp.sendEmail(email, 'Moving your Family Dashboard to this Google account', moveEmail_(email, setupLink, me)); emailed = true; } catch (e) { /* the app shows the same steps */ }
+  return { ok: true, packId: pack.getId(), email: email, setupLink: setupLink, emailed: emailed };
+}
+/** The steps for the new account, emailed to it with the moving pack. */
+function moveEmail_(email, link, from) {
+  const fam = String(inst_('FamilyName') || '').trim();
+  return 'Hello,\n\n' +
+    'This email is to move ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + ' into this Google account (' + email + ')' + (from ? ', from ' + from : '') + '.\n\n' +
+    'A “moving pack” has been shared with this account: a copy of everything – people, points, lists, notes, settings and the licence. ' +
+    'Nothing changes on the screen until you finish the steps below, so take your time.\n\n' +
+    'WHAT TO DO (about 20 minutes, on a computer – not a phone or tablet)\n\n' +
+    '1. Sign in to Google as ' + email + '. If your browser is signed in to another account too, use a private (incognito) window and sign in there, so the right account is used.\n\n' +
+    '2. Open this link. It is the Family Dashboard setup, in “moving” mode:\n\n    ' + link + '\n\n' +
+    '3. Follow the steps on screen: it makes a new copy of the dashboard’s Google Sheet in this account and asks you to publish it, so the screen and phones can reach it. Google asks you to allow this – that’s normal.\n\n' +
+    '4. At “Publish & connect”, press “Bring everything across”. Everything in the moving pack is copied in, and the licence moves with it – you don’t need to type the key.\n\n' +
+    'YOUR SCREENS AND PHONES\n\n' +
+    'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
+    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → More → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
+    'AFTERWARDS\n\n' +
+    'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“Family Dashboard – moving pack”) from this account’s Google Drive.\n\n' +
+    'Help with every step: ' + appsBase_() + 'help/\n';
 }
 /**
  * Step 2, in the new account's new dashboard (from the setup app): bring every tab and setting across, take over the
@@ -4351,7 +4373,7 @@ function licencePublic_(recheck) {
   if (recheck || st.key !== key || Date.now() - (st.checked || 0) > LICENCE.recheckHours * 3600e3) {
     try {
       const d = askLicenceServer_(server, key);
-      Object.assign(st, { key: key, state: d.state, message: d.message || '', name: d.name || '', screens: d.screens || 1, checked: Date.now(), offline: '' });
+      Object.assign(st, { key: key, state: d.state, message: d.message || '', name: d.name || '', screens: d.screens || 1, activated: d.activated || st.activated || 0, checked: Date.now(), offline: '' });
       if (d.ok) st.lastOk = Date.now();
     } catch (err) {
       st.checked = Date.now() - (LICENCE.recheckHours - 1) * 3600e3;    // try again in an hour
@@ -4363,7 +4385,8 @@ function licencePublic_(recheck) {
   const tail = key.slice(-5);
   if (st.state === 'active') {
     const left = Math.ceil(LICENCE.graceDays - (Date.now() - (st.lastOk || 0)) / 864e5);
-    if (left > 0) return { required: true, ok: true, state: 'active', name: st.name, key: tail, screens: st.screens || 1, message: st.offline && left < LICENCE.graceDays - 2
+    if (left > 0) return { required: true, ok: true, state: 'active', name: st.name, key: tail, screens: st.screens || 1, screensUsed: Object.keys(screensReg_()).length,
+      activated: st.activated || 0, lastOk: st.lastOk || 0, message: st.offline && left < LICENCE.graceDays - 2
       ? 'Licensed. The licence server hasn’t answered for a while – it needs to within ' + left + ' days.' : 'Licensed' + (st.name ? ' to ' + st.name : '') };
     return { required: true, ok: false, state: 'offline', key: tail, message: 'The licence couldn’t be checked for ' + LICENCE.graceDays + ' days. Check the internet connection, or contact the seller.' };
   }
@@ -4386,7 +4409,7 @@ function setLicence_(key) {
   setInst_('LicenceKey', key);
   const P = PropertiesService.getScriptProperties();
   let st = {}; try { st = JSON.parse(P.getProperty('licence') || '{}'); } catch (e) { st = {}; }
-  Object.assign(st, { key: key, state: 'active', message: d.message, name: d.name || '', screens: d.screens || 1, checked: Date.now(), lastOk: Date.now(), offline: '', since: st.since || Date.now() });
+  Object.assign(st, { key: key, state: 'active', message: d.message, name: d.name || '', screens: d.screens || 1, activated: d.activated || Date.now(), checked: Date.now(), lastOk: Date.now(), offline: '', since: st.since || Date.now() });
   P.setProperty('licence', JSON.stringify(st));
   bumpVersions_();
   return { ok: true, licence: licencePublic_(), message: d.message || 'Licensed' };
