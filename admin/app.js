@@ -1178,7 +1178,7 @@
             var w = t.closest('.rpick'); if (!w) return;
             if (t.classList.contains('rp-mode')) { w.querySelector('.dpick').hidden = t.value !== 'week'; w.querySelector('.rp-date').hidden = t.value !== 'date';
                 w.querySelector('.rp-val').value = t.value === 'week' ? w.querySelector('.dpick input[type=hidden]').value : dmy(w.querySelector('.rp-dt').value); }
-            if (t.classList.contains('rp-dt')) { w.querySelector('.rp-val').value = dmy(t.value); w.querySelector('.rp-say').textContent = longDate(t.value); }
+            if (t.classList.contains('rp-dt')) { w.querySelector('.rp-val').value = dmy(t.value); w.querySelector('.rp-say').innerHTML = esc(longDate(t.value) || 'Pick a date') + ' <i>📅</i>'; }
         };
         box.addEventListener('click', function (e) {      // a day button inside a reminder: that's the reminder's value too
             var d = e.target.closest('.rpick .dp-day, .opick .dp-day'); if (!d) return;
@@ -1281,12 +1281,17 @@
         return '';
     }
     function dmy(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+    // A reminder's date: a button showing the date in words; pressing it opens the calendar to pick from.
+    document.addEventListener('click', function (e) {
+        var d = e.target.closest && e.target.closest('.rp-date'); if (!d) return;
+        var inp = d.querySelector('.rp-dt'); try { if (inp.showPicker) { inp.showPicker(); e.preventDefault(); } else inp.focus(); } catch (x) { inp.focus(); }
+    });
     function longDate(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : ''; }
     function whenPick(v) {
         var iso = isoOf(v), date = !!iso;
         return '<div class="rpick"><select class="rp-mode"><option value="week"' + (date ? '' : ' selected') + '>Every week on…</option><option value="date"' + (date ? ' selected' : '') + '>On a date…</option></select>' +
             '<div class="rp-week">' + dayPick('', date ? 'Fri' : v || 'Fri').replace('<div class="dpick">', '<div class="dpick"' + (date ? ' hidden' : '') + '>') + '</div>' +
-            '<div class="rp-date"' + (date ? '' : ' hidden') + '><input type="date" class="rp-dt" value="' + esc(iso) + '"><span class="rp-say mute small">' + esc(longDate(iso)) + '</span></div>' +
+            '<div class="rp-date"' + (date ? '' : ' hidden') + '><span class="rp-say">' + esc(longDate(iso) || 'Pick a date') + ' <i>📅</i></span><input type="date" class="rp-dt" value="' + esc(iso) + '" aria-label="Date"></div>' +
             '<input type="hidden" class="rp-val" data-k="Day" value="' + esc(date ? dmy(iso) : formatDays(parseDays(v || 'Fri'))) + '"></div>';
     }
     /** Today's and tomorrow's reminders; from the switch time (5pm unless set on the Reminders page) only tomorrow's. */

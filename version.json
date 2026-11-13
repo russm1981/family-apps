@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.112",
+  "app": "2026.11.113",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Daily to-dos and reminders: each one on a single line with its day buttons (no “school days” note), with a little more height and space between them"
+    "Reminders on a date: a button showing the date in words (“Fri, 4 December 2026 📅”) – press it and a calendar opens to pick the date, instead of typing dd/mm/yyyy"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

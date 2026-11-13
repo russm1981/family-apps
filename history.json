@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.113",
+    "date": "2026-11-13",
+    "notes": [
+      "Reminders on a date: a button showing the date in words (“Fri, 4 December 2026 📅”) – press it and a calendar opens to pick the date, instead of typing dd/mm/yyyy"
+    ]
+  },
+  {
     "version": "2026.11.112",
     "date": "2026-11-13",
     "notes": [
