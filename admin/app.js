@@ -251,6 +251,7 @@
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
         if ($('hdrHelp')) $('hdrHelp').classList.toggle('on', r.tab === 'help');
+        orient(r.tab === 'calendar' && !r.w);
         if ($('hdrFb')) $('hdrFb').classList.toggle('on', r.tab === 'feedback');
         $('back').style.display = r.w || r.s || r.pts ? '' : 'none';
         $('body').onclick = null;
@@ -268,6 +269,16 @@
         // On the website the title bar always says "Family Dashboard Configurator"; the page's own name is its heading.
         if (DESK && pageName && r.tab !== 'layout' && r.tab !== 'rewards' && !$('body').querySelector('.page-h')) $('body').insertAdjacentHTML('afterbegin', '<h1 class="page-h">' + esc(pageName) + '</h1>');
         privacyCheck();
+    }
+    /** On a phone only the Calendar tab turns sideways. Android: the other tabs are locked upright. iPhone (which can't
+     * lock one screen and not another): turned sideways, the other tabs ask you to turn the phone upright. */
+    function orient(cal) {
+        if (DESK) return;
+        document.body.classList.toggle('tab-calendar', !!cal);
+        try {
+            var o = screen.orientation;
+            if (o && o.lock) { if (cal) { if (o.unlock) o.unlock(); } else o.lock('portrait').catch(function () { /* not allowed here (iPhone, a browser tab) */ }); }
+        } catch (e) { /* fine */ }
     }
     var pageName = '';
     function title(t) {

@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.101",
+    "date": "2026-11-13",
+    "notes": [
+      "Family Admin app: turn the phone sideways on the Calendar tab and the calendar fills the screen (turn it upright again for the other tabs). On Android the other tabs stay upright; on an iPhone, turned sideways, they ask you to turn the phone upright",
+      "Family Calendar app: turns sideways too, with a compact bar at the top so the month has the room"
+    ]
+  },
+  {
     "version": "2026.11.100",
     "date": "2026-11-13",
     "notes": [

@@ -304,3 +304,12 @@ body:not(.desk) .tabbar button { min-width: 0; }
 body.acting, body.acting * { cursor: wait !important; }
 body.acting #body, body.acting #bodyOuter, body.acting #sheet, body.acting #tabs { pointer-events: none; }
 body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 9999; background: #1b2029; border: 1px solid #3fa9f5; color: #e8ecf2; padding: 8px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+
+/* Phone turned sideways: only the Calendar tab works that way – it fills the screen; the others ask to be turned back */
+@media (orientation: landscape) and (max-height: 520px) {
+  body:not(.desk):not(.tab-calendar)::after { content: '↻  Turn your phone upright\A Only the Calendar turns sideways'; white-space: pre; text-align: center; position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: #0c0e12; color: #e8ecf2; font-size: 20px; font-weight: 700; line-height: 1.6; }
+  /* the calendar has the whole screen – turn the phone upright again for the other tabs */
+  body.tab-calendar:not(.desk) .top, body.tab-calendar:not(.desk) .tabbar, body.tab-calendar:not(.desk) .frame-bar { display: none; }
+  body.tab-calendar:not(.desk) .main { padding: 0 !important; max-width: none; }
+  body.tab-calendar:not(.desk) .desk-frame { position: fixed; inset: 0; width: 100vw; height: 100vh; min-height: 0; border: 0; border-radius: 0; z-index: 50; }
+}

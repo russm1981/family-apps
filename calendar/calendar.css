@@ -72,3 +72,15 @@
 .ev-err { color: #ffb3b3; }
 
 .chip-h { flex-basis: 100%; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: var(--mute, #8b95a5); margin-top: 6px; }
+
+/* Phone turned sideways: one compact bar at the top, so the month has the room */
+@media (orientation: landscape) and (max-height: 520px) {
+  .top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-top: 6px; padding-bottom: 6px; }
+  .top .top-row { margin: 0; }
+  .top h1 { font-size: 18px; }
+  .top .icon-btn { width: 34px; height: 34px; }
+  .top .seg button { padding-top: 5px; padding-bottom: 5px; }
+  .legend { margin-top: 0; font-size: 11.5px; flex-basis: 100%; }
+  .mcell { min-height: 52px; }
+  .fab { width: 48px; height: 48px; border-radius: 16px; bottom: 12px; }
+}
