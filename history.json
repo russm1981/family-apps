@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.90",
+    "date": "2026-11-13",
+    "notes": [
+      "The time the screen switches to tomorrow’s reminders is now set on the Reminders page, under the reminders (it’s saved with them), not in Reward rules"
+    ]
+  },
+  {
     "version": "2026.11.89",
     "date": "2026-11-13",
     "notes": [

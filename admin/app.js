@@ -391,7 +391,7 @@
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
                 '<ul class="small"><li><b>Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
                 '<li><b>Daily to-dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
-                '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set in Reward rules). The <b>Reminders</b> widget shows every child’s together.</li>' +
+                '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set on the Reminders page). The <b>Reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
                 '<li><b>Manual edits</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
@@ -403,9 +403,9 @@
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
                 }).join('') : '<div class="empty">No tasks yet</div>') + '</div>';
         } else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
-        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm, or the time you set in Reward rules). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
+        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
-            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions'; }), pp.settings || {}) : '') +
+            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom'; }), pp.settings || {}) : '') +
                 '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
                 '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
                 '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
@@ -1046,7 +1046,7 @@
     /** The points rules: points for a cash-in, what it's worth, the penalty buttons. */
     function rulesSheet() {
         var pp = pointsPage(); if (!pp) return;
-        sheet('<h2>Reward rules</h2><p class="mute small">How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.</p>' + fields(pageTypeOf('boys').settings, pp.settings || {}) +
+        sheet('<h2>Reward rules</h2><p class="mute small">How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.</p>' + fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'TomorrowFrom'; }), pp.settings || {}) +
             '<div class="sheet-actions"><button class="btn ghost" id="rCancel">Cancel</button><button class="btn good" id="rSave">Save</button></div>');
         $('rCancel').onclick = closeSheet;
         $('rSave').onclick = function () { act({ action: 'savePage', page: { id: pp.id, settings: readFields() } }, 'Saved – the screen updates within a minute').then(closeSheet, function () {}); };
@@ -1054,7 +1054,7 @@
     var LISTS = {
         todos: { title: 'Daily to-dos', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
             cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'How often']], ordered: true },
-        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time in Reward rules) – every week on some days, or on one date.',
+        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
     };
     function listFold(k) {
@@ -1065,7 +1065,14 @@
             (DESK ? '' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
             (DESK ? '<div class="lhead l-' + k + '">' + (cfg.ordered ? '<span></span>' : '') + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
             '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
-            '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button><button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
+            '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button>' + (k === 'timetable' ? remFromRow() : '') +
+            '<button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
+    }
+    /** When the screen switches from today's reminders to tomorrow's (a Rewards setting, set with the reminders). */
+    function remFrom() { var pp = pointsPage(); return String(((pp && pp.settings) || {}).TomorrowFrom || '17:00'); }
+    function remFromRow() {
+        return '<div class="rem-from"><label for="remFrom">Switch to tomorrow’s reminders at</label><input type="time" id="remFrom" value="' + esc(remFrom()) + '">' +
+            '<p class="mute small">Until this time the screen shows today’s reminders (with a peek at tomorrow’s); from this time, tomorrow’s – so school things can be got ready the evening before.</p></div>';
     }
     function wireListFold(k) {
         var box = $('f_' + k);
@@ -1107,6 +1114,11 @@
                     if (LISTS[k].ordered) o.Order = i + 1;
                     return o;
                 });
+                var rf = $('remFrom'), pp = pointsPage();
+                if (k === 'timetable' && rf && pp && rf.value && rf.value !== remFrom()) {
+                    act({ action: 'savePage', page: { id: pp.id, settings: { TomorrowFrom: rf.value } } });
+                    (pp.settings = pp.settings || {}).TomorrowFrom = rf.value; if (DATA.state) DATA.state.remindersFrom = rf.value;
+                }
                 act({ action: 'saveList', list: k, rows: out }, 'Saved').then(function () { var f = $('f_' + k); if (f) f.open = true; }, function () {});
             }
         };
@@ -1186,7 +1198,7 @@
             '<div class="rp-date"' + (date ? '' : ' hidden') + '><input type="date" class="rp-dt" value="' + esc(iso) + '"><span class="rp-say mute small">' + esc(longDate(iso)) + '</span></div>' +
             '<input type="hidden" class="rp-val" data-k="Day" value="' + esc(date ? dmy(iso) : formatDays(parseDays(v || 'Fri'))) + '"></div>';
     }
-    /** Today's and tomorrow's reminders; from the switch time (5pm unless set in Reward rules) only tomorrow's. */
+    /** Today's and tomorrow's reminders; from the switch time (5pm unless set on the Reminders page) only tomorrow's. */
     function reminders(b) {
         var at = String((DATA.state && DATA.state.remindersFrom) || '17:00'), d = new Date();
         if (at.length === 4) at = '0' + at;
@@ -1613,7 +1625,7 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
-        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set on the <a href="#" data-go="rewards">Rewards</a> tab (Reminders, and Reward rules).</p>';
+        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set on the <a href="#" data-go="rewards">Rewards</a> tab (Reminders).</p>';
         if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – tasks, daily to-dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
         var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
             (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';
