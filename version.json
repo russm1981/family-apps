@@ -1,10 +1,11 @@
 {
-  "app": "2026.11.103",
-  "script": "2026.11.65",
+  "app": "2026.11.104",
+  "script": "2026.11.66",
   "date": "2026-11-13",
   "notes": [
-    "Connecting a new device from a phone (scanning its QR code): it now asks “Connect this new device to the MacMillan family dashboard?” – with your family’s name – and Yes or No",
-    "Every “Family Admin → Settings → …” in the help and messages now points to where it is now (More, or the Configurator’s Advanced)"
+    "Setup wizard page: “Do one step from the Setup wizard again” – Get free keys for external data sources, Add licence key (links the software to your original purchase), Check everything (diagnostics)",
+    "Setup wizard page: you can run the full wizard to change an existing configuration – a new button runs it on this dashboard",
+    "Run on a dashboard that’s already set up, the wizard first asks: change the existing set-up, or clear all the settings and start again – which first saves a backup copy of your Google Sheet in your Google Drive (your licence key and access code are kept, so everything stays connected)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

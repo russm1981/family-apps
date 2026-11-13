@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.104",
+    "date": "2026-11-13",
+    "notes": [
+      "Setup wizard page: “Do one step from the Setup wizard again” – Get free keys for external data sources, Add licence key (links the software to your original purchase), Check everything (diagnostics)",
+      "Setup wizard page: you can run the full wizard to change an existing configuration – a new button runs it on this dashboard",
+      "Run on a dashboard that’s already set up, the wizard first asks: change the existing set-up, or clear all the settings and start again – which first saves a backup copy of your Google Sheet in your Google Drive (your licence key and access code are kept, so everything stays connected)"
+    ]
+  },
+  {
     "version": "2026.11.103",
     "date": "2026-11-13",
     "notes": [

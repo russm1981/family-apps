@@ -115,7 +115,16 @@
     var P = window.FD_PRIVACY || { version: '0', summary: [], full: '' };
     var STEPS = [
         { id: 'welcome', title: 'Welcome & privacy', render: function () {
-            return (connected() ? '<div class="card"><p>This page is connected to a Family Dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
+            // Run on a dashboard that's already set up: first, change what's there, or clear it and start again?
+            if (connected() && !S.mode) return '<h1>This dashboard is already set up</h1>' +
+                '<p class="lead">What would you like to do?</p>' +
+                '<div class="card big"><h3>✏️ Change the existing set-up</h3><p>Go through each step with everything you’ve already filled in, and change what you like. Nothing is cleared.</p>' +
+                    '<button class="btn" id="suAmend">Change the existing set-up</button></div>' +
+                '<div class="card big"><h3>🧹 Clear all the settings and start again</h3><p>First, a full copy of your Google Sheet is saved in your Google Drive as a backup. Then the family, rewards, lists, notes and widget settings are cleared, ' +
+                    'and you go through setup from the beginning. Your licence key and access code are kept, so the screen and phones stay connected.</p>' +
+                    '<button class="btn" id="suWipe" style="background:#ef4444">Back up, clear everything and start again</button><p id="suWipeSt"></p></div>';
+            return (S.mode === 'fresh' && S.backup ? '<div class="note ok">🧹 Cleared, ready to set up again. Your backup is <a href="' + esc(S.backup.url) + '" target="_blank" rel="noopener">' + esc(S.backup.name) + '</a> in your Google Drive.</div>' : '') +
+                (connected() ? '<div class="card"><p>This page is connected to a Family Dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
                     'Setting up a <b>different</b> family? <button class="link" id="suForget">Disconnect and start a new one</button></p></div>' : '') +
                 (S.licKey ? '<div class="note ok">🔑 Your licence key <b class="mono">' + esc(S.licKey) + '</b> came with the link from your email. Setup fills it in for you – nothing to type.</div>' : '') +
                 (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done on Google’s website, which doesn’t work properly on a phone. ' +
@@ -151,6 +160,16 @@
                 '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
                 '<label class="tick"><input type="checkbox" id="pvOk"' + (S.privacy === P.version ? ' checked' : '') + '> I have read and accept the privacy notice (version ' + esc(P.version) + ', ' + esc(P.updated || '') + ')</label></div>';
         }, wire: function () {
+            if ($('suAmend')) $('suAmend').onclick = function () { S.mode = 'amend'; save(); render(); };
+            if ($('suWipe')) $('suWipe').onclick = function () {
+                if (!confirm('Clear all the settings and start again? A backup copy of your Google Sheet is saved in your Google Drive first.')) return;
+                var b = this; b.disabled = true; $('suWipeSt').textContent = '⏳ Making the backup, then clearing… (up to a minute)';
+                post({ action: 'resetForSetup' }).then(function (d) {
+                    S.mode = 'fresh'; S.fam = null; S.backup = { url: d.backupUrl, name: d.backupName }; save();
+                    $('suWipeSt').innerHTML = '<div class="status ok">✔ Cleared. The backup is <a href="' + esc(d.backupUrl) + '" target="_blank" rel="noopener">' + esc(d.backupName) + '</a> in your Google Drive.</div>';
+                    setTimeout(render, 2500);
+                }, function (e) { b.disabled = false; $('suWipeSt').innerHTML = okLine(false, e.message); });
+            };
             if ($('suSend')) $('suSend').onclick = function () {
                 var u = location.href.split('#')[0] + (S.licKey ? '#key=' + encodeURIComponent(S.licKey) : '');
                 navigator.clipboard.writeText(u).then(function () { toast('Copied – paste it into an email or message to yourself'); }, function () { prompt('Copy this link:', u); });
@@ -160,12 +179,12 @@
                 try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) { /* fine */ }
                 location.replace(location.pathname);
             };
-            $('pvOk').onchange = function () {
+            if ($('pvOk')) $('pvOk').onchange = function () {
                 S.privacy = $('pvOk').checked ? P.version : ''; save(); render();
                 if (S.privacy) toast('Thanks – press Start at the bottom');
                 if (S.privacy && connected()) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
             };
-        }, ready: function () { return S.privacy === P.version; }, blocked: 'Tick the box at the bottom to accept the privacy notice first' },
+        }, ready: function () { return S.privacy === P.version && (!connected() || !!S.mode); }, blocked: 'Choose what to do first – change the existing set-up, or start again – then tick the box to accept the privacy notice' },
 
         { id: 'sheet', title: 'Make your Google Sheet', render: function () {
             var tpl = CFG.templateId;
@@ -761,6 +780,7 @@
         h.split('&').forEach(function (kv) { var x = kv.split('='); if (x[0]) { try { p[x[0]] = decodeURIComponent(x.slice(1).join('=')); } catch (e) { /* skip */ } } });
         if (location.hash && history.replaceState) history.replaceState(null, '', location.pathname);
         var wantUpdate = 'update' in p, goTo = p.go || '';
+        if (goTo === 'welcome') { delete S.mode; save(); }      // the whole wizard on this dashboard: ask again what to do
         // Moving from another Google account: remember the moving pack until the new dashboard is connected.
         // A licence key from the order email's link: filled in (and checked) once the Sheet is connected.
         if (p.key) { S.licKey = p.key; save(); }

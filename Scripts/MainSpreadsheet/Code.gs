@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.65';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.66';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -673,6 +673,31 @@ function wipeFamily_() {
   P.getKeys().filter(k => !/^fd/.test(k)).forEach(k => P.deleteProperty(k));   // a fresh start: setup, trial, versions
   try { CacheService.getScriptCache().removeAll(['layout', 'binRegistry']); } catch (e) { /* fine */ }
 }
+/**
+ * The setup wizard's "clear all settings and start again": first a full copy of this Sheet is saved in Google Drive as a
+ * backup, then the family's tabs and settings are emptied. The access code and licence key stay, so the screen, phones
+ * and the wizard stay connected while it's set up again.
+ */
+function resetForSetup_() {
+  const ss = SpreadsheetApp.getActive();
+  const backup = ss.copy(ss.getName().replace(/\s*[–-]\s*backup.*$/i, '') + ' – backup ' + fmt_(new Date(), 'yyyy-MM-dd HH:mm'));
+  const keep = { AccessCode: inst_('AccessCode'), LicenceKey: inst_('LicenceKey') };
+  ['boys', 'tasks', 'ledger', 'todos', 'todoLog', 'timetable', 'lists', 'where', 'memos', 'wset'].forEach(k => {
+    const sh = ss.getSheetByName(TAB[k]);
+    if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(1, sh.getLastColumn())).clearContent();
+  });
+  const cat = ss.getSheetByName(TAB.categories);
+  if (cat) { if (cat.getLastRow() > 1) cat.getRange(2, 1, cat.getLastRow() - 1, Math.max(1, cat.getLastColumn())).clearContent(); cat.getRange(2, 1, DEFAULT_CATEGORIES.length, DEFAULT_CATEGORIES[0].length).setValues(DEFAULT_CATEGORIES); }
+  const inst = ss.getSheetByName(TAB.install);
+  if (inst && inst.getLastRow() > 1) {
+    const rows = inst.getRange(2, 1, inst.getLastRow() - 1, 2).getValues();
+    inst.getRange(2, 2, rows.length, 1).setValues(rows.map(r => [Object.prototype.hasOwnProperty.call(keep, String(r[0]).trim()) ? keep[String(r[0]).trim()] : '']));
+  }
+  try { CacheService.getScriptCache().removeAll(['layout', 'binRegistry']); } catch (e) { /* fine */ }
+  setup();
+  bumpVersions_();
+  return { ok: true, backupUrl: backup.getUrl(), backupName: backup.getName() };
+}
 function menuWipe() {
   const ui = SpreadsheetApp.getUi();
   if (ui.alert('Clear everything?', 'This empties every family tab and setting in this Sheet – people, points, lists, notes, keys, address and access code – so it can be set up from scratch. The page layout is kept. It can’t be undone (Google Sheets’ version history can still bring old data back).', ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return;
@@ -761,6 +786,7 @@ function dispatch_(b) {
     case 'licence': return { ok: true, licence: licencePublic_(!!b.recheck) };
     case 'versions': return { ok: true, versions: versionsUsed_(true) };
     case 'startAfresh': return startAfresh_();
+    case 'resetForSetup': return withLock_(() => resetForSetup_());
     case 'moveDone': return moveDone_(b);
     case 'packForAccount': return packForAccount_(b.email);
     case 'importPack': return importPack_(b.pack);

@@ -328,9 +328,11 @@
     function renderStart() {
         title('Setup wizard');
         $('body').innerHTML = statusCard() +
-            card('Setting up for the first time?', '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data. ' +
-                'It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</p>' +
-                '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family</a>') +
+            card('Setting up for the first time?', '<p><b>You can also run this full wizard if you want to change an existing configuration.</b></p>' +
+                '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data.</p>' +
+                '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family</a>' +
+                '<a class="btn ghost wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Run the wizard on this dashboard (' + esc(String(DATA.familyName || '').trim() ? 'the ' + DATA.familyName + ' family' : 'your family') + ')</a>' +
+                '<p class="mute small">A new family gets a new Google Sheet. Run on this dashboard, it first asks whether to change the existing set-up or clear it and start again (with a backup copy kept in your Google Drive).</p>') +
             card('📅 Set up the calendar', '<p class="small">Using a Google Calendar you already had? Set up its categories (the family groups and the general ones) and what the screen’s key shows, ' +
                 'then <b>tidy up the calendar</b> so every event is in a category: it lists the ones that aren’t, or whose titles are too long, with a fix for each.</p>' +
                 '<button class="btn wide" id="goCalSetup">Set up the calendar</button>') +
@@ -368,13 +370,12 @@
         var c = FD.config(), base = guideUrl();
         var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&' + step + (step !== 'go=welcome' ? '&only' : ''); };
         var row = function (ico, name, what, href) { return '<a class="mrow" href="' + esc(href) + '"><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>'; };
-        return card('Do one setup step again', '<div class="menu">' +
+        return card('Do one step from the Setup wizard again', '<div class="menu">' +
             row('📺', 'Connect a screen, tablet or phone', 'Start file for the Corsair PC, a tablet by code, QR codes for phones', link('go=devices')) +
-            row('🔑', 'Free keys for live data', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
-            row('🎫', 'Licence key', 'Add or check your licence key', link('go=licence')) +
-            row('✅', 'Check everything', 'Asks your Sheet to fetch every widget and reports anything that needs attention', link('go=check')) +
-            row('⟳', 'Software updates', 'The version of the application held within Google (Google script), and the loader file', link('update')) +
-            row('🧭', 'Go through the whole setup again', 'Every step, with what you’ve already filled in', link('go=welcome')) + '</div>');
+            row('🔑', 'Get free keys for external data sources', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
+            row('🎫', 'Add licence key', 'The licence key links the software to your original purchase', link('go=licence')) +
+            row('✅', 'Check everything (diagnostics)', 'Run full diagnostics to check the widgets, settings and software', link('go=check')) +
+            row('⟳', 'Software updates', 'The version of the application held within Google (Google script), and the loader file', link('update')) + '</div>');
     }
     function explain(t, html) { return '<details class="card explain" open><summary><b>ℹ️ ' + t + '</b></summary>' + html + '</details>'; }
     /** Family: who's in it, their colours, who takes part in rewards. (Groups and categories are on the calendar page.) */
