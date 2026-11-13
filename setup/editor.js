@@ -184,7 +184,7 @@
         if (fmt === 'standard') {
             var n = Math.max(1, Math.ceil(Math.min(cols.length, 4) / 2));
             for (var k = 0; k < n; k++) out += frame(cols.slice(k * 2, k * 2 + 2), 2, n > 1 ? p.title + ' ' + (k + 1) + ' of ' + n : p.title, 'tab', p, k);
-            out = '<div class="ed-tabs stack">' + out + '</div>' + (n > 1 ? '<p class="mute small">On a tablet this screen is in ' + n + ' parts – each has its own button in the menu.</p>' : '');
+            out = '<div class="ed-tabs side">' + out + '</div>' + (n > 1 ? '<p class="mute small">On a tablet this screen is in ' + n + ' parts – each has its own button in the menu.</p>' : '');
         } else if (fmt === 'computer') {
             out = '<div class="ed-monitor">' + frame(cols, 4, '', 'wide', p) + '</div>';
         } else out = frame(cols, 4, '', 'wide', p);

@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.106",
+  "app": "2026.11.107",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Tidy up your Google calendar: dates read “14-11-2026 @ 12:00”",
-    "It now lists only what the calendar can’t show properly – no category, or a title too long. Events like “Ben – Drums” are fine (they show as “Drums (Ben)” in Ben’s colour) and aren’t listed, unless you ask to list them too, to give them their colour in Google Calendar as well"
+    "Screens: on the tablet view, a widget screen’s two parts are side by side again (there’s room now the screen picture is full width)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

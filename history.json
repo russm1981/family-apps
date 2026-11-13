@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.107",
+    "date": "2026-11-13",
+    "notes": [
+      "Screens: on the tablet view, a widget screen’s two parts are side by side again (there’s room now the screen picture is full width)"
+    ]
+  },
+  {
     "version": "2026.11.106",
     "date": "2026-11-13",
     "notes": [

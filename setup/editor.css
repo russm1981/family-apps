@@ -321,3 +321,4 @@
 .cs-pname { grid-column: 1 / -1; margin: 4px 0 0; font-size: .75rem; color: var(--mute, #8b95a5); }
 .cs-row span.cs-sw.blank { background: transparent; border-style: dashed; }
 .cs-modal a { color: #3fa9f5; }
+.ed-tabs.side { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
