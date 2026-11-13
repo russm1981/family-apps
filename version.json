@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.111",
+  "app": "2026.11.112",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Rewards → Tasks: + New task is under the list",
-    "“Manual edits” is now “Manual adjustments”"
+    "Daily to-dos and reminders: each one on a single line with its day buttons (no “school days” note), with a little more height and space between them"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

@@ -167,3 +167,10 @@ body.desk .card ul, body.desk .card ol { margin: 6px 0 14px; padding-left: 22px;
 body.desk .card li { line-height: 1.6; margin-bottom: 12px; }
 body.desk .card li:last-child { margin-bottom: 0; }
 body.desk .card.explain summary { margin-bottom: 14px; }
+
+/* To-do and reminder rows: one line each (no "school days" note), a little taller, with more space between */
+body.desk .lrow .dp-say { display: none; }
+body.desk .lrow .opick, body.desk .lrow .rpick { flex-wrap: nowrap; gap: 10px; }
+body.desk .lrow .opick select, body.desk .lrow .rpick select { flex: none; width: auto; min-width: 150px; }
+body.desk .lrow .dpick { flex-wrap: nowrap; }
+body.desk .lrow { padding-top: 12px !important; padding-bottom: 12px !important; margin-bottom: 12px; min-height: 64px; }

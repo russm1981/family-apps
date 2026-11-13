@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.112",
+    "date": "2026-11-13",
+    "notes": [
+      "Daily to-dos and reminders: each one on a single line with its day buttons (no “school days” note), with a little more height and space between them"
+    ]
+  },
+  {
     "version": "2026.11.111",
     "date": "2026-11-13",
     "notes": [
