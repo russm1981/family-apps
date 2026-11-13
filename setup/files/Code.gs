@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.49';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.50';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -264,7 +264,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Holiday countdown', max: 30 },
       { k: 'Categories', label: 'Calendar categories to count down to', type: 'text', def: 'Holiday', max: 80, help: 'Category names separated by commas, e.g. Holiday, School holiday. Blank = only the dates below.' },
-      { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', help: 'One per line: Name | date, e.g. Orlando | 3/4/2027 or Christmas | 25 Dec.' },
+      { k: 'Extra', label: 'Your own dates', type: 'lines', maxLines: 6, def: '', help: 'One per line, as  name | date  – for example  Orlando | 3/4/2027  for a one-off, or  Christmas | 25 Dec  (no year) for a date that comes round every year.' },
       { k: 'Show', label: 'How many to show', type: 'number', def: 3, min: 1, max: 6 },
     ],
     data: (s) => countdown_(s) },
