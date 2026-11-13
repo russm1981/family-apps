@@ -119,3 +119,32 @@ body.solo .solo-bar { display: flex; }
 .solo-bar { display: none; align-items: center; gap: 12px; padding: 14px 24px 0; }
 .solo-bar a { color: var(--acc); text-decoration: none; font-weight: 600; }
 .note.warn { background: rgba(250, 204, 21, .12); border: 2px solid rgba(250, 204, 21, .6); } .note.warn h3 { margin: 0 0 8px; color: #facc15; } .note.warn p { margin: 6px 0; }
+
+/* Family step: one row a person – colour, name, ⭐ Rewards, remove (as in the Configurator → Family) */
+.fw-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.fw-row input[type=color] { width: 44px; height: 40px; padding: 3px; flex: none; }
+.fw-row input[data-fn] { max-width: 260px; }
+.fw-row .x { background: none; border: 0; color: var(--mute); font-size: 16px; cursor: pointer; }
+.ptb { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13.5px; color: var(--mute); opacity: .6; white-space: nowrap; background: none; cursor: pointer; }
+.ptb.on { background: rgba(250,204,21,.16); border-color: #facc15; color: var(--text); opacity: 1; }
+/* Calendar step: the Configurator's colour coding */
+.cs-box .btn.good { background: var(--acc); color: #fff; }
+.cs-box select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 14px; }
+.toast:empty { visibility: hidden; }
+.cs-box .tog { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; font-size: 15px; } .cs-box .tog input { width: 22px; height: 22px; flex: none; accent-color: var(--acc); }
+
+/* Free API keys: one service at a time, with the progress across the top */
+.kprog { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 18px 0 6px; }
+.kp-i { display: inline-flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); color: var(--mute); border-radius: 999px; padding: 7px 14px 7px 7px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.kp-i span { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
+.kp-i.done span { background: var(--good); border-color: var(--good); color: #000; }
+.kp-i.skipped { opacity: .6; }
+.kp-i.on { border-color: var(--acc); color: var(--text); background: rgba(63,169,245,.15); }
+.kp-i.on span { border-color: var(--acc); }
+.kp-sep { width: 14px; height: 2px; background: var(--line); flex: none; }
+.khead { display: flex; align-items: baseline; gap: 12px; }
+.khead h3 { margin: 0; font-size: 1.3rem; }
+.kcount { color: var(--mute); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.khead .kstate { margin-left: auto; color: var(--good); font-weight: 700; }
+.key.skipped .kstate { color: var(--mute); }
+.knav { margin-top: 16px; } .knav .kgrow { flex: 1; }

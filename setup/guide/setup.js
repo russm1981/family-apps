@@ -42,6 +42,15 @@
         Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
         return call(S.url + (S.url.indexOf('?') >= 0 ? '&' : '?') + q);
     }
+    // The family and the calendar set-up, read from the Sheet (not kept in the browser: the Sheet is the record).
+    var ADM = null, FAM = null, admBusy = false;
+    function loadAdm() {
+        if (admBusy) return; admBusy = true;
+        setTimeout(function () {
+            post({ action: 'admin' }).then(function (d) { admBusy = false; ADM = d; render(); },
+                function (e) { admBusy = false; var b = $('admLoad'); if (b) b.innerHTML = okLine(false, e.message); });
+        }, 0);
+    }
     function post(body) {
         body.code = S.code;
         return call(S.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
@@ -155,7 +164,7 @@
                 if (!confirm('Clear all the settings and start again? A backup copy of your Google Sheet is saved in your Google Drive first.')) return;
                 var b = this; b.disabled = true; $('suWipeSt').textContent = '⏳ Making the backup, then clearing… (up to a minute)';
                 post({ action: 'resetForSetup' }).then(function (d) {
-                    S.mode = 'fresh'; S.fam = null; S.backup = { url: d.backupUrl, name: d.backupName }; save();
+                    S.mode = 'fresh'; S.fam = null; ADM = null; FAM = null; S.backup = { url: d.backupUrl, name: d.backupName }; save();
                     $('suWipeSt').innerHTML = '<div class="status ok">✔ Cleared. The backup is <a href="' + esc(d.backupUrl) + '" target="_blank" rel="noopener">' + esc(d.backupName) + '</a> in your Google Drive.</div>';
                     setTimeout(render, 2500);
                 }, function (e) { b.disabled = false; $('suWipeSt').innerHTML = okLine(false, e.message); });
@@ -297,260 +306,213 @@
             };
         } },
 
-        { id: 'family', title: 'Family & calendar', render: function () {
-            if (!connected()) return '<h1>4. Your family and calendar</h1>' + needConnect();
-            if (!S.fam) {
-                setTimeout(function () {
-                    post({ action: 'family' }).then(function (d) { S.fam = fromServer(d.family); if (!S.home && d.home) S.home = d.home; save(); render(); })
-                        .catch(function (e) { $('famLoad').innerHTML = okLine(false, e.message); });
-                }, 0);
-                return '<h1>4. Your family and calendar</h1><div class="card" id="famLoad"><div class="status">Reading your Sheet…</div></div>';
+        { id: 'family', title: 'Your family', render: function () {
+            if (!connected()) return '<h1>4. Your family</h1>' + needConnect();
+            if (!ADM) { loadAdm(); return '<h1>4. Your family</h1><div class="card" id="admLoad"><div class="status">Reading your Sheet…</div></div>'; }
+            if (!FAM) FAM = { name: ADM.familyName || '', people: ((ADM.family || {}).people || []).map(function (p) { return { name: p.name, was: p.name, colour: p.colour, rewards: !!p.points }; }) };
+            return '<h1>4. Your family</h1>' +
+                '<p class="lead">Who’s in the family. Each person has a colour of their own, and you tick <b>⭐ Rewards</b> for anyone who takes part in the reward system (usually the children). ' +
+                    'You can change all of this later in the Configurator → Family. <span class="mute">(About 5 minutes.)</span></p>' +
+                '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “MacMillan” for “The MacMillan family”.</p>' +
+                    '<input id="fwName" maxlength="30" placeholder="e.g. MacMillan" value="' + esc(FAM.name) + '"></div>' +
+                '<div class="card big"><h3>Your home address or postcode</h3><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
+                    '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ"></div>' +
+                '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
+                    (FAM.people.length < 10 ? '<button class="btn sm ghost" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
+                    '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for tasks, daily to-dos and reminders, and a rewards card of their own to put on a screen. ' +
+                    'Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is the next step.</p>' +
+                    '<div class="row" style="margin-top:14px"><button class="btn" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
+            function famRow(p, i) {
+                return '<div class="fw-row"><input type="color" data-fc="' + i + '" value="' + esc(p.colour || '#3fa9f5') + '" title="Their colour">' +
+                    '<input data-fn="' + i + '" maxlength="10" value="' + esc(p.name) + '" placeholder="Name" autocomplete="off">' +
+                    '<button type="button" class="ptb' + (p.rewards ? ' on' : '') + '" data-fr="' + i + '">⭐ Rewards</button>' +
+                    '<button type="button" class="x" data-fx="' + i + '" title="Remove">✕</button></div>';
             }
-            var F = S.fam, LM = F.limits;
-            return '<h1>4. Your family and calendar</h1>' +
-                '<p class="lead">Who’s in the family, and how the calendar groups and colours them. Change it any time by coming back to this step.</p>' +
-                '<div class="card big"><label style="margin-top:0">Home address or postcode</label><input id="home" value="' + esc(S.home || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ">' +
-                '<p class="mute">Used for the weather, traffic, the nearest bus stop and the flights map.</p></div>' +
-
-                '<div class="card big"><h3>1. Everyone in the family</h3><p class="mute">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Names up to ' + LM.name + ' letters. Tap ⭐ Points to put a child on the points page, or take them off.</p>' +
-                '<div id="ppl">' + F.people.map(personRow).join('') + '</div>' +
-                '<button class="btn sm ghost" id="addP">+ Add a person</button></div>' +
-
-                '<div class="card big"><h3>2. The two groups</h3><p class="mute">On the calendar key each person shows in their group’s colour, with their name in brackets, e.g. “Drums (Ben)”.</p>' +
-                groupRow('children', 'Children’s group', F.children, 'e.g. Boys, Kids, The girls') +
-                groupRow('adults', 'Adults’ group', F.adults, 'e.g. Russ & Becky, Mum & Dad') +
-                '<div class="row" id="ptsRow"><span style="flex:none">Points page name</span><input id="ptsTitle" maxlength="14" value="' + esc(F.pointsTitle || '') + '" placeholder="Same as the children’s group"></div>' +
-                '<p class="mute" id="ptsNote"></p></div>' +
-
-                '<div class="card big"><h3>3. Categories everyone shares</h3>' +
-                '<div class="row cat-fixed"><span class="lock">🔒</span><b>Family</b><span class="mute" style="flex:1">Always there: things you all do together</span><input type="color" id="famC" value="' + esc(F.family.colour) + '"></div>' +
-                '<div class="row cat-fixed"><span class="lock">🔒</span><b>Holiday</b><span class="mute" style="flex:1">Always there: trips away (flights go here too)</span><input type="color" id="holC" value="' + esc(F.holiday.colour) + '"></div>' +
-                '<h3 style="margin-top:18px">Special categories <span class="mute">(up to ' + LM.specials + ')</span></h3>' +
-                '<div id="sps">' + F.specials.map(specialRow).join('') + '</div>' +
-                '<div class="row" id="spAdd"><button class="btn sm ghost" data-sug="School holiday">+ School holidays</button><button class="btn sm ghost" data-sug="Birthday">+ Birthdays</button><button class="btn sm ghost" data-sug="">+ Other…</button></div>' +
-                '<label class="tick" style="margin-top:10px"><input type="checkbox" id="showMatch"' + (S.showMatch ? ' checked' : '') + '> Show matching words (advanced)</label>' +
-                '<p class="mute">Events are put in a category by the name at the start of their title – “Ben – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Josh.</p></div>' +
-
-                '<div class="card big"><h3>How the calendar key will look</h3><div id="keyPrev" class="keyprev"></div><p class="mute" id="keyNote"></p>' +
-                '<div class="row" style="margin-top:14px"><button class="btn" id="saveFamily">Save to my Sheet</button></div><div id="famStatus"></div></div>';
-            function personRow(p) {
-                return '<div class="prow" data-was="' + esc(p.was || '') + '" data-match="' + esc(p.match || '') + '">' +
-                    '<input data-n placeholder="Name" maxlength="' + LM.name + '" value="' + esc(p.name) + '">' +
-                    '<div class="seg"><button type="button" data-r="adult"' + (p.role === 'adult' ? ' class="on"' : '') + '>Adult</button><button type="button" data-r="child"' + (p.role !== 'adult' ? ' class="on"' : '') + '>Child</button></div>' +
-                    '<button type="button" class="ptb' + (p.points === false ? '' : ' on') + '" data-pt title="On the points page?">⭐ Points</button>' +
-                    '<input type="color" data-c value="' + esc(p.colour || '#3fa9f5') + '"><button type="button" class="x" data-del title="Remove">✕</button>' +
-                    '<input class="match" data-m placeholder="Matching words, e.g. football, Cubs" value="' + esc(p.match || '') + '"></div>';
-            }
-            function groupRow(k, label, g, ph) {
-                return '<div class="row grow" data-g="' + k + '" data-was="' + esc(g.was || '') + '"><span class="glabel">' + label + '</span>' +
-                    '<input data-n maxlength="' + LM.group + '" value="' + esc(g.name) + '" placeholder="' + esc(ph) + '"><input type="color" data-c value="' + esc(g.colour) + '"></div>' +
-                    '<div class="row grow-m" data-gm="' + k + '"><span class="glabel"></span><input class="match" data-m placeholder="Matching words" value="' + esc(g.match || '') + '"></div>';
-            }
-            function specialRow(x) { return specialHtml(x, LM); }
         }, wire: function () {
-            if (!connected() || !S.fam) return;
-            var F = S.fam, LM = F.limits;
-            var body = $('page');
-            var colours = ['#3fa9f5', '#f5a623', '#7ed321', '#f472b6', '#a855f7', '#22d3ee', '#ef4444', '#facc15', '#14b8a6', '#fb923c', '#94a3b8', '#e879f9'];
-            function toggleMatch() { body.classList.toggle('show-match', $('showMatch').checked); }
-            toggleMatch();
-            $('showMatch').onchange = function () { S.showMatch = this.checked; save(); toggleMatch(); };
-            $('addP').onclick = function () {
-                var n = document.querySelectorAll('.prow').length;
-                if (n >= LM.people) { toast('Up to ' + LM.people + ' people', true); return; }
-                $('ppl').insertAdjacentHTML('beforeend', '<div class="prow" data-was="" data-match=""><input data-n placeholder="Name" maxlength="' + LM.name + '">' +
-                    '<div class="seg"><button type="button" data-r="adult">Adult</button><button type="button" data-r="child" class="on">Child</button></div>' +
-                    '<button type="button" class="ptb on" data-pt title="On the points page?">⭐ Points</button>' +
-                    '<input type="color" data-c value="' + colours[n % colours.length] + '"><button type="button" class="x" data-del title="Remove">✕</button>' +
-                    '<input class="match" data-m placeholder="Matching words, e.g. football, Cubs"></div>');
-                $('ppl').lastChild.querySelector('[data-n]').focus(); preview();
+            if (!connected() || !ADM || !FAM) return;
+            var PAL = ['#3fa9f5', '#f5a623', '#7ed321', '#a855f7', '#f472b6', '#22d3ee', '#facc15', '#fb7185', '#34d399', '#c084fc'];
+            $('fwName').oninput = function () { FAM.name = this.value; };
+            $('fwRows').oninput = function (e) { var t = e.target, k;
+                if ((k = t.getAttribute('data-fn')) !== null) FAM.people[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) FAM.people[+k].colour = t.value; };
+            $('fwRows').onclick = function (e) { var t;
+                if ((t = e.target.closest('[data-fr]'))) { var p = FAM.people[+t.getAttribute('data-fr')]; p.rewards = !p.rewards; t.classList.toggle('on', p.rewards); }
+                else if ((t = e.target.closest('[data-fx]'))) { var q = FAM.people[+t.getAttribute('data-fx')];
+                    if (q.was && !confirm('Take ' + (q.name || 'this person') + ' out of the family?' + (q.rewards ? ' Their points are kept.' : ''))) return;
+                    FAM.people.splice(+t.getAttribute('data-fx'), 1); render(); } };
+            if ($('fwAdd')) $('fwAdd').onclick = function () {
+                var used = FAM.people.map(function (p) { return p.colour; }), c = PAL.filter(function (x) { return used.indexOf(x) < 0; })[0] || PAL[FAM.people.length % PAL.length];
+                FAM.people.push({ name: '', colour: c, rewards: false }); render();
+                var ins = document.querySelectorAll('[data-fn]'); if (ins.length) ins[ins.length - 1].focus();
             };
-            $('spAdd').onclick = function (e) {
-                var b = e.target.closest('[data-sug]'); if (!b) return;
-                if (document.querySelectorAll('.srow').length >= LM.specials) { toast('Up to ' + LM.specials + ' special categories, so the key stays readable', true); return; }
-                var sug = b.getAttribute('data-sug');
-                var x = sug === 'School holiday' ? { name: sug, colour: '#facc15', match: 'half term, inset, school holiday', bar: true }
-                    : sug === 'Birthday' ? { name: sug, colour: '#ffffff', match: 'birthday', bar: false } : { name: '', colour: '#14b8a6', match: '', bar: false };
-                $('sps').insertAdjacentHTML('beforeend', specialHtml(x, LM)); preview();
-                if (!sug) $('sps').lastChild.querySelector('[data-n]').focus();
-            };
-            body.onclick = function (e) {
-                var r = e.target.closest('.seg [data-r]');
-                if (r) { Array.prototype.forEach.call(r.parentNode.children, function (x) { x.classList.toggle('on', x === r); }); preview(); return; }
-                var pt = e.target.closest('[data-pt]');
-                if (pt) { pt.classList.toggle('on'); preview(); return; }
-                var d = e.target.closest('[data-del]');
-                if (d) { d.closest('.prow, .srow').remove(); preview(); }
-            };
-            body.oninput = preview; body.onchange = function (e) { if (e.target.id !== 'showMatch') preview(); };
-            preview();
-
-            $('saveFamily').onclick = function () {
-                var f = collect(), home = $('home').value.trim();
-                var err = problems(f);
-                if (!home) err = err || 'Add your home address';
-                if (err) { $('famStatus').innerHTML = okLine(false, err); return; }
-                S.home = home; save();
+            $('fwSave').onclick = function () {
+                var home = $('home').value.trim(), list = FAM.people.filter(function (p) { return p.name.trim(); });
+                if (!list.length) { $('famStatus').innerHTML = okLine(false, 'Add at least one person'); return; }
+                if (!home) { $('famStatus').innerHTML = okLine(false, 'Add your home address or postcode'); return; }
+                var b = this; b.disabled = true; S.home = home; save();
                 $('famStatus').innerHTML = '<div class="status">Saving…</div>';
                 post({ action: 'saveInstall', values: { HomeAddress: home } }).then(function () {
-                    return post(Object.assign({ action: 'saveFamily' }, f));
+                    return post({ action: 'saveFamilyPeople', people: list, familyName: $('fwName').value.trim() });
                 }).then(function (d) {
-                    S.fam = fromServer(d.family); S.familyDone = true; save();
-                    render(); $('famStatus').innerHTML = okLine(true, 'Saved. The screen and calendar app pick it up within a minute.');
-                    // Bin days: say straight away whether this postcode's council can be read automatically.
-                    var pc = /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);
-                    if (pc) get('binCouncil', { postcode: pc[1] }).then(function (b) {
-                        $('famStatus').insertAdjacentHTML('beforeend', b.automatic ? okLine(true, 'Bins: ' + b.message + '.')
-                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(b.message) + ' You can do that later in Family Admin → the Bins widget.</div>');
+                    ADM = d; FAM = null; S.familyDone = true; save(); render();
+                    $('famStatus').innerHTML = okLine(true, 'Saved. Press Next to set up the calendar.');
+                    var pc = /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
+                    if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
+                        $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
+                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Family Admin → the Bins widget.</div>');
                     }, function () { /* older Google script – the Check step will say */ });
-                }).catch(function (e) { $('famStatus').innerHTML = okLine(false, e.message); });
+                }).catch(function (e) { b.disabled = false; $('famStatus').innerHTML = okLine(false, e.message); });
             };
-
-            function collect() {
-                var people = Array.prototype.map.call(document.querySelectorAll('.prow'), function (r) {
-                    var on = r.querySelector('.seg .on');
-                    var role = on ? on.getAttribute('data-r') : 'child';
-                    return { name: r.querySelector('[data-n]').value.trim(), role: role, colour: r.querySelector('[data-c]').value,
-                        points: role === 'child' && r.querySelector('[data-pt]').classList.contains('on'),
-                        match: r.querySelector('[data-m]').value.trim(), was: r.getAttribute('data-was') || '' };
-                }).filter(function (p) { return p.name; });
-                var grp = function (k) {
-                    var r = document.querySelector('[data-g="' + k + '"]');
-                    return { name: r.querySelector('[data-n]').value.trim(), colour: r.querySelector('[data-c]').value, was: r.getAttribute('data-was') || '',
-                        match: document.querySelector('[data-gm="' + k + '"] [data-m]').value.trim() };
-                };
-                var specials = Array.prototype.map.call(document.querySelectorAll('.srow'), function (r) {
-                    return { name: r.querySelector('[data-n]').value.trim(), colour: r.querySelector('[data-c]').value, bar: r.querySelector('[data-b]').checked,
-                        match: r.querySelector('[data-m]').value.trim(), was: r.getAttribute('data-was') || '' };
-                }).filter(function (x) { return x.name; });
-                return { people: people, children: grp('children'), adults: grp('adults'), specials: specials,
-                    family: { colour: $('famC').value, match: F.family.match }, holiday: { colour: $('holC').value, match: F.holiday.match },
-                    pointsTitle: $('ptsTitle').value.trim() };
-            }
-            function problems(f) {
-                if (!f.people.length) return 'Add at least one person';
-                var seen = {}, dup = '';
-                var all = [f.children.name, f.adults.name, 'Family', 'Holiday'].concat(f.people.map(function (p) { return p.name; }), f.specials.map(function (x) { return x.name; }));
-                all.forEach(function (n) { var k = n.toLowerCase().replace(/[^a-z0-9]+/g, ''); if (k && seen[k]) dup = dup || n; seen[k] = 1; });
-                if (!f.children.name || !f.adults.name) return 'Give both groups a name';
-                if (dup) return '“' + dup + '” is used twice – every name needs to be different';
-                var bad = all.filter(function (n) { return /[–—:\-|,]/.test(n); })[0];
-                if (bad) return '“' + bad + '” can’t contain a dash, colon, comma or |';
-                var kids = f.people.filter(function (p) { return p.role === 'child'; }).length;
-                if (kids > LM.children) return 'Up to ' + LM.children + ' children';
-                return '';
-            }
-            function preview() {
-                var f = collect(), kids = f.people.filter(function (p) { return p.role === 'child'; }), adults = f.people.filter(function (p) { return p.role === 'adult'; });
-                var key = [];
-                if (kids.length) key.push({ n: f.children.name || 'Children', c: f.children.colour, who: kids.map(function (p) { return p.name; }).join(', ') });
-                if (adults.length) key.push({ n: f.adults.name || 'Adults', c: f.adults.colour, who: adults.map(function (p) { return p.name; }).join(', ') });
-                key.push({ n: 'Family', c: $('famC').value }, { n: 'Holiday', c: $('holC').value });
-                f.specials.forEach(function (x) { key.push({ n: x.name, c: x.colour, bar: x.bar }); });
-                key.push({ n: 'Other', c: '#8a93a3' });
-                $('keyPrev').innerHTML = key.map(function (k) {
-                    return '<span class="kp' + (k.bar ? ' bar' : '') + '" style="--kc:' + esc(k.c) + '"><i></i>' + esc(k.n) + (k.who ? '<small>' + esc(k.who) + '</small>' : '') + '</span>';
-                }).join('');
-                $('keyNote').textContent = key.length + ' entries on the key' + (f.specials.some(function (x) { return x.bar; }) ? ' · strips show as a bar along the bottom of each day' : '') + '.';
-                var title = $('ptsTitle').value.trim() || f.children.name || 'Children';
-                Array.prototype.forEach.call(document.querySelectorAll('.prow'), function (r) {
-                    var on = r.querySelector('.seg .on'); r.classList.toggle('adult', !!on && on.getAttribute('data-r') === 'adult');
-                });
-                var pk = kids.filter(function (p) { return p.points; }), names = function (a) { return a.map(function (p) { return p.name; }).join(', '); };
-                var off = kids.filter(function (p) { return !p.points; });
-                $('ptsRow').style.display = pk.length ? '' : 'none';
-                $('ptsNote').textContent = (!kids.length ? 'Mark someone as a child to use the points page.'
-                    : !pk.length ? 'Nobody has ⭐ Points ticked, so the points page is left as it is.'
-                    : 'Each of ' + names(pk) + ' gets a points widget, on a “' + title + '” screen (four fit on a screen). You can move them to any screen in Screen layout.') +
-                    (pk.length && off.length ? ' Not on it: ' + names(off) + ' (their points are kept if you tick them again).' : '');
-            }
         } },
-        { id: 'devices', title: 'Connect your devices', render: function () {
-            if (!connected()) return '<h1>5. Connect your screen and phones</h1>' + needConnect();
-            return '<h1>5. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
-                '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' && S.dev !== 'here' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button><button data-dev="here" class="' + (S.dev === 'here' ? 'on' : '') + '">No screen yet – use this computer</button></div>' +
-                (S.dev === 'here' ? '<div class="card big"><h3>Try it on this computer</h3><p>No screen to connect yet? Open the dashboard in a new tab here – it’s the same as the screen will show, already connected.</p>' +
-                    '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
-                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, connect it from the Family Admin app → More → Devices and Phones.</p></div>'
-                  : S.dev === 'other' ? '<div class="card big"><h3>Android / Fire tablet</h3><ol class="howto">' +
+        { id: 'calendar', title: 'Your calendar', render: function () {
+            if (!connected()) return '<h1>5. Your calendar</h1>' + needConnect();
+            if (!ADM) { loadAdm(); return '<h1>5. Your calendar</h1><div class="card" id="admLoad"><div class="status">Reading your Sheet…</div></div>'; }
+            return '<h1>5. Your calendar</h1>' +
+                '<p class="lead">How the dashboard colours your Google Calendar. Every event goes in a <b>category</b> – a group of people (Family is everyone), a person, or a general one like Holiday – ' +
+                    'and each category has one of Google Calendar’s colours, so events you add in Google Calendar land in the right place. This is the same as the Configurator → Screens → your calendar page. ' +
+                    '<span class="mute">(About 5 minutes.)</span></p>' +
+                '<div id="calBox" class="cs-box"></div>';
+        }, wire: function () {
+            if (!connected() || !ADM || !window.FDCalSetup) return;
+            var cal = (ADM.pages || []).filter(function (p) { return p.type === 'calendar'; })[0];
+            window.FD = window.FD || { post: function (b) { return post(b); } };
+            var hooks = { data: function () { return ADM; }, toast: function (m, bad) { toast(m, bad); },
+                act: function (b, msg) {
+                    return post(b).then(function (d) { if (d && d.calSetup) ADM = d; S.calDone = true; save(); if (msg) toast(msg); draw(); return d; },
+                        function (e) { toast(e.message, true); });
+                } };
+            var draw = function () { window.FDCalSetup.render($('calBox'), cal ? cal.id : '', hooks); renderSteps(); };
+            draw();
+        } },
+        { id: 'devices', title: 'Connect your display', render: function () {
+            if (!connected()) return '<h1>6. Connect your display</h1>' + needConnect();
+            var dev = ({ pc: 1, pi: 1, tab: 1, here: 1 })[S.dev] ? S.dev : 'pc';
+            var tab = function (k, t) { return '<button data-dev="' + k + '" class="' + (dev === k ? 'on' : '') + '">' + t + '</button>'; };
+            var codeBox = function (what) {
+                return '<li>The ' + what + ' shows <b>“Connect this screen”</b> and a code like <b>K7Q2-M9XD</b>. Type that code here and click <b>Connect</b>:' +
+                    '<div class="row" style="margin-top:8px"><input id="tabCode" placeholder="e.g. K7Q2-M9XD" autocapitalize="characters" spellcheck="false" style="max-width:16rem"><button class="btn" id="tabGo">Connect</button></div><div id="tabStatus" class="mute"></div>' +
+                    'It shows your dashboard within a few seconds and remembers it.</li>';
+            };
+            var pasteLink = '<details class="card"><summary>Or use the private screen link instead of a code</summary><p class="mute">If the screen says “Connect this screen”, you can paste this link there instead.</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>';
+            var body = dev === 'pc' ? '<div class="card big"><h3>XENEON EDGE on a Windows PC</h3><p class="mute">The XENEON EDGE plugs into your Windows PC as a second screen. A small start file opens the dashboard full screen on it.</p>' + '<ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button> and move the file somewhere you’ll find it, such as <b>Documents</b>. Doing this on a different computer? Copy the file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
+                    '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
+                    '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
+                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>'
+                : dev === 'pi' ? '<div class="card big"><h3>XENEON EDGE on a Raspberry Pi</h3><p class="mute">The XENEON EDGE plugged into a Raspberry Pi, which runs the dashboard on its own – no PC needed.</p><ol class="howto">' +
+                    '<li>Install <b>Raspberry Pi OS with desktop</b>, and connect it to your Wi-Fi.</li>' +
+                    '<li>Open <b>Terminal</b> and type:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'screen/"</code></li>' +
+                    codeBox('screen') +
+                    '<li>To start it automatically when the Pi switches on, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' + pasteLink
+                : dev === 'tab' ? '<div class="card big"><h3>A tablet</h3><p class="mute">An Android or Amazon Fire tablet – on the wall or the kitchen worktop.</p><ol class="howto">' +
                     '<li>On the tablet, install <b>Fully Kiosk Browser</b> (Google Play, or the Amazon Appstore on a Fire tablet).</li>' +
                     '<li>Open it. Where it asks for a <b>Start URL</b> (or in its Settings → Web Content Settings → Start URL), type this short address:' +
                     '<div class="bigaddr">' + esc(appsBase.replace(/^https:\/\//, '') + 'screen/') + '</div>' +
                     '<span class="mute">Or scan this with the tablet’s camera – it’s the same short address:</span>' + qr(appsBase + 'screen/') + '</li>' +
-                    '<li>The tablet shows <b>“Connect this screen”</b> and a code like <b>K7Q2-M9XD</b>. Type that code here and click <b>Connect</b>:' +
-                    '<div class="row" style="margin-top:8px"><input id="tabCode" placeholder="e.g. K7Q2-M9XD" autocapitalize="characters" spellcheck="false" style="max-width:16rem"><button class="btn" id="tabGo">Connect</button></div><div id="tabStatus" class="mute"></div>' +
-                    'The tablet shows your dashboard within a few seconds and remembers it.</li>' +
-                    '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' +
-                    '<details class="card"><summary>Raspberry Pi</summary><ol class="howto"><li>Raspberry Pi OS with desktop.</li><li>Terminal:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'screen/"</code></li>' +
-                    '<li>It shows a code: type it in the box above and click Connect.</li><li>To start automatically, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></details>' +
-                    '<details class="card"><summary>Or use the private screen link instead of a code</summary>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>'
-                  : '<div class="card big"><ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button> and move the file somewhere you’ll find it, such as <b>Documents</b>. Doing this on a different computer? Copy the file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
-                    '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
-                    '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
-                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>') +
-                '<h2>Phones</h2><div class="grid2">' +
-                '<div class="card"><h3>⚙ Family Admin (adults)</h3>' + qr(linkFor('admin')) + copyBox('la', 'Admin link', linkFor('admin'), 3) + '</div>' +
-                '<div class="card"><h3>📅 Family Calendar (everyone)</h3>' + qr(linkFor('calendar')) + copyBox('lc', 'Calendar link', linkFor('calendar'), 3) + '</div></div>' +
-                '<div class="card"><b>Not installed yet?</b> Scan the code, then add to the home screen (Safari: Share → Add to Home Screen; Chrome: ⋮ → Install app).' +
-                '<br><b>Scanning connects it too</b> – the code holds your family’s private link. Already have the app? Open it: it asks you to connect – send yourself the link above (e.g. by message), copy it and paste it in.</div>' + helpLink('connect');
+                    codeBox('tablet') +
+                    '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' + pasteLink
+                : '<div class="card big"><h3>In a browser on this computer</h3><p>No screen to connect yet, or just want to try it? Open the dashboard in a new tab here – it’s what the screen will show, already connected.</p>' +
+                    '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
+                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → More → Devices and Phones.</p></div>';
+            return '<h1>6. Connect your display</h1><p class="lead">The display is what shows the dashboard – the XENEON EDGE, a tablet, or a browser. Choose yours below. ' +
+                    'These links are <b>private</b>: they point at your Sheet and contain your access code, so only use them on your own devices. <span class="mute">(About 5 minutes.)</span></p>' +
+                '<div class="tabs" id="devTabs">' + tab('pc', 'XENEON EDGE (Windows)') + tab('pi', 'XENEON EDGE (Raspberry Pi)') + tab('tab', 'Tablet') + tab('here', 'PC browser') + '</div>' + body + helpLink('connect');
         }, wire: function () {
             if (!connected()) return;
             if ($('tabGo')) $('tabGo').onclick = function () {
                 var b = this; b.disabled = true; $('tabStatus').textContent = 'Sending…';
-                FDPairSend.send($('tabCode').value, { url: S.url, code: S.code }).then(function () { $('tabStatus').innerHTML = okLine(true, 'Sent – the tablet connects within a few seconds.'); b.disabled = false; },
+                FDPairSend.send($('tabCode').value, { url: S.url, code: S.code }).then(function () { $('tabStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); b.disabled = false; },
                     function (e) { b.disabled = false; $('tabStatus').innerHTML = okLine(false, e.message); });
             };
             $('devTabs').onclick = function (e) { var b = e.target.closest('[data-dev]'); if (b) { S.dev = b.getAttribute('data-dev'); save(); render(); } };
             if ($('bat')) $('bat').onclick = function () { download('Start Family Dashboard.bat', batFile(screenUrl())); };
         } },
+        { id: 'phones', title: 'Connect your phones', render: function () {
+            if (!connected()) return '<h1>7. Connect your phones</h1>' + needConnect();
+            var app = S.papp === 'calendar' ? 'calendar' : 'admin', os = S.pos === 'android' ? 'android' : 'iphone';
+            var tab = function (attr, k, cur, t) { return '<button ' + attr + '="' + k + '" class="' + (cur === k ? 'on' : '') + '">' + t + '</button>'; };
+            var A = app === 'admin'
+                ? { ico: '⚙', name: 'Family Admin', who: 'for the adults', what: 'The grown-ups’ app: give and take away the children’s points and tick off their tasks, add notes and shopping-list items, change the widgets’ everyday settings, and look after the screen and the licence. Put it on each adult’s phone.' }
+                : { ico: '📅', name: 'Family Calendar', who: 'for everyone', what: 'The family’s shared calendar: see what’s on and add events, in the same colours as the screen. Put it on everyone’s phone – the children’s too, if they have one. It can’t change points or settings.' };
+            return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
+                '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'calendar', app, '📅 Family Calendar (everyone)') + '</div>' +
+                '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
+                    '<ol class="howto"><li><b>Scan this code</b> with the phone’s camera and tap the link that appears. It opens ' + A.name + ', already connected to your family – the code holds your family’s private link.' +
+                    qr(linkFor(app)) +
+                    '<details><summary>No camera, or scanning doesn’t work?</summary>' + copyBox('lnk', A.name + ' link', linkFor(app), 3) + '<p class="mute">Send yourself this link (e.g. in a message) and open it on the phone.</p></details></li>' +
+                    '<li><b>Install it and add it to the home screen.</b> It doesn’t come from the App Store or Google Play – you add it from the page that opened:' +
+                    '<div class="tabs" id="osTabs">' + tab('data-pos', 'iphone', os, 'iPhone') + tab('data-pos', 'android', os, 'Android') + '</div>' +
+                    (os === 'iphone' ? '<ol class="howto"><li>It needs to be open in <b>Safari</b> – if it opened somewhere else, tap “Open in Safari” (or the compass).</li>' +
+                        '<li>Tap the <b>Share</b> button – the square with an arrow – at the bottom of the screen.</li><li>Scroll down, tap <b>Add to Home Screen</b>, then <b>Add</b>.</li>' +
+                        '<li>From now on, open it from the new <b>' + A.name + '</b> icon on your home screen.</li></ol>'
+                      : '<ol class="howto"><li>It needs to be open in <b>Chrome</b>.</li><li>Tap <b>Install</b> if it offers it – or tap the <b>⋮</b> menu (top right) and choose <b>Install app</b> or <b>Add to Home screen</b>.</li>' +
+                        '<li>Tap <b>Install</b> to confirm.</li><li>From now on, open it from the new <b>' + A.name + '</b> icon on your home screen.</li></ol>') + '</li>' +
+                    '<li>Already had the app on this phone? Open it – if it asks you to connect, scan the code again or paste the link.</li></ol></div>' + helpLink('connect');
+        }, wire: function () {
+            if (!connected()) return;
+            $('appTabs').onclick = function (e) { var b = e.target.closest('[data-papp]'); if (b) { S.papp = b.getAttribute('data-papp'); save(); render(); } };
+            $('osTabs').onclick = function (e) { var b = e.target.closest('[data-pos]'); if (b) { S.pos = b.getAttribute('data-pos'); save(); render(); } };
+        } },
 
         { id: 'keys', title: 'Free API keys', render: function () {
-            if (!connected()) return '<h1>6. Free keys for live data</h1>' + needConnect();
+            if (!connected()) return '<h1>8. Free keys for live data</h1>' + needConnect();
             S.keys = S.keys || {}; S.skip = S.skip || {};
-            return '<h1>6. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
+            return '<h1>8. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
                 'a way for one computer system to ask another for information. Each service wants to know who’s asking, so you make a free account with it and it gives you a <b>key</b> ' +
                 '(a bit like a licence) to paste in here. They’re all free. Skip any you don’t want – that widget is just hidden.</p>' +
                 '<p class="mute">Weather, bins, news, flights, quotes and photos need no key at all.</p>' +
-                KEYS.map(function (x, i) {
-                    var done = S.keys[x.k], skipped = S.skip[x.k];
-                    return '<details class="card key' + (done ? ' done' : skipped ? ' skipped' : '') + '"' + (!done && !skipped && !KEYS.slice(0, i).some(function (y) { return !S.keys[y.k] && !S.skip[y.k]; }) ? ' open' : '') + '>' +
-                        '<summary><span class="kname">' + esc(x.name) + '</span><span class="kneed">' + esc(x.need) + '</span><span class="kstate">' + (done ? '✔ saved' : skipped ? 'skipped' : '') + '</span></summary>' +
-                        '<ol class="howto">' + x.steps.map(function (st) { return '<li>' + st + '</li>'; }).join('') + '</ol>' +
-                        (x.k === 'SpotifyClientId' ? copyBox('redir' + i, 'Your Redirect URI', S.url, 2) : '') +
-                        '<p class="mute">' + esc(x.free) + '</p>' +
-                        '<div class="row"><input data-key="' + x.k + '" placeholder="' + (x.k2 ? (x.k === 'TransportApiId' ? 'Application ID' : 'Client ID') : 'Paste the key') + '" value="' + esc(S.keys[x.k] || '') + '" spellcheck="false">' +
-                        (x.k2 ? '<input data-key="' + x.k2 + '" placeholder="' + (x.k2 === 'TransportApiKey' ? 'Key' : 'Client secret') + '" value="' + esc(S.keys[x.k2] || '') + '" spellcheck="false">' : '') + '</div>' +
-                        '<div class="row"><button class="btn" data-savekey="' + i + '">Save</button><button class="btn ghost" data-skip="' + i + '">' + (skipped ? 'Use it after all' : 'Skip – hide this widget') + '</button></div>' +
-                        '<div class="kmsg" id="kmsg' + i + '"></div></details>';
-                }).join('');
+                keysHtml();
+            function keysHtml() {
+                var n = KEYS.length, at = Math.max(0, Math.min(n, +S.kstep || 0));
+                var bar = '<div class="kprog">' + KEYS.map(function (x, i) {
+                    var st = S.keys[x.k] ? 'done' : S.skip[x.k] ? 'skipped' : '';
+                    return '<button type="button" class="kp-i ' + st + (i === at ? ' on' : '') + '" data-kgo="' + i + '"><span>' + (st === 'done' ? '✔' : st === 'skipped' ? '–' : i + 1) + '</span>' + esc(x.name) + '</button>';
+                }).join('<i class="kp-sep"></i>') + '</div>';
+                if (at >= n) {
+                    var got = KEYS.filter(function (x) { return S.keys[x.k]; }), sk = KEYS.filter(function (x) { return S.skip[x.k]; });
+                    return bar + '<div class="card big"><h3>✔ That’s all the services</h3>' +
+                        '<p>' + (got.length ? 'Added: <b>' + got.map(function (x) { return esc(x.name); }).join(', ') + '</b>. ' : '') + (sk.length ? 'Skipped (their widgets are hidden): ' + sk.map(function (x) { return esc(x.name); }).join(', ') + '. ' : '') +
+                        'You can add or change any of them later in the Configurator → Advanced → External data (API) keys.</p>' +
+                        '<div class="row"><button class="btn ghost" data-kgo="' + (n - 1) + '">← Back to ' + esc(KEYS[n - 1].name) + '</button></div><p class="mute">Press <b>Next</b> at the bottom to carry on.</p></div>';
+                }
+                var x = KEYS[at], done = S.keys[x.k], skipped = S.skip[x.k];
+                return bar + '<div class="card big key' + (done ? ' done' : skipped ? ' skipped' : '') + '">' +
+                    '<div class="khead"><span class="kcount">' + (at + 1) + ' of ' + n + '</span><h3>' + esc(x.name) + '</h3><span class="kstate">' + (done ? '✔ saved' : skipped ? 'skipped' : '') + '</span></div>' +
+                    '<p><b>For:</b> ' + esc(x.need) + '</p>' +
+                    '<ol class="howto">' + x.steps.map(function (st) { return '<li>' + st + '</li>'; }).join('') + '</ol>' +
+                    (x.k === 'SpotifyClientId' ? copyBox('redir' + at, 'Your Redirect URI', S.url, 2) : '') +
+                    '<p class="mute">' + esc(x.free) + '</p>' +
+                    '<div class="row"><input data-key="' + x.k + '" placeholder="' + (x.k2 ? (x.k === 'TransportApiId' ? 'Application ID' : 'Client ID') : 'Paste the key') + '" value="' + esc(S.keys[x.k] || '') + '" spellcheck="false">' +
+                    (x.k2 ? '<input data-key="' + x.k2 + '" placeholder="' + (x.k2 === 'TransportApiKey' ? 'Key' : 'Client secret') + '" value="' + esc(S.keys[x.k2] || '') + '" spellcheck="false">' : '') + '</div>' +
+                    '<div class="kmsg" id="kmsg"></div>' +
+                    '<div class="row knav">' + (at ? '<button class="btn ghost" data-kgo="' + (at - 1) + '">← ' + esc(KEYS[at - 1].name) + '</button>' : '<span></span>') +
+                    '<span class="kgrow"></span><button class="btn ghost" id="kSkip">Skip – hide this widget</button><button class="btn" id="kSave">Save and continue →</button></div></div>';
+            }
         }, wire: function () {
             if (!connected()) return;
-            document.querySelectorAll('[data-savekey]').forEach(function (b) {
-                b.onclick = function () {
-                    var x = KEYS[+b.getAttribute('data-savekey')], box = b.closest('details'), vals = {};
-                    box.querySelectorAll('[data-key]').forEach(function (i) { vals[i.getAttribute('data-key')] = i.value.trim(); });
-                    if (!vals[x.k] || (x.k2 && !vals[x.k2])) { $('kmsg' + b.getAttribute('data-savekey')).innerHTML = okLine(false, 'Paste the key' + (x.k2 ? 's' : '') + ' first'); return; }
-                    post({ action: 'saveInstall', values: vals }).then(function () {
-                        Object.keys(vals).forEach(function (k) { S.keys[k] = vals[k]; });
-                        delete S.skip[x.k]; save();
-                        return showWidgets(x.widgets, true);
-                    }).then(function () { toast(x.name + ' saved'); render(); })
-                      .catch(function (e) { $('kmsg' + b.getAttribute('data-savekey')).innerHTML = okLine(false, e.message); });
-                };
-            });
-            document.querySelectorAll('[data-skip]').forEach(function (b) {
-                b.onclick = function () {
-                    var x = KEYS[+b.getAttribute('data-skip')], skipping = !S.skip[x.k];
-                    if (skipping) S.skip[x.k] = 1; else delete S.skip[x.k];
-                    save();
-                    showWidgets(x.widgets, !skipping).then(function () { toast(skipping ? x.name + ' skipped – its widget is hidden' : x.name + ' widget is back'); render(); })
-                        .catch(function (e) { toast(e.message, true); });
-                };
-            });
+            var n = KEYS.length, at = Math.max(0, Math.min(n, +S.kstep || 0)), x = KEYS[at];
+            var go = function (i) { S.kstep = i; save(); render(); };
+            $('page').querySelectorAll('[data-kgo]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-kgo')); }; });
+            if (!x) return;
+            $('kSave').onclick = function () {
+                var vals = {}, b = this;
+                $('page').querySelectorAll('[data-key]').forEach(function (i) { vals[i.getAttribute('data-key')] = i.value.trim(); });
+                if (!vals[x.k] || (x.k2 && !vals[x.k2])) { $('kmsg').innerHTML = okLine(false, 'Paste the key' + (x.k2 ? 's' : '') + ' first – or press Skip if you don’t want ' + x.name); return; }
+                b.disabled = true; b.textContent = 'Saving…';
+                post({ action: 'saveInstall', values: vals }).then(function () {
+                    Object.keys(vals).forEach(function (k) { S.keys[k] = vals[k]; });
+                    delete S.skip[x.k]; save();
+                    return showWidgets(x.widgets, true);
+                }).then(function () { toast(x.name + ' saved'); go(at + 1); })
+                  .catch(function (e) { b.disabled = false; b.textContent = 'Save and continue →'; $('kmsg').innerHTML = okLine(false, e.message); });
+            };
+            $('kSkip').onclick = function () {
+                S.skip[x.k] = 1; save();
+                showWidgets(x.widgets, false).then(function () { toast(x.name + ' skipped – its widget is hidden'); }, function (e) { toast(e.message, true); });
+                go(at + 1);
+            };
         } },
         { id: 'check', title: 'Check everything', render: function () {
-            if (!connected()) return '<h1>7. Check everything</h1>' + needConnect();
-            return '<h1>7. Check everything</h1><p class="lead">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
+            if (!connected()) return '<h1>9. Check everything</h1>' + needConnect();
+            return '<h1>9. Check everything</h1><p class="lead">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
                 '<button class="btn" id="runCheck">Run the check</button><div id="checkOut"></div>';
         }, wire: function () {
             if (!connected()) return;
@@ -718,7 +680,7 @@
     /* ------------------------------------------------------------ frame */
 
     function isDone(id) {
-        return { welcome: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, family: !!S.familyDone,
+        return { welcome: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
             keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, update: false }[id];
     }
     function renderSteps() {
@@ -730,6 +692,7 @@
         S.step = Math.max(0, Math.min(STEPS.length - 1, S.step || 0)); save();
         var st = STEPS[S.step];
         if (st.id === 'devices' && connected()) S.devicesSeen = true;
+        if (st.id === 'phones' && connected()) S.phonesSeen = true;
         var pg = $('page'); pg.onclick = pg.oninput = pg.onchange = null; pg.classList.remove('show-match');
         $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'update' && !SOLO ? '<h1>' + S.step + '. ' : '<h1>');
         if (st.wire) st.wire();
@@ -750,7 +713,7 @@
         for (var k = 0; k < i; k++) if (!canLeave(k)) { S.step = k; render(); toast(STEPS[k].blocked, true); return; }
         S.step = i;
         if (STEPS[i] && STEPS[i].id === 'check') S.autoCheck = true;
-        if (STEPS[i] && STEPS[i].id === 'family') S.fam = null;   // read it fresh from the Sheet
+        if (STEPS[i] && (STEPS[i].id === 'family' || STEPS[i].id === 'calendar')) { ADM = null; FAM = null; }   // read it fresh from the Sheet
         render();
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
@@ -787,7 +750,7 @@
         render();
         var after = function () {
             var ids = STEPS.map(function (x) { return x.id; });
-            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family') S.fam = null; S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : 0; if (goTo === 'check') S.autoCheck = true; }
+            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family' || goTo === 'calendar') { ADM = null; FAM = null; } S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : 0; if (goTo === 'check') S.autoCheck = true; }
             else if (wantUpdate) S.step = ids.indexOf('update');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : 0;
             render();

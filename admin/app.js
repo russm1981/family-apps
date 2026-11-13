@@ -347,8 +347,10 @@
         };
         $('body').innerHTML = '<p class="mute small help">Step-by-step guides. Each opens the setup app at the right step, already connected to your family.</p>' +
             card('Your dashboard', '<div class="menu">' +
-                row('👪', 'Family & calendar', 'Who’s in the family, the calendar groups and colours, which Google calendars', link('go=family')) +
-                row('📺', 'Connect a screen, tablet or phone', 'Start file for the Corsair PC, a tablet by code, QR codes for phones', link('go=devices')) +
+                row('👪', 'Your family', 'Who’s in the family, their colours and who takes part in rewards', link('go=family')) +
+                row('📅', 'Your calendar', 'The calendar’s categories, groups and colours, and tidying up the Google calendar', link('go=calendar')) +
+                row('📺', 'Connect your display', 'The XENEON EDGE (Windows or Raspberry Pi), a tablet, or a browser on this computer', link('go=devices')) +
+            row('📱', 'Connect your phones', 'The Family Admin and Family Calendar apps – scan, then add to the home screen', link('go=phones')) +
                 row('🔑', 'Free keys for live data', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
                 row('🎫', 'Licence key', 'Add or check your licence key', link('go=licence')) +
                 row('✅', 'Check everything', 'Asks your Sheet to fetch every widget and reports anything that needs attention', link('go=check')) +
@@ -371,9 +373,10 @@
         var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&' + step + (step !== 'go=welcome' ? '&only' : ''); };
         var row = function (ico, name, what, href) { return '<a class="mrow" href="' + esc(href) + '"><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>'; };
         return card('Do one step from the Setup wizard again', '<div class="menu">' +
-            row('👪', 'Family & calendar', 'Who’s in the family and which Google calendars the dashboard uses', link('go=family')) +
-            '<a class="mrow" href="#" id="goCalSetup"><span class="m-ico">📅</span><span class="m-tx"><b>Calendar colour coding and tidy-up</b><small>Using a Google Calendar you already had? Set up its categories and the screen’s key, then tidy up so every event is in a category</small></span><i>›</i></a>' +
-            row('📺', 'Connect a screen, tablet or phone', 'Start file for the Corsair PC, a tablet by code, QR codes for phones', link('go=devices')) +
+            row('👪', 'Your family', 'Who’s in the family, their colours and who takes part in rewards', link('go=family')) +
+            '<a class="mrow" href="#" id="goCalSetup"><span class="m-ico">📅</span><span class="m-tx"><b>Your calendar – colour coding and tidy-up</b><small>Using a Google Calendar you already had? Set up its categories and the screen’s key, then tidy up so every event is in a category</small></span><i>›</i></a>' +
+            row('📺', 'Connect your display', 'The XENEON EDGE (Windows or Raspberry Pi), a tablet, or a browser on this computer', link('go=devices')) +
+            row('📱', 'Connect your phones', 'The Family Admin and Family Calendar apps – scan, then add to the home screen', link('go=phones')) +
             row('🔑', 'Get free keys for external data sources', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
             row('🎫', 'Add licence key', 'The licence key links the software to your original purchase', link('go=licence')) +
             row('✅', 'Check everything (diagnostics)', 'Run full diagnostics to check the widgets, settings and software', link('go=check')) +
