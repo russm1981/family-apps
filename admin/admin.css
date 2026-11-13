@@ -225,3 +225,7 @@ details.when summary { font-weight: 600; cursor: pointer; }
 .pen-chip button { background: none; border: 0; color: var(--mute); cursor: pointer; font-size: 13px; }
 .pen-add { display: inline-flex; gap: 6px; align-items: center; } .pen-add input { width: 110px; margin: 0; }
 .dpick[hidden], .rp-date[hidden] { display: none !important; }
+
+.opick { display: flex; flex-direction: column; gap: 6px; } .opick select { width: auto; }
+.op-weekly { display: flex; align-items: center; gap: 8px; }
+.op-daily[hidden], .op-weekly[hidden] { display: none !important; }

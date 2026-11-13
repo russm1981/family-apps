@@ -224,7 +224,7 @@
             var todos = b.todos.length ? order.slice(0, showN).map(function (ti) {
                 var t = b.todos[ti];
                 return '<button class="todo' + (t.done ? ' done' : '') + '" data-act="todo" data-boy="' + bi + '" data-i="' + ti + '">' +
-                    '<span class="box"></span><span>' + esc(t.item) + '</span></button>';
+                    '<span class="box"></span><span>' + esc(t.item) + (t.weekly ? ' <small class="wk">this week</small>' : '') + '</span></button>';
             }).join('') + (order.length > showN ? '<button class="todo-more" data-act="panel" data-sec="todos" data-boy="' + bi + '">+' + (order.length - showN) + ' more \u2013 ' +
                 order.slice(showN).filter(function (ti) { return !b.todos[ti].done; }).length + ' still to do</button>' : '')
                 : '<div class="empty">Nothing this morning</div>';
@@ -253,7 +253,7 @@
             var cashBtn = '<button class="cash' + (canCash ? ' ready' : '') + (isArmed(cashKey) ? ' armed' : '') + '" data-act="cash" data-boy="' + bi + '"' + (canCash ? '' : ' disabled') + '>' +
                 (isArmed(cashKey) ? 'Tap again: cash ' + target + ' for £' + s.cashIn.value : 'Cash in £' + s.cashIn.value) + '</button>';
             var tasksHead = '<h3>Next tasks' + (nTasks > shownTasks.length ? '<button class="more-btn" data-act="panel" data-sec="tasks" data-boy="' + bi + '" title="All ' + nTasks + ' tasks">\u203a\u203a\u203a</button>' : '') + '</h3>';
-            var todoHead = '<h3>This morning' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>';
+            var todoHead = '<h3>To-dos' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>';
             if (compact) {     // the child widget: the at-a-glance things first, in one column that scrolls if it needs to
                 return '<article class="boy compact" style="--c:' + esc(b.colour) + '">' +
                     '<header class="boy-head"><span class="dot"></span><h2>' + esc(b.name) + '</h2></header>' +
@@ -284,7 +284,7 @@
                     '<div class="col-right">' +
                         '<h3>Next tasks' + (nTasks > shownTasks.length ? '<button class="more-btn" data-act="panel" data-sec="tasks" data-boy="' + bi + '" title="All ' + nTasks + ' tasks">\u203a\u203a\u203a</button>' : '') + '</h3>' +
                         '<div class="tasks">' + tasks + '</div>' +
-                        '<h3>This morning' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>' +
+                        '<h3>To-dos' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>' +
                         '<div class="todos">' + todos + '</div>' +
                     '</div>' +
                 '</div>' +
@@ -330,7 +330,7 @@
             '<button class="bp-close" data-close>\u2715 Close</button></header><div class="bp-cols">' +
             '<section class="bp-col' + (panel.sec === 'rem' ? ' focus' : '') + '" data-sec="rem"><h3>Reminders \u2013 next 7 days</h3>' + week + '</section>' +
             '<section class="bp-col' + (panel.sec === 'tasks' ? ' focus' : '') + '" data-sec="tasks"><h3>All tasks (' + all.length + ')</h3><div class="tasks">' + tasks + '</div></section>' +
-            '<section class="bp-col' + (panel.sec === 'todos' ? ' focus' : '') + '" data-sec="todos"><h3>This morning (' + b.todos.filter(function (t) { return !t.done; }).length + ' to do)</h3><div class="todos">' + todos + '</div></section>' +
+            '<section class="bp-col' + (panel.sec === 'todos' ? ' focus' : '') + '" data-sec="todos"><h3>To-dos (' + b.todos.filter(function (t) { return !t.done; }).length + ' to do)</h3><div class="todos">' + todos + '</div></section>' +
             '</div></div>';
         Array.prototype.forEach.call(el.querySelectorAll('.bp-col'), function (c) { var k = c.getAttribute('data-sec'); if (keep[k]) c.scrollTop = keep[k]; });
         el.classList.add('on');

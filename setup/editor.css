@@ -175,3 +175,11 @@ body.desk .top-row { max-width: 1500px; }
 .cs-ev { display: block; border-radius: 4px; padding: 1px 4px; color: #0b0d12; font-weight: 700; font-size: .68rem; }
 .cs-ln { position: absolute; left: 4px; right: 4px; bottom: 4px; height: 5px; border-radius: 3px; }
 .cs-card p, .cs-card li { font-size: .92rem; }
+/* Bigger, clearer type in the screen layout and calendar set-up */
+.cs-card { padding: 20px 22px; } .cs-card h3 { font-size: 20px; margin-bottom: 10px; }
+.cs-card h4 { font-size: 13px; margin-top: 20px; }
+.cs-card p, .cs-card li, .cs-card .mute.small { font-size: 15px !important; line-height: 1.55; }
+.cs-count { font-size: 16px; }
+.cs-chip { font-size: 15px; padding: 6px 12px; }
+.ed-pset h3 { font-size: 20px; } .ed-pset .mute.small, .ed-pset label { font-size: 15px; }
+.ed-info h2 { font-size: 26px; } .ed-info h3 { font-size: 18px; margin-top: 22px; } .ed-info p { font-size: 16px; }

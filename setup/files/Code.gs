@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.55';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.56';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -110,6 +110,7 @@ const INSTALL = [
   { k: 'AccessCode', label: 'Access code', help: 'Made for you when the Sheet is set up. Change it from the Family Admin app (Install tab) so the rules are checked.', hidden: true },
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
+  { k: 'FamilyName', label: 'Family name', help: 'e.g. MacMillan – set on the Family page.', hidden: true },
   { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
@@ -135,7 +136,7 @@ const INSTALL = [
 // Setting types: text, number, bool, select, lines (one per line), time (15:00), crs (station code), url.
 const PAGE_TYPES = {
   widgets: { name: 'Widget page', settings: [] },
-  boys: { name: 'Boys (points)', single: true, settings: [
+  boys: { name: 'Rewards', single: true, settings: [
     { k: 'CashInPoints', label: 'Points needed to cash in', type: 'number', def: 500, min: 1, max: LIMITS.maxCashIn },
     { k: 'CashInValue', label: 'Cash-in value (\u00a3)', type: 'number', def: 5, min: 1, max: 100 },
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
@@ -314,7 +315,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
-  child: { name: 'Child (points)', icon: '\u2B50', sizes: ['full'], about: 'One child’s points, tasks, morning to-dos and reminders. There’s one for each child – put them on any screen.',
+  child: { name: 'Child (rewards)', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards card – their points, tasks, daily to-dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },
@@ -417,7 +418,7 @@ function setup() {
     tt.getRange(2, 1, 2, 3).setValues([['All', 'Mon', 'PE kit'], ['All', 'Fri', 'Library book']]);
   }
   const cats = sheet_('categories');
-  if (cats.getLastRow() === 1) cats.getRange(2, 1, DEFAULT_CATEGORIES.length, 6).setValues(DEFAULT_CATEGORIES);
+  if (cats.getLastRow() === 1) cats.getRange(2, 1, DEFAULT_CATEGORIES.length, DEFAULT_CATEGORIES[0].length).setValues(DEFAULT_CATEGORIES);
   else upgradeCategories_();
   migrate_();
   applySheetRules_();
@@ -653,7 +654,7 @@ function wipeFamily_() {
     if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(1, sh.getLastColumn())).clearContent();
   });
   const cat = ss.getSheetByName(TAB.categories);
-  if (cat) { if (cat.getLastRow() > 1) cat.getRange(2, 1, cat.getLastRow() - 1, Math.max(1, cat.getLastColumn())).clearContent(); cat.getRange(2, 1, DEFAULT_CATEGORIES.length, 6).setValues(DEFAULT_CATEGORIES); }
+  if (cat) { if (cat.getLastRow() > 1) cat.getRange(2, 1, cat.getLastRow() - 1, Math.max(1, cat.getLastColumn())).clearContent(); cat.getRange(2, 1, DEFAULT_CATEGORIES.length, DEFAULT_CATEGORIES[0].length).setValues(DEFAULT_CATEGORIES); }
   const inst = ss.getSheetByName(TAB.install);
   if (inst && inst.getLastRow() > 1) inst.getRange(2, 2, inst.getLastRow() - 1, 1).clearContent();   // keys, address, access code, licence…
   ['_move', 'Old settings', 'Old destinations'].forEach(n => { const sh = ss.getSheetByName(n); if (sh) ss.deleteSheet(sh); });
@@ -813,7 +814,7 @@ function getState_() {
   const tasks = rows_('tasks').filter(t => t.Active !== false && String(t.Active).toUpperCase() !== 'FALSE');
   const ledger = rows_('ledger');
   const todos = rows_('todos');
-  const todoLog = rows_('todoLog').filter(r => dateStr_(r.Date) === today);
+  const logAll = rows_('todoLog'), todoLog = logAll.filter(r => dateStr_(r.Date) === today);
   const timetable = rows_('timetable');
   const ps = pageSettings_('boys');
   const threshold = Number(ps.CashInPoints) || 500;
@@ -834,9 +835,12 @@ function getState_() {
       })
       .sort((a, c) => (Number(a.Order) || 999) - (Number(c.Order) || 999));
     const myTodos = todos
-      .filter(t => forBoy_(t.Boy, b.Name) && dayMatches_(t.Days, dow))
+      .filter(t => forBoy_(t.Boy, b.Name) && (weeklyReset_(t.Days) !== null || dayMatches_(t.Days, dow)))
       .sort((a, c) => (Number(a.Order) || 999) - (Number(c.Order) || 999))
-      .map(t => ({ item: t.Item, done: todoLog.some(l => l.Boy === b.Name && l.Item === t.Item) }));
+      .map(t => {
+        const wk = weeklyReset_(t.Days), since = wk === null ? today : sinceReset_(wk);
+        return { item: t.Item, weekly: wk !== null, done: (wk === null ? todoLog : logAll).some(l => l.Boy === b.Name && l.Item === t.Item && dateStr_(l.Date) >= since && (wk !== null || dateStr_(l.Date) === today)) };
+      });
     const remindersFor = (ds, d) => timetable
       .filter(t => t.Reminder && forBoy_(t.Boy, b.Name) && reminderOn_(t.Day, ds, d))
       .map(t => String(t.Reminder));
@@ -916,13 +920,29 @@ function deleteEntry_(id) {
   return { ok: true, state: getState_() };
 }
 
+/**
+ * A to-do's "Days" can also be "Weekly Sat": it shows every day, and once ticked it stays ticked until it resets on that day.
+ * Returns the reset day (0 = Monday … 6 = Sunday), or null for an ordinary daily to-do.
+ */
+function weeklyReset_(spec) {
+  const m = String(spec || '').trim().toLowerCase().match(/^weekly\s*(mon|tue|wed|thu|fri|sat|sun)/);
+  return m ? ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].indexOf(m[1]) : null;
+}
+/** The date (yyyy-MM-dd) a weekly to-do last reset: the most recent of its reset day, today included. */
+function sinceReset_(day) {
+  const now = new Date(), dow = (Number(fmt_(now, 'u')) + 6) % 7;      // 0 = Monday
+  return fmt_(new Date(now.getTime() - ((dow - day + 7) % 7) * 86400000), 'yyyy-MM-dd');
+}
 function setTodo_(boy, item, done) {
   requireBoy_(boy);
   const today = fmt_(new Date(), 'yyyy-MM-dd');
+  const row = rows_('todos').find(t => String(t.Item) === item && forBoy_(t.Boy, boy));
+  const wk = row ? weeklyReset_(row.Days) : null, since = wk === null ? today : sinceReset_(wk);
   const sh = sheet_('todoLog');
   const data = sh.getDataRange().getValues();
   for (let i = data.length - 1; i >= 1; i--) {
-    if (dateStr_(data[i][0]) === today && data[i][1] === boy && data[i][2] === item) {
+    const d = dateStr_(data[i][0]);
+    if ((wk === null ? d === today : d >= since) && data[i][1] === boy && data[i][2] === item) {
       if (!done) sh.deleteRow(i + 1);
       return { ok: true, state: getState_() };
     }
@@ -960,7 +980,7 @@ function getAdmin_() {
     pages: L.pages, widgets: L.widgets, lists: lists, unused: unusedWidgets_(L.widgets),
     memos: rows_('memos').map(m => ({ id: String(m.ID), text: String(m.Text), from: String(m.From || ''), added: m.Added instanceof Date ? fmt_(m.Added, 'd MMM HH:mm') : String(m.Added) })),
     whereabouts: L.widgets.filter(w => w.type === 'whereabouts').map(w => ({ id: w.id, data: whereabouts_(w.settings) })),
-    family: family_(), calSetup: calSetup_(),
+    family: family_(), calSetup: calSetup_(), familyName: String(inst_('FamilyName') || ''),
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
@@ -2864,6 +2884,11 @@ function saveFamilyPeople_(b) {
     const old = M.people.find(x => x.name === (p.was || name));
     return { name: name, was: p.was, colour: catColour_(name, p.colour), match: old ? old.match : '', group: old ? old.group : '', rewards: !!p.rewards };
   });
+  if (b.familyName !== undefined) {
+    const fn = String(b.familyName || '').replace(/\s+/g, ' ').trim();
+    if (fn.length > 30) throw new Error('The family name can be up to 30 letters');
+    setInst_('FamilyName', fn);
+  }
   const onPoints = ppl.filter(p => p.rewards);
   if (onPoints.length > L.children) throw new Error('Up to ' + L.children + ' people can take part in rewards');
   writeCats_(ppl, M.groups, M.generals);

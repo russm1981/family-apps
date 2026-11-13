@@ -1169,3 +1169,4 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .ab-tabs { display: inline-flex; gap: 0.25rem; margin-right: 0.6rem; padding: 0.15rem; border-radius: 0.6rem; background: rgba(255,255,255,0.06); }
 .ab-tab { border: 0; background: none; color: var(--mute); font: inherit; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 0.45rem; cursor: pointer; }
 .ab-tab.on { background: rgba(255,255,255,0.16); color: var(--text); font-weight: 700; }
+.todo .wk { font-size: 0.7em; opacity: 0.65; font-weight: 600; margin-left: 0.3em; }

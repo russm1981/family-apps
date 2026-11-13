@@ -1,16 +1,17 @@
 {
-  "app": "2026.11.84",
-  "script": "2026.11.55",
+  "app": "2026.11.85",
+  "script": "2026.11.56",
   "date": "2026-11-13",
   "notes": [
-    "Fixed: a widget could end up set to show “00:00 until 00:00” and disappear – midnight is always the end of the day now, and a widget like that shows all the time",
-    "When to show: “Always”, or “Only on some days or at some times…”",
-    "Morning to-dos: For who from a list, the days as buttons, and arrows to put them in order (no order numbers)",
-    "Reminders: For who from a list, and “Every week on…” (day buttons) or “On a date…” (a date picker – shown as e.g. Wed, 23 December 2026)",
-    "Rules: penalty buttons you add and remove – no commas",
-    "Rewards → Manual edits: add or take away points, override the balance, see the statement – with each child’s card underneath",
-    "Calendar set-up: how many categories you can have up front, how to drag people into groups, and a picture of “as a line”",
-    "My data: “Reconfigure your existing setup” with four clear choices, “Port my data to a different Google account”, the access code explained; the apps’ web address is no longer a setting"
+    "Fixed: the calendar’s categories and key had gone missing from the calendar page in Screens",
+    "Fixed: setting up a brand-new family’s Google Sheet could fail at the calendar categories",
+    "The Setup website is now the Family Dashboard configurator: Home and Help, then Set up (Setup wizard, Screens, Family, Rewards, Advanced), then the Apps. The title stays the same; each page has its own heading",
+    "Home: your dashboard’s status, the three parts explained with buttons, and a pointer to the Setup wizard",
+    "Family: a family name (e.g. MacMillan) – “The MacMillan family (Ben, Josh, Alex, Russ, Becky)”",
+    "Daily to-dos (was morning to-dos): daily on the days you pick, or weekly – stays ticked until it resets on the day you choose (e.g. TTRS, Numbots, drums, resetting on Saturday)",
+    "Rewards: clearer menu – Tasks, Daily to-dos, Reminders, Reward rules, Manual edits; a child’s widget points you to the Rewards tab",
+    "Advanced → Software updates: whether each part is up to date (the application held within Google, the dashboard screen, the website and apps), what’s new in the latest version, and the full version history",
+    "Bigger, clearer headings and text throughout the website"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

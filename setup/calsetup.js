@@ -100,8 +100,8 @@
         return out;
     }
     function keyHtml() {
-        var L = CS.limits, all = cats.groups.concat(cats.generals).map(function (c) { return c.name; }).concat(CS.people.map(function (p) { return p.name; }));
-        var pool = all.filter(function (n) { return key.slots.indexOf(n) < 0 && key.hide.indexOf(n) < 0; }), h = homes();
+        var L = CS.limits, names = cats.groups.concat(cats.generals).map(function (c) { return c.name; }).concat(CS.people.map(function (p) { return p.name; }));
+        var pool = names.filter(function (n) { return key.slots.indexOf(n) < 0 && key.hide.indexOf(n) < 0; }), h = homes();
         return '<div class="cs-card"><h3>The key, as it will appear on this calendar page</h3>' +
             '<p class="mute small">Drag into the key what should have a place (and a colour) of its own – a category, a group or one person. Up to <b>' + (L.key - 1) + '</b>, and the last place is always <b>Other</b>. ' +
             'Anything not on the key still shows, in grey, as <b>Other</b> – tap the day on the screen and it shows its real category. ' +
@@ -248,10 +248,11 @@
     window.FDCalSetup = {
         render: function (el, id, hooks) {
             H = hooks; box = el; pageId = id; CS = (H.data() || {}).calSetup;
-            if (!CS) { el.innerHTML = '<p class="mute small">Update the Google script to set up the calendar categories here.</p>'; return; }
+            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Categories and the key</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s categories and key can be set up here. Go to <a href="#/advanced/updates">Advanced → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
             key = clone((CS.keys || []).filter(function (k) { return k.page === id; })[0] || { slots: [], lines: [], hide: [] });
-            draw(); wire();
+            try { draw(); wire(); }
+            catch (e) { el.innerHTML = '<div class="cs-card"><p class="cs-warn">⚠ The calendar set-up couldn’t be shown: ' + esc(e.message) + '. Try reloading the page; if it keeps happening, send a report from Advanced → About &amp; diagnostics.</p></div>'; }
         },
     };
 })();
