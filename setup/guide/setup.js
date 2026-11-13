@@ -512,18 +512,14 @@
         } },
         { id: 'check', title: 'Check everything', render: function () {
             if (!connected()) return '<h1>9. Check everything</h1>' + needConnect();
-            return '<h1>9. Check everything</h1><p class="lead">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
-                '<button class="btn" id="runCheck">Run the check</button><div id="checkOut"></div>';
-        }, wire: function () {
-            if (!connected()) return;
-            $('runCheck').onclick = runCheck;
-            if (S.autoCheck) { S.autoCheck = false; runCheck(); }
-        } },
-
-        { id: 'update', title: 'Updates', render: function () {
+            return '<h1>9. Check everything</h1><p class="lead">Two last checks: that every widget can fetch its live data, and that your software is up to date.</p>' +
+                '<div class="card big"><h3>1. The widgets</h3><p class="mute">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
+                '<button class="btn" id="runCheck">Run the check</button><div id="checkOut"></div></div>' +
+                '<h2 style="margin-top:28px">2. Software updates</h2>' + updatesHtml();
+            function updatesHtml() {
             var mine = S.scriptVersion || '', newest = LATEST && LATEST.script;
             var behind = mine && newest && newer(newest, mine);
-            return '<h1>Updates</h1><div class="card big"><h3>Screen and phone apps</h3><p>These update themselves. The screen checks every 10 minutes and updates when nobody is using it; the phone apps pick it up the next time they’re opened.</p></div>' +
+            return '<div class="card big"><h3>Screen and phone apps</h3><p>These update themselves. The screen checks every 10 minutes and updates when nobody is using it; the phone apps pick it up the next time they’re opened.</p></div>' +
                 '<div class="card big"><h3>Your Google script</h3>' + (!connected() ? needConnect() :
                     (behind ? '<div class="note bad">An update is available: version <b>' + esc(newest) + '</b> (you have ' + esc(mine) + ').</div>' +
                         (LATEST.notes ? '<ul>' + LATEST.notes.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>' : '') +
@@ -544,7 +540,11 @@
                     '(signed in as the Sheet’s owner) and switch <b>Google Apps Script API</b> on.</li>' +
                     '<li>Then: <button class="btn sm' + (S.autoUpdate ? ' ghost' : '') + '" id="autoBtn">' + (S.autoUpdate ? 'Turn automatic updates off' : 'Turn automatic updates on') + '</button></li></ol>' +
                     '<div id="autoMsg">' + (S.autoUpdate ? okLine(true, 'Automatic updates are on.') : '') + '</div></div>' : '');
+            }
         }, wire: function () {
+            if (!connected()) return;
+            $('runCheck').onclick = runCheck;
+            if (S.autoCheck) { S.autoCheck = false; runCheck(); }
             if ($('recheck')) $('recheck').onclick = function () { S.scriptVersion = ''; save(); refreshVersions().then(render); };
             if ($('updNow')) $('updNow').onclick = function () {
                 var b = $('updNow'); b.disabled = true; b.textContent = 'Updating… (up to a minute)';
@@ -562,6 +562,35 @@
                     if (r.warning) $('autoMsg').innerHTML = okLine(false, r.warning) + '<p>Switch on <b>Google Apps Script API</b> (step 1), then it will work.</p>';
                 }).catch(function (e) { $('autoMsg').innerHTML = okLine(false, e.message); });
             };
+        } },
+        { id: 'finish', title: 'Finish', render: function () {
+            var mine = S.scriptVersion || '', newest = LATEST && LATEST.script, behind = mine && newest && newer(newest, mine);
+            var nKeys = KEYS.filter(function (x) { return S.keys && S.keys[x.k]; }).length, nSkip = KEYS.filter(function (x) { return S.skip && S.skip[x.k]; }).length;
+            // [step, ok, what it says]. ok: true = fine, 'note' = fine but worth knowing, false = needs doing.
+            var rows = [
+                ['welcome', isDone('welcome'), 'Privacy notice accepted'],
+                ['publish', connected(), connected() ? 'Your Google Sheet is made, published and connected' : 'Your Google Sheet isn’t connected yet'],
+                ['licence', S.licOk || S.licensed ? true : 'note', S.licOk || S.licensed ? 'Licence key added' : 'No licence key yet – the dashboard runs as a 14-day free trial. Add your key before it ends.'],
+                ['family', isDone('family'), isDone('family') ? 'Family saved' : 'The family hasn’t been saved'],
+                ['calendar', isDone('calendar') ? true : 'note', isDone('calendar') ? 'Calendar colour coding saved' : 'Calendar colour coding not saved in this setup – fine if it was already set up'],
+                ['devices', isDone('devices'), isDone('devices') ? 'Display step done' : 'Your display isn’t connected yet'],
+                ['phones', isDone('phones'), isDone('phones') ? 'Phone apps step done' : 'The phone apps aren’t set up yet'],
+                ['keys', isDone('keys') ? true : false, isDone('keys') ? nKeys + ' live-data service' + (nKeys === 1 ? '' : 's') + ' added' + (nSkip ? ', ' + nSkip + ' skipped' : '') : 'Some live-data services haven’t been added or skipped'],
+                ['check', S.checkedOk ? (behind ? 'note' : true) : false, (S.checkedOk ? 'All the widgets work' : 'The widget check hasn’t passed yet') + (behind ? ' · an update to the Google script is available' : '')]
+            ];
+            var ids = STEPS.map(function (x) { return x.id; }), probs = rows.filter(function (r) { return r[1] === false; });
+            return '<h1>' + (probs.length ? 'Nearly there' : '🎉 You’re all set') + '</h1>' +
+                '<p class="lead">' + (probs.length ? 'Everything with a ⚠ still needs doing – press <b>Go to this step</b> to go back to it. Anything with an ℹ is fine, but worth knowing.' : 'Every step is done. Your dashboard is ready to use.') + '</p>' +
+                '<div class="card big fin">' + rows.map(function (r) {
+                    var i = ids.indexOf(r[0]), cls = r[1] === true ? 'ok' : r[1] === 'note' ? 'info' : 'bad';
+                    return '<div class="fin-r ' + cls + '"><span class="fin-i">' + (cls === 'ok' ? '✔' : cls === 'info' ? 'ℹ' : '⚠') + '</span><span class="fin-t"><b>' + esc(STEPS[i].title) + '</b><small>' + esc(r[2]) + '</small></span>' +
+                        (cls === 'ok' ? '' : '<button class="btn sm ghost" data-fin="' + i + '">Go to this step</button>') + '</div>';
+                }).join('') + '</div>' +
+                (probs.length ? '' : '<div class="card big"><h3>What next</h3><ul><li>Change anything later in the <a href="../">Configurator</a> on this computer, or the Family Admin app on your phone.</li>' +
+                    '<li>Set up the reward system – tasks, daily to-dos and reminders – in the Configurator → Rewards.</li><li>Arrange the widgets on each screen in the Configurator → Screens.</li></ul>' +
+                    '<a class="btn" href="../">Open the Configurator</a></div>');
+        }, wire: function () {
+            $('page').querySelectorAll('[data-fin]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-fin')); }; });
         } },
     ];
 
@@ -681,7 +710,7 @@
 
     function isDone(id) {
         return { welcome: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
-            keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, update: false }[id];
+            keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, finish: false }[id];
     }
     function renderSteps() {
         $('steps').innerHTML = STEPS.map(function (st, i) {
@@ -694,7 +723,7 @@
         if (st.id === 'devices' && connected()) S.devicesSeen = true;
         if (st.id === 'phones' && connected()) S.phonesSeen = true;
         var pg = $('page'); pg.onclick = pg.oninput = pg.onchange = null; pg.classList.remove('show-match');
-        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'update' && !SOLO ? '<h1>' + S.step + '. ' : '<h1>');
+        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'finish' && !SOLO ? '<h1>' + S.step + '. ' : '<h1>');
         if (st.wire) st.wire();
         $('back').style.visibility = S.step ? 'visible' : 'hidden';
         $('next').style.visibility = S.step < STEPS.length - 1 ? 'visible' : 'hidden';
@@ -702,7 +731,7 @@
         var ok = !st.ready || st.ready();
         $('next').classList.toggle('off', !ok);
         $('next').title = ok ? '' : st.blocked || '';
-        $('where').textContent = st.id === 'update' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
+        $('where').textContent = st.id === 'finish' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
         if (SOLO) { $('back').style.visibility = 'hidden'; $('next').style.visibility = 'visible'; $('next').classList.remove('off'); $('next').textContent = 'Done – back to Setup'; }
         renderSteps();
         window.scrollTo(0, 0);
@@ -751,7 +780,7 @@
         var after = function () {
             var ids = STEPS.map(function (x) { return x.id; });
             if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family' || goTo === 'calendar') { ADM = null; FAM = null; } S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : 0; if (goTo === 'check') S.autoCheck = true; }
-            else if (wantUpdate) S.step = ids.indexOf('update');
+            else if (wantUpdate) S.step = ids.indexOf('check');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : 0;
             render();
             if (p.from === 'sheet' && connected()) toast('Connected to your Family Dashboard Sheet \u2705');

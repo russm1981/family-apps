@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.126",
+  "app": "2026.11.127",
   "script": "2026.11.68",
   "date": "2026-11-14",
   "notes": [
-    "Setup wizard: Family and Calendar are separate steps, laid out like the Configurator – Your family (name, home address, each person with their colour and ⭐ Rewards) and Your calendar (the same colour coding and tidy-up as Screens → calendar page)",
-    "Setup wizard: Connect your display (XENEON EDGE on Windows, XENEON EDGE on a Raspberry Pi, a tablet, or a PC browser) and Connect your phones are separate steps. The phones step has a tab for each app saying what it is, the QR code, then how to install it and add it to the home screen on iPhone and Android",
-    "Setup wizard: Free API keys go one service at a time – Save and continue or Skip moves to the next, with your progress across the top and a back button"
+    "Setup wizard: Updates are now part of the Check everything step",
+    "Setup wizard: a final Finish step – a simple list of every step with a tick, and anything that still needs doing highlighted with a button to go back to it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

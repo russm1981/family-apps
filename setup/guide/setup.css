@@ -148,3 +148,13 @@ body.solo .solo-bar { display: flex; }
 .khead .kstate { margin-left: auto; color: var(--good); font-weight: 700; }
 .key.skipped .kstate { color: var(--mute); }
 .knav { margin-top: 16px; } .knav .kgrow { flex: 1; }
+
+/* Finish: one line a step */
+.fin-r { display: flex; align-items: center; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.fin-r:last-child { border-bottom: 0; }
+.fin-i { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; flex: none; }
+.fin-r.ok .fin-i { background: rgba(76,217,100,.18); color: var(--good); }
+.fin-r.info .fin-i { background: rgba(63,169,245,.18); color: var(--acc); }
+.fin-r.bad .fin-i { background: rgba(250,204,21,.18); color: #facc15; }
+.fin-t { flex: 1; } .fin-t b { display: block; } .fin-t small { color: var(--mute); font-size: 14px; }
+.fin-r.bad .fin-t small { color: #facc15; }

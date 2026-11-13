@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.127",
+    "date": "2026-11-14",
+    "notes": [
+      "Setup wizard: Updates are now part of the Check everything step",
+      "Setup wizard: a final Finish step – a simple list of every step with a tick, and anything that still needs doing highlighted with a button to go back to it"
+    ]
+  },
+  {
     "version": "2026.11.126",
     "date": "2026-11-14",
     "notes": [
