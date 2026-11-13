@@ -28,6 +28,18 @@
         });
         return cols;
     }
+    var MAX_SCREENS = 6;
+    var INFO_HTML = '<h2>ℹ️ How your dashboard is put together</h2>' +
+        '<p>Your dashboard is made of <b>widgets</b> – the weather, trains, notes, each child’s rewards card and so on – arranged on <b>screens</b> you flick between down the side. ' +
+        'Use this page to choose which widgets you want and which screen each goes on. There are two kinds of screen: <b>widget screens</b>, and <b>calendar screens</b> (each can show different Google calendars).</p>' +
+        '<h3>One layout, three shapes of screen</h3><p>The same layout works on the long, thin <b>Corsair</b> (four widgets across), a <b>tablet</b> held landscape (two across – a screen is split over two if it needs to be) and a <b>computer</b>. ' +
+        'Use the buttons at the top to see how yours will look on each.</p>' +
+        '<h3>Moving widgets about</h3><p>Drag a widget from the list on the right onto a screen; drag widgets to move them, or onto another screen on the left. To remove one, drag it to the bin or use the 🗑 on it.</p>' +
+        '<h3>Clicking a widget</h3><p>On the left, <b>how it appears</b>: <b>full height</b> or <b>half height</b> (two half-height widgets share a space), and <b>When to show</b>. ' +
+        'On the right, <b>its own settings</b> – the stations, the routes, the album…</p>' +
+        '<h3>Showing a widget only at certain times</h3><p>Any widget can show only on some days or at some times – trains on weekday mornings, say. You then pick another widget to show in the same space the rest of the time; ' +
+        'the screen layout shows both, split by a diagonal line, and clicking either half opens that widget’s settings.</p>' +
+        '<h3>How many</h3><p>Up to ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair.</p>';
     function current() {
         var ps = pages(), id = load(KEY_P, '');
         return ps.filter(function (p) { return p.id === id; })[0] || ps.filter(function (p) { return p.type === 'widgets'; })[0] || ps[0];
@@ -129,27 +141,31 @@
         return out;
     }
     function render() {
-        var p = current(), ps = pages(), fmt = load(KEY_F, 'wide');
+        var info = load(KEY_P, '') === '__info', p = info ? { id: '__info', type: 'info', title: 'How this works', icon: 'ℹ️', show: true } : current(), ps = pages(), fmt = load(KEY_F, 'wide');
         if (!p) { el.innerHTML = '<div class="empty">No screens yet.</div>'; return; }
+        var full = ps.length >= MAX_SCREENS;
         el.innerHTML = '<div class="ed">' +
             '<div class="ed-top"><span class="mute">Show it as on a</span>' + FORMATS.map(function (f) {
                 return '<button class="ed-fmt' + (f[0] === fmt ? ' on' : '') + '" data-fmt="' + f[0] + '"><b>' + esc(f[1]) + '</b><small>' + esc(f[2]) + '</small></button>';
             }).join('') + '</div>' +
             '<div class="ed-main">' +
-            '<aside class="ed-pages"><h3>Screens</h3>' + ps.map(function (x, i) {
+            '<aside class="ed-pages"><div class="ed-page info' + (info ? ' on' : '') + '" data-page="__info"><span class="pi">ℹ️</span><span class="pt"><b>How this works</b><small>Start here</small></span></div>' +
+            '<h3>Screens <span class="mute small">' + ps.length + ' of ' + MAX_SCREENS + '</span></h3>' + ps.map(function (x, i) {
                 return '<div class="ed-page' + (x.id === p.id ? ' on' : '') + (x.show ? '' : ' off') + '" data-page="' + esc(x.id) + '"><span class="pi">' + esc(x.icon) + '</span>' +
                     '<span class="pt"><b>' + esc(x.title) + '</b><small>' + esc(x.type === 'widgets' ? onPage(x.id).length + ' widgets' : H.pageTypeOf(x.type).name) + (x.show ? '' : ' · hidden') + '</small></span>' +
                     '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + '>▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + '>▼</button></span></div>';
             }).join('') +
+            (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair. Remove one to add another.</p>' :
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
-            '<button class="btn sm" id="edAdd">Add</button></div></aside>' +
-            '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
+            '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
+            (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section><aside class="ed-palette ed-blank"></aside></div></div>' : '') +
+            (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
             (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it</div>' +
                 '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height and When to show (a widget at some times, another at others). The 🗑 on each widget removes it – its settings are kept.</p>' : '') + '</section>' +
             (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' + (D().types || []).map(function (T) {
                 return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
-            }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>';
+            }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
     }

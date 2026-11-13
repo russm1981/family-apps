@@ -42,3 +42,19 @@ body.desk .fam-tiles { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr
 body.desk .lrow { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; padding: 6px 48px 10px 12px; }
 body.desk .lrow .x { top: 50%; transform: translateY(-20%); }
 body.desk .lrow .lc label { margin-top: 4px; }
+
+/* Explainers at the top of each set-up page */
+.card.explain { background: rgba(63,169,245,.07); border-color: rgba(63,169,245,.35); }
+.card.explain summary { cursor: pointer; list-style: none; }
+.card.explain summary::-webkit-details-marker { display: none; }
+.card.explain p, .card.explain li { font-size: .92rem; line-height: 1.5; }
+.card.explain ul { padding-left: 1.2em; margin: 6px 0 0; }
+/* Rewards: changing points by hand */
+.adj-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line, #2a303b); flex-wrap: wrap; }
+.adj-row:last-child { border-bottom: 0; }
+.adj-row .dot { width: 12px; height: 12px; border-radius: 50%; }
+.adj-row .adj-bal { flex: 1; color: var(--mute, #8b95a5); }
+/* Help and the calendar, inside the website */
+.frame-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+.desk-frame { width: 100%; height: calc(100vh - 190px); min-height: 520px; border: 1px solid var(--line, #2a303b); border-radius: 14px; background: #0b0d12; }
+body.desk .main:has(.desk-frame) { max-width: 1500px; }

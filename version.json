@@ -1,14 +1,15 @@
 {
-  "app": "2026.11.80",
-  "script": "2026.11.51",
+  "app": "2026.11.81",
+  "script": "2026.11.52",
   "date": "2026-11-13",
   "notes": [
-    "Family tab in three parts: Family links and apps · Set up children’s points, tasks and reminders (Set up tasks, morning to-dos, reminders, points rules – each opens on its own) · Each child as they’ll show on the dashboard",
-    "Morning to-dos and reminders: one line each on a computer",
-    "The family’s Google calendars are set on the calendar page in Screen layout (not in Reconfigure → Family)",
-    "Setup → Screen layout: a calendar page’s settings sit under its picture – which Google calendars it shows, where new events go, what it opens on, lining up weekdays",
-    "You can have more than one calendar page, each showing different Google calendars (add one with “Add a screen” → Calendar)",
-    "Widgets tab: the children’s points widgets aren’t listed (they’re on the Family tab)"
+    "The Setup website, reorganised: Set up (First-time setup · Screens · Family · Rewards · Advanced) · Help · Apps (Calendar · Notes · Lists · Widgets)",
+    "Screens & widgets: a “How this works” page at the top of the screens list; at most 6 screens",
+    "Family: who’s in the family (up to 10), their colours, and ⭐ Rewards – with an explainer",
+    "Rewards: everything on one page – tasks, morning to-dos, reminders, rules, changing a child’s points by hand (add, take away, set the balance, statement) and each child’s card",
+    "Advanced: Settings (home & places, data keys, system) · My data · My devices · About & diagnostics",
+    "Calendar and Help open inside the website; with more than one calendar page you can switch between them",
+    "“Points” is now “Rewards”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

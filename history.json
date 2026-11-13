@@ -1,5 +1,18 @@
 [
   {
+    "version": "2026.11.81",
+    "date": "2026-11-13",
+    "notes": [
+      "The Setup website, reorganised: Set up (First-time setup · Screens · Family · Rewards · Advanced) · Help · Apps (Calendar · Notes · Lists · Widgets)",
+      "Screens & widgets: a “How this works” page at the top of the screens list; at most 6 screens",
+      "Family: who’s in the family (up to 10), their colours, and ⭐ Rewards – with an explainer",
+      "Rewards: everything on one page – tasks, morning to-dos, reminders, rules, changing a child’s points by hand (add, take away, set the balance, statement) and each child’s card",
+      "Advanced: Settings (home & places, data keys, system) · My data · My devices · About & diagnostics",
+      "Calendar and Help open inside the website; with more than one calendar page you can switch between them",
+      "“Points” is now “Rewards”"
+    ]
+  },
+  {
     "version": "2026.11.80",
     "date": "2026-11-13",
     "notes": [

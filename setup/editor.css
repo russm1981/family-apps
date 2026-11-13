@@ -101,3 +101,9 @@ body.desk .top-row { max-width: 1500px; }
 .ed-pset .btn { margin-top: 10px; }
 .ed-pset a { color: #3fa9f5; }
 .ed-pset .ps-h { margin: 14px 0 4px; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mute, #8b95a5); }
+
+.ed-page.info { margin-bottom: 10px; border-style: dashed; }
+.ed-info { padding: 6px 8px; max-width: 820px; }
+.ed-info h2 { margin: 0 0 10px; } .ed-info h3 { margin: 18px 0 4px; font-size: 1rem; }
+.ed-info p { line-height: 1.55; color: var(--text, #e8ecf2); }
+.ed-full { margin-top: 12px; }

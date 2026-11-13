@@ -19,11 +19,14 @@
         var first = new Date(anchor.getFullYear(), anchor.getMonth(), 1), g = FD.monday(first);
         return { start: ymd(g), end: ymd(add(g, 42)) };
     }
+    // Which calendar page to show (?page=…, from the Setup website): its own Google calendars. None: the family's.
+    var PAGE = (location.search.match(/[?&]page=([^&]+)/) || [])[1]; PAGE = PAGE ? decodeURIComponent(PAGE) : '';
     function load(force) {
         var r = range(), key = r.start + ':' + r.end;
         render();
         if (cache[key] && !force && Date.now() - cache[key].at < 120000) return;
         loading = key; sync('busy');
+        if (PAGE) r.page = PAGE;
         FD.get('calendar', r).then(function (d) {
             cache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
             if (d.categories) { legend = d.categories; addable = d.addable || []; try { localStorage.setItem('fdcal.legend', JSON.stringify(legend)); localStorage.setItem('fdcal.addable', JSON.stringify(addable)); } catch (e) { /* ignore */ } }
@@ -229,7 +232,7 @@
     }
     function closeSheet() { $('sheetBg').classList.remove('on'); }
     function save() {
-        var body = { action: 'addEvent', category: form.cat, title: $('fTitle').value.trim(), note: $('fNote').value.trim(), start: $('fFrom').value, end: $('fTo').value || $('fFrom').value };
+        var body = { action: 'addEvent', page: PAGE || undefined, category: form.cat, title: $('fTitle').value.trim(), note: $('fNote').value.trim(), start: $('fFrom').value, end: $('fTo').value || $('fFrom').value };
         if (!body.category) { $('fErr').textContent = 'Pick who or what it’s for'; return; }
         if (!body.title) { $('fErr').textContent = 'Give it a title'; return; }
         if (!body.start) { $('fErr').textContent = 'Pick a date'; return; }

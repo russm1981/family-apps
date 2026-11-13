@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.51';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.52';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -58,7 +58,7 @@ const DEFAULT_CATEGORIES = [
   ['Birthday', '#ffffff', 'birthday', '', '', 'special'],
 ];
 // How many the calendar key can hold neatly: children's group, adults' group, Family, Holiday, up to 3 special, Other.
-const FAMILY_LIMITS = { people: 12, children: 6, specials: 3, name: 10, group: 14, special: 16, match: 120 };
+const FAMILY_LIMITS = { people: 10, children: 6, specials: 3, name: 10, group: 14, special: 16, match: 120 };
 const OTHER_COLOUR = '#8a93a3';
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -592,7 +592,7 @@ function syncChildWidgets_(added) {
       let pg = homes.find(x => used(x) <= LIMITS.columns * 2 - 2);
       if (!pg) {
         const pages = rows_('pages');
-        if (pages.length >= 8) return;      // no room for another page: it can be added from Setup → Screen layout
+        if (screenCount_() >= MAX_SCREENS) return;      // no room for another screen: it can be added from Setup → Screens & widgets
         let id = 'kids', n = '';
         while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
         const last = homes.length ? pages.find(p => String(p.Page).trim() === homes[homes.length - 1]) : bp;
@@ -610,6 +610,9 @@ function syncChildWidgets_(added) {
   }
   renumber_('widgets');
 }
+/** Screens down the side (the old points page, kept hidden for the rewards rules, doesn't count). */
+const MAX_SCREENS = 6;
+function screenCount_() { return rows_('pages').filter(p => String(p.Type).toLowerCase() !== 'boys').length; }
 /** The children on the points list (for the "Which child" setting). */
 function childNames_() { return rows_('boys').map(b => String(b.Name || '').trim()).filter(Boolean); }
 
@@ -991,7 +994,7 @@ function saveList_(list, rows) {
     const names = (rows || []).map(r => r.Name).filter(Boolean);
     if (new Set(names.map(n => n.toLowerCase())).size !== names.length) throw new Error('Two children have the same name');
     if (!names.length) throw new Error('There must be at least one child');
-    if (names.length > FAMILY_LIMITS.children) throw new Error('The points page holds up to ' + FAMILY_LIMITS.children + ' children');
+    if (names.length > FAMILY_LIMITS.children) throw new Error('Up to ' + FAMILY_LIMITS.children + ' people can take part in rewards');
   }
   const values = (rows || []).filter(r => r[head[0]] || r[head[1]]).map(r => head.map(h => {
     let v = r[h] === undefined ? '' : r[h];
@@ -1637,7 +1640,7 @@ function addPage_(title, type) {
   }
   const t = checkLen_('Page name', title, LIMITS.pageTitle);
   if (!t) throw new Error('Give the page a name');
-  if (pages.length >= 8) throw new Error('At most 8 pages fit down the side of the screen');
+  if (screenCount_() >= MAX_SCREENS) throw new Error('At most ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair');
   let id = t.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'page', n = '';
   while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
   const used = pages.map(p => String(p.Icon));
