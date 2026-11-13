@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.114",
+  "app": "2026.11.115",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Reminders: the switch-time note says “with a preview of tomorrow”"
+    "Advanced: About these settings has one bullet for each part (Screen & sleep, Licence and Software updates were run together), with more space between them"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

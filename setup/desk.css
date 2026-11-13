@@ -174,3 +174,4 @@ body.desk .lrow .opick, body.desk .lrow .rpick { flex-wrap: nowrap; gap: 10px; }
 body.desk .lrow .opick select, body.desk .lrow .rpick select { flex: none; width: auto; min-width: 150px; }
 body.desk .lrow .dpick { flex-wrap: nowrap; }
 body.desk .lrow { padding-top: 12px !important; padding-bottom: 12px !important; margin-bottom: 12px; min-height: 64px; }
+body.desk .card li { margin-bottom: 14px; } body.desk .card ul, body.desk .card ol { margin-top: 10px; }
