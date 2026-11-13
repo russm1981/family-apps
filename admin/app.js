@@ -330,11 +330,11 @@
     function renderStart() {
         title('Setup wizard');
         $('body').innerHTML = statusCard() +
-            card('Setting up for the first time?', '<p><b>You can also run this full wizard if you want to change an existing configuration.</b></p>' +
+            card('Start full wizard', '' +
                 '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data.</p>' +
-                '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family</a>' +
+                '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family (setting up for the first time)</a>' +
                 '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' +
-                '<p class="mute small">A new family gets a new Google Sheet. Run on this dashboard, it first asks whether to change the existing set-up or clear it and start again (with a backup copy kept in your Google Drive).</p>') +
+                '<p class="mute small" style="margin-top:14px">A new family gets its own new Google Sheet. Rerunning it on your family lets you change what’s there, or clear it and start again – a backup copy is kept in your Google Drive first.</p>') +
             stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */

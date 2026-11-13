@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.127",
+  "app": "2026.11.128",
   "script": "2026.11.68",
   "date": "2026-11-14",
   "notes": [
-    "Setup wizard: Updates are now part of the Check everything step",
-    "Setup wizard: a final Finish step – a simple list of every step with a tick, and anything that still needs doing highlighted with a button to go back to it"
+    "Setup wizard page: the box is called “Start full wizard”, the first button says “(setting up for the first time)”, and the note under the buttons is simpler, with more space above it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

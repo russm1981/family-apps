@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.128",
+    "date": "2026-11-14",
+    "notes": [
+      "Setup wizard page: the box is called “Start full wizard”, the first button says “(setting up for the first time)”, and the note under the buttons is simpler, with more space above it"
+    ]
+  },
+  {
     "version": "2026.11.127",
     "date": "2026-11-14",
     "notes": [
