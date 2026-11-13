@@ -260,3 +260,19 @@
 .ed-rmic { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #1b2029; display: grid; place-items: center; font-size: 11px; }
 .ed-rmic i { position: absolute; right: -1px; bottom: -1px; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
 .ed-rfoot small { font-size: 7px; color: #f59e0b; white-space: nowrap; }
+
+/* Colour coding: clear headings, one row each, a colour square (a bar along its bottom when it's a line) */
+.cs-card h3.cs-h1 { font-size: 24px; font-weight: 800; margin: 0 0 4px; }
+.cs-card h3.cs-h2 { font-size: 19px; font-weight: 750; color: var(--text, #e8ecf2); margin: 26px 0 8px; padding-top: 18px; border-top: 1px solid var(--line, #2a303b); text-transform: none; letter-spacing: 0; }
+.cs-limit { margin: 12px 0 4px; padding: 10px 14px; border-radius: 12px; background: rgba(63,169,245,.1); border: 1px solid rgba(63,169,245,.35); }
+.cs-limit.bad { background: rgba(248,113,113,.14); border-color: rgba(248,113,113,.6); color: #fecaca; font-size: 1.02rem; }
+.cs-row { grid-template-columns: minmax(200px, 440px) 70px 70px 210px 34px; justify-content: start; }
+.cs-row.cs-prow { grid-template-columns: minmax(200px, 440px) 70px 290px 34px; }
+.cs-row.cs-orow { grid-template-columns: minmax(200px, 440px) 70px 70px 210px 34px; }
+.cs-row .cs-sw { justify-self: start; width: 40px; height: 32px; border-radius: 8px; border: 2px solid rgba(255,255,255,.25); background: var(--sc); padding: 0; cursor: pointer; }
+.cs-row span.cs-sw { cursor: default; }
+.cs-row .cs-sw.line { background: linear-gradient(to top, var(--sc) 0 7px, #141821 7px); }
+.cs-ck { display: flex; } .cs-ck input { width: 20px; height: 20px; margin: 0; }
+.cs-ck input:disabled { opacity: .3; }
+.cs-sel { margin: 0 !important; padding: 6px 8px !important; height: 38px; }
+@media (max-width: 900px) { .cs-row, .cs-row.cs-orow { grid-template-columns: 1fr 50px 40px 150px 28px; } .cs-row.cs-prow { grid-template-columns: 1fr 50px 170px 0; } }

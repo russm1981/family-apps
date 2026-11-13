@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.63';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.64';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -2673,7 +2673,7 @@ function calKey_(pageId, M) {
   const known = M.cats.map(c => c.name).concat(M.people.map(p => p.name));
   const has = n => known.indexOf(n) >= 0;
   const def = M.groups.filter(g => !g.fixed && g.members.length).map(g => g.name).concat(M.groups.filter(g => g.fixed).map(g => g.name), M.generals.map(g => g.name));
-  const slots = (Array.isArray(k.slots) ? k.slots : def).filter(has).slice(0, CAL.key - 1);
+  const slots = (Array.isArray(k.slots) ? k.slots : def).filter(has).slice(0, k.other === false ? CAL.key : CAL.key - 1);
   const lines = (Array.isArray(k.lines) ? k.lines : M.generals.filter(g => g.line).map(g => g.name)).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
   const hide = (Array.isArray(k.hide) ? k.hide : []).filter(n => has(n) && slots.indexOf(n) < 0);
   return { page: pg ? String(pg.Page).trim() : '', slots: slots, lines: lines, hide: hide, other: k.other !== false, saved: Array.isArray(k.slots) };
@@ -2704,7 +2704,8 @@ function calSlot_(r, M, K) {
   if (r.name && K.slots.indexOf(r.name) >= 0) slot = r.name;
   else if (r.person) {
     if (r.person.group && K.hide.indexOf(r.person.group) >= 0) return null;
-    slot = r.person.group && K.slots.indexOf(r.person.group) >= 0 ? r.person.group : K.slots.indexOf('Family') >= 0 ? 'Family' : '';
+    // In a group: the group's colour (or Other, if the group is put in Other). In no group: Family's.
+    slot = r.person.group ? (K.slots.indexOf(r.person.group) >= 0 ? r.person.group : '') : K.slots.indexOf('Family') >= 0 ? 'Family' : '';
   }
   return slot || (K.other === false ? null : 'Other');      // Other can be left off altogether
 }
@@ -2965,15 +2966,19 @@ function saveCalCats_(b) {
   if (groups.length + generals.length > CAL.cats) throw new Error('Up to ' + CAL.cats + ' categories (groups and general ones together) – Google Calendar has 11 colours and one is kept for people’s own events');
   const groupOf = {};
   groups.forEach(g => { if (!g.fixed) g.members.forEach(n => { if (groupOf[n]) throw new Error(n + ' is in two groups – each person can be in one (as well as Family)'); groupOf[n] = g.name; }); });
-  const people = M.people.map(p => Object.assign({}, p, { group: groupOf[p.name] || '' }));
+  // Each person's colour can be changed here too (it's the colour of their own events, when shown on their own).
+  const pc = b.peopleColours || {}, okCol = c => /^#[0-9a-f]{6}$/i.test(String(c || ''));
+  const people = M.people.map(p => Object.assign({}, p, { group: groupOf[p.name] || '', colour: okCol(pc[p.name]) ? String(pc[p.name]) : p.colour }));
   writeCats_(people, groups, generals);
   groups.concat(generals).forEach(c => { if (c.was && c.was !== c.name) renameInKeys_(c.was, c.name); });
   // How each category looks (shown, as a line, Other on or off) – the same on every calendar page.
   if (b.key) {
     const names = groups.concat(generals).map(c => c.name).concat(people.map(p => p.name)), ok = n => names.indexOf(n) >= 0;
-    const slots = (b.key.slots || []).map(String).filter(ok).slice(0, CAL.key - 1), lines = (b.key.lines || []).map(String).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
+    const slots = (b.key.slots || []).map(String).filter(ok).slice(0, CAL.key), lines = (b.key.lines || []).map(String).filter(n => slots.indexOf(n) >= 0).slice(0, 2);
+    const hide = (b.key.hide || []).map(String).filter(n => ok(n) && slots.indexOf(n) < 0);
+    if (slots.length + (b.key.other !== false ? 1 : 0) > CAL.key) throw new Error('The calendar can show up to ' + CAL.key + ' things in their own colours (counting Other) – group some in Other, or hide them');
     rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').forEach(r =>
-      setWset_(String(r.Page).trim(), 'Key', JSON.stringify({ slots: slots, lines: lines, hide: [], other: b.key.other !== false })));
+      setWset_(String(r.Page).trim(), 'Key', JSON.stringify({ slots: slots, lines: lines, hide: hide, other: b.key.other !== false })));
   }
   bumpCalVersion_(); bumpVersions_();
   return getAdmin_();

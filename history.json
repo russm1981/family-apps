@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.94",
+    "date": "2026-11-13",
+    "notes": [
+      "Calendar page: Categories is now Colour coding – simpler, with clear headings, and a box at the top saying how many of the 10 colours you’re using (in red, and Save switched off, if it’s more than 10)",
+      "General categories and family groups: one row each – name, colour (as a line, the colour is a bar along the bottom of its square), Line?, and Show? – Show, Group in Other or Hide",
+      "People in the family: each person’s colour, and Display – individually, in Family, in one of your groups, or hidden. No more dragging names into groups",
+      "Other can be shown or hidden. Someone in a group that’s put in Other now shows as Other, not as Family"
+    ]
+  },
+  {
     "version": "2026.11.93",
     "date": "2026-11-13",
     "notes": [

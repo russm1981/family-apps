@@ -10,7 +10,7 @@
  */
 (function () {
     'use strict';
-    var H, box, pageId, CS, cats, look, dragN = null;
+    var H, box, pageId, CS, cats, look, people = [];
     var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
     var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
     var SUGGEST = ['Holiday', 'School holiday', 'Birthday', 'Work', 'Clubs', 'Appointments'];
@@ -29,66 +29,65 @@
 
     // Each category is shown in its own colour (a box, or a line under the day) or not shown – then its events go in
     // Other, in grey. Other itself can be left off. It's the same on every calendar page.
-    function ink(hex) {
-        var m = /^#?([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(String(hex || '')); if (!m) return '#fff';
-        var l = (0.299 * parseInt(m[1], 16) + 0.587 * parseInt(m[2], 16) + 0.114 * parseInt(m[3], 16)) / 255;
-        return l > 0.6 ? '#111' : '#fff';
+    function catOf(ref) { return ref[0] === 'p' ? people[+ref.slice(1)] : (ref[0] === 'g' ? cats.groups : cats.generals)[+ref.slice(1)]; }
+    var SHOW = [['show', 'Show'], ['other', 'Group in Other'], ['hide', 'Hide']];
+    /** How many things get a colour (and a place on the key) of their own – the calendar shows up to CS.limits.key. */
+    function colourCount() {
+        return all().filter(function (c) { return c.show === 'show'; }).length + people.filter(function (p) { return p.display === 'me'; }).length + (look.other ? 1 : 0);
     }
-    function catOf(ref) { return (ref[0] === 'g' ? cats.groups : cats.generals)[+ref.slice(1)]; }
-    function preview(c) {
-        if (!c.show) return look.other ? '<span class="cs-loz" style="background:#8a93a3;color:#111">Other</span>' : '<span class="mute small">not shown</span>';
-        if (c.line) return '<span class="cs-pday"><b>14</b><i style="background:' + esc(c.colour) + '"></i></span>';
-        return '<span class="cs-loz" style="background:' + esc(c.colour) + ';color:' + ink(c.colour) + '">' + esc(c.name || 'Name') + '</span>';
+    function sel(attr, ref, opts, cur) {
+        return '<select class="cs-sel" ' + attr + '="' + ref + '">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === cur ? ' selected' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>';
     }
-    function row(c, ref, nameCell, del) {
-        return '<div class="cs-row" data-row="' + ref + '">' + '<span class="cs-nm">' + nameCell + '</span>' + swatch(ref, c.colour) +
-            '<label class="cs-tk' + (c.show ? '' : ' off') + '" title="A coloured line under each day, instead of a box – good for things that last days or weeks"><input type="checkbox" data-line="' + ref + '"' + (c.line ? ' checked' : '') + (c.show ? '' : ' disabled') + '><span>As a line</span></label>' +
-            '<label class="cs-tk" title="Shown in its own colour – or, unticked, its events go in Other"><input type="checkbox" data-show="' + ref + '"' + (c.show ? ' checked' : '') + '><span>Shown</span></label>' +
-            '<span class="cs-pv">' + preview(c) + '</span>' + (del || '<span></span>') + '</div>';
+    // A colour square; as a line, the colour is a bar along the bottom of the square (how it looks on the calendar).
+    function swatchOf(ref, c) { return '<button type="button" class="cs-sw' + (c.line ? ' line' : '') + '" data-sw="' + ref + '" style="--sc:' + esc(c.colour) + '" title="Change the colour"></button>'; }
+    function catRow(c, ref, nameCell, del) {
+        return '<div class="cs-row" data-row="' + ref + '"><span class="cs-nm">' + nameCell + '</span>' + swatchOf(ref, c) +
+            '<span class="cs-ck"><input type="checkbox" data-line="' + ref + '"' + (c.line ? ' checked' : '') + (c.show === 'show' ? '' : ' disabled') + ' title="Draw it as a line along the bottom of each day"></span>' +
+            sel('data-show', ref, SHOW, c.show) + (del || '<span></span>') + '</div>';
     }
-    function headRow() { return '<div class="cs-row cs-rhead"><span>Name</span><span>Colour</span><span>Line</span><span>Shown</span><span>How it looks</span><span></span></div>'; }
+    function head(cols) { return '<div class="cs-row cs-rhead">' + cols.map(function (c) { return '<span>' + c + '</span>'; }).join('') + '</div>'; }
 
     function catsHtml() {
-        var L = CS.limits, n = all().length;
+        var L = CS.limits, n = colourCount(), over = n > L.key;
         var fam = cats.groups.filter(function (g) { return g.fixed; })[0], own = cats.groups.filter(function (g) { return !g.fixed; });
-        var noGroup = CS.people.filter(function (p) { return !own.some(function (g) { return g.members.indexOf(p.name) >= 0; }); });
         var gi = function (g) { return cats.groups.indexOf(g); };
         var nameIn = function (attr, i, v, ph) { return '<input class="cs-name" ' + attr + '="' + i + '" maxlength="' + L.name + '" value="' + esc(v) + '" placeholder="' + ph + '">'; };
-        return '<div class="cs-card"><h3>Categories</h3><p class="cs-sub">These apply to all of your calendar pages.</p>' +
-            '<p>You can have up to <b>' + L.cats + '</b> categories' + ' <span class="cs-count' + (n > L.cats ? ' bad' : '') + '">(you’re using ' + n + ')</span>. They’re either <b>general</b> categories – for events that aren’t about particular people – ' +
-            'or <b>people</b> categories, for a group of people or everyone. Use the settings below to choose how each one appears on your calendars: its colour, a box or a line under the day, and whether it’s shown at all.</p>' +
+        var where = [['me', 'Individually'], ['family', 'In Family']].concat(own.map(function (g) { return ['g' + gi(g), 'In ' + (g.name || 'a group')]; })).concat([['hide', 'Hide']]);
+        return '<div class="cs-card"><h3 class="cs-h1">Colour coding</h3><p class="cs-sub">The same on all of your calendar pages.</p>' +
+            '<p>Events can be in a <b>category</b> (holidays, birthdays…) or be about <b>people</b>. People’s events can be coloured for each person, or – with lots of people – put together in family groups to keep the calendar simple.</p>' +
+            '<div class="cs-limit' + (over ? ' bad' : '') + '">' + (over
+                ? '⚠ <b>' + n + ' things are set to show in their own colour – the calendar can show up to ' + L.key + '.</b> Set some to “Group in Other” or “Hide”, or show some people in a family group, then save.'
+                : 'The calendar can show up to <b>' + L.key + '</b> colours. You’re using <b>' + n + '</b>' + (look.other ? ' (including Other)' : '') + '.') + '</div>' +
 
-            '<h4>General categories</h4><p class="mute small cs-expl">Holidays, school holidays, birthdays, work…</p>' +
-            headRow() + cats.generals.map(function (c, i) {
-                return row(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>');
+            '<h3 class="cs-h2">General categories</h3>' +
+            head(['Name', 'Colour', 'Line?', 'Show?', '']) +
+            cats.generals.map(function (c, i) { return catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
+            (all().length < L.cats ? '<div class="chips cs-sug">' + SUGGEST.filter(function (x) { return !cats.generals.some(function (c) { return c.name.toLowerCase() === x.toLowerCase(); }); }).map(function (x) {
+                return '<button class="chip" data-sug="' + esc(x) + '">+ ' + esc(x) + '</button>'; }).join('') + '<button class="chip" data-sug="">+ Add another…</button></div>' : '') +
+
+            '<h3 class="cs-h2">People in the family</h3>' +
+            '<div class="cs-row cs-prow cs-rhead"><span>Name</span><span>Colour</span><span>Display</span><span></span></div>' +
+            people.map(function (p, i) {
+                return '<div class="cs-row cs-prow" data-row="p' + i + '"><span class="cs-nm"><b>' + esc(p.name) + '</b></span>' + swatchOf('p' + i, p) + sel('data-pshow', 'p' + i, where, p.display) + '<span></span></div>';
             }).join('') +
-            (n < L.cats ? '<div class="chips cs-sug">' + SUGGEST.filter(function (x) { return !cats.generals.some(function (c) { return c.name.toLowerCase() === x.toLowerCase(); }); }).map(function (x) {
-                return '<button class="chip" data-sug="' + esc(x) + '">+ ' + esc(x) + '</button>'; }).join('') + '<button class="chip" data-sug="">+ Add another…</button></div>' : '<p class="mute small">That’s the most (' + L.cats + ').</p>') +
+            '<p class="mute small">“In Family” or “In” a group: their own events (“Drums (Ben)”) are shown in that colour.</p>' +
 
-            '<h4>People categories</h4><p class="mute small cs-expl"><b>Family</b> is everyone. You can make up to ' + L.groups + ' groups – the children, the grown-ups… – and drag people into them. ' +
-                'Someone’s own events (“Drums (Ben)”) appear in their group’s colour, or Family’s if they aren’t in a group.</p>' +
-            headRow() +
-            (fam ? row(fam, 'g' + gi(fam), '<b>Family</b> <span class="mute small">everyone – things you all do together</span>') : '') +
-            own.map(function (g) {
-                var i = gi(g);
-                return '<div class="cs-grp" data-zone="group" data-i="' + i + '">' + row(g, 'g' + i, nameIn('data-gname', i, g.name, 'Group name, e.g. The children'), '<button class="cs-x" data-gdel="' + i + '" title="Remove this group">✕</button>') +
-                    '<div class="cs-members">' + (g.members.length ? g.members.map(function (m) { return chip(m); }).join('') : '<span class="mute small">Drag people here</span>') + '</div></div>';
-            }).join('') +
-            (own.length < L.groups && n < L.cats ? '<button class="btn ghost sm" id="csAddGroup">+ Add a group</button>' : '') +
-            '<div class="cs-grp cs-nogroup" data-zone="group" data-i="-1"><b>Not in a group</b> <span class="mute small">– their own events appear as Family. ✋ Drag a name onto a group to put them in it.</span><div class="cs-members">' +
-                (noGroup.length ? noGroup.map(function (p) { return chip(p.name); }).join('') : '<span class="mute small">Everyone is in a group</span>') + '</div></div>' +
+            '<h3 class="cs-h2">Family groups</h3>' +
+            head(['Name', 'Colour', 'Line?', 'Show?', '']) +
+            (fam ? catRow(fam, 'g' + gi(fam), '<b>Family</b> <span class="mute small">everyone – things you all do together</span>') : '') +
+            own.map(function (g) { return catRow(g, 'g' + gi(g), nameIn('data-gname', gi(g), g.name, 'Group name, e.g. The children'), '<button class="cs-x" data-gdel="' + gi(g) + '" title="Remove this group">✕</button>'); }).join('') +
+            (own.length < L.groups && all().length < L.cats ? '<button class="btn ghost sm" id="csAddGroup">+ Add a group</button>' : '') +
 
-            '<h4>Everything else</h4>' +
-            '<div class="cs-row cs-orow"><span class="cs-nm"><b>Other</b> <span class="mute small">events in no category, or in one that isn’t shown</span></span><span></span><span></span>' +
-                '<label class="cs-tk"><input type="checkbox" id="csOther"' + (look.other ? ' checked' : '') + '><span>Shown</span></label>' +
-                '<span class="cs-pv">' + (look.other ? '<span class="cs-loz" style="background:#8a93a3;color:#111">Other</span>' : '<span class="mute small">not shown</span>') + '</span><span></span></div>' +
-            '<p class="mute small">Up to two shown categories can be lines. Tap a day on the screen to see each event’s own category.</p>' +
-            '<button class="btn good" id="csSaveCats">Save the categories</button></div>';
+            '<h3 class="cs-h2">Everything else</h3>' +
+            '<div class="cs-row cs-orow"><span class="cs-nm"><b>Other</b> <span class="mute small">events in no category, and anything set to “Group in Other”</span></span><span class="cs-sw" style="--sc:#8a93a3"></span><span></span>' +
+                sel('data-oshow', 'o', [['show', 'Show'], ['hide', 'Hide']], look.other ? 'show' : 'hide') + '<span></span></div>' +
+            '<p class="mute small">Up to two categories or groups can be lines – drawn along the bottom of each day, good for things that last days or weeks.</p>' +
+            '<button class="btn good" id="csSaveCats"' + (over ? ' disabled' : '') + '>Save the colour coding</button></div>';
     }
     function nextColour() { var used = all().map(function (c) { return c.colour; }); return PALETTE.filter(function (x) { return used.indexOf(x) < 0; })[0] || PALETTE[0]; }
     function openPalette(btn) {
         closePalette();
-        var ref = btn.getAttribute('data-sw'), list = ref[0] === 'g' ? cats.groups : cats.generals, c = list[+ref.slice(1)];
+        var ref = btn.getAttribute('data-sw'), c = catOf(ref); if (!c) return;
         var pop = document.createElement('div');
         pop.className = 'cs-pop';
         pop.innerHTML = PALETTE.map(function (x) { return '<button type="button" class="cs-pc' + (x === c.colour ? ' on' : '') + '" data-pc="' + x + '" style="background:' + x + '"></button>'; }).join('') +
@@ -103,11 +102,20 @@
     function outside(e) { if (!e.target.closest('.cs-pop')) closePalette(); }
     function closePalette() { var p = document.querySelector('.cs-pop'); if (p) p.remove(); document.removeEventListener('click', outside, true); }
 
-    /** What every calendar page's key becomes: the shown categories, general ones first. */
+    /** What every calendar page's key becomes: the shown categories (general ones first), groups, and people shown on their own. */
     function keyFromCats() {
-        var shown = cats.generals.concat(cats.groups.filter(function (g) { return g.fixed; }), cats.groups.filter(function (g) { return !g.fixed; }))
-            .filter(function (c) { return c.show && String(c.name).trim(); });
-        return { slots: shown.map(function (c) { return String(c.name).trim(); }), lines: shown.filter(function (c) { return c.line; }).map(function (c) { return String(c.name).trim(); }), hide: [], other: look.other };
+        var nm = function (c) { return String(c.name).trim(); };
+        var order = cats.generals.concat(cats.groups.filter(function (g) { return g.fixed; }), cats.groups.filter(function (g) { return !g.fixed; })).filter(function (c) { return nm(c); });
+        var shown = order.filter(function (c) { return c.show === 'show'; });
+        return { slots: shown.map(nm).concat(people.filter(function (p) { return p.display === 'me'; }).map(function (p) { return p.name; })),
+            lines: shown.filter(function (c) { return c.line; }).map(nm),
+            hide: order.filter(function (c) { return c.show === 'hide'; }).map(nm).concat(people.filter(function (p) { return p.display === 'hide'; }).map(function (p) { return p.name; })),
+            other: look.other };
+    }
+    /** Group membership comes from each person's Display. */
+    function applyMembers() {
+        cats.groups.forEach(function (g) { if (!g.fixed) g.members = []; });
+        people.forEach(function (p) { var m = /^g(\d+)$/.exec(p.display || ''); if (m && cats.groups[+m[1]] && !cats.groups[+m[1]].fixed) cats.groups[+m[1]].members.push(p.name); });
     }
 
     /* ------------------------------------------------------------ 3. tidying up */
@@ -183,69 +191,61 @@
     function draw() {
         box.innerHTML = catsHtml() + tidyHtml();
     }
-    function canShow() { return all().filter(function (x) { return x.show; }).length < CS.limits.key - 1; }
     function wire() {
         box.oninput = function (e) {
             var t = e.target, i;
             if ((i = t.getAttribute('data-gname')) !== null) cats.groups[+i].name = t.value;
             else if ((i = t.getAttribute('data-cname')) !== null) cats.generals[+i].name = t.value;
-            else return;
-            var r = t.closest('[data-row]'); if (r) r.querySelector('.cs-pv').innerHTML = preview(catOf(r.getAttribute('data-row')));
         };
+        // A group's new name shows in the people's Display lists once you leave the box.
+        box.addEventListener('focusout', function (e) { if (e.target.getAttribute && e.target.getAttribute('data-gname') !== null) draw(); });
         box.onchange = function (e) {
             var t = e.target, ref, c;
-            if (t.id === 'csOther') { look.other = t.checked; draw(); return; }
-            if ((ref = t.getAttribute('data-show')) !== null) {
-                c = catOf(ref);
-                var nShown = all().filter(function (x) { return x.show; }).length;
-                if (t.checked && nShown >= CS.limits.key - 1) { t.checked = false; H.toast('Up to ' + (CS.limits.key - 1) + ' categories can be shown – untick one first', true); return; }
-                c.show = t.checked; if (!c.show) c.line = false; draw(); return;
-            }
+            if (t.getAttribute('data-oshow') !== null) { look.other = t.value === 'show'; draw(); return; }
+            if ((ref = t.getAttribute('data-show')) !== null) { c = catOf(ref); c.show = t.value; if (c.show !== 'show') c.line = false; draw(); return; }
+            if ((ref = t.getAttribute('data-pshow')) !== null) { catOf(ref).display = t.value; applyMembers(); draw(); return; }
             if ((ref = t.getAttribute('data-line')) !== null) {
                 c = catOf(ref);
-                if (t.checked && all().filter(function (x) { return x.line && x.show; }).length >= 2) { t.checked = false; H.toast('Up to two can be lines – untick one first', true); return; }
+                if (t.checked && all().filter(function (x) { return x.line && x.show === 'show'; }).length >= 2) { t.checked = false; H.toast('Up to two can be lines – untick one first', true); return; }
                 c.line = t.checked; draw();
             }
         };
         box.onclick = function (e) {
             var t;
             if ((t = e.target.closest('[data-sw]'))) { openPalette(t); return; }
-            if ((t = e.target.closest('#csAddGroup'))) { cats.groups.splice(cats.groups.length - 1, 0, { name: '', colour: nextColour(), members: [], show: canShow() }); draw(); }
-            else if ((t = e.target.closest('[data-gdel]'))) { cats.groups.splice(+t.getAttribute('data-gdel'), 1); draw(); }
+            if ((t = e.target.closest('#csAddGroup'))) { cats.groups.splice(cats.groups.length - 1, 0, { name: '', colour: nextColour(), members: [], show: 'show' }); draw(); var gs = box.querySelectorAll('[data-gname]'); if (gs.length) gs[gs.length - 1].focus(); }
+            else if ((t = e.target.closest('[data-gdel]'))) {
+                var gi = +t.getAttribute('data-gdel');
+                people.forEach(function (p) { var m = /^g(\d+)$/.exec(p.display || ''); if (m) { if (+m[1] === gi) p.display = 'family'; else if (+m[1] > gi) p.display = 'g' + (+m[1] - 1); } });
+                cats.groups.splice(gi, 1); applyMembers(); draw();
+            }
             else if ((t = e.target.closest('[data-cdel]'))) { cats.generals.splice(+t.getAttribute('data-cdel'), 1); draw(); }
-            else if ((t = e.target.closest('[data-sug]'))) { cats.generals.push({ name: t.getAttribute('data-sug'), colour: nextColour(), show: canShow() }); draw();
+            else if ((t = e.target.closest('[data-sug]'))) { cats.generals.push({ name: t.getAttribute('data-sug'), colour: nextColour(), show: 'show' }); draw();
                 if (!t.getAttribute('data-sug')) { var ins = box.querySelectorAll('[data-cname]'); if (ins.length) ins[ins.length - 1].focus(); } }
             else if ((t = e.target.closest('#csSaveCats'))) {
-                if (cats.generals.concat(cats.groups).some(function (c) { return !String(c.name).trim(); })) { H.toast('Give every category a name (or remove it)', true); return; }
-                H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals, key: keyFromCats() }, 'Categories saved – the screen updates within a few minutes');
+                if (cats.generals.concat(cats.groups).some(function (c) { return !String(c.name).trim(); })) { H.toast('Give every category and group a name (or remove it)', true); return; }
+                if (colourCount() > CS.limits.key) { H.toast('The calendar can show up to ' + CS.limits.key + ' colours – group some in Other, or hide them', true); return; }
+                applyMembers();
+                var pc = {}; people.forEach(function (p) { pc[p.name] = p.colour; });
+                H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals, peopleColours: pc, key: keyFromCats() }, 'Colour coding saved – the screen updates within a few minutes');
             }
             else if ((t = e.target.closest('#csScan'))) tidy();
-        };
-        box.ondragstart = function (e) { var c = e.target.closest && e.target.closest('.cs-chip[data-n]'); if (!c) return; dragN = c.getAttribute('data-n'); try { e.dataTransfer.setData('text/plain', dragN); } catch (x) { /* fine */ } };
-        box.ondragend = function () { dragN = null; Array.prototype.forEach.call(box.querySelectorAll('.over'), function (x) { x.classList.remove('over'); }); };
-        box.ondragover = function (e) { var z = e.target.closest('[data-zone]'); if (z && dragN) { e.preventDefault(); z.classList.add('over'); } };
-        box.ondragleave = function (e) { var z = e.target.closest('[data-zone]'); if (z) z.classList.remove('over'); };
-        box.ondrop = function (e) {
-            var z = e.target.closest('[data-zone]'), n = dragN; if (!z || !n) return;
-            e.preventDefault(); dragN = null;
-            var zone = z.getAttribute('data-zone');
-            if (zone === 'group') {     // people into family groups
-                if (!CS.people.some(function (p) { return p.name === n; })) { H.toast('Only people go into groups', true); draw(); return; }
-                cats.groups.forEach(function (g) { g.members = g.members.filter(function (m) { return m !== n; }); });
-                var gi = +z.getAttribute('data-i'); if (gi >= 0 && !cats.groups[gi].fixed) cats.groups[gi].members.push(n);
-                draw(); return;
-            }
         };
     }
 
     window.FDCalSetup = {
         render: function (el, id, hooks) {
             H = hooks; box = el; pageId = id; CS = (H.data() || {}).calSetup;
-            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Categories and the key</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s categories and key can be set up here. Go to <a href="#/advanced/updates">Advanced → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
+            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">Advanced → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
             var key = (CS.keys || []).filter(function (k) { return k.page === id; })[0] || (CS.keys || [])[0] || { slots: [], lines: [], hide: [] };
             look = { other: key.other !== false };
-            all().forEach(function (c) { c.show = key.slots.indexOf(c.name) >= 0; c.line = c.show && key.lines.indexOf(c.name) >= 0; });
+            var st = function (n) { return key.slots.indexOf(n) >= 0 ? 'show' : key.hide.indexOf(n) >= 0 ? 'hide' : 'other'; };
+            all().forEach(function (c) { c.show = st(c.name); c.line = c.show === 'show' && key.lines.indexOf(c.name) >= 0; });
+            people = CS.people.map(function (p) {
+                var g = cats.groups.filter(function (x) { return !x.fixed && x.members.indexOf(p.name) >= 0; })[0];
+                return { name: p.name, colour: p.colour, display: key.slots.indexOf(p.name) >= 0 ? 'me' : key.hide.indexOf(p.name) >= 0 ? 'hide' : g ? 'g' + cats.groups.indexOf(g) : 'family' };
+            });
             try { draw(); wire(); }
             catch (e) { el.innerHTML = '<div class="cs-card"><p class="cs-warn">⚠ The calendar set-up couldn’t be shown: ' + esc(e.message) + '. Try reloading the page; if it keeps happening, send a report from Advanced → About &amp; diagnostics.</p></div>'; }
         },
