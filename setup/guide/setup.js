@@ -242,7 +242,7 @@
             if ($('pairSend')) $('pairSend').onclick = function () {
                 var b = this; b.disabled = true;
                 FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
-                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Settings → Devices.)'); });
+                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → More → Devices.)'); });
             };
             if ($('packGo')) $('packGo').onclick = function () {
                 var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';

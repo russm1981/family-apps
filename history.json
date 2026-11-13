@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.103",
+    "date": "2026-11-13",
+    "notes": [
+      "Connecting a new device from a phone (scanning its QR code): it now asks “Connect this new device to the MacMillan family dashboard?” – with your family’s name – and Yes or No",
+      "Every “Family Admin → Settings → …” in the help and messages now points to where it is now (More, or the Configurator’s Advanced)"
+    ]
+  },
+  {
     "version": "2026.11.102",
     "date": "2026-11-13",
     "notes": [

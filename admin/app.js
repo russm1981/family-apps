@@ -597,7 +597,7 @@
         title(what);
         $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>Family Dashboard Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
-            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Settings → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }

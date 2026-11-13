@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.102",
+  "app": "2026.11.103",
   "script": "2026.11.65",
   "date": "2026-11-13",
   "notes": [
-    "Colour coding: plain radio buttons for Show / Hide / Show as Other; the colour square is empty when hidden and Other’s grey when shown as Other; a line is a straight bar along the bottom of the square",
-    "Ticking more than two general categories as lines now shows a big red warning (and Save waits) instead of stopping you",
-    "Other category: clearer wording and spacing, with the tick box lined up under it"
+    "Connecting a new device from a phone (scanning its QR code): it now asks “Connect this new device to the MacMillan family dashboard?” – with your family’s name – and Yes or No",
+    "Every “Family Admin → Settings → …” in the help and messages now points to where it is now (More, or the Configurator’s Advanced)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

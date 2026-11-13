@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.102';
+    var APP_VERSION = '2026.11.103';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -140,7 +140,7 @@
         if (!newer(latest.script, lastLayout.scriptVersion) || Date.now() < nag) { banner('scrBanner', ''); return; }
         var b = banner('scrBanner', '<span class="n-ico">⚙</span><div class="n-text"><b>Your Google script needs updating</b>' +
             '<span>You have version ' + esc(lastLayout.scriptVersion) + '; the apps now need ' + esc(latest.script) +
-            '. Tap the version number (bottom left) → Update the Google script now, or Family Admin → Settings → System → Updates.</span></div>' +
+            '. Tap the version number (bottom left) → Update the Google script now, or Family Admin → More → Software updates.</span></div>' +
             '<button class="n-btn ghost" data-s="ok">OK</button>');
         b.onclick = function (e) { if (e.target.closest('[data-s]')) { api().store(SCRIPT_KEY, String(Date.now() + 24 * 3600000)); banner('scrBanner', ''); } };
     }
@@ -212,7 +212,7 @@
                     '<p class="lic-how">Your key is in your order email: FD- then four groups of five letters and numbers. Type it here:</p>' +
                     '<div class="lic-row"><input id="licIn" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="n-btn" id="licSave">Check and save</button></div>' +
                     '<p class="lic-msg" id="licMsg"></p>' +
-                    '<p class="lic-how">Or on your phone: <b>Family Admin → Settings → System → Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
+                    '<p class="lic-how">Or on your phone: <b>Family Admin → More → Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
                 var go = function () {
                     var inp = document.getElementById('licIn'), k = inp.value.trim(), msg = document.getElementById('licMsg'), btn = document.getElementById('licSave');
                     if (!k) { msg.textContent = 'Type your key in first.'; return; }
@@ -228,7 +228,7 @@
             el.style.display = 'flex';
         } else if (el) el.style.display = 'none';
         if (window.FDHealth) FDHealth.note('licence', lic && lic.required && (!lic.ok || /hasn’t answered/.test(lic.message || '')) ? 'Licence: ' + lic.message : '');
-        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → Settings → Licence)</span>' : '');
+        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (Family Admin → More → Licence)</span>' : '');
     }
     window.FDNotices = {
         version: APP_VERSION,
