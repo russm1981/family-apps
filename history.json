@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.121",
+    "date": "2026-11-13",
+    "notes": [
+      "Configurator: Reminders is its own page under Apps (and on the Home page). Reminders in the Rewards menu takes you there"
+    ]
+  },
+  {
     "version": "2026.11.120",
     "date": "2026-11-13",
     "notes": [

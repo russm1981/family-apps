@@ -29,7 +29,7 @@
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other widgets']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
         : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Apps'], ['more', '⋯', 'More']];
     // Settings sections on the phone (the rest are on the computer website).
@@ -201,6 +201,8 @@
     function route() {
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
+        // On the computer, Reminders is its own page under Apps (the Reminders item in Rewards goes there).
+        if (DESK && (h[0] === 'points' || h[0] === 'rewards') && h[1] === 'timetable') { try { history.replaceState(null, '', '#/reminders'); } catch (e) { /* fine */ } return { tab: 'reminders' }; }
         if (h[0] === 'points') return { tab: 'rewards', sub: h[1] || '' };
         if (DESK && ({ family: 1, tools: 1, settings: 1 })[h[0]]) return { tab: h[0] === 'family' ? 'rewards' : h[0] === 'tools' ? 'start' : 'advanced' };
         if (!DESK && h[0] === 'family') return { tab: 'rewards' };       // older phone links
@@ -263,7 +265,7 @@
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
         else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart,
-            famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
+            famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, reminders: function () { renderRewards('timetable', true); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         // On the website the title bar always says "Family Dashboard Configurator"; the page's own name is its heading.
@@ -321,7 +323,7 @@
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('2 · Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
-                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') +
+                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('reminders', '🎒', 'Reminders', 'PE kit, library books – the things to remember each day') +
                 btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
@@ -420,18 +422,19 @@
         };
     }
     /** Rewards: the reward system, a part at a time from the menu on the left. */
-    function renderRewards(sub) {
+    /** solo: just the Reminders part, as its own page (the Reminders tab under Apps on the computer). */
+    function renderRewards(sub, solo) {
         var s = DATA.state, pp = pointsPage();
         var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
         if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
-        var cur = sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
+        var cur = solo ? 'timetable' : sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
             ['-', 'Set up'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
             ['timetable', '🎒', 'Reminders', 'e.g. PE kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
             ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
-        title('Rewards');
+        title(solo ? 'Reminders' : 'Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         var flat = function (k) { return listFold(k).replace('<details class="card fold"', '<div class="card"').replace(/<summary>[\s\S]*?<\/summary>/, '').replace(/<\/details>$/, '</div>'); };
-        var head = function (t, what) { return '<h2 class="pane-h">' + t + '</h2>' + (what ? '<p class="mute pane-what">' + what + '</p>' : ''); };
+        var head = function (t, what) { return (solo ? '' : '<h2 class="pane-h">' + t + '</h2>') + (what ? '<p class="mute pane-what">' + what + '</p>' : ''); };
         var html = '';
         if (cur === 'info') html = explain('How rewards work',
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
@@ -1808,7 +1811,7 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
-        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set on the <a href="#" data-go="rewards">Rewards</a> tab (Reminders).</p>';
+        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set ' + (DESK ? 'on the <a href="#" data-go="reminders">Reminders</a> page (under Apps).' : 'on the <a href="#" data-go="rewards/timetable">Rewards</a> tab (Reminders).') + '</p>';
         if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – tasks, daily to-dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
         var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
             (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';
