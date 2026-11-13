@@ -59,7 +59,16 @@
                 if (a === 'close') close();
                 else if (a === 'check') fullCheck();
                 else if (a === 'save') saveReport(b);
-                else if (a === 'retry') { if (window.FDPages) FDPages.refreshNow(true); }
+                else if (a === 'retry') {
+                    b.disabled = true; b.textContent = 'Asking the Sheet…';
+                    if (window.FDPages) FDPages.refreshNow(true);
+                    (window.FDBoys ? FDBoys.refresh() : Promise.resolve()).then(function () {
+                        var t = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                        if (H.ok) api().toast('✔ Connected – the Sheet answered at ' + t);
+                        else api().toast('Still can’t reach the Sheet (' + t + '): ' + H.msg, true);
+                        draw();
+                    });
+                }
                 else if (a === 'forget') { if (confirm('Disconnect this screen from this family’s dashboard? It then shows a code to connect it again – to this family or another one.')) api().forget(); }
                 else if (a === 'updApp') { b.disabled = true; b.textContent = 'Updating…'; FDNotices.updateNow(); }
                 else if (a === 'updScript') busyBtn(b, 'Updating the Google script…', FDNotices.updateScript().then(function (r) { api().toast(r.upToDate ? 'Already up to date' : 'Google script updated'); }));

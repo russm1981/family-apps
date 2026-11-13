@@ -85,8 +85,16 @@
             });
         }, function (e) {
             if (e && e.name === 'AbortError') throw new Error('No answer from the Google script for 20 seconds');
-            // A Google error page (e.g. "authorisation required") has no CORS headers, so the browser just says "Failed to fetch".
-            throw new Error(navigator.onLine === false ? 'This PC is offline' : 'Can’t reach the Google script – check the internet, or open the Family Admin app to see if the script needs approving again');
+            if (navigator.onLine === false) throw new Error('This PC is offline – check its Wi-Fi or network cable');
+            // A Google error page (e.g. "authorisation required", or Google having a problem) has no CORS headers, so the browser
+            // just says "Failed to fetch". Ask again without needing the headers: if that gets through, Google is answering –
+            // just not with data; if it doesn't, this PC can't reach Google at all.
+            var c2 = new AbortController(), t2 = setTimeout(function () { c2.abort(); }, 10000);
+            return fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store', signal: c2.signal }).then(function () {
+                throw new Error('Google answered, but with an error instead of data – the Google script may have stopped or need approving again. Open Family Admin on your phone: if it works there, it’s this PC (try restarting the browser)');
+            }, function () {
+                throw new Error('This PC can’t reach Google at all – check its internet connection (other websites, Wi-Fi), or restart the PC');
+            }).finally(function () { clearTimeout(t2); });
         }).then(function (d) {
             // The dashboard has moved to a new Sheet ("Start afresh"): remember the new address and ask again there.
             if (d && d.moved && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(d.moved) && url.indexOf(cfg.url) === 0 && !opts.moved) {

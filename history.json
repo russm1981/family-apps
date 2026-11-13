@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.74",
+    "date": "2026-11-13",
+    "notes": [
+      "The screen’s “Try the Sheet again” button now says what happened: “Connected – the Sheet answered at 08:40”, or why it still can’t",
+      "When the screen can’t reach the Sheet it now tells you which kind of problem it is: this PC can’t reach the internet/Google at all, or Google answered with an error (the script stopped or needs approving)"
+    ]
+  },
+  {
     "version": "2026.11.73",
     "date": "2026-11-13",
     "notes": [

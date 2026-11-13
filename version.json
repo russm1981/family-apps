@@ -1,8 +1,10 @@
 {
-  "app": "2026.11.73",
+  "app": "2026.11.74",
   "script": "2026.11.47",
   "date": "2026-11-13",
   "notes": [
+    "The screen’s “Try the Sheet again” button now says what happened: “Connected – the Sheet answered at 08:40”, or why it still can’t",
+    "When the screen can’t reach the Sheet it now tells you which kind of problem it is: this PC can’t reach the internet/Google at all, or Google answered with an error (the script stopped or needs approving)",
     "Children are now widgets: each child’s points card is a full-height widget you can put on any screen (four fit on one). Your points page has been turned into a screen of child widgets in the same place – move them about in Setup → Screen layout",
     "A new child (Family & calendar → ⭐ Points) gets a widget of their own; renaming a child keeps theirs, and taking a child off points removes it (their points are kept)",
     "Setup → Screen layout: no separate points screen to add any more – drag “Child (points)” from the widget list instead"
