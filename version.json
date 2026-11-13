@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.107",
+  "app": "2026.11.108",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Screens: on the tablet view, a widget screen’s two parts are side by side again (there’s room now the screen picture is full width)"
+    "Family: Save the family is on the left and Undo changes on the right"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",
