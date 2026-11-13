@@ -12,9 +12,13 @@ body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.45 sys
 button, input, select, textarea { font: inherit; color: inherit; }
 header { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--panel); position: sticky; top: 0; z-index: 5; flex-wrap: wrap; }
 header h1 { font-size: 18px; margin: 0 auto 0 0; }
-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+nav { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
 nav button { background: none; border: 0; padding: 8px 12px; border-radius: 9px; color: var(--mute); font-weight: 600; cursor: pointer; }
 nav button.on { background: var(--panel2); color: var(--text); }
+nav .ngrp { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); margin: 0 2px 0 6px; }
+nav .nsep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+nav button[data-t=settings] { font-size: 18px; padding: 6px 10px; }
+.ph { font-size: 20px; margin: 0 0 14px; }
 main { max-width: 1150px; margin: 0 auto; padding: 20px 16px 60px; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-bottom: 16px; }
 .card h2 { margin: 0 0 10px; font-size: 17px; }
@@ -115,9 +119,12 @@ function login(msg) {
 
 /* ---------------------------------------------------------------- frame */
 function frame() {
+  // Two groups – the licences, and support (feedback and requests, opening diagnostics reports) – with settings as a cog.
+  var b = function (t) { return '<button data-t="' + t[0] + '"' + (t[2] ? ' title="' + t[2] + '"' : '') + '>' + t[1] + '</button>'; };
   $('app').innerHTML = '<header><h1>🔑 Family Dashboard licences</h1><nav id="nav">' +
-    [['overview', 'Overview'], ['licences', 'Licences'], ['feedback', 'Feedback'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['support', 'Support'], ['settings', 'Settings']].map(function (t) {
-      return '<button data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') +
+    '<span class="ngrp">Licences</span>' + [['overview', 'Overview'], ['licences', 'Licences'], ['issue', 'Issue keys'], ['import', 'Import CSV']].map(b).join('') +
+    '<span class="nsep"></span><span class="ngrp">Support</span>' + [['feedback', 'Feedback & requests'], ['support', 'Diagnostics']].map(b).join('') +
+    '<span class="nsep"></span>' + b(['settings', '⚙', 'Settings']) +
     (IN_SHEET ? '' : '<button id="out">Sign out</button>') + '</nav></header><main id="main"></main>';
   $('nav').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { TAB = b.getAttribute('data-t'); render(); } };
   if ($('out')) $('out').onclick = function () { try { sessionStorage.removeItem('lsPw'); } catch (e) { } PW = ''; login(''); };
@@ -416,7 +423,7 @@ function unlockReport(text) {
 }
 
 function supportPage() {
-  $('main').innerHTML = '<div class="card"><h2>Open a diagnostics report</h2><p class="mute small">When a customer sends a report from Family Admin → Settings → Versions & diagnostics, its private part (access code, API keys, addresses, names) is locked so only you can read it. Paste the whole report, or choose the file.</p>' +
+  $('main').innerHTML = '<div class="card"><h2>Open a diagnostics report</h2><p class="mute small">Reports sent with a support request open from <b>Feedback &amp; requests</b>. For one sent another way (email, a file from the screen): its private part (access code, API keys, addresses, names) is locked so only you can read it. Paste the whole report, or choose the file.</p>' +
     '<div class="row"><label style="margin:0;color:var(--acc);cursor:pointer">Choose the file<input type="file" id="dFile" accept=".txt,text/plain" style="display:none"></label></div>' +
     '<textarea id="dText" placeholder="Paste the report here" style="margin-top:10px;min-height:140px"></textarea>' +
     '<div class="row" style="margin-top:10px"><button class="btn" id="dOpen">Unlock and show</button></div><div id="dOut" class="status"></div></div>';
@@ -462,9 +469,7 @@ function settingsPage() {
   $('main').innerHTML = '<p class="mute">Loading…</p>';
   call('settings').then(function (d) {
     var s = d.settings;
-    $('main').innerHTML = '<div class="card"><h2>Licence server address</h2><p class="mute small">Dashboards check their key here. It goes in <b>version.json</b> on GitHub as <code>"licence"</code>.</p>' +
-      '<div class="row"><span class="key" style="flex:1;overflow:auto">' + esc(d.url || 'Not deployed yet') + '</span>' + (d.url ? '<button class="btn ghost" id="cpUrl">Copy</button>' : '') + '</div></div>' +
-      '<div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link (on a line of its own it becomes a big “Start setting up” button), {help} = the setup help page, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
+    $('main').innerHTML = '<h2 class="ph">⚙ Settings</h2><div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link (on a line of its own it becomes a big “Start setting up” button), {help} = the setup help page, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
       '<div class="grid2"><div><label>From (name)</label><input id="sSeller" value="' + esc(s.sellerName) + '"></div><div><label>Setup link</label><input id="sSetup" value="' + esc(s.setupLink) + '"></div></div>' +
       '<label>Subject</label><input id="sSubj" value="' + esc(s.subject) + '"><label>Message</label><textarea id="sBody" style="min-height:240px">' + esc(s.body) + '</textarea>' +
       '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button><button class="btn ghost" id="sTest">Send me a sample</button><button class="btn ghost" id="sReset">Back to the standard wording</button></div><div id="sOut" class="status"></div></div>' +

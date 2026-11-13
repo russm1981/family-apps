@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.98",
+    "date": "2026-11-13",
+    "notes": [
+      "Licence server 2026.11.17: the menu is in two groups – Licences (Overview, Licences, Issue keys, Import CSV) and Support (Feedback & requests, Diagnostics) – with Settings as a ⚙",
+      "Licence server settings: just the email to buyers, the support key and the admin password"
+    ]
+  },
+  {
     "version": "2026.11.97",
     "date": "2026-11-13",
     "notes": [

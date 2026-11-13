@@ -20,7 +20,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.16';
+const LS_VERSION = '2026.11.17';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }

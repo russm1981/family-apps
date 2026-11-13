@@ -1,15 +1,12 @@
 {
-  "app": "2026.11.97",
+  "app": "2026.11.98",
   "script": "2026.11.65",
   "date": "2026-11-13",
   "notes": [
-    "Screens: a 🗑 by each screen in the list on the left deletes it (a widget screen, if there's another, or a second calendar page) – widgets taken off it earlier go with it",
-    "The title bar’s groups say just Set up and Apps",
-    "While a change is being saved to Google: an hourglass and “⏳ Saving to Google…”, and nothing else can be changed until it’s saved",
-    "No more “No reply” messages when you come back to the window: background refreshes wait up to a minute and fail quietly (the dot goes red and tries again); saves also wait up to a minute",
-    "Quicker: the admin data no longer asks Google Tasks every time (kept for two minutes)"
+    "Licence server 2026.11.17: the menu is in two groups – Licences (Overview, Licences, Issue keys, Import CSV) and Support (Feedback & requests, Diagnostics) – with Settings as a ⚙",
+    "Licence server settings: just the email to buyers, the support key and the admin password"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.16",
+  "licenceServer": "2026.11.17",
   "loader": "1"
 }
