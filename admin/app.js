@@ -427,7 +427,7 @@
         var cur = sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
             ['-', 'Set up'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
             ['timetable', '🎒', 'Reminders', 'e.g. PE kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
-            ['-', 'The children'], ['adjust', '✏️', 'Manual edits', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
+            ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title('Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         var flat = function (k) { return listFold(k).replace('<details class="card fold"', '<div class="card"').replace(/<summary>[\s\S]*?<\/summary>/, '').replace(/<\/details>$/, '</div>'); };
@@ -439,15 +439,15 @@
                 '<li><b>Daily to-dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
                 '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set on the Reminders page). The <b>Reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
-                '<li><b>Manual edits</b> – add or take away points, override a balance, see a statement.</li></ul>');
+                '<li><b>Manual adjustments</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
             var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
             html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, lowest order first; “Repeat” is how often a task comes back once it’s done.') +
-                '<div class="card" id="fTasks"><button class="btn wide top-btn" id="newTask">+ New task</button>' + (tasks.length ? tasks.map(function (t) {
+                '<div class="card" id="fTasks">' + (tasks.length ? tasks.map(function (t) {
                     return '<div class="trow' + (t.Active ? '' : ' paused') + '"><div class="tmain"><b>' + esc(t.Task) + '</b><span class="mute">' + esc(t.Boy || 'All') + ' · ' +
                         esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
-                }).join('') : '<div class="empty">No tasks yet</div>') + '</div>';
+                }).join('') : '<div class="empty">No tasks yet</div>') + '<button class="btn ghost fp-add" id="newTask">+ New task</button></div>';
         } else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
         else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
@@ -455,7 +455,7 @@
                 '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
                 '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
                 '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
-        else html = head('Manual edits', 'Put a child’s points right by hand – it goes on their statement. Below, each child’s card as it shows on the dashboard (you can tick things off and give points there too).') +
+        else html = head('Manual adjustments', 'Put a child’s points right by hand – it goes on their statement. Below, each child’s card as it shows on the dashboard (you can tick things off and give points there too).') +
             '<div class="card">' + s.boys.map(function (b, bi) {
                 return '<div class="adj-row"><span class="dot" style="background:' + esc(b.colour) + '"></span><b>' + esc(b.name) + '</b><span class="adj-bal">' + b.balance + ' points</span>' +
                     '<button class="btn ghost sm" data-bonus="' + bi + '">Add or take away points</button><button class="btn ghost sm" data-setbal="' + bi + '">Override the balance</button><button class="btn ghost sm" data-stmt="' + bi + '">See statement</button></div>';

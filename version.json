@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.110",
+  "app": "2026.11.111",
   "script": "2026.11.67",
   "date": "2026-11-13",
   "notes": [
-    "Configurator: explanations are spaced out – more room between paragraphs and between bullet points"
+    "Rewards → Tasks: + New task is under the list",
+    "“Manual edits” is now “Manual adjustments”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

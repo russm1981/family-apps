@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.111",
+    "date": "2026-11-13",
+    "notes": [
+      "Rewards → Tasks: + New task is under the list",
+      "“Manual edits” is now “Manual adjustments”"
+    ]
+  },
+  {
     "version": "2026.11.110",
     "date": "2026-11-13",
     "notes": [
