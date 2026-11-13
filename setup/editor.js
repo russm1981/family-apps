@@ -96,27 +96,56 @@
         for (var i = shown.length; i < n; i++) body += '<div class="ed-col empty"><div class="ed-slot end">' + (i === shown.length ? 'Drop a widget here' : '') + '</div></div>';
         return '<div class="ed-frame has-rail ' + cls + '">' + (label ? '<div class="ed-flabel">' + esc(label) + '</div>' : '') + rail(p, part) + '<div class="ed-grid" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' + body + '</div></div>';
     }
-    /** The 3-month view: three months of days (no real entries). Lined up, each month starts under its weekday, so the
-     * weekends (shaded) form columns; not lined up, every month starts at the left. */
-    function calInner(fmt, align) {
-        var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], now = new Date(), months = '';
-        for (var m = 0; m < 3; m++) {
-            var d1 = new Date(now.getFullYear(), now.getMonth() + m, 1), days = new Date(d1.getFullYear(), d1.getMonth() + 1, 0).getDate();
-            var lead = align ? (d1.getDay() + 6) % 7 : 0, cells = '';
-            for (var g = 0; g < lead; g++) cells += '<i class="gap"></i>';
-            for (var d = 1; d <= days; d++) {
-                var dow = (d1.getDay() + d - 1) % 7, k = (d * 5 + m * 3) % 11;
-                cells += '<i class="' + (dow === 0 || dow === 6 ? 'we' : '') + (k < 3 ? ' ev" style="--ec:' + ['#3fa9f5', '#a855f7', '#d97757'][k] : '') + '"></i>';
+    /** A simple picture of the calendar page as the screen draws it, in the view it opens on (no real entries):
+     * 3 months – a row per month, days across (lined up under their weekday, so weekends make columns, or starting at
+     * the left); 3 months (scroll) – the same with wider days you drag along; Month – a grid of weeks; Week – a column a day. */
+    function calInner(fmt, align, view) {
+        var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'], DN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        var COL = ['#3fa9f5', '#a855f7', '#d97757'], now = new Date(), body = '', title = '';
+        var ev = function (d, m) { var k = (d * 5 + m * 3) % 11; return k < 3 ? COL[k] : ''; };
+        view = view || '3 months';
+        if (view === 'Month') {
+            var first = new Date(now.getFullYear(), now.getMonth(), 1), lead = (first.getDay() + 6) % 7, dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            var weeks = Math.ceil((lead + dim) / 7), cells = '<span></span>' + DN.map(function (d, i) { return '<b class="' + (i > 4 ? 'we' : '') + '">' + d + '</b>'; }).join('');
+            for (var w = 0; w < weeks; w++) {
+                cells += '<i class="wk">wk</i>';
+                for (var k = 0; k < 7; k++) {
+                    var d = w * 7 + k - lead + 1, c = d >= 1 && d <= dim ? ev(d, 0) : '';
+                    cells += '<i class="' + (d < 1 || d > dim ? 'out' : k > 4 ? 'we' : '') + '"><u>' + (d >= 1 && d <= dim ? d : '') + '</u>' + (c ? '<s style="--ec:' + c + '"></s>' : '') + (c && d % 3 === 0 ? '<s style="--ec:' + COL[(d + 1) % 3] + '"></s>' : '') + '</i>';
+                }
             }
-            months += '<div class="mk3-m"><b>' + MON[d1.getMonth()] + '</b><div class="mk3-g">' + cells + '</div></div>';
+            title = MON[now.getMonth()]; body = '<div class="mkm" style="grid-template-rows:auto repeat(' + weeks + ',1fr)">' + cells + '</div>';
+        } else if (view === 'Week') {
+            var mon = new Date(now); mon.setDate(now.getDate() - (now.getDay() + 6) % 7);
+            body = '<div class="mkw">' + DN.map(function (n, i) {
+                var dt = new Date(mon); dt.setDate(mon.getDate() + i);
+                var evs = ''; for (var j = 0; j < (i * 7 + 3) % 4; j++) evs += '<s style="--ec:' + COL[(i + j) % 3] + '"><em></em></s>';
+                return '<div class="' + (i > 4 ? 'we' : '') + '"><b>' + n + ' ' + dt.getDate() + '</b>' + (evs || '<small>Nothing on</small>') + '</div>';
+            }).join('') + '</div>';
+            title = 'This week';
+        } else {
+            var scroll = view === '3 months (scroll)', rows = '';
+            for (var m = 0; m < 3; m++) {
+                var d1 = new Date(now.getFullYear(), now.getMonth() + m, 1), days = new Date(d1.getFullYear(), d1.getMonth() + 1, 0).getDate();
+                var off = align ? (d1.getDay() + 6) % 7 : 0, cols = align ? 37 : 31, cl = '';
+                for (var col = 0; col < (scroll ? Math.min(cols, 14) : cols); col++) {
+                    var dd = col - off + 1;
+                    if (dd < 1 || dd > days) { cl += '<i class="gap"></i>'; continue; }
+                    var dow = (d1.getDay() + dd - 1) % 7, c2 = ev(dd, m);
+                    cl += '<i class="' + (dow === 0 || dow === 6 ? 'we' : '') + '">' + (scroll ? '<u>' + dd + '</u>' : '') + (c2 ? '<s style="--ec:' + c2 + '"></s>' : '') + '</i>';
+                }
+                rows += '<div class="mk3r"><b>' + MON[d1.getMonth()] + '</b><div class="mk3c" style="grid-template-columns:repeat(' + (scroll ? 14 : cols) + ',minmax(0,1fr))">' + cl + '</div></div>';
+            }
+            title = MON[now.getMonth()] + ' – ' + MON[(now.getMonth() + 2) % 12];
+            body = '<div class="mk3' + (scroll ? ' scroll' : '') + '">' + rows + (scroll ? '<span class="mk-drag">⟵ drag along ⟶</span>' : '') + '</div>';
         }
-        return '<div class="mk-cal"><div class="mk-top"><b>📅 The family calendar</b><span>3 months · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div><div class="mk3">' + months + '</div></div>';
+        return '<div class="mk-cal"><div class="mk-top"><b>📅 ' + esc(title) + '</b><span>3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' + body + '</div>';
     }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {
         var inner;
         if (p.type === 'calendar') {
-            inner = calInner(fmt, (p.settings || {}).AlignWeekdays !== false);
+            inner = calInner(fmt, (p.settings || {}).AlignWeekdays !== false, (p.settings || {}).DefaultView);
         } else {
             var cards = '';
             for (var i = 0; i < n; i++) cards += '<div class="mk-kid"><b>Child ' + (i + 1) + '</b><span class="mk-pts">123</span><small>points</small><i></i><i></i><i></i></div>';
@@ -244,9 +273,12 @@
     }
     function wire(p) {
         // Ticking "line up the days of the week" shows it on the picture straight away.
+        // Changing the view it opens on, or lining up the days, shows on the picture straight away.
         el.querySelector('.ed').addEventListener('change', function (e) {
-            if (e.target.getAttribute && e.target.getAttribute('data-f') === 'AlignWeekdays')
-                Array.prototype.forEach.call(el.querySelectorAll('.ed-frame.mock .mk-in'), function (m) { m.innerHTML = calInner(load(KEY_F, 'wide'), e.target.checked); });
+            var k = e.target.getAttribute && e.target.getAttribute('data-f'), box = e.target.closest && e.target.closest('.ed-pset');
+            if (!box || (k !== 'AlignWeekdays' && k !== 'DefaultView')) return;
+            var al = box.querySelector('[data-f=AlignWeekdays]'), vw = box.querySelector('[data-f=DefaultView]');
+            Array.prototype.forEach.call(el.querySelectorAll('.ed-frame.mock .mk-in'), function (m) { m.innerHTML = calInner(load(KEY_F, 'wide'), al ? al.checked : true, vw ? vw.value : '3 months'); });
         });
         el.querySelector('.ed').onclick = function (e) {
             var t;

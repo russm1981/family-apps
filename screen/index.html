@@ -39,13 +39,27 @@
                     <button class="cal-btn add" id="calAdd">+ Add</button>
                 </header>
                 <div id="calAddBar" class="cal-addbar">
-                    <div class="ab-step"><span class="ab-n">1</span><div id="abCats" class="ab-cats"></div></div>
-                    <div class="ab-step"><span class="ab-n">2</span><div id="abDates" class="ab-dates">Tap a day</div></div>
-                    <div class="ab-step grow"><span class="ab-n">3</span><input id="abTitle" class="ab-input" maxlength="40" placeholder="What is it?" autocomplete="off" />
-                        <input id="abNote" class="ab-input note" maxlength="300" placeholder="Notes or time (optional)" autocomplete="off" /></div>
-                    <button class="cal-btn" id="abCancel">Cancel</button>
-                    <button class="cal-btn save" id="abSave" disabled>Save</button>
+                    <span class="ab-n">+</span><b class="ab-prompt">Tap the day it’s on</b><span class="ab-hint">– for something that lasts several days, tap the first day; you can set the last day next</span>
+                    <span class="cal-spacer"></span><button class="cal-btn" id="abCancel">Cancel</button>
                 </div>
+                <div id="calAddPop" class="cal-day ap-pop"><div class="cal-day-card ap-card">
+                    <header><h3>New entry · <span id="abDates"></span></h3><button id="abClose" class="cal-btn">✕</button></header>
+                    <div class="ap-body">
+                        <label class="ap-l" for="abTitle">What is it?</label>
+                        <input id="abTitle" class="ab-input" maxlength="40" placeholder="e.g. Swimming lesson" autocomplete="off" />
+                        <label class="ap-l">When</label>
+                        <div class="ap-when">
+                            <span class="ab-tabs"><button class="ab-tab on" data-when="day">All day</button><button class="ab-tab" data-when="time">At a time</button></span>
+                            <span id="abDayEnd" class="ap-row">until <input id="abUntil" class="ab-input sm" type="date" /></span>
+                            <span id="abTimes" class="ap-row" hidden>from <input id="abFrom" class="ab-input sm" type="time" value="09:00" /> to <input id="abTo" class="ab-input sm" type="time" value="10:00" /></span>
+                        </div>
+                        <label class="ap-l">Category</label>
+                        <div id="abCats" class="ab-cats"></div>
+                        <label class="ap-l" for="abNote">Notes <span class="ab-hint">(optional)</span></label>
+                        <input id="abNote" class="ab-input" maxlength="300" placeholder="Anything to remember – where, what to bring…" autocomplete="off" />
+                    </div>
+                    <div class="ap-actions"><button class="cal-btn" id="abBack">‹ Another day</button><span class="cal-spacer"></span><button class="cal-btn" id="abCancel2">Cancel</button><button class="cal-btn save" id="abSave" disabled>Save</button></div>
+                </div></div>
                 <div class="cal-body">
                     <div id="calRows" class="cal-rows"></div>
                     <aside class="cal-side"><h3>Key</h3><div id="calKey" class="cal-key"></div></aside>

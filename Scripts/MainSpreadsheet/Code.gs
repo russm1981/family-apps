@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.62';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.63';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -708,7 +708,7 @@ function doGet(e) {
       movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
-      if (p.action === 'whose') return { ok: true, people: family_().people.map(x => x.name) };   // the pair page: "the dashboard of Russ, Becky…"
+      if (p.action === 'whose') return { ok: true, people: family_().people.map(x => x.name), familyName: String(inst_('FamilyName') || '') };   // the pair page: "the dashboard of Russ, Becky…"
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v, p);
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
@@ -3023,14 +3023,17 @@ function calScan_(b) {
 }
 /** Apply the tidy-up to some events (up to 60 at a time): the title, and the category's Google colour. Repeating events change as a whole. */
 function calFix_(b) {
-  const M = calModel_(), items = (b.items || []).slice(0, 60), done = [], failed = [];
+  const M = calModel_(), items = (b.items || []).slice(0, 60), done = [], failed = [], left = [], t0 = Date.now(), cals = {};
+  // Google Calendar is slow to change events (about a second each): stop after 20 seconds and say which are left,
+  // so the website sends them again – no request runs long enough to time out.
   items.forEach(x => {
+    if (Date.now() - t0 > 20000) { left.push(x.id); return; }
     try {
       const cat = M.people.find(p => p.name === x.cat) || M.cats.find(c => c.name === x.cat);
       const person = M.people.indexOf(cat) >= 0;
       const text = String(x.text || '').replace(/\s+/g, ' ').trim().slice(0, LIMITS.eventTitle);
       if (!text) throw new Error('No title');
-      const cal = CalendarApp.getCalendarById(x.cal);
+      const cal = cals[x.cal] || (cals[x.cal] = CalendarApp.getCalendarById(x.cal));
       if (!cal) throw new Error('Can’t open that calendar');
       const ev = x.rec ? cal.getEventSeriesById(x.id) : cal.getEventById(x.id);
       if (!ev) throw new Error('Not found (deleted?)');
@@ -3040,7 +3043,7 @@ function calFix_(b) {
     } catch (e) { failed.push({ id: x.id, error: String(e && e.message || e).slice(0, 120) }); }
   });
   bumpCalVersion_();
-  return { ok: true, done: done, failed: failed };
+  return { ok: true, done: done, failed: failed, left: left };
 }
 /** For the set-up page: the categories, the Google colours, and each calendar page's key. */
 function calSetup_() {

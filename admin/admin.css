@@ -297,3 +297,5 @@ body:not(.desk) .desk-frame { width: 100%; height: calc(100vh - 190px); min-heig
 body:not(.desk) .adj-row { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
 body:not(.desk) .adj-row .adj-bal { margin-left: auto; font-weight: 700; }
 body:not(.desk) .tabbar button { min-width: 0; }
+/* The status dot by the title: always a round dot */
+.top .sync { display: inline-block; width: 10px; height: 10px; min-width: 10px; padding: 0; border-radius: 50%; aspect-ratio: 1; align-self: center; cursor: pointer; margin: 0 4px; }

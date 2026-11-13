@@ -354,15 +354,23 @@
 
     /* ---------------------------------------------------------- add an event */
 
+    // Adding an entry: + Add, then tap the day; a box opens for what it is, when, the category and notes.
     function startAdding(ds) {
         $('calDay').classList.remove('on');
-        adding = { cat: adding && adding.cat || '', start: ds || null, end: ds || null };
+        adding = { cat: adding && adding.cat || '', start: ds || null, end: ds || null, when: 'day' };
         $('abTitle').value = ''; $('abNote').value = '';
         $('screen-calendar').classList.add('adding');
+        if (ds) openAddPop(); else { $('calAddPop').classList.remove('on'); renderCalendar(); }
+    }
+    function openAddPop() {
+        $('abUntil').min = adding.start; $('abUntil').value = adding.end || adding.start;
+        $('calAddPop').classList.add('on');
         renderAddBar(); renderCalendar();
+        setTimeout(function () { try { $('abTitle').focus(); } catch (e) { /* fine */ } }, 50);
     }
     function stopAdding() {
         adding = null;
+        $('calAddPop').classList.remove('on');
         $('screen-calendar').classList.remove('adding');
         try { document.activeElement.blur(); } catch (e) { /* ignore */ }
         renderCalendar();
@@ -378,23 +386,27 @@
             var on = adding.cat === c.name;
             return '<button class="ab-cat' + (on ? ' on' : '') + '" data-cat="' + esc(c.name) + '" style="--ec:' + esc(c.colour) + ';--et:' + ink(c.colour) + '">' + esc(c.name) + '</button>';
         }).join('') : '<span class="ab-hint">No categories here yet – set them up on the Setup website</span>');
-        var a = adding.start, z = adding.end || adding.start;
+        var a = adding.start, z = adding.when === 'time' ? a : adding.end || adding.start;
         var n = a ? Math.round((parseYmd(z) - parseYmd(a)) / 86400000) + 1 : 0;
-        $('abDates').innerHTML = !a ? '<span class="ab-hint">Tap a day below</span>' :
-            '<b>' + fmtDay(a) + '</b>' + (n > 1 ? ' → <b>' + fmtDay(z) + '</b> <span class="ab-hint">' + n + ' days</span>' :
-            ' <span class="ab-hint">tap another day for a longer event</span>');
+        $('abDates').innerHTML = !a ? '' : fmtDay(a) + (n > 1 ? ' → ' + fmtDay(z) + ' <span class="ab-hint">(' + n + ' days)</span>' : '');
+        Array.prototype.forEach.call(document.querySelectorAll('#calAddPop [data-when]'), function (b) { b.classList.toggle('on', b.getAttribute('data-when') === adding.when); });
+        $('abDayEnd').hidden = adding.when === 'time'; $('abTimes').hidden = adding.when !== 'time';
         $('abSave').disabled = !(adding.cat && a && $('abTitle').value.trim());
     }
     function pickDay(ds) {
-        if (!adding.start || adding.end !== adding.start) { adding.start = ds; adding.end = ds; }
-        else if (ds < adding.start) { adding.end = adding.start; adding.start = ds; }
-        else { adding.end = ds; }
-        renderAddBar(); renderCalendar();
+        adding.start = ds; adding.end = ds;
+        openAddPop();
     }
     function saveEvent() {
         if (!adding || $('abSave').disabled) return;
         var body = { action: 'addEvent', category: adding.cat, title: $('abTitle').value.trim(), note: $('abNote').value.trim(),
             start: adding.start, end: adding.end || adding.start, page: calPage };
+        if (adding.when === 'time') {
+            var f = $('abFrom').value, t = $('abTo').value;
+            if (!f) { api().toast('Pick the time it starts', true); return; }
+            var mins = t ? (parseInt(t, 10) * 60 + +t.slice(3)) - (parseInt(f, 10) * 60 + +f.slice(3)) : 60;
+            body.time = f; body.mins = mins > 0 ? mins : 60; body.end = body.start;
+        }
         $('abSave').disabled = true; $('abSave').textContent = 'Saving…';
         api().post(body).then(function () {
             api().toast('Added “' + body.title + '” to ' + body.category);
@@ -508,6 +520,14 @@
                 $('calAdd').addEventListener('click', function () { if (adding) stopAdding(); else startAdding(null); });
                 $('calDayAdd').addEventListener('click', function () { startAdding(openDayStr); });
                 $('abCancel').addEventListener('click', stopAdding);
+                $('abCancel2').addEventListener('click', stopAdding);
+                $('abClose').addEventListener('click', stopAdding);
+                $('abBack').addEventListener('click', function () { if (!adding) return; adding.start = adding.end = null; $('calAddPop').classList.remove('on'); renderCalendar(); });
+                $('calAddPop').addEventListener('click', function (e) {
+                    if (e.target === $('calAddPop')) { stopAdding(); return; }
+                    var w = e.target.closest('[data-when]'); if (w && adding) { adding.when = w.getAttribute('data-when'); renderAddBar(); }
+                });
+                $('abUntil').addEventListener('change', function () { if (!adding) return; var v = $('abUntil').value; adding.end = v && v >= adding.start ? v : adding.start; renderAddBar(); renderCalendar(); });
                 $('abSave').addEventListener('click', saveEvent);
                 $('abCats').addEventListener('click', function (e) {
                     var tb = e.target.closest('[data-tab]'); if (tb && adding) { adding.tab = tb.getAttribute('data-tab'); renderAddBar(); return; }

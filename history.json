@@ -1,5 +1,17 @@
 [
   {
+    "version": "2026.11.93",
+    "date": "2026-11-13",
+    "notes": [
+      "Calendar tidy-up: Apply now works through the calendar a few events at a time, so it no longer stops with “No reply”; a tick box at the top ticks or unticks them all; Apply is on the left and Close on the right",
+      "Calendar page: the picture underneath is drawn in the view it opens on – 3 months, 3 months (scroll), Month or Week – and changes as you change it",
+      "Adding to the calendar on the screen: + Add, tap the day, and a box opens – what it is, all day (until another day) or at a time, the category and notes",
+      "The dot by the title is always round; hover or tap it to see why it’s red, and it tries again by itself",
+      "Every device can be disconnected – the screen (tap the version), the phone (More → Disconnect this phone), the calendar app and the Configurator (Home) – and goes back to “connect to a dashboard”",
+      "Everywhere says which family: “the MacMillan family dashboard (Ben, Josh…)”"
+    ]
+  },
+  {
     "version": "2026.11.92",
     "date": "2026-11-13",
     "notes": [

@@ -65,7 +65,7 @@
                 '<p class="small" style="opacity:.7">Version ' + esc(FD.VERSION) + '</p>' +
                 '<button class="btn ghost wide" id="whoOut">Disconnect this app</button><p class="small" style="opacity:.7">Then connect it to the right family: a code from a phone that has Family Admin, or a setup link.</p>';
             $('sheetBg').classList.add('on');
-            FD.get('whose').then(function (d) { if ((d.people || []).length) $('whoTx').innerHTML = 'Connected to the dashboard of <b>' + esc(d.people.slice(0, 6).join(', ')) + '</b>.'; }, function () { /* fine */ });
+            FD.get('whose').then(function (d) { var ppl = (d.people || []).slice(0, 8).join(', '); $('whoTx').innerHTML = 'Connected to ' + (d.familyName ? 'the <b>' + esc(d.familyName) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl ? ' (' + esc(ppl) + ')' : '') + '.'; }, function () { /* fine */ });
             $('whoOut').onclick = function () { if (confirm('Disconnect this app from this family’s dashboard?')) { FD.clearConfig(); location.reload(); } };
         };
         $('views').onclick = function (e) { var b = e.target.closest('[data-v]'); if (b) { view = b.getAttribute('data-v'); load(); } };

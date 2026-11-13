@@ -1183,3 +1183,18 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .kr-day.now .chip { background: #ffd54a; color: #222; border-color: #ffd54a; }
 .kr-day.next .chip { background: transparent; color: inherit; border: 1px solid rgba(255, 213, 74, .7); }
 .kr-none { opacity: .45; }
+
+/* Adding an entry: a prompt while you pick the day, then a box for the rest */
+.cal-addbar .ab-prompt { font-size: 1.1rem; }
+.ap-card { width: min(46rem, 92vw); }
+.ap-body { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.4rem 0 0.2rem; }
+.ap-l { font-size: 0.85rem; color: var(--mute); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.6rem; }
+.ap-body .ab-input { width: 100%; box-sizing: border-box; flex: none; font-size: 1.15rem; height: 3rem; }
+.ap-body .ab-input.sm { width: auto; height: 2.6rem; font-size: 1rem; }
+.ap-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; }
+.ap-row { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--mute); }
+.ap-row[hidden] { display: none; }
+.ap-body .ab-cats { max-width: none; gap: 0.4rem; }
+.ap-actions { display: flex; align-items: center; gap: 0.6rem; margin-top: 1rem; }
+.ap-actions .cal-btn { height: 2.8rem; padding: 0 1.2rem; font-size: 1.05rem; }
+.ap-pop .ab-tabs { margin-right: 0; }

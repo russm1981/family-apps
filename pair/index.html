@@ -37,7 +37,8 @@
        '<button class="btn" id="no" style="background:#2a3140">No – it’s someone else’s screen</button></div><div id="other"></div>';
      fetch(cfg.url + '?action=whose&code=' + encodeURIComponent(cfg.code), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
        var names = (d.people || []).filter(Boolean);
-       if (names.length) $('fam').textContent = 'the dashboard of ' + names.slice(0, 6).join(', ') + (names.length > 6 ? ' and others' : '');
+       if (d.familyName) $('fam').textContent = 'the ' + d.familyName + ' family dashboard' + (names.length ? ' (' + names.slice(0, 8).join(', ') + ')' : '');
+       else if (names.length) $('fam').textContent = 'the dashboard of ' + names.slice(0, 6).join(', ') + (names.length > 6 ? ' and others' : '');
      }).catch(function () { /* fine */ });
      $('go').onclick = function () {
        var b = this; b.disabled = true; $('st').textContent = 'Sending…';

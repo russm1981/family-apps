@@ -60,7 +60,17 @@
 
     /* ================================================================ data */
 
-    function sync(k) { var s = $('sync'); if (s) s.className = 'sync ' + k; }
+    // The dot by the title: green = up to date with the Google Sheet, blue = talking to it, red = the last try didn't work
+    // (hover or tap it to see why; it tries again by itself).
+    var syncWhy = '', syncRetry = null;
+    function sync(k, why) {
+        var s = $('sync'); if (!s) return;
+        s.className = 'sync ' + k;
+        if (k === 'err') syncWhy = why || syncWhy || 'Couldn’t reach the Google Sheet';
+        s.title = k === 'ok' ? 'Up to date with your Google Sheet' : k === 'busy' ? 'Talking to your Google Sheet…' : 'Last try didn’t work: ' + syncWhy + ' – tap to try again';
+        clearTimeout(syncRetry);
+        if (k === 'err') syncRetry = setTimeout(function () { if (!pending) load(); }, 60000);
+    }
     function setData(d) {
         DATA = d;
         try { localStorage.setItem('fdadmin.data', JSON.stringify(d)); } catch (e) { /* ignore */ }
@@ -70,7 +80,7 @@
     function load() {
         sync('busy');
         return FD.post({ action: 'admin' }).then(function (d) { sync('ok'); setData(d); })
-            .catch(function (e) { sync('err'); FD.toast(e.message, true); if (!hasEdits()) render(); });
+            .catch(function (e) { sync('err', e.message); FD.toast(e.message, true); if (!hasEdits()) render(); });
     }
 
     /* ---- Unsaved changes and saving.
@@ -140,7 +150,7 @@
         var p = queue.then(run, run);
         queue = p.catch(function () { /* the next change still goes */ });
         return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); unlock(false); } return d; },
-            function (e) { if (--pending === 0) busy = false; sync('err'); unlock(true); FD.toast(e.message, true); load(); throw e; });
+            function (e) { if (--pending === 0) busy = false; sync('err', e.message); unlock(true); FD.toast(e.message, true); load(); throw e; });
     }
     /** Move a widget or page straight away on this phone, then tell the Google script. */
     function moveNow(kind, id, dir) {
@@ -215,6 +225,7 @@
         $('tabs').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) go(b.getAttribute('data-t')); };
         document.addEventListener('click', function (e) { var g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-go')); } });
         $('back').onclick = function () { if (history.length > 1) history.back(); else go(route().tab); };
+        $('sync').onclick = function () { if (this.classList.contains('err')) { FD.toast(syncWhy + ' – trying again…', true); load(); } else FD.toast(this.title); };
         $('refresh').onclick = function () { load(); fetchGlance(true); var r = route(); if (r.w) fetchWidget(r.w); };
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         window.addEventListener('hashchange', function () { closeSheet(); render(); window.scrollTo(0, 0); });
@@ -264,8 +275,13 @@
         var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }), fn = String(DATA.familyName || '').trim();
         return '<b>' + esc(fn ? 'The ' + fn + ' family' : 'your family') + '</b>' + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
     }
+    /** "the MacMillan family dashboard (Ben, Josh, Alex, Russ, Becky)" – the same words on every device. */
+    function familyDash() {
+        var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }), fn = String(DATA.familyName || '').trim();
+        return (fn ? 'the <b>' + esc(fn) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
+    }
     function statusCard() {
-        return card('✔ Your dashboard is set up', '<p>This computer is connected to the dashboard of ' + familyLine() + '.</p>' +
+        return card('✔ Your dashboard is set up', '<p>This computer is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this computer</a></p>' +
             '<p class="mute small">Application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + (DATA.licence ? ' · ' + esc(DATA.licence.message || '') : '') + '</p>');
     }
     /** Home: the two ways in for someone new, how it works, then the configurator's two parts. */
@@ -1924,6 +1940,14 @@
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
             (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
+    /** Disconnect this phone or computer from the family's dashboard: it goes back to "connect to a dashboard". */
+    function disconnectHere(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!confirm('Disconnect this ' + (DESK ? 'computer' : 'phone') + ' from the dashboard? It goes back to the start, where you connect it – to this family or another one – with a code or link from a family phone.')) return;
+        FD.clearConfig(); try { localStorage.removeItem('fdadmin.data'); } catch (x) { /* ignore */ }
+        location.hash = ''; location.reload();
+    }
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#hmOut, [data-out]')) disconnectHere(e); });
     /** The phone's More: help and support, then the few settings that are on the phone, then the Configurator. */
     function renderMore() {
         title('More');
@@ -1933,6 +1957,7 @@
             row('feedback', '💬', 'Feedback and support', 'Ask for help, suggest something, tell us what you think – and see replies') +
             row('s/support', '🩺', 'About & diagnostics', SECTIONS.support[2]) + '</div>' +
             '<h3 class="sec">Settings</h3><div class="menu">' + ['screen', 'licence', 'devices', 'updates'].map(function (k) { return row('s/' + k, SECTIONS[k][0], SECTIONS[k][1], sectionLine(k)); }).join('') + '</div>' +
+            '<h3 class="sec">This phone</h3><div class="menu"><button class="mrow" data-out><span class="m-ico">⏏</span><span class="m-tx"><b>Disconnect this phone</b><small>Connected to ' + familyDash().replace(/<[^>]+>/g, '') + '</small></span><i>›</i></button></div>' +
             deskCard() + '<p class="mute small center">Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
@@ -2305,7 +2330,7 @@
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the screen link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
             screensCard() +
-            card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to the dashboard of ' + familyLine() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p><button class="btn ghost wide" id="sOut">Disconnect this phone</button>');
+            card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to ' + familyDash() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p><button class="btn ghost wide" id="sOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button>');
         $('devApp').onclick = function (e) { var b = e.target.closest('[data-app]'); if (b) { devPick = b.getAttribute('data-app'); secDevices(); } };
         if ($('devShare')) $('devShare').onclick = function () { navigator.share({ title: APPS[devPick][0].slice(2), text: 'Open this on your phone, then add it to your Home Screen:', url: appLink(devPick) }).catch(function () {}); };
         if ($('devCopy')) $('devCopy').onclick = function () { try { navigator.clipboard.writeText(appLink(devPick)).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
@@ -2330,7 +2355,7 @@
             },
                 function (e) { b.disabled = false; FD.toast(e.message, true); });
         };
-        $('sOut').onclick = function () { if (confirm('Disconnect this phone? You’ll need a QR code or link from another family phone to connect it again.')) { FD.clearConfig(); try { localStorage.removeItem('fdadmin.data'); } catch (e) { /* ignore */ } location.reload(); } };
+        $('sOut').onclick = disconnectHere;
     }
 
     /* ---- family & children (the same as the setup app's family step) */

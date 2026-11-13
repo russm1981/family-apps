@@ -233,16 +233,27 @@
 
 /* A calendar page: no widget list on the right, so it has the width */
 .ed-main.nopal { grid-template-columns: 220px minmax(0, 1fr); }
-/* The 3-month picture: weekdays lined up, or not */
-.mk3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; flex: 1; min-height: 0; }
-.mk3-m { display: flex; flex-direction: column; min-width: 0; }
-.mk3-m b { font-size: 10px; color: #c9d1db; margin-bottom: 3px; }
-.mk3-g { flex: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 2px; }
-.mk3-g i { background: #1a1f29; border-radius: 2px; position: relative; transition: background .3s; }
-.mk3-g i.we { background: #26303f; }
-.mk3-g i.ev::after { content: ''; position: absolute; left: 2px; right: 2px; top: 30%; height: 3px; border-radius: 2px; background: var(--ec); }
-.mk3-g i.gap { background: transparent; }
-
+/* The calendar picture, in the view it opens on */
+.mk3 { display: flex; flex-direction: column; gap: 4px; flex: 1; min-height: 0; position: relative; }
+.mk3r { flex: 1; min-height: 0; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px; }
+.mk3r > b { font-size: 10px; color: #c9d1db; align-self: center; }
+.mk3c { display: grid; gap: 2px; min-height: 0; }
+.mk3c i, .mkm i { background: #1a1f29; border-radius: 2px; position: relative; display: flex; flex-direction: column; gap: 2px; padding: 2px; min-width: 0; overflow: hidden; }
+.mk3c i.we, .mkm i.we { background: #26303f; }
+.mk3c i.gap, .mkm i.out { background: transparent; }
+.mk3c i s, .mkm i s { display: block; height: 3px; border-radius: 2px; background: var(--ec); text-decoration: none; }
+.mk3.scroll .mk3c i s { height: 6px; }
+.mk3c i u, .mkm i u { font-size: 8px; color: #8b95a5; text-decoration: none; line-height: 1; }
+.mk3.scroll .mk3r { mask-image: linear-gradient(90deg, #000 85%, transparent); -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent); }
+.mk-drag { position: absolute; right: 6px; bottom: 2px; font-size: 9px; color: #64748b; }
+.mkm { flex: 1; min-height: 0; display: grid; grid-template-columns: 22px repeat(7, minmax(0, 1fr)); gap: 2px; }
+.mkm > b { font-size: 9px; color: #8b95a5; text-align: center; } .mkm > b.we { color: #c9d1db; }
+.mkm i.wk { background: transparent; font-size: 7px; color: #64748b; font-style: normal; justify-content: center; }
+.mkw { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.mkw > div { background: #1a1f29; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.mkw > div.we { background: #26303f; }
+.mkw b { font-size: 9px; color: #c9d1db; } .mkw small { font-size: 8px; color: #64748b; }
+.mkw s { display: block; height: 14px; border-radius: 3px; background: var(--ec); text-decoration: none; }
 /* The screen's menu, as on the screen: buttons share the height; the microphone (with its status dot) and the version at the bottom */
 .ed-rail .ed-rb { flex: 1 1 0; min-height: 0; max-height: 48px; }
 .ed-rfoot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 4px; }

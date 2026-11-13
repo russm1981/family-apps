@@ -132,12 +132,12 @@
             ov.querySelector('.cs-modal').innerHTML = '<h2>Tidy up your Google calendar</h2>' +
                 '<p class="mute small">' + d.total + ' events looked at' + (d.skipped ? ' (' + d.skipped + ' in calendars you can’t change, e.g. shared ones, left alone)' : '') + '. ' +
                 (rows.length ? rows.length + (d.more ? '+' : '') + ' to put right – problems first. Untick any you’d rather leave. Repeating events change every time they come round.' : 'Nothing to put right – it’s all in order.') + '</p>' +
-                (rows.length ? '<div class="cs-tablewrap"><table class="cs-table"><thead><tr><th></th><th>When</th><th>Now</th><th>Category</th><th>New title</th><th></th></tr></thead><tbody>' + rows.map(function (r, i) {
+                (rows.length ? '<div class="cs-tablewrap"><table class="cs-table"><thead><tr><th><input type="checkbox" id="csTAll" title="Tick or untick them all"></th><th>When</th><th>Now</th><th>Category</th><th>New title</th><th></th></tr></thead><tbody>' + rows.map(function (r, i) {
                     return '<tr data-i="' + i + '"><td><input type="checkbox" class="cs-tick"' + (r.cat ? ' checked' : '') + '></td><td class="nowrap">' + esc(r.date) + (r.time ? ' ' + esc(r.time) : '') + (r.rec ? ' ↻' : '') + '</td>' +
                         '<td>' + esc(r.title) + '</td><td><select class="cs-cat">' + opts(r.cat) + '</select></td>' +
                         '<td><input class="cs-title" value="' + esc(r.text) + '" maxlength="80"><small class="cs-len"></small></td><td>' + (r.problem ? '<span class="cs-prob">' + esc(r.problem) + '</span>' : '') + '</td></tr>';
                 }).join('') + '</tbody></table></div>' : '') +
-                '<div class="sheet-actions"><button class="btn ghost" id="csTClose">' + (rows.length ? 'Skip for now' : 'Close') + '</button>' + (rows.length ? '<button class="btn good" id="csTApply">Apply</button>' : '') + '</div><p class="mute small" id="csTMsg"></p>';
+                '<div class="sheet-actions">' + (rows.length ? '<button class="btn good" id="csTApply">Apply the ticked ones</button>' : '') + '<button class="btn ghost" id="csTClose">Close</button></div><p class="mute small" id="csTMsg"></p>';
             var len = function (tr) {
                 var v = tr.querySelector('.cs-title').value.trim(), cat = tr.querySelector('.cs-cat').value, p = CS.people.some(function (x) { return x.name === cat; });
                 var full = v.length + (p ? cat.length + 3 : 0), small = tr.querySelector('.cs-len');
@@ -146,24 +146,32 @@
             };
             Array.prototype.forEach.call(ov.querySelectorAll('tbody tr'), function (tr) { len(tr); tr.oninput = function () { len(tr); }; tr.onchange = function () { len(tr); }; });
             ov.querySelector('#csTClose').onclick = close;
+            var ticks = function () { return Array.prototype.slice.call(ov.querySelectorAll('tbody .cs-tick')); };
+            var allBox = ov.querySelector('#csTAll'), sync = function () { if (!allBox) return; var t = ticks(), n = t.filter(function (x) { return x.checked; }).length; allBox.checked = n === t.length && n > 0; allBox.indeterminate = n > 0 && n < t.length; };
+            if (allBox) { allBox.onchange = function () { ticks().forEach(function (x) { x.checked = allBox.checked; }); }; ov.querySelector('tbody').addEventListener('change', sync); sync(); }
             if (ov.querySelector('#csTApply')) ov.querySelector('#csTApply').onclick = function () {
                 var items = Array.prototype.filter.call(ov.querySelectorAll('tbody tr'), function (tr) { return tr.querySelector('.cs-tick').checked; }).map(function (tr) {
                     var r = rows[+tr.getAttribute('data-i')];
                     return { id: r.id, cal: r.cal, rec: r.rec, cat: tr.querySelector('.cs-cat').value, text: tr.querySelector('.cs-title').value.trim() };
                 });
                 if (!items.length) { close(); return; }
-                var btn = this, done = 0, failed = [];
+                var btn = this, done = 0, failed = [], total = items.length;
                 btn.disabled = true;
                 var next = function () {
-                    var part = items.splice(0, 50);
+                    var part = items.splice(0, 15);
                     if (!part.length) {
                         ov.querySelector('#csTMsg').textContent = '✔ ' + done + ' changed' + (failed.length ? ' · ' + failed.length + ' couldn’t be (' + failed[0].error + ')' : '') + '.';
                         btn.textContent = 'Done'; btn.disabled = false; btn.onclick = close; H.toast('Calendar tidied – the screen updates within a few minutes');
                         return;
                     }
-                    ov.querySelector('#csTMsg').textContent = 'Changing… ' + done + ' done';
-                    window.FD.post({ action: 'calFix', items: part }).then(function (x) { if (x.error) throw new Error(x.error); done += x.done.length; failed = failed.concat(x.failed); next(); },
-                        function (e) { ov.querySelector('#csTMsg').textContent = 'Stopped: ' + e.message + ' (' + done + ' changed)'; btn.disabled = false; });
+                    ov.querySelector('#csTMsg').textContent = 'Changing… ' + done + ' of ' + total + ' done';
+                    window.FD.post({ action: 'calFix', items: part }, 90000).then(function (x) {
+                        if (x.error) throw new Error(x.error);
+                        done += x.done.length; failed = failed.concat(x.failed);
+                        if (x.left && x.left.length) items = part.filter(function (it) { return x.left.indexOf(it.id) >= 0; }).concat(items);      // not reached yet: send again
+                        next();
+                    },
+                        function (e) { ov.querySelector('#csTMsg').textContent = 'Stopped: ' + e.message + ' (' + done + ' of ' + total + ' changed so far). Press Apply again to carry on – the ones already done are fine to send again.'; btn.disabled = false; });
                 };
                 next();
             };
