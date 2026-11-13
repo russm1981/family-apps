@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.123",
+  "app": "2026.11.124",
   "script": "2026.11.68",
-  "date": "2026-11-13",
+  "date": "2026-11-14",
   "notes": [
-    "Setup wizard page: the second button is blue too, and says “Rerun the wizard to reconfigure the current MacMillan family data” (with your family name)"
+    "Setup wizard page: the “Set up the calendar” box is now in “Do one step from the Setup wizard again”, with the wizard’s Family & calendar step next to it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

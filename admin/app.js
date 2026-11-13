@@ -335,9 +335,6 @@
                 '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family</a>' +
                 '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' +
                 '<p class="mute small">A new family gets a new Google Sheet. Run on this dashboard, it first asks whether to change the existing set-up or clear it and start again (with a backup copy kept in your Google Drive).</p>') +
-            card('📅 Set up the calendar', '<p class="small">Using a Google Calendar you already had? Set up its categories (the family groups and the general ones) and what the screen’s key shows, ' +
-                'then <b>tidy up the calendar</b> so every event is in a category: it lists the ones that aren’t, or whose titles are too long, with a fix for each.</p>' +
-                '<button class="btn wide" id="goCalSetup">Set up the calendar</button>') +
             stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
@@ -364,6 +361,7 @@
     }
     document.addEventListener('click', function (e) {
         if (!e.target.closest || !e.target.closest('#goCalSetup')) return;
+        e.preventDefault();
         var cp = calPage(); try { if (cp) localStorage.setItem('fdedit.page', cp.id); } catch (x) { /* fine */ }
         go('layout');
     });
@@ -373,6 +371,8 @@
         var link = function (step) { return base + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) + '&' + step + (step !== 'go=welcome' ? '&only' : ''); };
         var row = function (ico, name, what, href) { return '<a class="mrow" href="' + esc(href) + '"><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>'; };
         return card('Do one step from the Setup wizard again', '<div class="menu">' +
+            row('👪', 'Family & calendar', 'Who’s in the family and which Google calendars the dashboard uses', link('go=family')) +
+            '<a class="mrow" href="#" id="goCalSetup"><span class="m-ico">📅</span><span class="m-tx"><b>Calendar colour coding and tidy-up</b><small>Using a Google Calendar you already had? Set up its categories and the screen’s key, then tidy up so every event is in a category</small></span><i>›</i></a>' +
             row('📺', 'Connect a screen, tablet or phone', 'Start file for the Corsair PC, a tablet by code, QR codes for phones', link('go=devices')) +
             row('🔑', 'Get free keys for external data sources', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
             row('🎫', 'Add licence key', 'The licence key links the software to your original purchase', link('go=licence')) +

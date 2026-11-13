@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.124",
+    "date": "2026-11-14",
+    "notes": [
+      "Setup wizard page: the “Set up the calendar” box is now in “Do one step from the Setup wizard again”, with the wizard’s Family & calendar step next to it"
+    ]
+  },
+  {
     "version": "2026.11.123",
     "date": "2026-11-13",
     "notes": [
