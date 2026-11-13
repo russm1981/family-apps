@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.54';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.55';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1225,7 +1225,9 @@ function settingsFor_(owner, schema, all) {
 function coerce_(f, v) {
   if (f.type === 'number') { const n = Number(v); return isFinite(n) ? n : f.def; }
   if (f.type === 'bool') return yes_(v, f.def);
-  if (v instanceof Date) return f.type === 'time' ? fmt_(v, 'HH:mm') : fmt_(v, 'yyyy-MM-dd');
+  if (v instanceof Date) v = f.type === 'time' ? fmt_(v, 'HH:mm') : fmt_(v, 'yyyy-MM-dd');
+  // "Until midnight" is 24:00 – the Sheet can turn it into a time of 00:00, which would hide the widget all day.
+  if (f.k === 'ShowUntil' && String(v).replace(/^'/, '') === '00:00') return '24:00';
   return v === undefined || v === null ? '' : String(v);
 }
 function pageSettings_(pageType) {
@@ -1274,7 +1276,11 @@ function whenSettings_() {
     { k: 'OtherTimes', label: 'At other times show', type: 'select', def: '', options: [''].concat(Object.keys(WIDGET_TYPES).filter(k => k !== 'child')) },
   ];
 }
-function whenLimited_(W) { return !!W && (W.ShowDays !== 'Every day' || W.ShowFrom !== '00:00' || W.ShowUntil !== '24:00'); }
+function whenLimited_(W) {
+  if (!W) return false;
+  if (W.ShowFrom && W.ShowUntil && W.ShowFrom >= W.ShowUntil) return W.ShowDays !== 'Every day' && !!W.ShowDays && (W.ShowFrom = '00:00', W.ShowUntil = '24:00', true);   // a muddled time: all day
+  return W.ShowDays !== 'Every day' || W.ShowFrom !== '00:00' || W.ShowUntil !== '24:00';
+}
 function whenShowing_(W, now) {
   if (!whenLimited_(W)) return true;
   now = now || new Date();
@@ -1482,6 +1488,7 @@ function saveWidget_(w) {
       if (next[k] !== cur[k]) whenOut[k] = v;        // only what changed (nothing is written for a widget left on "always")
     });
     const okTime = t => /^([01]\d|2[0-3]):[0-5]\d$|^24:00$/.test(t);
+    if (next.ShowUntil === '00:00') next.ShowUntil = '24:00';
     if (!okTime(next.ShowFrom) || !okTime(next.ShowUntil)) throw new Error('Times look like 07:30 (24-hour clock); “Until” can be 24:00 for midnight');
     if (next.ShowFrom >= next.ShowUntil) throw new Error('“Until” has to be later than “From”');
     if (next.OtherTimes === type) throw new Error('Pick a different kind of widget for other times');

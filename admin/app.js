@@ -30,7 +30,7 @@
     var DESK = !!window.FD_DESK;
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['start', '🚀', 'First-time setup'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'],
-        ['help', '❓', 'Help'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets']]
+        ['help', '❓', 'Help'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
         : [['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
@@ -295,7 +295,7 @@
         var cur = sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
             ['-', 'Set up'], ['tasks', '✅', 'Tasks', nT + ' – what earns points'], ['todos', '☀️', 'Morning to-dos', nD + ' – ticked off each morning'],
             ['timetable', '🎒', 'Reminders', nR + ' – PE kit, library books…'], ['rules', '⚖️', 'Rules', s ? s.cashIn.points + ' points = £' + s.cashIn.value : ''],
-            ['-', 'The children'], ['adjust', '✏️', 'Changing points by hand'], ['cards', '⭐', 'As on the dashboard']], sub);
+            ['-', 'The children'], ['adjust', '✏️', 'Manual edits', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title('Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         var flat = function (k) { return listFold(k).replace('<details class="card fold"', '<div class="card"').replace(/<summary>[\s\S]*?<\/summary>/, '').replace(/<\/details>$/, '</div>'); };
@@ -316,16 +316,18 @@
                         esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
                 }).join('') : '<div class="empty">No tasks yet</div>') + '</div>';
-        } else if (cur === 'todos') html = head('Morning to-dos', 'A short checklist each child ticks off to get ready – no points, and it starts afresh each morning. “For”: a name, names separated by commas, or All. “Days”: Mon-Fri, Mon,Wed, Weekends, Daily…') + flat('todos');
-        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from 5 pm the evening before. “Day or date”: Tue, Mon-Fri, Mon,Thu… or a date for a one-off, e.g. 23/09.') + flat('timetable');
+        } else if (cur === 'todos') html = head('Morning to-dos', 'A short checklist each child ticks off to get ready – no points, and it starts afresh each morning. Pick who each is for and the days it applies; the arrows put them in order (the order they show on the card).') + flat('todos');
+        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from 5 pm the evening before. Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
-            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings, pp.settings || {}) : '') + '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
-        else if (cur === 'adjust') html = head('Changing points by hand', 'Add or take away points (with a reason – it goes on their statement), set a balance, or see a child’s statement.') +
+            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions'; }), pp.settings || {}) : '') +
+                '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
+                '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
+                '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
+        else html = head('Manual edits', 'Put a child’s points right by hand – it goes on their statement. Below, each child’s card as it shows on the dashboard (you can tick things off and give points there too).') +
             '<div class="card">' + s.boys.map(function (b, bi) {
                 return '<div class="adj-row"><span class="dot" style="background:' + esc(b.colour) + '"></span><b>' + esc(b.name) + '</b><span class="adj-bal">' + b.balance + ' points</span>' +
-                    '<button class="btn ghost sm" data-bonus="' + bi + '">Add or take away</button><button class="btn ghost sm" data-setbal="' + bi + '">Set the balance</button><button class="btn ghost sm" data-stmt="' + bi + '">Statement</button></div>';
-            }).join('') + '</div>';
-        else html = head('As on the dashboard', 'Each child’s card as it shows on the screen – you can tick things off and give points here too.') + '<div class="boys-row">' + boysCards() + '</div>';
+                    '<button class="btn ghost sm" data-bonus="' + bi + '">Add or take away points</button><button class="btn ghost sm" data-setbal="' + bi + '">Override the balance</button><button class="btn ghost sm" data-stmt="' + bi + '">See statement</button></div>';
+            }).join('') + '</div><h3 class="sec">As on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>';
         $('body').innerHTML = html;
         $('body').onclick = function (e) {
             var el = e.target.closest('[data-setbal]');
@@ -335,6 +337,19 @@
         };
         if ($('newTask')) $('newTask').onclick = function () { taskSheet(null); };
         if (cur === 'todos' || cur === 'timetable') wireListFold(cur);
+        if ($('pensEd')) {      // penalty buttons: add and remove, no commas
+            var drawPens = function () {
+                var list = $('pensVal').value.split(',').map(function (x) { return Math.abs(parseInt(x, 10)); }).filter(function (n) { return n > 0; });
+                $('pensEd').innerHTML = list.map(function (n, i) { return '<span class="pen-chip">−' + n + '<button data-pdel="' + i + '" title="Remove">✕</button></span>'; }).join('') +
+                    (list.length < 4 ? '<span class="pen-add"><input id="penNew" type="number" min="1" max="500" placeholder="e.g. 30"><button class="btn ghost sm" id="penAdd">+ Add</button></span>' : '');
+                $('pensEd').onclick = function (e) {
+                    var d = e.target.closest('[data-pdel]');
+                    if (d) { list.splice(+d.getAttribute('data-pdel'), 1); $('pensVal').value = list.join(','); drawPens(); }
+                    if (e.target.closest('#penAdd')) { var n = Math.abs(parseInt($('penNew').value, 10)); if (!n) return; list.push(n); list.sort(function (a, b) { return a - b; }); $('pensVal').value = list.join(','); drawPens(); }
+                };
+            };
+            drawPens();
+        }
         if ($('rulesSave')) $('rulesSave').onclick = function () {
             var vals = {}; Array.prototype.forEach.call($('rulesBox').querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
             act({ action: 'savePage', page: { id: pp.id, settings: vals } }, 'Saved – the screen updates within a minute');
@@ -951,30 +966,53 @@
         $('rSave').onclick = function () { act({ action: 'savePage', page: { id: pp.id, settings: readFields() } }, 'Saved – the screen updates within a minute').then(closeSheet, function () {}); };
     }
     var LISTS = {
-        todos: { title: 'Morning to-dos', what: 'ticked off each morning', help: 'For: a name, names separated by commas, or All. Days: Mon-Fri, Mon,Wed, Weekends, Daily…',
-            cols: [['Item', 'Item'], ['Boy', 'For'], ['Days', 'Days'], ['Order', 'Order']] },
-        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from 5pm the evening before. Day: Tue, Mon-Fri, Mon,Thu… or a date for a one-off, e.g. 23/09.',
-            cols: [['Reminder', 'Reminder'], ['Boy', 'For'], ['Day', 'Day or date']] },
+        todos: { title: 'Morning to-dos', what: 'ticked off each morning', help: 'Pick who it’s for and the days. Use the arrows to put them in order.',
+            cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'Days']], ordered: true },
+        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from 5pm the evening before – every week on some days, or on one date.',
+            cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
     };
     function listFold(k) {
         var cfg = LISTS[k], rs = (DATA[k] || []).slice();
+        if (cfg.ordered) rs.sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
         if (!rs.length) rs.push({});
         return '<details class="card fold" id="f_' + k + '"><summary><b>' + cfg.title + '</b><span class="mute">' + (DATA[k] || []).length + ' · ' + cfg.what + '</span></summary>' +
             (DESK ? '' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
-            (DESK ? '<div class="lhead">' + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
+            (DESK ? '<div class="lhead l-' + k + '">' + (cfg.ordered ? '<span></span>' : '') + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
             '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
             '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button><button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
     }
     function wireListFold(k) {
         var box = $('f_' + k);
+        box.onchange = function (e) {
+            var t = e.target, w = t.closest('.rpick'); if (!w) return;
+            if (t.classList.contains('rp-mode')) { w.querySelector('.dpick').hidden = t.value !== 'week'; w.querySelector('.rp-date').hidden = t.value !== 'date';
+                w.querySelector('.rp-val').value = t.value === 'week' ? w.querySelector('.dpick input[type=hidden]').value : dmy(w.querySelector('.rp-dt').value); }
+            if (t.classList.contains('rp-dt')) { w.querySelector('.rp-val').value = dmy(t.value); w.querySelector('.rp-say').textContent = longDate(t.value); }
+        };
+        box.addEventListener('click', function (e) {      // a day button inside a reminder: that's the reminder's value too
+            var d = e.target.closest('.rpick .dp-day'); if (!d) return;
+            var w = d.closest('.rpick'); setTimeout(function () { w.querySelector('.rp-val').value = w.querySelector('.dpick input[type=hidden]').value; }, 0);
+        }, true);
         box.onclick = function (e) {
             e.stopPropagation();
             var el;
             if ((el = e.target.closest('[data-x]'))) el.closest('.lrow').remove();
+            else if ((el = e.target.closest('[data-mv]'))) {      // ▲ ▼: the order on the card is the order in the list
+                var row = el.closest('.lrow'), up = el.getAttribute('data-mv') === 'up', sib = up ? row.previousElementSibling : row.nextElementSibling;
+                if (sib) row.parentNode.insertBefore(row, up ? sib : sib.nextSibling);
+            }
+            else if ((el = e.target.closest('.dp-day'))) {
+                el.classList.toggle('on');
+                var dp = el.closest('.dpick'), on = Array.prototype.map.call(dp.querySelectorAll('.dp-day'), function (b) { return b.classList.contains('on'); });
+                dp.querySelector('input[type=hidden]').value = formatDays(on);
+                dp.querySelector('.dp-say').textContent = daysSay(on);
+            }
             else if (e.target.closest('[data-ladd]')) $('rows_' + k).insertAdjacentHTML('beforeend', rowCard(k, {}));
             else if (e.target.closest('[data-lsave]')) {
-                var out = Array.prototype.map.call(box.querySelectorAll('.lrow'), function (r) {
-                    var o = {}; r.querySelectorAll('[data-k]').forEach(function (i) { o[i.getAttribute('data-k')] = i.value.trim(); }); return o;
+                var out = Array.prototype.map.call(box.querySelectorAll('.lrow'), function (r, i) {
+                    var o = {}; r.querySelectorAll('[data-k]').forEach(function (inp) { o[inp.getAttribute('data-k')] = inp.value.trim(); });
+                    if (LISTS[k].ordered) o.Order = i + 1;
+                    return o;
                 });
                 act({ action: 'saveList', list: k, rows: out }, 'Saved').then(function () { var f = $('f_' + k); if (f) f.open = true; }, function () {});
             }
@@ -985,10 +1023,67 @@
         return m && m[col];
     }
     function rowCard(k, r) {
-        return '<div class="lrow"><button class="x" data-x>✕</button>' + LISTS[k].cols.map(function (c) {
-            var n = maxFor(k, c[0]);
-            return '<div class="lc"><label>' + esc(c[1]) + (n ? ' <span class="cnt">max ' + n + '</span>' : '') + '</label><input data-k="' + c[0] + '" value="' + esc(r[c[0]]) + '"' + (n ? ' maxlength="' + n + '"' : '') + ' autocomplete="off"></div>';
-        }).join('') + '</div>';
+        return '<div class="lrow l-' + k + '"><button class="x" data-x>✕</button>' + (LISTS[k].ordered ? '<span class="mv"><button data-mv="up" title="Move up">▲</button><button data-mv="down" title="Move down">▼</button></span>' : '') +
+            LISTS[k].cols.map(function (c) {
+                var n = maxFor(k, c[0]), v = r[c[0]] == null ? '' : String(r[c[0]]), lab = '<label>' + esc(c[1]) + (n ? ' <span class="cnt">max ' + n + '</span>' : '') + '</label>';
+                if (c[0] === 'Boy') return '<div class="lc">' + lab + forWho(v) + '</div>';
+                if (c[0] === 'Days') return '<div class="lc">' + lab + dayPick('Days', v || 'Mon-Fri') + '</div>';
+                if (c[0] === 'Day') return '<div class="lc">' + lab + whenPick(v) + '</div>';
+                return '<div class="lc">' + lab + '<input data-k="' + c[0] + '" value="' + esc(v) + '"' + (n ? ' maxlength="' + n + '"' : '') + ' autocomplete="off"></div>';
+            }).join('') + '</div>';
+    }
+    /** For who: everyone in rewards, or one of them. */
+    function forWho(v) {
+        var kids = ((DATA.state || {}).boys || []).map(function (b) { return b.name; }), o = [['All', 'Everyone (in rewards)']].concat(kids.map(function (n) { return [n, n]; }));
+        if (v && !o.some(function (x) { return x[0].toLowerCase() === v.toLowerCase(); })) o.push([v, v]);
+        return '<select data-k="Boy">' + o.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0].toLowerCase() === (v || 'All').toLowerCase() ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    }
+    var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    function parseDays(spec) {
+        var s = String(spec || '').trim().toLowerCase(), on = [0, 0, 0, 0, 0, 0, 0].map(function () { return false; });
+        if (!s || s === 'all' || s === 'daily' || s === 'every day') return on.map(function () { return true; });
+        if (s === 'weekdays') return on.map(function (x, i) { return i < 5; });
+        if (s === 'weekends') return on.map(function (x, i) { return i > 4; });
+        var idx = function (x) { return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].indexOf(x.trim().slice(0, 3)); };
+        s.split(',').forEach(function (part) {
+            if (part.indexOf('-') > 0) { var a = idx(part.split('-')[0]), b = idx(part.split('-')[1]); if (a < 0 || b < 0) return; for (var i = a; ; i = (i + 1) % 7) { on[i] = true; if (i === b) break; } }
+            else if (idx(part) >= 0) on[idx(part)] = true;
+        });
+        return on;
+    }
+    function formatDays(on) {
+        var n = on.filter(Boolean).length;
+        if (n === 7 || !n) return 'Daily';
+        if (n === 2 && on[5] && on[6]) return 'Weekends';
+        var first = on.indexOf(true), last = on.lastIndexOf(true);
+        if (n > 2 && last - first + 1 === n) return DAYS[first] + '-' + DAYS[last];
+        return DAYS.filter(function (d, i) { return on[i]; }).join(',');
+    }
+    function daysSay(on) {
+        var f = formatDays(on);
+        return f === 'Daily' ? 'every day' : f === 'Weekends' ? 'weekends' : f === 'Mon-Fri' ? 'school days (Mon–Fri)' : '';
+    }
+    function dayPick(key, v) {
+        var on = parseDays(v);
+        return '<div class="dpick">' + DAYS.map(function (d, i) { return '<button type="button" class="dp-day' + (on[i] ? ' on' : '') + '" title="' + d + '">' + d.slice(0, 2) + '</button>'; }).join('') +
+            '<span class="dp-say mute small">' + esc(daysSay(on)) + '</span><input type="hidden"' + (key ? ' data-k="' + key + '"' : '') + ' value="' + esc(formatDays(on)) + '"></div>';
+    }
+    /** A reminder's "when": every week on some days, or on one date (shown as e.g. 23 December 2026). */
+    function isoOf(v) {
+        var s = String(v || '').trim(), m;
+        if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/))) return s;
+        if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})T/))) { var d = new Date(s); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+        if ((m = s.match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/))) { var y = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : String(new Date().getFullYear()); return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2); }
+        return '';
+    }
+    function dmy(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+    function longDate(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? new Date(+m[1], +m[2] - 1, +m[3]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }) : ''; }
+    function whenPick(v) {
+        var iso = isoOf(v), date = !!iso;
+        return '<div class="rpick"><select class="rp-mode"><option value="week"' + (date ? '' : ' selected') + '>Every week on…</option><option value="date"' + (date ? ' selected' : '') + '>On a date…</option></select>' +
+            '<div class="rp-week">' + dayPick('', date ? 'Fri' : v || 'Fri').replace('<div class="dpick">', '<div class="dpick"' + (date ? ' hidden' : '') + '>') + '</div>' +
+            '<div class="rp-date"' + (date ? '' : ' hidden') + '><input type="date" class="rp-dt" value="' + esc(iso) + '"><span class="rp-say mute small">' + esc(longDate(iso)) + '</span></div>' +
+            '<input type="hidden" class="rp-val" data-k="Day" value="' + esc(date ? dmy(iso) : formatDays(parseDays(v || 'Fri'))) + '"></div>';
     }
     /** Today's and tomorrow's reminders; from 5pm only tomorrow's. */
     function reminders(b) {
@@ -1364,12 +1459,14 @@
             });
         };
         if ($('wSize')) { $('wSize').onchange = fitElse; fitElse(); }
+        if ($('whMode')) $('whMode').onchange = function () { $('whMore').hidden = this.value === 'always'; };
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
             var vals = readFields(), body = { id: w.id, settings: vals };
             if (!bk) {
                 body.size = $('wSize').value; body.show = $('wShow').checked;
                 body.when = { ShowDays: $('whDays').value, ShowFrom: $('whFrom').value.slice(0, 5) || '00:00', ShowUntil: $('whUntil').value.slice(0, 5) || '24:00', OtherTimes: $('whElse').value };
+                if ($('whMode') && $('whMode').value === 'always') body.when = { ShowDays: 'Every day', ShowFrom: '00:00', ShowUntil: '24:00', OtherTimes: '' };
             }
             // Shown straight away; the Google script catches up in the background (an error puts it back).
             savingNow(w, function () {
@@ -1410,14 +1507,14 @@
     function whenHtml(w, T) {
         var W = w.when || { ShowDays: 'Every day', ShowFrom: '00:00', ShowUntil: '24:00', OtherTimes: '' };
         var days = ['Every day', 'Monday to Friday', 'Monday to Thursday', 'Weekends'];
-        return '<details class="when"' + (w.when ? ' open' : '') + '><summary>⏰ When to show' + (w.when ? ': ' + esc(W.ShowDays) + ', ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) : ' (always)') + '</summary>' +
-            '<p class="mute small">For example, trains on weekday mornings only, with the holiday countdown in the same space the rest of the time.</p>' +
+        return '<div class="when"><label>When to show</label><select id="whMode"><option value="always"' + (w.when ? '' : ' selected') + '>Always</option><option value="some"' + (w.when ? ' selected' : '') + '>Only on some days or at some times…</option></select>' +
+            '<div id="whMore"' + (w.when ? '' : ' hidden') + '><p class="mute small">For example, trains on weekday mornings only, with the holiday countdown in the same space the rest of the time.</p>' +
             '<label>Show on</label><select id="whDays">' + days.map(function (d) { return '<option' + (d === W.ShowDays ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select>' +
             '<div class="two"><div><label>From</label>' + timeSel('whFrom', W.ShowFrom, false) + '</div>' +
             '<div><label>Until</label>' + timeSel('whUntil', W.ShowUntil, true) + '</div></div>' +
             '<label>At other times show</label><select id="whElse"><option value="">Nothing – leave the space empty</option>' +
             DATA.types.filter(function (x) { return x.type !== w.type; }).map(function (x) { return '<option value="' + esc(x.type) + '" data-sizes="' + esc(x.sizes.join(' ')) + '"' + (x.type === W.OtherTimes ? ' selected' : '') + '>' + esc(x.icon + ' ' + x.name) + '</option>'; }).join('') + '</select>' +
-            '<p class="mute small">Only widgets that can be the same height are offered. It uses the settings of your existing widget of that kind, if you have one. Midnight to midday is 00:00 until 12:00.</p></details>';
+            '<p class="mute small">Only widgets that can be the same height are offered. Midnight to midday is 00:00 until 12:00.</p></div></div>';
     }
     /** A widget's own settings (from its page in Family / Lists / Other). Where it goes is on the Screen tab. */
     function settingsSheet(w) {
@@ -1558,17 +1655,16 @@
     function secMyData() {
         var fresh = guideUrl();
         $('body').innerHTML = '<p class="mute small help">Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>' +
-            card('Reconfigure', '<p class="mute small">Go through the setup steps again with everything you already have filled in – change what you like, keep the rest. Easiest on a computer.</p>' +
-                [['welcome', 'Go through setup again', 'all the steps, already filled in'], ['family', 'Just the family step', 'people, groups and calendars'], ['check', 'Check everything', 'tests every widget'], ['keys', 'Key guides', 'how to get each API key']].map(function (x) {
+            card('Reconfigure your existing setup', '<p class="mute small">Opens the step-by-step setup with everything you already have filled in – change what you like, keep the rest.</p>' +
+                [['welcome', 'Go through the whole setup again', 'every step, already filled in'], ['family', 'Repeat just the family step', 'who’s in the family'], ['check', 'Test all the widgets', 'asks your Sheet to fetch every widget and reports anything that needs attention'], ['keys', 'Step-by-step guide to the external data sources', 'getting the free keys for traffic, trains, buses…']].map(function (x) {
                     return '<a class="setup-link" href="' + setupLink(x[0]) + '" target="_blank" rel="noopener"><b>' + x[1] + '</b><span>' + x[2] + '</span><i>›</i></a>';
                 }).join('')) +
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
                 'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup app for a new family</a>') +
-            accessCard() +
-            card('Where the apps are hosted', installFields('advanced') + saveInstallBtn('aSave'));
-        wireAfresh(); wireAccess(); wireSaveInstall('aSave');
+            accessCard();
+        wireAfresh(); wireAccess();
     }
 
     /* ---- licence */
@@ -1723,11 +1819,10 @@
         if (mv) return card('Finish moving to the new Sheet', '<p>The new Sheet is ready. Open it, wait for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b> – Google asks you to allow the script, as it did the first time.</p>' +
             '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
         var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
-        if (DATA.loader && !v) return card('Moving house', '<p class="mute small">Your script loads its program from GitHub, so Google’s limit of 200 saved versions doesn’t apply and you never need to start afresh.</p>' +
-            '<details class="adv"><summary>Move to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
+        if (DATA.loader && !v) return card('Port my data to a different Google account', '<p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
             'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
             '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
-            '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
+            '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div>');
         return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
                 '<div class="bar' + (v.warn ? ' warnbar' : '') + '"><span style="width:' + pct + '%"></span></div>'
                 : '<p class="mute">Not known – switch on the Google Apps Script API (see Automatic updates above).</p>') +
@@ -1735,7 +1830,7 @@
             (DATA.loader ? '' : '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
             'The screen and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
             '<button class="btn wide" id="afresh">Start afresh</button></details>') +
-            '<details class="adv"><summary>Move to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
+            '<details class="adv"><summary>Port my data to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
             'Everything comes across – people, points, lists, settings and your licence – and the screen and phones follow by themselves.</p>' +
             '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
             '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
@@ -1806,7 +1901,7 @@
         return '';
     }
     function accessCard() {
-        return card('Access code', '<p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'The code is your dashboard’s password: anyone with your links and code can use it. ' +
+        return card('Access code', '<p class="small"><b>What it is:</b> the access code is your dashboard’s password. Every screen, tablet and phone sends it with each request to your Google Sheet, and the Sheet only answers if it’s right – so nobody else can see or change your family’s information, even if they find your links.</p><p class="mute small">' + (DATA.codeWeak ? '⚠ Your access code is weak. ' : '') + 'Anyone with your links and code can use your dashboard. ' +
             'After changing it, every other phone and screen needs connecting again (Devices). This phone updates itself.</p>' +
             '<button class="btn wide" id="cNew">Make a new strong code for me</button>' +
             '<label>Or choose your own <span class="cnt">8+ characters, letters, numbers and a special character</span></label>' +

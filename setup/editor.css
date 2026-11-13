@@ -166,3 +166,12 @@ body.desk .top-row { max-width: 1500px; }
 .cs-gmap ul { list-style: none; padding: 0; margin: 6px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 16px; }
 .cs-gmap li i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
 .cs-gen .cs-name { max-width: 320px; }
+
+.cs-how { background: rgba(63,169,245,.1); border: 1px solid rgba(63,169,245,.35); border-radius: 10px; padding: 7px 12px; font-size: .9rem; margin: 0 0 10px; }
+.cs-lp { display: inline-block; width: 18px; height: 4px; border-radius: 2px; background: var(--lc); margin-left: 2px; }
+.cs-lineex { display: flex; gap: 14px; align-items: center; margin: 4px 0 10px; }
+.cs-day { position: relative; width: 74px; height: 64px; flex: none; border-radius: 8px; background: #1b2029; border: 1px solid var(--line, #2a303b); padding: 4px 5px; font-size: .75rem; }
+.cs-day b { display: block; margin-bottom: 3px; }
+.cs-ev { display: block; border-radius: 4px; padding: 1px 4px; color: #0b0d12; font-weight: 700; font-size: .68rem; }
+.cs-ln { position: absolute; left: 4px; right: 4px; bottom: 4px; height: 5px; border-radius: 3px; }
+.cs-card p, .cs-card li { font-size: .92rem; }

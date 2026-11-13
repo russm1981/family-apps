@@ -1,5 +1,19 @@
 [
   {
+    "version": "2026.11.84",
+    "date": "2026-11-13",
+    "notes": [
+      "Fixed: a widget could end up set to show “00:00 until 00:00” and disappear – midnight is always the end of the day now, and a widget like that shows all the time",
+      "When to show: “Always”, or “Only on some days or at some times…”",
+      "Morning to-dos: For who from a list, the days as buttons, and arrows to put them in order (no order numbers)",
+      "Reminders: For who from a list, and “Every week on…” (day buttons) or “On a date…” (a date picker – shown as e.g. Wed, 23 December 2026)",
+      "Rules: penalty buttons you add and remove – no commas",
+      "Rewards → Manual edits: add or take away points, override the balance, see the statement – with each child’s card underneath",
+      "Calendar set-up: how many categories you can have up front, how to drag people into groups, and a picture of “as a line”",
+      "My data: “Reconfigure your existing setup” with four clear choices, “Port my data to a different Google account”, the access code explained; the apps’ web address is no longer a setting"
+    ]
+  },
+  {
     "version": "2026.11.83",
     "date": "2026-11-13",
     "notes": [

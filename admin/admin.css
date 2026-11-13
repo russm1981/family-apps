@@ -205,3 +205,23 @@ details.when summary { font-weight: 600; cursor: pointer; }
 .sticky span { font-size: 15px; line-height: 1.3; word-break: break-word; }
 .sticky small { font-family: system-ui, sans-serif; font-size: 11px; color: #5a5130; margin-top: 6px; }
 .sticky .x { position: absolute; top: 4px; right: 4px; color: #5a5130; background: rgba(255,255,255,.35); border-radius: 50%; width: 22px; height: 22px; font-size: 12px; }
+
+/* Lists: who it's for, which days, a date, and moving rows up and down */
+.dpick { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.dp-day { min-width: 34px; height: 32px; border-radius: 8px; border: 1px solid var(--line); background: none; color: var(--mute); font-weight: 700; font-size: 12.5px; cursor: pointer; padding: 0 6px; }
+.dp-day.on { background: rgba(63,169,245,.2); border-color: #3fa9f5; color: var(--text); }
+.dp-say { margin-left: 4px; }
+.rpick { display: flex; flex-direction: column; gap: 6px; }
+.rpick select.rp-mode { width: auto; }
+.rp-date { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rp-date input { width: auto; }
+.lrow .mv { display: inline-flex; flex-direction: column; gap: 2px; }
+.lrow .mv button { border: 1px solid var(--line); background: none; color: var(--mute); border-radius: 6px; font-size: 10px; line-height: 1; padding: 3px 6px; cursor: pointer; }
+.lrow .mv button:hover { color: var(--text); border-color: var(--acc); }
+.lrow select { width: 100%; }
+/* Penalty buttons */
+.pens-ed { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 12px; }
+.pen-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 10px; background: rgba(248,113,113,.14); border: 1px solid rgba(248,113,113,.4); font-weight: 800; }
+.pen-chip button { background: none; border: 0; color: var(--mute); cursor: pointer; font-size: 13px; }
+.pen-add { display: inline-flex; gap: 6px; align-items: center; } .pen-add input { width: 110px; margin: 0; }
+.dpick[hidden], .rp-date[hidden] { display: none !important; }

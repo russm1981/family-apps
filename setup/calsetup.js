@@ -33,11 +33,13 @@
         var noGroup = CS.people.filter(function (p) { return !own.some(function (g) { return g.members.indexOf(p.name) >= 0; }); });
         var gi = function (g) { return cats.groups.indexOf(g); };
         return '<div class="cs-card"><h3>Categories <span class="mute small">– the same on every calendar page</span></h3>' +
-            '<p class="mute small">Every event on the calendar is in a category, which gives it its colour. Up to <b>' + L.cats + '</b> categories in all (' + n + ' now). ' +
+            '<p class="cs-count' + (n > L.cats ? ' bad' : '') + '">You can have up to ' + L.cats + ' categories – family groups and general ones together. You’re using ' + n + '.</p>' +
+            '<p class="mute small">Every event on the calendar is in a category, which gives it its colour. ' +
             'When you add an event in Google Calendar or Gmail, give it the category’s colour there and it lands in that category here – the dashboard looks after matching the colours up. Names up to ' + L.name + ' letters, so they fit on the key.</p>' +
 
             '<h4>Family groups</h4><p class="mute small cs-expl">For events about some of the family. <b>Family</b> is everyone. You can make up to ' + L.groups + ' more – the children, the grown-ups… – and drag each person into one of them. ' +
                 'Someone’s own events (“Drums (Ben)”) show in their group’s colour, unless they have a place of their own on the key.</p>' +
+            '<p class="cs-how">✋ To put someone in a group, <b>drag their name</b> onto the group – from another group, or from “Not in a group”.</p>' +
             '<div class="cs-groups">' +
                 (fam ? '<div class="cs-group cs-famg"><div class="cs-ghead">' + swatch('g' + gi(fam), fam.colour) + '<b>Family</b><span class="mute small">everyone – for things you all do together</span></div></div>' : '') +
                 own.map(function (g) {
@@ -103,10 +105,13 @@
         return '<div class="cs-card"><h3>The key, as it will appear on this calendar page</h3>' +
             '<p class="mute small">Drag into the key what should have a place (and a colour) of its own – a category, a group or one person. Up to <b>' + (L.key - 1) + '</b>, and the last place is always <b>Other</b>. ' +
             'Anything not on the key still shows, in grey, as <b>Other</b> – tap the day on the screen and it shows its real category. ' +
-            'Someone not on the key shows in their group’s colour, or Family’s. Tick <b>as a line</b> for up to <b>two</b> of them to draw them as a line under each day instead of a box (good for school holidays). <b>Hidden</b> ones don’t show on this page at all.</p>' +
+            'Someone not on the key shows in their group’s colour, or Family’s. <b>Hidden</b> ones don’t show on this page at all.</p>' +
+            '<div class="cs-lineex"><div class="cs-day"><b>14</b><span class="cs-ev" style="background:#22d3ee">Drums</span><span class="cs-ln" style="background:#facc15"></span></div>' +
+            '<p class="mute small">Tick <b>as a line</b> for up to <b>two</b> of them to draw them as a coloured line along the bottom of each day instead of a box – good for things that last days or weeks, like school holidays.</p></div>' +
             '<div class="cs-zone cs-key" data-zone="key">' + key.slots.map(function (n) {
                 var li = key.lines.indexOf(n);
-                return chip(n, '<label class="cs-linebox" title="Draw it as a line under each day instead of a box"><input type="checkbox" data-line="' + esc(n) + '"' + (li >= 0 ? ' checked' : '') + '>as a line</label>');
+                var col = (CS.people.filter(function (x) { return x.name === n; })[0] || all().filter(function (x) { return x.name === n; })[0] || {}).colour || '#888';
+                return chip(n, '<label class="cs-linebox" title="Draw it as a line under each day instead of a box"><input type="checkbox" data-line="' + esc(n) + '"' + (li >= 0 ? ' checked' : '') + '>as a line <i class="cs-lp" style="--lc:' + esc(col) + '"></i></label>');
             }).join('') + '<span class="cs-chip cs-other"><i style="background:#8a93a3"></i>Other</span>' +
             (key.slots.length < L.key - 1 ? '<span class="cs-room">' + (L.key - 1 - key.slots.length) + ' more place' + (L.key - 1 - key.slots.length === 1 ? '' : 's') + '</span>' : '') + '</div>' +
             '<h4>Not on the key <span class="mute small">– shown as Other</span></h4><div class="cs-zone" data-zone="pool">' + (pool.length ? pool.map(function (n) { return chip(n); }).join('') : '<span class="mute small">Everything is on the key or hidden</span>') + '</div>' +

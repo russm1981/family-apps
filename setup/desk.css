@@ -80,3 +80,9 @@ body.desk .main:has(.pane) { max-width: 1280px; }
 .pn-h { font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--mute, #8b95a5); padding: 10px 10px 2px; }
 .pane-body { min-width: 0; }
 .pane-h { margin: 2px 0 4px; font-size: 1.3rem; } .pane-what { margin: 0 0 12px; font-size: .92rem; }
+
+body.desk .lrow.l-todos, body.desk .lhead.l-todos { grid-auto-flow: row; grid-template-columns: 34px minmax(0, 1.3fr) minmax(0, .9fr) minmax(0, 1.6fr); align-items: center; }
+body.desk .lrow.l-timetable, body.desk .lhead.l-timetable { grid-auto-flow: row; grid-template-columns: minmax(0, 1.1fr) minmax(0, .8fr) minmax(0, 2fr); align-items: center; }
+body.desk .lrow select { height: 36px; padding: 4px 8px; margin: 0; font-size: .92rem; }
+body.desk .lrow .rpick { flex-direction: row; align-items: center; flex-wrap: wrap; }
+body.desk .lrow .dp-day { min-width: 32px; height: 30px; }
