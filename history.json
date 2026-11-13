@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.100",
+    "date": "2026-11-13",
+    "notes": [
+      "Colour coding: each general category’s How to display is three buttons side by side – Show, Hide, Show as Other (was “Group in Other”: on the calendar in grey, as Other on the key, so it doesn’t use up a colour)"
+    ]
+  },
+  {
     "version": "2026.11.99",
     "date": "2026-11-13",
     "notes": [

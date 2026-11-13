@@ -30,7 +30,7 @@
     // Each category is shown in its own colour (a box, or a line under the day) or not shown – then its events go in
     // Other, in grey. Other itself can be left off. It's the same on every calendar page.
     function catOf(ref) { return ref[0] === 'p' ? people[+ref.slice(1)] : (ref[0] === 'g' ? cats.groups : cats.generals)[+ref.slice(1)]; }
-    var SHOW = [['show', 'Show'], ['hide', 'Hide'], ['other', 'Group in Other', 'Not shown in its own colour – it shows in grey, as Other on the key']];
+    var SHOW = [['show', 'Show', 'In its own colour, with its own place on the key'], ['hide', 'Hide', 'Not on the calendar at all'], ['other', 'Show as Other', 'On the calendar in grey, counted as Other on the key – it doesn’t use up a colour']];
     /** How many things get a colour (and a place on the key) of their own – the calendar shows up to CS.limits.key. */
     // Family groups always show (Family, and each group with someone in it); general categories when set to Show.
     function groupShown(g) { return g.fixed || people.some(function (p) { return p.display === 'g' + cats.groups.indexOf(g); }); }
@@ -46,10 +46,15 @@
     function catRow(c, ref, nameCell, del) {
         return '<div class="cs-row" data-row="' + ref + '"><span class="cs-nm">' + nameCell + '</span>' + swatchOf(ref, c) +
             '<span class="cs-ck"><input type="checkbox" data-line="' + ref + '"' + (c.line ? ' checked' : '') + (c.show === 'show' ? '' : ' disabled') + ' title="Draw it as a line along the bottom of each day"></span>' +
-            sel('data-show', ref, SHOW, c.show) + (del || '<span></span>') + '</div>';
+            radios(ref, c.show) + (del || '<span></span>') + '</div>';
     }
     function groupRow(g, ref, nameCell, del) {
         return '<div class="cs-row cs-grow" data-row="' + ref + '"><span class="cs-nm">' + nameCell + '</span>' + swatchOf(ref, g) + (del || '<span></span>') + '</div>';
+    }
+    function radios(ref, cur) {
+        return '<span class="cs-radios">' + SHOW.map(function (o) {
+            return '<label title="' + esc(o[2]) + '"><input type="radio" name="sh_' + ref + '" data-show="' + ref + '" value="' + o[0] + '"' + (o[0] === cur ? ' checked' : '') + '><span>' + esc(o[1]) + '</span></label>';
+        }).join('') + '</span>';
     }
     function head(cols) { return '<div class="cs-row cs-rhead">' + cols.map(function (c) { return '<span>' + c + '</span>'; }).join('') + '</div>'; }
 
@@ -62,14 +67,14 @@
         return '<div class="cs-card"><h3 class="cs-h1">Colour coding</h3><p class="cs-sub">The same on all of your calendar pages.</p>' +
             '<p>Events can be in a <b>category</b> (holidays, birthdays…) or be about <b>people</b>. People’s events can be coloured for each person, or – with lots of people – put together in family groups to keep the calendar simple.</p>' +
             '<div class="cs-limit' + (over ? ' bad' : '') + '">' + (over
-                ? '⚠ <b>' + n + ' things are set to show in their own colour – the calendar can show up to ' + L.key + '.</b> Set some to “Group in Other” or “Hide”, or show some people in a family group, then save.'
+                ? '⚠ <b>' + n + ' things are set to show in their own colour – the calendar can show up to ' + L.key + '.</b> Set some to “Show as Other” or “Hide”, or show some people in a family group, then save.'
                 : 'The calendar can show up to <b>' + L.key + '</b> colours. You’re using <b>' + n + '</b>' + (look.other ? ' (including Other)' : '') + '.') + '</div>' +
 
             '<h3 class="cs-h2">General categories</h3>' +
             head(['Name', 'Colour', 'Line?', 'How to display', '']) +
             cats.generals.map(function (c, i) { return catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
             (all().length < L.cats ? '<button class="btn ghost sm cs-addc" data-sug="">+ Add another</button>' : '<p class="mute small">That’s the most categories and groups together (' + L.cats + ').</p>') +
-            '<p class="mute small">“Group in Other”: not shown in its own colour – its events appear in grey, as Other on the key. “Hide”: not shown at all.</p>' +
+            '<p class="mute small"><b>Show as Other</b>: on the calendar in grey, counted as Other on the key – so it doesn’t use up a colour. <b>Hide</b>: not on the calendar at all.</p>' +
 
             '<h3 class="cs-h2">Family groups</h3>' +
             '<p class="mute small cs-expl">Family groups put particular people together – the children, the grown-ups… – so the calendar doesn’t have a colour for every person. Choose who’s in each group below, under People in the family.</p>' +
@@ -86,9 +91,9 @@
             '<p class="mute small">In Family or in a group: their own events (“Drums (Ben)”) are shown in that colour.</p>' +
 
             '<h3 class="cs-h2">Other</h3>' +
-            '<div class="cs-other"><span class="cs-sw" style="--sc:#8a93a3"></span><div><p>Everything that doesn’t have a category in Google, and anything set above to “Group in Other”.</p>' +
+            '<div class="cs-other"><span class="cs-sw" style="--sc:#8a93a3"></span><div><p>Everything that doesn’t have a category in Google, and anything set above to “Show as Other”.</p>' +
                 '<label class="tog"><input type="checkbox" id="csOther"' + (look.other ? ' checked' : '') + '><span>Display the Other category</span></label>' +
-                '<p class="mute small">Not displaying it hides everything with no category in Google, and everything you’ve set to “Group in Other”.</p></div></div>' +
+                '<p class="mute small">Not displaying it hides everything with no category in Google, and everything you’ve set to “Show as Other”.</p></div></div>' +
             '<p class="mute small">Up to two general categories can be lines – drawn along the bottom of each day, good for things that last days or weeks.</p>' +
             '<button class="btn good" id="csSaveCats"' + (over ? ' disabled' : '') + '>Save the colour coding</button></div>';
     }
@@ -232,7 +237,7 @@
                 if (!t.getAttribute('data-sug')) { var ins = box.querySelectorAll('[data-cname]'); if (ins.length) ins[ins.length - 1].focus(); } }
             else if ((t = e.target.closest('#csSaveCats'))) {
                 if (cats.generals.concat(cats.groups).some(function (c) { return !String(c.name).trim(); })) { H.toast('Give every category and group a name (or remove it)', true); return; }
-                if (colourCount() > CS.limits.key) { H.toast('The calendar can show up to ' + CS.limits.key + ' colours – group some in Other, or hide them', true); return; }
+                if (colourCount() > CS.limits.key) { H.toast('The calendar can show up to ' + CS.limits.key + ' colours – set some to Show as Other, or hide them', true); return; }
                 applyMembers();
                 var pc = {}; people.forEach(function (p) { pc[p.name] = p.colour; });
                 H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals, peopleColours: pc, key: keyFromCats() }, 'Colour coding saved – the screen updates within a few minutes');

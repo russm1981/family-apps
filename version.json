@@ -1,12 +1,9 @@
 {
-  "app": "2026.11.99",
+  "app": "2026.11.100",
   "script": "2026.11.65",
   "date": "2026-11-13",
   "notes": [
-    "Colour coding: general categories have one “+ Add another” button (no suggestions); a line shows as a thin bar along the bottom of the colour square; the last column is How to display – Show, Hide or Group in Other (explained underneath)",
-    "Family groups now come before the people, with what they’re for – just a name and a colour (they’re always shown)",
-    "People: How to display – Individually, In Family, In Boys group…, or Hide",
-    "Other: a grey square, what it holds, and one tick box to display it or not"
+    "Colour coding: each general category’s How to display is three buttons side by side – Show, Hide, Show as Other (was “Group in Other”: on the calendar in grey, as Other on the key, so it doesn’t use up a colour)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

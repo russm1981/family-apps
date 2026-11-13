@@ -298,3 +298,9 @@
 .cs-other { display: flex; gap: 14px; align-items: flex-start; }
 .cs-other .cs-sw { width: 40px; height: 32px; border-radius: 8px; border: 2px solid rgba(255,255,255,.25); background: var(--sc); flex: none; margin-top: 2px; }
 .cs-other p { margin: 0 0 6px; }
+/* How to display: three choices side by side */
+.cs-row:not(.cs-prow):not(.cs-grow):not(.cs-orow) { grid-template-columns: minmax(200px, 440px) 70px 70px 340px 34px; }
+.cs-radios { display: flex; gap: 6px; }
+.cs-radios label { display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 6px 10px; border: 1px solid var(--line, #2a303b); border-radius: 999px; cursor: pointer; font-size: .9rem; white-space: nowrap; }
+.cs-radios input { margin: 0; width: 15px; height: 15px; }
+.cs-radios label:has(input:checked) { border-color: #3fa9f5; background: rgba(63,169,245,.14); font-weight: 700; }
