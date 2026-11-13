@@ -1152,3 +1152,11 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .child-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--mute);
     font-size: 1.15rem; line-height: 1.5; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1rem; }
 .child-msg b { color: var(--text); }
+
+/* ---- Today & tomorrow: days on the left, the weekend on the right */
+.wg-agenda .ag-cols { flex: 1; min-height: 0; column-gap: 1.1rem; row-gap: 0.55rem; }
+.wg-agenda .ag-cols.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); }
+.wg-agenda .ag-cols.three { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); grid-template-areas: "a w" "b w"; }
+.wg-agenda .ag-cols.three .ag-c1 { grid-area: a; } .wg-agenda .ag-cols.three .ag-c2 { grid-area: b; } .wg-agenda .ag-cols.three .ag-wk { grid-area: w; }
+.wg-agenda .ag-wk { margin-top: 0; padding-top: 0; border-top: 0; padding-left: 1.1rem; border-left: 1px solid rgba(255, 255, 255, 0.1); }
+.wg-agenda .ag-wl { display: flex; flex-direction: column; }

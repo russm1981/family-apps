@@ -93,3 +93,4 @@ body.desk .top-row { max-width: 1500px; }
 .ed-del:hover { border-color: #ef4444; background: rgba(239,68,68,.25); }
 .ed-trash { margin-top: 10px; border: 2px dashed #3a4252; border-radius: 12px; padding: 12px; text-align: center; color: #64748b; font-size: 13px; }
 .ed-trash.over { border-color: #ef4444; color: #fca5a5; background: rgba(239,68,68,.12); outline: none; }
+.ed-tile.split .sp-a:hover, .ed-tile.split .sp-b[data-sub]:hover { filter: brightness(1.35); cursor: pointer; }

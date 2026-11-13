@@ -42,7 +42,7 @@
         if (W && B) {
             return '<div class="' + cls + ' split" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin +
                 '<div class="sp-a"><span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b></div>' +
-                '<div class="sp-b"><span class="ico">' + esc(B.icon) + '</span><b>' + esc(B.name) + '</b></div>' +
+                '<div class="sp-b"' + (backupOf(W.OtherTimes) ? ' data-sub="' + esc(backupOf(W.OtherTimes).id) + '" title="Click for the ' + esc(B.name) + ' settings"' : '') + '><span class="ico">' + esc(B.icon) + '</span><b>' + esc(B.name) + '</b></div>' +
                 '<svg class="sp-line" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="100" y1="0" x2="0" y2="100"/></svg>' +
                 '<div class="sp-time">' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + '<small>other times →</small></div></div>';
         }
@@ -53,8 +53,12 @@
         if (w.type === 'child') return '<div class="' + cls + ' kid" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(w.settings && w.settings.Child || 'Child') + '</b>' +
             '<small>Points, tasks, morning to-dos and reminders</small></div>';
         return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
-            '<small>' + esc(H.summary(w) || '') + '</small></div>';
+            '<small>' + esc(w.pending ? 'Adding…' : H.summary(w) || '') + '</small></div>';
     }
+    /** The widget that holds the settings of what's shown at other times (the first of that kind – usually a hidden one the Sheet made). */
+    function backupOf(type) { return (D().widgets || []).filter(function (x) { return x.type === type; })[0]; }
+    /** Hidden only so it can hold those settings: not worth showing – click its half of the split widget instead. */
+    function isBackup(w) { return !w.show && (D().widgets || []).some(function (x) { return x.when && x.when.OtherTimes === w.type; }) && backupOf(w.type) === w; }
     function column(c) {
         if (c.length === 1 && c[0].size === 'half') return '<div class="ed-col">' + tile(c[0]) + '<div class="ed-slot" data-after="' + esc(c[0].id) + '">Drop a half-height widget here</div></div>';
         return '<div class="ed-col">' + c.map(tile).join('') + '</div>';
@@ -113,7 +117,7 @@
         if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen. Drag ' + (over > 1 ? 'them' : 'it') +
             ' onto another screen on the left, make widgets half height, or click one to hide or remove it.</div>' +
             '<div class="ed-overflow"><div class="ed-grid" style="grid-template-columns:repeat(' + Math.max(over, 2) + ',minmax(0,1fr))">' + cols.slice(4).map(column).join('') + '</div></div>';
-        var hidden = onPage(p.id, true).filter(function (w) { return !w.show; });
+        var hidden = onPage(p.id, true).filter(function (w) { return !w.show && !isBackup(w); });
         if (hidden.length) out += '<div class="ed-hidden"><h4>Hidden on this screen <small>– drag one onto the screen to show it</small></h4>' +
             hidden.map(function (w) {
                 var bk = (D().widgets || []).some(function (x) { return x.when && x.when.OtherTimes === w.type; });
@@ -169,7 +173,8 @@
         if (i < 0) i = ids.length;
         var T = H.typeOf(type);
         D().widgets.forEach(function (w) { if (w.page === pid && w.order > i) w.order++; });
-        D().widgets.push({ id: 'new-' + Date.now(), page: pid, type: type, size: T.sizes[0], show: true, order: i + 0.5, settings: {}, when: null, pending: true });
+        var defs = {}; (T.settings || []).forEach(function (f) { defs[f.k] = f.def; });      // its standard settings, until the Sheet answers
+        D().widgets.push({ id: 'new-' + Date.now(), page: pid, type: type, size: T.sizes[0], show: true, order: i + 0.5, settings: defs, when: null, pending: true });
         H.setData(D());
         H.act({ action: 'addWidget', page: pid, type: type, at: i }, 'Added – click it for its height and settings').catch(function () { /* the app reloads */ });
     }
@@ -189,6 +194,7 @@
             if ((t = e.target.closest('[data-pedit]'))) { H.pageSheet(t.getAttribute('data-pedit')); return; }
             if ((t = e.target.closest('[data-del]'))) { e.stopPropagation(); remove(t.getAttribute('data-del')); return; }
             if ((t = e.target.closest('.ed-page'))) { store(KEY_P, t.getAttribute('data-page')); render(); return; }
+            if ((t = e.target.closest('[data-sub]')) && !e.target.closest('.pending')) { H.widgetSheet(t.getAttribute('data-sub')); return; }
             if ((t = e.target.closest('.ed-tile, .ed-chip')) && !t.classList.contains('pending')) { H.widgetSheet(t.getAttribute('data-id')); return; }
         };
         var add = el.querySelector('#edAdd');

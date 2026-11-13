@@ -103,6 +103,7 @@
                 vrow('Newest available', latest.app ? 'apps ' + latest.app + ', script ' + latest.script : '?') +
                 vrow('Automatic updates', L.autoUpdate ? 'On' : 'Off', !L.autoUpdate) +
                 vrow('Licence', lic.required ? lic.message : 'Not needed', lic.required && !lic.ok) +
+                vrow('If it gets stuck', healText()) +
                 vrow('Last answer from the Sheet', H.at ? new Date(H.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'none yet', !H.ok) +
             '</table><div class="hl-btns"><button class="n-btn" data-h="check"' + (checking ? ' disabled' : '') + '>' + (checking ? 'Checking every widget…' : 'Check everything now') + '</button>' +
             '<button class="n-btn ghost" data-h="retry">Try the Sheet again</button>' +
@@ -191,6 +192,38 @@
             a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
             btn.disabled = false; btn.textContent = 'Saved to Downloads ✔';
         }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save a diagnostics report to this PC'; api().toast(e.message, true); });
+    }
+
+    /* ---- Getting itself going again. When the screen hasn't had an answer from the Sheet for 10 minutes and nobody is using
+     * it, it reloads itself – the same as closing and reopening it, which is usually what gets a stuck browser going again.
+     * Still stuck: it tries again after 20 minutes, then 40, then every hour. It only reloads when it can load its own page
+     * from the internet first, so it never swaps a working (if out-of-date) screen for a "no internet" page. */
+    var HEAL_KEY = 'familyDashboard.selfReload', GAPS = [10, 20, 40, 60], touchAt = Date.now();
+    document.addEventListener('pointerdown', function () { touchAt = Date.now(); }, true);
+    function heal() { try { return JSON.parse(localStorage.getItem(HEAL_KEY) || 'null') || {}; } catch (e) { return {}; } }
+    function setHeal(o) { try { if (o) localStorage.setItem(HEAL_KEY, JSON.stringify(o)); else localStorage.removeItem(HEAL_KEY); } catch (e) { /* fine */ } }
+    function healCheck() {
+        var h = heal(), now = Date.now();
+        if (H.ok && !H.at) return;      // no answer yet since loading
+        if (H.ok) { if (h.since) setHeal(h.n ? { fixed: now, n: h.n } : null); return; }
+        if (!h.since) { h = { since: now, n: 0 }; setHeal(h); }
+        var gap = GAPS[Math.min(h.n || 0, GAPS.length - 1)] * 60000;
+        if (now - (h.last || h.since) < gap || now - touchAt < 2 * 60000 || healCheck.busy) return;
+        healCheck.busy = true;
+        fetch(location.href.split('#')[0], { cache: 'no-store' }).then(function (r) {
+            if (!r.ok) throw new Error('page ' + r.status);
+            h.n = (h.n || 0) + 1; h.last = Date.now(); setHeal(h);
+            location.reload();
+        }).catch(function () { /* this PC can't load anything just now: stay as we are and keep trying in place */ })
+          .finally(function () { healCheck.busy = false; });
+    }
+    setInterval(healCheck, 30000);
+    function healText() {
+        var h = heal(), t = function (ms) { return new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }); };
+        if (h.since && h.last) return 'Reloaded itself ' + h.n + ' time' + (h.n > 1 ? 's' : '') + ' (last at ' + t(h.last) + ') – still no answer; it keeps trying';
+        if (h.since) return 'No answer since ' + t(h.since) + ' – it reloads itself after ' + GAPS[0] + ' minutes without one';
+        if (h.fixed) return 'Got going again at ' + t(h.fixed) + ' after reloading itself';
+        return 'Reloads itself if the Sheet hasn’t answered for ' + GAPS[0] + ' minutes';
     }
 
     // Tap the version number (bottom of the side bar) to open the panel.

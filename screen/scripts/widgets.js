@@ -302,12 +302,13 @@
     /* ======================================================= TODAY & TOMORROW */
 
     T.agenda = function (el, w) {
-        // Today and Tomorrow side by side, and the weekend underneath under one heading, each entry with its day.
-        // Friday: Today and This weekend side by side. Saturday and Sunday: the weekend underneath is next weekend.
+        // Days on the left, the weekend on the right: Today above Tomorrow, and the weekend (under one heading, each entry
+        // with its day) beside them. Friday: Today and This weekend side by side. Saturday and Sunday: it's next weekend.
+        // Without the weekend: Today and Tomorrow side by side.
         var max = w.settings.MaxPerDay || 3, wkOn = w.settings.Weekend !== false;
-        el.innerHTML = '<div class="ag-cols"><div class="ag-col"><h3 class="ag-h1">Today</h3><div class="ag-list l1">' + loading() + '</div></div>' +
-            '<div class="ag-col ag-c2"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div></div>' +
-            (wkOn ? '<div class="ag-wk"><h3 class="ag-h3"></h3><div class="ag-list ag-wl l3"></div></div>' : '');
+        el.innerHTML = '<div class="ag-cols two"><div class="ag-col ag-c1"><h3 class="ag-h1">Today</h3><div class="ag-list l1">' + loading() + '</div></div>' +
+            '<div class="ag-col ag-c2"><h3 class="ag-h2">Tomorrow</h3><div class="ag-list l2"></div></div>' +
+            (wkOn ? '<div class="ag-col ag-wk" style="display:none"><h3 class="ag-h3"></h3><div class="ag-list ag-wl l3"></div></div>' : '') + '</div>';
         var q = function (c) { return el.querySelector(c); };
         function tags(evs, n) {
             var b = (evs || []).filter(function (e) { return e.bar; })[0];
@@ -349,6 +350,7 @@
                     });
                 }
                 if (fri) {
+                    q('.ag-cols').className = 'ag-cols two';
                     q('.ag-h2').innerHTML = wHead;
                     q('.l2').innerHTML = list(wRows, W.days[0], max * 2);
                     if (q('.ag-wk')) q('.ag-wk').style.display = 'none';
@@ -356,15 +358,12 @@
                 }
                 q('.ag-h2').innerHTML = 'Tomorrow <span>' + dmy(m) + '</span>' + tags(a.days.tomorrow, bh.tomorrow);
                 q('.l2').innerHTML = list(plain(a.days.tomorrow), a.tomorrow, max);
+                q('.ag-cols').className = 'ag-cols ' + (hasWk ? 'three' : 'two');
                 if (!q('.ag-wk')) return;
                 q('.ag-wk').style.display = hasWk ? '' : 'none';
                 if (!hasWk) return;
                 q('.ag-h3').innerHTML = wHead;
-                // Two columns of entries when there's room (Corsair, computer); one on a narrower widget (tablet).
-                var two = el.clientWidth / (parseFloat(getComputedStyle(el).fontSize) || 16) >= 25;     // in text widths, so it's the same at any scale
-                q('.l3').innerHTML = list(wRows, W.days[0], two ? max * 2 : max);
-                q('.l3').style.gridTemplateColumns = two ? '' : '1fr';
-                q('.l3').style.gridTemplateRows = 'repeat(' + (two ? Math.min(max, Math.ceil(Math.min(wRows.length, max * 2) / 2)) : Math.min(max, Math.max(1, wRows.length))) + ', auto)';
+                q('.l3').innerHTML = list(wRows, W.days[0], max * 2);     // the weekend column is as tall as Today and Tomorrow together
             },
         };
     };

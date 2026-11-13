@@ -1,13 +1,14 @@
 {
-  "app": "2026.11.74",
-  "script": "2026.11.47",
+  "app": "2026.11.75",
+  "script": "2026.11.48",
   "date": "2026-11-13",
   "notes": [
-    "The screen’s “Try the Sheet again” button now says what happened: “Connected – the Sheet answered at 08:40”, or why it still can’t",
-    "When the screen can’t reach the Sheet it now tells you which kind of problem it is: this PC can’t reach the internet/Google at all, or Google answered with an error (the script stopped or needs approving)",
-    "Children are now widgets: each child’s points card is a full-height widget you can put on any screen (four fit on one). Your points page has been turned into a screen of child widgets in the same place – move them about in Setup → Screen layout",
-    "A new child (Family & calendar → ⭐ Points) gets a widget of their own; renaming a child keeps theirs, and taking a child off points removes it (their points are kept)",
-    "Setup → Screen layout: no separate points screen to add any more – drag “Child (points)” from the widget list instead"
+    "The screen gets itself going again: if the Sheet hasn’t answered for 10 minutes and nobody is using it, it reloads itself (then after 20, 40 and every 60 minutes if still stuck) – only when it can load its own page, so it never ends up on a “no internet” page",
+    "Today & tomorrow: days on the left (Today above Tomorrow), the weekend on the right; with only two, side by side",
+    "Setup → Screen layout: a widget split by “When to show” is all you need – click either half for its settings; the hidden copy that holds the other widget’s settings isn’t listed any more",
+    "Setup → Screen layout: a newly added widget shows “Adding…” and its standard settings straight away (no more “undefined”)",
+    "Flights overhead: if adsb.lol is busy (“said 429”) it uses airplanes.live instead, by itself",
+    "Setup → Connect this computer: the picture above the title shows again"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

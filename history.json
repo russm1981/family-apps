@@ -1,5 +1,17 @@
 [
   {
+    "version": "2026.11.75",
+    "date": "2026-11-13",
+    "notes": [
+      "The screen gets itself going again: if the Sheet hasn’t answered for 10 minutes and nobody is using it, it reloads itself (then after 20, 40 and every 60 minutes if still stuck) – only when it can load its own page, so it never ends up on a “no internet” page",
+      "Today & tomorrow: days on the left (Today above Tomorrow), the weekend on the right; with only two, side by side",
+      "Setup → Screen layout: a widget split by “When to show” is all you need – click either half for its settings; the hidden copy that holds the other widget’s settings isn’t listed any more",
+      "Setup → Screen layout: a newly added widget shows “Adding…” and its standard settings straight away (no more “undefined”)",
+      "Flights overhead: if adsb.lol is busy (“said 429”) it uses airplanes.live instead, by itself",
+      "Setup → Connect this computer: the picture above the title shows again"
+    ]
+  },
+  {
     "version": "2026.11.74",
     "date": "2026-11-13",
     "notes": [

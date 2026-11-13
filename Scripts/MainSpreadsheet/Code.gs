@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.47';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.48';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -2248,11 +2248,25 @@ function flights_(s) {
   const c = geocode_(s.Centre || inst_('HomeAddress'));
   const miles = Math.max(3, Math.min(60, Number(s.RadiusMiles) || 20));
   const nm = Math.ceil(miles * 0.869);
-  const base = s.Source === 'airplanes.live' ? 'https://api.airplanes.live/v2/point/' : 'https://api.adsb.lol/v2/point/';
-  const res = uf_(base + c.lat.toFixed(4) + '/' + c.lng.toFixed(4) + '/' + nm,
-    { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
-  if (res.getResponseCode() !== 200) throw new Error(s.Source + ' said ' + res.getResponseCode() + ' \u2013 try the other data source in the widget settings');
-  const ac = JSON.parse(res.getContentText()).ac || [];
+  // The chosen network first; if it's busy (429 = too many requests – Google's servers are shared, so this happens) or down,
+  // the other one. A network that said "too many" is left alone for a few minutes.
+  const SRC = { 'adsb.lol': 'https://api.adsb.lol/v2/point/', 'airplanes.live': 'https://api.airplanes.live/v2/point/' };
+  const first = SRC[s.Source] ? s.Source : 'adsb.lol', order = [first].concat(Object.keys(SRC).filter(k => k !== first));
+  const sc = CacheService.getScriptCache(), said = [];
+  let ac = null;
+  for (let i = 0; i < order.length && !ac; i++) {
+    const k = order[i];
+    if (sc.get('fl:busy:' + k)) { said.push(k + ' busy'); continue; }
+    try {
+      const res = uf_(SRC[k] + c.lat.toFixed(4) + '/' + c.lng.toFixed(4) + '/' + nm,
+        { muteHttpExceptions: true, headers: { 'User-Agent': 'FamilyDashboard/1.0 (Google Apps Script)' } });
+      const code = res.getResponseCode();
+      if (code === 200) { ac = JSON.parse(res.getContentText()).ac || []; break; }
+      if (code === 429) sc.put('fl:busy:' + k, '1', 180);
+      said.push(k + ' said ' + code);
+    } catch (err) { said.push(k + ': ' + String(err && err.message || err).slice(0, 60)); }
+  }
+  if (!ac) throw new Error('Both flight networks are busy just now (' + said.join(', ') + ') \u2013 it tries again by itself in a few minutes');
   const maxAlt = Number(s.MaxAltitude) || 45000;
   const planes = ac.filter(a => isFinite(a.lat) && isFinite(a.lon) && isFinite(Number(a.alt_baro)) && Number(a.alt_baro) <= maxAlt)
     .map(a => {

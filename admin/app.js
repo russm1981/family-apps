@@ -1196,7 +1196,8 @@
             var b = e.target.closest('[data-type]'); if (!b) return;
             var ty = b.getAttribute('data-type'), T = typeOf(ty);
             // On the phone straight away (greyed until the Google script has added it).
-            DATA.widgets.push({ id: 'new-' + Date.now(), page: pid, type: ty, size: T.sizes[0], show: true, order: 999, settings: {}, when: null, pending: true });
+            var defs = {}; (T.settings || []).forEach(function (f) { defs[f.k] = f.def; });
+            DATA.widgets.push({ id: 'new-' + Date.now(), page: pid, type: ty, size: T.sizes[0], show: true, order: 999, settings: defs, when: null, pending: true });
             closeSheet(); setData(DATA); FD.toast('Adding…');
             act({ action: 'addWidget', page: pid, type: ty }, 'Added – its settings are on its page in Family, Lists or Other').catch(function () { /* load() puts it back */ });
         };
