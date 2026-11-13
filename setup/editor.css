@@ -317,3 +317,6 @@
 .cs-other p { margin: 0; }
 .cs-otick { margin: 0 0 6px; padding: 0; justify-content: flex-start; }
 .cs-onote { margin: 0 0 14px; }
+.cs-pop { grid-template-columns: repeat(6, 28px); }
+.cs-pname { grid-column: 1 / -1; margin: 4px 0 0; font-size: .75rem; color: var(--mute, #8b95a5); }
+.cs-row span.cs-sw.blank { background: transparent; border-style: dashed; }

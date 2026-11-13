@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.104",
+  "app": "2026.11.105",
   "script": "2026.11.66",
   "date": "2026-11-13",
   "notes": [
-    "Setup wizard page: “Do one step from the Setup wizard again” – Get free keys for external data sources, Add licence key (links the software to your original purchase), Check everything (diagnostics)",
-    "Setup wizard page: you can run the full wizard to change an existing configuration – a new button runs it on this dashboard",
-    "Run on a dashboard that’s already set up, the wizard first asks: change the existing set-up, or clear all the settings and start again – which first saves a backup copy of your Google Sheet in your Google Drive (your licence key and access code are kept, so everything stays connected)"
+    "Colour coding: the colour chooser offers just Google Calendar’s own 11 colours (hover for their names), and each category and group shows in its Google colour",
+    "People in a group (or in Family) show in that group’s colour; only someone shown individually has a colour of their own to choose"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

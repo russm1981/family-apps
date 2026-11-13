@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.105",
+    "date": "2026-11-13",
+    "notes": [
+      "Colour coding: the colour chooser offers just Google Calendar’s own 11 colours (hover for their names), and each category and group shows in its Google colour",
+      "People in a group (or in Family) show in that group’s colour; only someone shown individually has a colour of their own to choose"
+    ]
+  },
+  {
     "version": "2026.11.104",
     "date": "2026-11-13",
     "notes": [

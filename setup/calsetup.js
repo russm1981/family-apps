@@ -47,6 +47,14 @@
         var mode = c.show === 'hide' ? ' blank' : c.show === 'other' ? ' grey' : c.line ? ' line' : '';
         return '<button type="button" class="cs-sw' + mode + '" data-sw="' + ref + '" style="--sc:' + esc(c.show === 'other' ? '#8a93a3' : c.colour) + '" title="Change the colour"></button>';
     }
+    /** A person's square: their own colour when shown individually (and only then can it be changed); otherwise the
+     * colour they're shown in – their group's or Family's – or empty when hidden. */
+    function personSwatch(p, i) {
+        if (p.display === 'me') return swatchOf('p' + i, p);
+        if (p.display === 'hide') return '<span class="cs-sw blank" title="Hidden"></span>';
+        var m = /^g(\d+)$/.exec(p.display || ''), g = m ? cats.groups[+m[1]] : cats.groups.filter(function (x) { return x.fixed; })[0];
+        return '<span class="cs-sw" style="--sc:' + esc(g ? g.colour : '#888') + '" title="Shown in ' + esc(g ? g.name : 'Family') + '’s colour"></span>';
+    }
     function lineCount() { return cats.generals.filter(function (x) { return x.line && x.show === 'show'; }).length; }
     function catRow(c, ref, nameCell, del) {
         return '<div class="cs-row" data-row="' + ref + '"><span class="cs-nm">' + nameCell + '</span>' + swatchOf(ref, c) +
@@ -92,7 +100,7 @@
             '<h3 class="cs-h2">People in the family</h3>' +
             '<div class="cs-row cs-prow cs-rhead"><span>Name</span><span>Colour</span><span>How to display</span><span></span></div>' +
             people.map(function (p, i) {
-                return '<div class="cs-row cs-prow" data-row="p' + i + '"><span class="cs-nm"><b>' + esc(p.name) + '</b></span>' + swatchOf('p' + i, p) + sel('data-pshow', 'p' + i, where, p.display) + '<span></span></div>';
+                return '<div class="cs-row cs-prow" data-row="p' + i + '"><span class="cs-nm"><b>' + esc(p.name) + '</b></span>' + personSwatch(p, i) + sel('data-pshow', 'p' + i, where, p.display) + '<span></span></div>';
             }).join('') +
             '<p class="mute small">In Family or in a group: their own events (“Drums (Ben)”) are shown in that colour.</p>' +
 
@@ -102,19 +110,21 @@
             '<p class="mute small cs-onote">Not displaying it hides everything with no category in Google, and everything you’ve set to “Show as Other”.</p>' +
             '<button class="btn good" id="csSaveCats"' + (over ? ' disabled' : '') + '>Save the colour coding</button></div>';
     }
-    function nextColour() { var used = all().map(function (c) { return c.colour; }); return PALETTE.filter(function (x) { return used.indexOf(x) < 0; })[0] || PALETTE[0]; }
+    function gPalette() { var g = CS.gcolours || {}; return Object.keys(g).sort(function (a, b) { return a - b; }).map(function (k) { return g[k]; }); }
+    function nextColour() { var used = all().map(function (c) { return String(c.colour).toLowerCase(); }), pal = gPalette().map(function (x) { return x[1]; }); if (!pal.length) pal = PALETTE; return pal.filter(function (x) { return used.indexOf(x.toLowerCase()) < 0; })[0] || pal[0]; }
     function openPalette(btn) {
         closePalette();
         var ref = btn.getAttribute('data-sw'), c = catOf(ref); if (!c) return;
         var pop = document.createElement('div');
         pop.className = 'cs-pop';
-        pop.innerHTML = PALETTE.map(function (x) { return '<button type="button" class="cs-pc' + (x === c.colour ? ' on' : '') + '" data-pc="' + x + '" style="background:' + x + '"></button>'; }).join('') +
-            '<label class="cs-custom">Any colour <input type="color" value="' + esc(c.colour) + '"></label>';
+        // Google Calendar's own 11 event colours – the same ones you see when you colour an event in Google Calendar.
+        pop.innerHTML = gPalette().map(function (x) { return '<button type="button" class="cs-pc' + (x[1].toLowerCase() === String(c.colour).toLowerCase() ? ' on' : '') + '" data-pc="' + x[1] + '" style="background:' + x[1] + '" title="' + esc(x[0]) + '"></button>'; }).join('') +
+            '<p class="cs-pname">Google Calendar’s colours</p>';
         var r = btn.getBoundingClientRect();
         pop.style.left = (r.left + window.scrollX) + 'px'; pop.style.top = (r.bottom + window.scrollY + 6) + 'px';
         document.body.appendChild(pop);
         pop.onclick = function (e) { var b = e.target.closest('[data-pc]'); if (!b) return; c.colour = b.getAttribute('data-pc'); closePalette(); draw(); };
-        pop.querySelector('input').onchange = function () { c.colour = this.value; closePalette(); draw(); };
+
         setTimeout(function () { document.addEventListener('click', outside, true); }, 0);
     }
     function outside(e) { if (!e.target.closest('.cs-pop')) closePalette(); }
@@ -258,6 +268,8 @@
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
             var key = (CS.keys || []).filter(function (k) { return k.page === id; })[0] || (CS.keys || [])[0] || { slots: [], lines: [], hide: [] };
             look = { other: key.other !== false };
+            // Each category and group is shown in its Google Calendar colour (the colour its events have in Google).
+            all().forEach(function (c) { var g = CS.gcolours && CS.gcolours[c.g]; if (g) c.colour = g[1]; });
             var st = function (n) { return key.slots.indexOf(n) >= 0 ? 'show' : key.hide.indexOf(n) >= 0 ? 'hide' : 'other'; };
             all().forEach(function (c) { c.show = st(c.name); c.line = !c.members && c.show === 'show' && key.lines.indexOf(c.name) >= 0; });
             people = CS.people.map(function (p) {
