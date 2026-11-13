@@ -1,10 +1,14 @@
 {
-  "app": "2026.11.88",
-  "script": "2026.11.59",
+  "app": "2026.11.89",
+  "script": "2026.11.60",
   "date": "2026-11-13",
   "notes": [
-    "New setting in Rewards → Reward rules: the time the screen switches to tomorrow’s reminders (5pm unless you change it)",
-    "New widget: Reminders (rewards) – every child’s reminders together, half or full height, so you can put them on the Home screen. Today’s, then tomorrow’s from the switch time; full height shows both. Tap a child for their week"
+    "The website is now the Family Dashboard Configurator, with a little more room for the title; Help is a button by the title",
+    "Home: two green boxes (new to Family Dashboard → the Setup wizard; start the setup wizard for a new family), then How it works, then the two parts – 1 · Set up and 2 · Apps",
+    "Setup wizard: Set up the calendar now comes before doing one step again",
+    "Screens: the preview shows the screen’s menu down the left (click a button to go to that screen, or drop a widget on it); on a tablet the parts of a screen are one above the other, each with its own menu button",
+    "Screens: Add a widget is in two columns, with the rewards ones (a child’s card, everyone’s reminders) in a list of their own",
+    "Calendar page: bigger title, and just three settings above the picture – which Google Calendar to link to (new events go in the same one), what it opens on, and lining up weekdays"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

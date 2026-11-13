@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.59';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.60';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -147,7 +147,7 @@ const PAGE_TYPES = {
       help: 'Blank = the family’s calendars (the same as Today & tomorrow and the phone Calendar app). Or: default = your main calendar, all = every calendar, or calendar IDs separated by commas – so a second calendar page can show different calendars.' },
     { k: 'AddTo', label: 'Calendar for new events', type: 'text', def: '', max: 200, help: 'Where + Add on this page saves events. Blank = the family’s setting.' },
     { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', '3 months (scroll)', 'Month', 'Week'] },
-    { k: 'AlignWeekdays', label: 'Line up weekdays in the 3-month views (each month starts under its weekday, so weekends form columns)', type: 'bool', def: true },
+    { k: 'AlignWeekdays', label: 'Line up weekdays in the 3-month views', type: 'bool', def: true, help: 'Each month starts under its weekday, so the weekends form columns.' },
   ] },
 };
 

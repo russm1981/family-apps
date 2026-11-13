@@ -140,3 +140,13 @@ body.desk .card p { margin: 0 0 10px; } body.desk .card p:last-child { margin-bo
 /* The tab bar fits the width: tabs only as wide as their names */
 body.desk .tabbar { justify-content: center; flex-wrap: nowrap; overflow-x: auto; gap: 2px; padding: 0 10px; }
 body.desk .tabbar button { flex: none; padding: 12px 12px; white-space: nowrap; }
+
+/* Title: room for the descenders (y, g); Help by the title */
+body.desk .top h1 { line-height: 1.35; padding-bottom: 2px; }
+body.desk .hdr-help { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; margin-right: 10px; border: 1px solid var(--line, #2a303b); border-radius: 999px; color: inherit; text-decoration: none; font-weight: 600; font-size: 15px; white-space: nowrap; }
+body.desk .hdr-help:hover, body.desk .hdr-help.on { border-color: #3fa9f5; color: #3fa9f5; }
+/* Home: the second green box is one big link */
+.hm-go { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; color: inherit; text-decoration: none; }
+.hm-go span { grid-column: 1; font-size: 14px; color: var(--mute, #8b95a5); }
+.hm-go i { grid-column: 2; grid-row: 1 / 3; font-style: normal; font-size: 26px; color: #4ade80; }
+.hm-go:hover { border-color: #4ade80; }

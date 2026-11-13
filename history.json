@@ -1,5 +1,17 @@
 [
   {
+    "version": "2026.11.89",
+    "date": "2026-11-13",
+    "notes": [
+      "The website is now the Family Dashboard Configurator, with a little more room for the title; Help is a button by the title",
+      "Home: two green boxes (new to Family Dashboard → the Setup wizard; start the setup wizard for a new family), then How it works, then the two parts – 1 · Set up and 2 · Apps",
+      "Setup wizard: Set up the calendar now comes before doing one step again",
+      "Screens: the preview shows the screen’s menu down the left (click a button to go to that screen, or drop a widget on it); on a tablet the parts of a screen are one above the other, each with its own menu button",
+      "Screens: Add a widget is in two columns, with the rewards ones (a child’s card, everyone’s reminders) in a list of their own",
+      "Calendar page: bigger title, and just three settings above the picture – which Google Calendar to link to (new events go in the same one), what it opens on, and lining up weekdays"
+    ]
+  },
+  {
     "version": "2026.11.88",
     "date": "2026-11-13",
     "notes": [

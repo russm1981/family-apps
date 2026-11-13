@@ -75,10 +75,23 @@
         if (c.length === 1 && c[0].size === 'half') return '<div class="ed-col">' + tile(c[0]) + '<div class="ed-slot" data-after="' + esc(c[0].id) + '">Drop a half-height widget here</div></div>';
         return '<div class="ed-col">' + c.map(tile).join('') + '</div>';
     }
-    function frame(cols, n, label, cls) {
+    /** The menu down the left of the screen: a button for each screen (click one to go to it, or drop a widget on it). */
+    // On a tablet a widget screen with more than two columns is in parts (Home 1, Home 2), each with its own button.
+    function rail(p, part) {
+        var tab = load(KEY_F, 'wide') === 'standard', out = '';
+        pages().filter(function (x) { return x.show || x.id === p.id; }).forEach(function (x) {
+            var n = tab && x.type === 'widgets' ? Math.max(1, Math.ceil(Math.min(pack(onPage(x.id)).length, 4) / 2)) : 1;
+            for (var k = 0; k < n; k++) {
+                var t = n > 1 ? x.title + ' ' + (k + 1) : x.title;
+                out += '<div class="ed-page ed-rb' + (x.id === p.id && (n === 1 || k === (part || 0)) ? ' on' : '') + '" data-page="' + esc(x.id) + '" title="' + esc(t) + '"><span>' + esc(x.icon) + '</span><small>' + esc(t) + '</small></div>';
+            }
+        });
+        return '<div class="ed-rail">' + out + '<div class="ed-rmic" title="Voice">🎤</div></div>';
+    }
+    function frame(cols, n, label, cls, p, part) {
         var shown = cols.slice(0, n), body = shown.map(column).join('');
         for (var i = shown.length; i < n; i++) body += '<div class="ed-col empty"><div class="ed-slot end">' + (i === shown.length ? 'Drop a widget here' : '') + '</div></div>';
-        return '<div class="ed-frame ' + cls + '">' + (label ? '<div class="ed-flabel">' + esc(label) + '</div>' : '') + '<div class="ed-grid" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' + body + '</div></div>';
+        return '<div class="ed-frame has-rail ' + cls + '">' + (label ? '<div class="ed-flabel">' + esc(label) + '</div>' : '') + rail(p, part) + '<div class="ed-grid" style="grid-template-columns:repeat(' + n + ',minmax(0,1fr))">' + body + '</div></div>';
     }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {
@@ -97,16 +110,16 @@
             for (var j = n; j < 3; j++) cards += '<div class="mk-kid empty"></div>';
             inner = '<div class="mk-kids">' + cards + '</div>';
         }
-        return '<div class="ed-frame ' + (fmt === 'standard' ? 'tab' : 'wide') + ' mock">' + inner + '</div>';
+        return '<div class="ed-frame has-rail ' + (fmt === 'standard' ? 'tab' : 'wide') + ' mock">' + rail(p) + '<div class="mk-in">' + inner + '</div></div>';
     }
     function otherView(p) {
         var fmt = load(KEY_F, 'wide'), out = '';
         if (p.type === 'calendar') {
             out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : mockFrame(p, fmt);
-            return out + '<p class="mute small">The calendar fills the screen; on a tablet or computer it also has a whole-year wall planner. You can have more than one calendar page, each showing different Google calendars.</p>' +
-                (H.pageForm ? '<section class="ed-pset" data-pset="' + esc(p.id) + '"><h3>This calendar page’s settings</h3>' + H.pageForm(p.id) +
-                    '<p class="mute small">The categories, and what goes on this page’s key, are just below.</p>' +
-                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '') +
+            // This page's few settings first, then the picture of it, then the categories and key.
+            return (H.pageForm ? '<section class="ed-pset ed-pset-top" data-pset="' + esc(p.id) + '">' + H.pageForm(p.id) +
+                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '') + out +
+                '<p class="mute small">The calendar fills the screen; on a tablet or computer it also has a whole-year wall planner. You can have more than one calendar page, each linked to a different Google calendar.</p>' +
                 (H.calSetup ? '<div class="cs-box" data-cs="' + esc(p.id) + '"></div>' : '');
         }
         var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
@@ -114,7 +127,7 @@
             var nHere = Math.min(3, kids - k * 3), f = mockFrame(p, fmt === 'computer' ? 'wide' : fmt, nHere);
             frames += '<div class="ed-mockwrap">' + (screens > 1 ? '<div class="ed-flabel">' + esc(p.title) + ' ' + (k + 1) + '</div>' : '') + (fmt === 'computer' ? '<div class="ed-monitor">' + f + '</div>' : f) + '</div>';
         }
-        return '<div class="ed-tabs' + (fmt === 'standard' ? '' : ' one') + '">' + frames + '</div>' +
+        return '<div class="ed-tabs' + (fmt === 'standard' ? ' stack' : ' one') + '">' + frames + '</div>' +
             '<p class="mute small">One card for each child on the points page, up to 3 a screen. With more children, extra screens are added by themselves (' + esc(p.title) + ' 1, ' + esc(p.title) + ' 2…). ' +
             'Who’s on the points page is set in <b>Reconfigure → Family &amp; calendar</b>.</p>';
     }
@@ -124,11 +137,11 @@
         var out = '', over = cols.length - 4;
         if (fmt === 'standard') {
             var n = Math.max(1, Math.ceil(Math.min(cols.length, 4) / 2));
-            for (var k = 0; k < n; k++) out += frame(cols.slice(k * 2, k * 2 + 2), 2, n > 1 ? p.title + ' ' + (k + 1) : p.title, 'tab');
-            out = '<div class="ed-tabs">' + out + '</div>';
+            for (var k = 0; k < n; k++) out += frame(cols.slice(k * 2, k * 2 + 2), 2, n > 1 ? p.title + ' ' + (k + 1) + ' of ' + n : p.title, 'tab', p, k);
+            out = '<div class="ed-tabs stack">' + out + '</div>' + (n > 1 ? '<p class="mute small">On a tablet this screen is in ' + n + ' parts – each has its own button in the menu.</p>' : '');
         } else if (fmt === 'computer') {
-            out = '<div class="ed-monitor">' + frame(cols, 4, '', 'wide') + '</div>';
-        } else out = frame(cols, 4, '', 'wide');
+            out = '<div class="ed-monitor">' + frame(cols, 4, '', 'wide', p) + '</div>';
+        } else out = frame(cols, 4, '', 'wide', p);
         // What doesn't fit: shown underneath, to drag elsewhere or click to remove
         if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen. Drag ' + (over > 1 ? 'them' : 'it') +
             ' onto another screen on the left, make widgets half height, or click one to hide or remove it.</div>' +
@@ -160,16 +173,23 @@
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
             '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section><aside class="ed-palette ed-blank"></aside></div></div>' : '') +
-            (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
+            (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +
             (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it</div>' +
                 '<p class="mute small">Drag widgets to move them, or onto another screen on the left. Click one for its height and When to show (a widget at some times, another at others). The 🗑 on each widget removes it – its settings are kept.</p>' : '') + '</section>' +
-            (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' + (D().types || []).map(function (T) {
-                return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
-            }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>');
+            (p.type === 'widgets' ? '<aside class="ed-palette"><h3>Add a widget</h3><p class="mute small">Drag one onto the screen.</p>' +
+                '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
+                '<h3 class="ed-h2">⭐ Add a child’s rewards</h3><p class="mute small">A child’s rewards card (one each), or every child’s reminders together. The rewards themselves are set up on the Rewards tab.</p>' +
+                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
+                '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
         var csb = el.querySelector('.cs-box'); if (csb && H.calSetup) H.calSetup(csb, csb.getAttribute('data-cs'));
+    }
+
+    var REWARD_T = { child: 1, kidrem: 1 };
+    function typeTile(T) {
+        return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
     }
 
     /* ------------------------------------------------------------------ changes */

@@ -5,7 +5,7 @@ body.desk .top-row { max-width: 1500px; }
 .ed-fmt { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--text); }
 .ed-fmt small { color: var(--mute); font-size: 11px; }
 .ed-fmt.on { border-color: var(--acc); background: rgba(63,169,245,.12); }
-.ed-main { display: grid; grid-template-columns: 220px minmax(0, 1fr) 210px; gap: 16px; align-items: start; }
+.ed-main { display: grid; grid-template-columns: 220px minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
 .ed-pages, .ed-palette { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; position: sticky; top: 70px; max-height: calc(100vh - 150px); overflow: auto; }
 .ed-pages h3, .ed-palette h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--mute); margin: 0 0 8px; }
 .ed-page { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 10px; cursor: pointer; border: 1px solid transparent; }
@@ -183,3 +183,32 @@ body.desk .top-row { max-width: 1500px; }
 .cs-chip { font-size: 15px; padding: 6px 12px; }
 .ed-pset h3 { font-size: 20px; } .ed-pset .mute.small, .ed-pset label { font-size: 15px; }
 .ed-info h2 { font-size: 26px; } .ed-info h3 { font-size: 18px; margin-top: 22px; } .ed-info p { font-size: 16px; }
+
+/* Add a widget: two columns; the rewards ones in a list of their own */
+.ed-types { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.ed-types .ed-type { margin-bottom: 0; }
+.ed-palette .ed-h2 { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+/* The screen's own menu down the left of each preview */
+.ed-frame.has-rail { display: flex; gap: 8px; }
+.ed-frame.has-rail > .ed-grid, .ed-frame.has-rail > .mk-in { flex: 1; min-width: 0; height: 100%; }
+.ed-frame.has-rail > .mk-in > * { height: 100%; }
+.ed-rail { flex: none; width: 50px; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.ed-rail .ed-rb { flex-direction: column; align-items: center; justify-content: center; gap: 0; padding: 4px 2px; border-radius: 8px; color: #9aa4b2; text-align: center; border: 1px solid transparent; }
+.ed-rail .ed-rb span { font-size: 15px; line-height: 1.1; }
+.ed-rail .ed-rb small { font-size: 9px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ed-rail .ed-rb.on { background: #3fa9f5; color: #fff; }
+.ed-rail .ed-rb.over, .ed-rail .ed-rb:hover { border-color: var(--acc); }
+.ed-rmic { margin-top: auto; text-align: center; font-size: 14px; opacity: .6; }
+.ed-frame.tab .ed-rail { width: 44px; }
+/* Tablet: the parts of a screen one after the other, down the page */
+.ed-tabs.stack { grid-template-columns: minmax(0, 620px); justify-content: center; }
+
+/* A calendar page: its title, then its few settings in one strip above the picture */
+.ed-head h2 { font-size: 26px; font-weight: 800; }
+.ed-pset.ed-pset-top { margin: 0 0 16px; max-width: none; display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+.ed-pset-top .ps-grid { flex: 1; min-width: 0; display: grid; grid-template-columns: minmax(260px, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.ed-pset-top .ps-look .hint { display: none; }
+.ed-pset-top select { margin-bottom: 8px; }
+.ed-pset-top .btn { margin: 0 0 10px; min-width: 110px; }
+@media (max-width: 900px) { .ed-pset-top .ps-grid { grid-template-columns: 1fr; } }

@@ -29,7 +29,7 @@
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['help', '❓', 'Help'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
         : [['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
@@ -188,6 +188,7 @@
         if (DESK && h[0] === 's' && h[1]) return { tab: 'advanced', sub: ALIAS[h[1]] || h[1] };      // settings open in the Advanced page's side menu
         if (DESK && (h[0] === 'advanced' || h[0] === 'rewards')) return { tab: h[0], sub: h[1] || '' };
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'settings' };
+        if (DESK && h[0] === 'help') return { tab: 'help' };      // Help: the button by the title
         return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'family') };
     }
     function go(where) {
@@ -196,12 +197,13 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard configurator' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            (DESK ? '<a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 0 ? '<span class="tab-grp">Home</span>' : i === 2 ? '<span class="tab-sep"></span><span class="tab-grp">Set up</span>' : i === 7 ? '<span class="tab-sep"></span><span class="tab-grp">Apps</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">1 · Set up</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">2 · Apps</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -222,6 +224,7 @@
         if (!$('body')) return;
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
+        if ($('hdrHelp')) $('hdrHelp').classList.toggle('on', r.tab === 'help');
         $('back').style.display = r.w || r.s || r.pts ? '' : 'none';
         $('body').onclick = null;
         if (r.tab !== 'famcfg') { famEdit = null; famName = null; }      // unsaved changes on the Family page go when you leave it
@@ -235,14 +238,14 @@
             famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
-        // On the website the title bar always says "Family Dashboard configurator"; the page's own name is its heading.
+        // On the website the title bar always says "Family Dashboard Configurator"; the page's own name is its heading.
         if (DESK && pageName && r.tab !== 'layout' && r.tab !== 'rewards' && !$('body').querySelector('.page-h')) $('body').insertAdjacentHTML('afterbegin', '<h1 class="page-h">' + esc(pageName) + '</h1>');
         privacyCheck();
     }
     var pageName = '';
     function title(t) {
         if (!DESK) { $('title').textContent = t; return; }
-        $('title').textContent = 'Family Dashboard configurator';      // always the same; each page has its own heading
+        $('title').textContent = 'Family Dashboard Configurator';      // always the same; each page has its own heading
         pageName = t || '';
     }
     var HOW_IT_WORKS = '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
@@ -259,24 +262,24 @@
         return card('✔ Your dashboard is set up', '<p>This computer is connected to the dashboard of ' + familyLine() + '.</p>' +
             '<p class="mute small">Application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + (DATA.licence ? ' · ' + esc(DATA.licence.message || '') : '') + '</p>');
     }
-    /** Home: what the configurator is, in three parts. */
+    /** Home: the two ways in for someone new, how it works, then the configurator's two parts. */
     function renderHome() {
         title('Home');
         var btn = function (go, ico, name, what) { return '<a class="hm-btn" data-go="' + go + '" href="#"><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + esc(what) + '</small></a>'; };
         $('body').innerHTML = statusCard() +
             '<div class="card hm-new"><b>🚀 New to Family Dashboard?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
-            '<p class="mute small help">This configurator is in three parts:</p>' +
+            '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>' +
+            card('How it works', HOW_IT_WORKS) +
+            '<p class="mute help">The configurator website is in two parts – <b>Set up</b> and <b>Apps</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('1 · Set up', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again') +
                 btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages') +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
-            card('2 · Help', '<p class="small">Answers to common questions, and what to do if something isn’t working.</p><div class="hm-grid">' + btn('help', '❓', 'Help', 'How everything works, and fixing problems') + '</div>') +
-            card('3 · Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
+            card('2 · Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') +
-                btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>') +
-            card('How it works', HOW_IT_WORKS);
+                btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
     function renderStart() {
@@ -285,10 +288,10 @@
             card('Setting up for the first time?', '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data. ' +
                 'It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</p>' +
                 '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family</a>') +
-            stepsCard() +
             card('📅 Set up the calendar', '<p class="small">Using a Google Calendar you already had? Set up its categories (the family groups and the general ones) and what the screen’s key shows, ' +
                 'then <b>tidy up the calendar</b> so every event is in a category: it lists the ones that aren’t, or whose titles are too long, with a fix for each.</p>' +
-                '<button class="btn wide" id="goCalSetup">Set up the calendar</button>');
+                '<button class="btn wide" id="goCalSetup">Set up the calendar</button>') +
+            stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
     function renderTools() {
@@ -483,7 +486,7 @@
             '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
             '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
             '<li><b>About &amp; diagnostics</b> – every version number, what’s new, and a report to send if something goes wrong.</li></ul>') +
-            '<p class="mute small">Family Dashboard configurator · application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + '</p>';
+            '<p class="mute small">Family Dashboard Configurator · application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderHelp() {
         title('Help');
@@ -1422,17 +1425,19 @@
                 // The first calendar page also holds the family's calendars (Today & tomorrow, the countdown and the phone app use them too).
                 pageForm: function (id) {
                     var p = pageOf(id); if (!p) return '';
-                    var main = calPage() && calPage().id === id, defs = pageTypeOf(p.type).settings.filter(function (f) { return f.k !== 'Calendars' && f.k !== 'AddTo' && f.k !== 'Key'; });
+                    var main = calPage() && calPage().id === id, defs = pageTypeOf(p.type).settings.filter(function (f) { return f.k === 'DefaultView' || f.k === 'AlignWeekdays'; });
                     var inst = function (k) { return ((DATA.install || []).filter(function (f) { return f.k === k; })[0] || {}).value || ''; };
-                    return '<h4 class="ps-h">Which Google calendar</h4>' + (main
-                        ? '<p class="mute small">The family’s calendar – this page shows it, and so do Today &amp; tomorrow, the holiday countdown and the phone Family Calendar app.</p>' +
-                            calPick('Calendar to show', 'data-set="CalendarIds"', inst('CalendarIds') || 'default', false) + calPick('New events go in', 'data-set="AddToCalendar"', inst('AddToCalendar') || 'default', false)
-                        : calPick('Calendar to show', 'data-f="Calendars"', (p.settings || {}).Calendars || '', true) + calPick('New events go in', 'data-f="AddTo"', (p.settings || {}).AddTo || '', true)) +
-                        '<h4 class="ps-h">How this page looks</h4>' + fields(defs, p.settings || {});
+                    // New events go in the same calendar (or your main one, when it shows every calendar).
+                    return '<div class="ps-grid"><div class="ps-cal">' + (main ? calPick('Which Google Calendar to link to', 'data-set="CalendarIds"', inst('CalendarIds') || 'default', false)
+                        : calPick('Which Google Calendar to link to', 'data-f="Calendars"', (p.settings || {}).Calendars || '', true)) + '</div>' +
+                        '<div class="ps-look">' + fields(defs, p.settings || {}) + '</div></div>';
                 },
                 afterForm: applyWhen, familyLink: function () { return '#/famcfg'; },
                 calSetup: function (el, id) { if (window.FDCalSetup) window.FDCalSetup.render(el, id, { data: function () { return DATA; }, act: act, toast: FD.toast }); },
-                savePageSettings: function (id, vals, inst) { var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
+                savePageSettings: function (id, vals, inst) {
+                    if (inst && 'CalendarIds' in inst) inst.AddToCalendar = inst.CalendarIds === 'all' ? 'default' : inst.CalendarIds;
+                    if ('Calendars' in vals) vals.AddTo = vals.Calendars && vals.Calendars !== 'all' ? vals.Calendars : '';
+                    var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
                     var first = inst && Object.keys(inst).length ? act({ action: 'saveInstall', values: inst }) : Promise.resolve();
                     return first.then(function () { return act({ action: 'savePage', page: { id: id, settings: vals } }, 'Saved – the screen updates within a minute'); }); } });
             return;
@@ -1764,7 +1769,7 @@
             var x = SECTIONS[k];
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
-            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);
@@ -2273,5 +2278,5 @@
             '<a class="dw-card" href="?connect"><span>🔗</span><b>Already set up?</b><small>Connect this computer to your family’s dashboard to change the screen layout, settings and more. You’ll need your phone with Family Admin.</small><i class="btn ghost">Connect this computer</i></a></div>' +
             '<section class="card"><h2>How it works</h2>' + HOW_IT_WORKS.replace('setup created', 'setup creates') + '</section>' +
             '<p class="mute small center"><a href="../">Family Dashboard home page</a> · <a href="../help/">Help</a></p></div>';
-    } else FD.setupScreen($('app'), DESK ? 'Family Dashboard configurator' : 'Family Admin', start);
+    } else FD.setupScreen($('app'), DESK ? 'Family Dashboard Configurator' : 'Family Admin', start);
 })();
