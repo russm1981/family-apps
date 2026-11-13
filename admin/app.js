@@ -1709,8 +1709,8 @@
             var hm = function (x) { return x ? pad(x.split(':')[0]) + ':' + x.split(':')[1] : ''; };
             when = '<div class="rw-when"><select class="rw-mode"><option value="all"' + (some ? '' : ' selected') + '>Show it all the time</option><option value="some"' + (some ? ' selected' : '') + '>Only on some days and times…</option></select>' +
                 '<div class="rw-some"' + (some ? '' : ' hidden') + '>' + dayPick(null, days || 'Mon-Fri') +
-                '<span class="rw-span">from <input type="time" class="rw-from" value="' + esc(t ? hm(t[1]) : '') + '"> to <input type="time" class="rw-until" value="' + esc(t ? hm(t[2]) : '') + '"></span>' +
-                '<small class="mute">No times = all day</small></div></div>';
+                '<span class="rw-span">from <input type="time" class="rw-from" title="Leave both times empty for all day" value="' + esc(t ? hm(t[1]) : '') + '"> to <input type="time" class="rw-until" value="' + esc(t ? hm(t[2]) : '') + '"></span>' +
+                '</div></div>';
         }
         return '<div class="rw-row"><div class="rw-main">' + main + '<button type="button" class="rw-x" title="Remove" aria-label="Remove">✕</button></div>' + when + '</div>';
     }

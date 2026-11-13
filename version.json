@@ -1,14 +1,9 @@
 {
-  "app": "2026.11.116",
+  "app": "2026.11.117",
   "script": "2026.11.68",
   "date": "2026-11-13",
   "notes": [
-    "External data (API) keys: a separate box for each service (TomTom, National Rail, TransportAPI, NASA, Spotify) showing whether it's added or needed, what it's for, and – when it's empty – the steps to get a key",
-    "Software Licence (renamed from Licence): an explanation of what a licence is, and the details – who it's licensed to, the key, how many screens and how many are in use, valid until, activated and last checked",
-    "The weak access code warning is red, in a red box",
-    "Port my data to a different Google account: the new account is emailed the steps, including what happens to the screens and phones (they switch over by themselves)",
-    "My data: the four Reconfigure links are indented under their heading",
-    "Devices is now called Devices and Phones"
+    "Widget row editors (e.g. traffic destinations): the days and times sit on one row, without the “school days” and “No times = all day” explanations"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

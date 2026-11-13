@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.117",
+    "date": "2026-11-13",
+    "notes": [
+      "Widget row editors (e.g. traffic destinations): the days and times sit on one row, without the “school days” and “No times = all day” explanations"
+    ]
+  },
+  {
     "version": "2026.11.116",
     "date": "2026-11-13",
     "notes": [

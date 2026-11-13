@@ -345,3 +345,9 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .redbox { border: 2px solid #ef4444; background: rgba(239,68,68,.1); color: #f87171; border-radius: 12px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
 .redbox b { color: #ef4444; }
 .setup-links { margin: 6px 0 0 22px; padding-left: 16px; border-left: 3px solid var(--line); }
+/* Day buttons speak for themselves: no "school days" line, and days + times on one row */
+.dp-say { display: none; }
+.rw-some { flex-wrap: nowrap; gap: 14px; }
+.rw-some .dpick { flex-wrap: nowrap; }
+.rw-span input[type=time] { padding-left: 10px; padding-right: 8px; min-width: 0; }
+@media (max-width: 640px) { .rw-some { flex-wrap: wrap; } }
