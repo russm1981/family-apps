@@ -38,7 +38,7 @@
     function guideUrl() { return appsRoot() + 'setup/guide/'; }
     function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
-    var FAMILY_W = { agenda: 1, countdown: 1, whereabouts: 1 }, LIST_W = { list: 1, todo: 1 }, MEMO_W = { memo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
+    var FAMILY_W = { agenda: 1, whereabouts: 1 }, LIST_W = { list: 1, todo: 1 }, MEMO_W = { memo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
     function tabFor(type) { return FAMILY_W[type] ? 'family' : MEMO_W[type] ? 'memos' : LIST_W[type] ? 'lists' : 'other'; }
     // The Settings menu, in order. Sections marked sub: true are reached from another section (System → Licence…).
     var SECTIONS = {
@@ -142,7 +142,11 @@
             '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard setup' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
-            '<nav class="tabbar" id="tabs">' + TABS.map(function (t) { return '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>'; }).join('') + '</nav>' +
+            '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
+                // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
+                var grp = !DESK ? '' : i === 0 ? '<span class="tab-grp">Set up</span>' : i === 4 ? '<span class="tab-sep"></span><span class="tab-grp">Everyday</span>' : '';
+                return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
+            }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
         $('tabs').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) go(b.getAttribute('data-t')); };
         document.addEventListener('click', function (e) { var g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-go')); } });
@@ -323,15 +327,15 @@
     function renderFamily() {
         var pp = pointsPage(), h = new Date().getHours();
         title(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
-        var cal = location.href.replace(/admin\/.*$/, '') + 'calendar/', cp = calPage();
+        // Calendar (the calendar app – a new tab on the computer), today & tomorrow, where is everyone, and reconfiguring the family.
+        var cal = appsRoot() + 'calendar/';
         var fam = distinct(function (w) { return FAMILY_W[w.type]; });
-        $('body').innerHTML = '<h3 class="sec">Calendar</h3><div class="tiles">' +
-            '<a class="tile" href="' + esc(cal) + '"><span class="t-ico">📅</span><b>Family Calendar</b><small>Opens the calendar app – see and add events</small></a>' +
-            (cp ? '<button class="tile" id="calSet"><span class="t-ico">⚙</span><b>Calendar page</b><small>' + esc((cp.settings || {}).DefaultView || 'Which view it opens on') + '</small></button>' : '') +
-            fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') + '</div>' +
-            (pp && pointsOn() ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
-            (DESK ? '<a class="link-card" href="' + esc(setupLink('family')) + '"><b>👪 Reconfigure the family ›</b><span class="mute small">Who’s in the family, who’s on the points page, calendar groups and colours, which Google calendars.</span></a>' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, the points page, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
-        if ($('calSet')) $('calSet').onclick = function () { pageSheet(cp); };
+        $('body').innerHTML = '<div class="tiles fam-tiles">' +
+            '<a class="tile" href="' + esc(cal) + '"' + (DESK ? ' target="_blank" rel="noopener"' : '') + '><span class="t-ico">📅</span><b>Family Calendar</b><small>' + (DESK ? 'Opens in a new tab' : 'Opens the calendar app') + ' – see and add events</small></a>' +
+            fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') +
+            (DESK ? '<a class="tile" href="' + esc(setupLink('family')) + '"><span class="t-ico">👪</span><b>Reconfigure the family</b><small>Who’s in the family, who has points, calendar groups and colours</small></a>' : '') + '</div>' +
+            (pp && pointsOn() ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points, tasks &amp; reminders ›</button></h3><div class="boys-row">' + boysCards() + '</div>' : '') +
+            (DESK ? '' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, who has points, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
         if (pp && pointsOn()) $("body").onclick = pointsClick;
         fetchGlance();
     }
@@ -700,7 +704,7 @@
                 '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
                     '<button class="bonus" data-bonus="' + i + '">+ Bonus</button></div>' +
                 '<button class="btn wide cash' + (can ? '' : ' off') + '" data-cash="' + i + '"' + (can ? '' : ' disabled') + '>Cash in ' + target + ' for £' + s.cashIn.value + '</button>' +
-                '<details class="boy-more"' + (openBoys[b.name] ? ' open' : '') + ' data-boy="' + esc(b.name) + '"><summary>Tasks ' + (b.allTasks || b.tasks).length + ' · this morning ' + b.todos.filter(function (t) { return t.done; }).length + '/' + b.todos.length + ' · statement</summary>' +
+                '<details class="boy-more"' + (openBoys[b.name] || (DESK && openBoys[b.name] !== false) ? ' open' : '') + ' data-boy="' + esc(b.name) + '"><summary>Tasks ' + (b.allTasks || b.tasks).length + ' · this morning ' + b.todos.filter(function (t) { return t.done; }).length + '/' + b.todos.length + ' · statement</summary>' +
                 '<h3>Tasks (' + (b.allTasks || b.tasks).length + ')</h3>' + ((b.allTasks || b.tasks).length ? (b.allTasks || b.tasks).map(function (t) {
                     return '<button class="task" data-task="' + i + ':' + esc(t.id) + '"><span class="tick"></span><span class="tx">' + esc(t.text) + '</span><b>+' + t.points + '</b></button>';
                 }).join('') : '<div class="mute small">No tasks waiting</div>') +

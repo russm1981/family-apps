@@ -29,3 +29,11 @@ body.desk .ws-cols.one { grid-template-columns: minmax(0, 1fr); }
 body.desk .ws-place { padding-right: 26px; border-right: 1px solid var(--line, #2a303b); }
 .ws-place #wDel { margin-top: 14px; }
 .ws-note { background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.4); border-radius: 10px; padding: 8px 12px; font-size: .9rem; }
+
+/* Tabs in two groups: setting up, then everyday */
+.tabbar .tab-grp { align-self: center; font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--mute, #8b95a5); padding: 0 4px 0 10px; white-space: nowrap; }
+.tabbar .tab-sep { align-self: stretch; width: 1px; margin: 8px 10px; background: var(--line, #2a303b); }
+/* Family tab: the children side by side, everything showing */
+body.desk .boys-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+body.desk .boys-row .card { margin: 0; }
+body.desk .fam-tiles { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
