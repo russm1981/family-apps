@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.95",
+    "date": "2026-11-13",
+    "notes": [
+      "Family Admin app: the buttons along the bottom are now Calendar, Notes, Lists, Rewards, Apps (was Widgets) and More – and it opens on Calendar",
+      "More: the Configurator box has its own heading, Advanced"
+    ]
+  },
+  {
     "version": "2026.11.94",
     "date": "2026-11-13",
     "notes": [

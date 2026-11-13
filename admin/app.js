@@ -31,7 +31,7 @@
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
-        : [['rewards', '⭐', 'Rewards'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
+        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Apps'], ['more', '⋯', 'More']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
@@ -195,7 +195,7 @@
         if (DESK && ({ family: 1, tools: 1, settings: 1 })[h[0]]) return { tab: h[0] === 'family' ? 'rewards' : h[0] === 'tools' ? 'start' : 'advanced' };
         if (!DESK && h[0] === 'family') return { tab: 'rewards' };       // older phone links
         if (!DESK && h[0] === 'settings') return { tab: 'more' };
-        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'dhome' : 'rewards' };
+        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'dhome' : 'calendar' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && h[1] === 'family' && DESK) return { tab: 'famcfg' };
         if (DESK && h[0] === 's' && h[1]) return { tab: 'advanced', sub: ALIAS[h[1]] || h[1] };      // settings open in the Advanced page's side menu
@@ -204,7 +204,7 @@
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'more' };
         if (h[0] === 'help') return { tab: DESK ? 'help' : 'more', help: true };      // Help: the button by the title
         if (h[0] === 'feedback') return { tab: 'feedback', sub: h[1] || '' };
-        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'rewards') };
+        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'calendar') };
     }
     function go(where) {
         if (hasEdits() && !confirm('You haven’t saved your changes on this page. Leave without saving them?')) return;
@@ -700,7 +700,7 @@
         fetchGlance();
     }
     function renderOther() {
-        title(DESK ? 'Other widgets' : 'Widgets');
+        title(DESK ? 'Other widgets' : 'Apps');
         // Every widget on the screens (hidden ones too), then every kind that isn't on any screen – its settings can still be changed.
         var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type] && w.type !== 'child'; };   // children: on the Family tab
         fi.hidden = fr.hidden = true;
@@ -1958,7 +1958,7 @@
             row('s/support', '🩺', 'About & diagnostics', SECTIONS.support[2]) + '</div>' +
             '<h3 class="sec">Settings</h3><div class="menu">' + ['screen', 'licence', 'devices', 'updates'].map(function (k) { return row('s/' + k, SECTIONS[k][0], SECTIONS[k][1], sectionLine(k)); }).join('') + '</div>' +
             '<h3 class="sec">This phone</h3><div class="menu"><button class="mrow" data-out><span class="m-ico">⏏</span><span class="m-tx"><b>Disconnect this phone</b><small>Connected to ' + familyDash().replace(/<[^>]+>/g, '') + '</small></span><i>›</i></button></div>' +
-            deskCard() + '<p class="mute small center">Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            '<h3 class="sec">Advanced</h3>' + deskCard() + '<p class="mute small center">Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);
