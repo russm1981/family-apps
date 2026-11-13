@@ -136,6 +136,8 @@
         if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'start' : 'family' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && h[1] === 'family' && DESK) return { tab: 'famcfg' };
+        if (DESK && h[0] === 's' && h[1]) return { tab: 'advanced', sub: ALIAS[h[1]] || h[1] };      // settings open in the Advanced page's side menu
+        if (DESK && (h[0] === 'advanced' || h[0] === 'rewards')) return { tab: h[0], sub: h[1] || '' };
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'settings' };
         return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'start' : 'family') };
     }
@@ -163,6 +165,7 @@
     function closeSheet() { if ($('sheetBg')) $('sheetBg').classList.remove('on'); }
 
     function render() {
+        var bo = document.getElementById('bodyOuter'); if (bo) bo.id = 'body';      // leaving a page with a side menu
         if (!$('body')) return;
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
@@ -176,7 +179,7 @@
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
         else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart,
-            famcfg: renderFamCfg, rewards: renderRewards, advanced: renderAdvanced, help: renderHelp, calendar: renderCalApp })[r.tab]();
+            famcfg: renderFamCfg, rewards: function () { renderRewards(r.sub); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         privacyCheck();
@@ -285,43 +288,54 @@
             act({ action: 'saveFamilyPeople', people: list }, 'Family saved').then(function () { famEdit = null; render(); }, function () {});
         };
     }
-    /** Rewards: everything about the reward system on one page. */
-    function renderRewards() {
-        title('Rewards');
+    /** Rewards: the reward system, a part at a time from the menu on the left. */
+    function renderRewards(sub) {
         var s = DATA.state, pp = pointsPage();
+        var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
+        var cur = sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
+            ['-', 'Set up'], ['tasks', '✅', 'Tasks', nT + ' – what earns points'], ['todos', '☀️', 'Morning to-dos', nD + ' – ticked off each morning'],
+            ['timetable', '🎒', 'Reminders', nR + ' – PE kit, library books…'], ['rules', '⚖️', 'Rules', s ? s.cashIn.points + ' points = £' + s.cashIn.value : ''],
+            ['-', 'The children'], ['adjust', '✏️', 'Changing points by hand'], ['cards', '⭐', 'As on the dashboard']], sub);
+        title('Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
-        var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
         var flat = function (k) { return listFold(k).replace('<details class="card fold"', '<div class="card"').replace(/<summary>[\s\S]*?<\/summary>/, '').replace(/<\/details>$/, '</div>'); };
-        $('body').innerHTML = explain('How rewards work',
-                '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens &amp; widgets</b>).</p>' +
+        var head = function (t, what) { return '<h2 class="pane-h">' + t + '</h2>' + (what ? '<p class="mute pane-what">' + what + '</p>' : ''); };
+        var html = '';
+        if (cur === 'info') html = explain('How rewards work',
+                '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
                 '<ul class="small"><li><b>Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
                 '<li><b>Morning to-dos</b> – a short checklist for getting ready (teeth, dressed, bag). No points; it starts afresh each morning.</li>' +
                 '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from 5 pm the evening before.</li>' +
-                '<li><b>Rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li></ul>') +
-            '<h3 class="sec">Tasks <span class="mute small">&nbsp;· what earns points</span></h3><div class="card" id="fTasks">' +
-                '<button class="btn wide top-btn" id="newTask">+ New task</button>' + (tasks.length ? tasks.map(function (t) {
+                '<li><b>Rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
+                '<li><b>Changing points by hand</b> – add or take away points, set a balance, see a statement.</li></ul>');
+        else if (cur === 'tasks') {
+            var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
+            html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, lowest order first; “Repeat” is how often a task comes back once it’s done.') +
+                '<div class="card" id="fTasks"><button class="btn wide top-btn" id="newTask">+ New task</button>' + (tasks.length ? tasks.map(function (t) {
                     return '<div class="trow' + (t.Active ? '' : ' paused') + '"><div class="tmain"><b>' + esc(t.Task) + '</b><span class="mute">' + esc(t.Boy || 'All') + ' · ' +
                         esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
-                }).join('') : '<div class="empty">No tasks yet</div>') + '<p class="mute small">“Repeat” is how often it comes back once done (daily, weekly…). Lowest order first.</p></div>' +
-            '<h3 class="sec">Morning to-dos <span class="mute small">&nbsp;· ticked off each morning</span></h3>' + flat('todos') +
-            '<h3 class="sec">Reminders <span class="mute small">&nbsp;· on the day, and the evening before</span></h3>' + flat('timetable') +
-            '<h3 class="sec">Rules</h3><div class="card" id="rulesBox"><p class="mute small">How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.</p>' +
-                (pp ? fields(pageTypeOf('boys').settings, pp.settings || {}) : '') + '<button class="btn wide" id="rulesSave">Save the rules</button></div>' +
-            '<h3 class="sec">Changing a child’s points by hand</h3><div class="card">' + s.boys.map(function (b, bi) {
+                }).join('') : '<div class="empty">No tasks yet</div>') + '</div>';
+        } else if (cur === 'todos') html = head('Morning to-dos', 'A short checklist each child ticks off to get ready – no points, and it starts afresh each morning. “For”: a name, names separated by commas, or All. “Days”: Mon-Fri, Mon,Wed, Weekends, Daily…') + flat('todos');
+        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from 5 pm the evening before. “Day or date”: Tue, Mon-Fri, Mon,Thu… or a date for a one-off, e.g. 23/09.') + flat('timetable');
+        else if (cur === 'rules') html = head('Rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
+            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings, pp.settings || {}) : '') + '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
+        else if (cur === 'adjust') html = head('Changing points by hand', 'Add or take away points (with a reason – it goes on their statement), set a balance, or see a child’s statement.') +
+            '<div class="card">' + s.boys.map(function (b, bi) {
                 return '<div class="adj-row"><span class="dot" style="background:' + esc(b.colour) + '"></span><b>' + esc(b.name) + '</b><span class="adj-bal">' + b.balance + ' points</span>' +
                     '<button class="btn ghost sm" data-bonus="' + bi + '">Add or take away</button><button class="btn ghost sm" data-setbal="' + bi + '">Set the balance</button><button class="btn ghost sm" data-stmt="' + bi + '">Statement</button></div>';
-            }).join('') + '</div>' +
-            '<h3 class="sec">Each child as they’ll show on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>';
+            }).join('') + '</div>';
+        else html = head('As on the dashboard', 'Each child’s card as it shows on the screen – you can tick things off and give points here too.') + '<div class="boys-row">' + boysCards() + '</div>';
+        $('body').innerHTML = html;
         $('body').onclick = function (e) {
             var el = e.target.closest('[data-setbal]');
             if (el) { balanceSheet(s.boys[+el.getAttribute('data-setbal')]); return; }
             if (e.target.closest('#f_todos, #f_timetable')) return;
             pointsClick(e);
         };
-        $('newTask').onclick = function () { taskSheet(null); };
-        wireListFold('todos'); wireListFold('timetable');
-        $('rulesSave').onclick = function () {
+        if ($('newTask')) $('newTask').onclick = function () { taskSheet(null); };
+        if (cur === 'todos' || cur === 'timetable') wireListFold(cur);
+        if ($('rulesSave')) $('rulesSave').onclick = function () {
             var vals = {}; Array.prototype.forEach.call($('rulesBox').querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
             act({ action: 'savePage', page: { id: pp.id, settings: vals } }, 'Saved – the screen updates within a minute');
         };
@@ -338,15 +352,40 @@
             act({ action: 'adjust', boy: b.name, points: d, reason: 'Balance set to ' + n }, b.name + ': ' + n + ' points', true);
         };
     }
-    /** Advanced: the settings that aren't screens, family or rewards. */
-    function renderAdvanced() {
+    /**
+     * A page with a menu down the left (Rewards, Advanced): the first item tells you about the page; clicking an item
+     * opens it on the right. The right-hand side becomes "body" while it's showing, so each section draws as usual.
+     */
+    function sidePane(tab, items, sub) {
+        var real = items.filter(function (i) { return i[0] !== '-'; }), cur = real.some(function (i) { return i[0] === sub; }) ? sub : real[0][0];
+        var outer = $('body');
+        outer.innerHTML = '<div class="pane"><nav class="pane-nav">' + items.map(function (i) {
+            return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] ? '<small>' + esc(i[3]) + '</small>' : '') + '</span></a>';
+        }).join('') + '</nav><div class="pane-body" id="paneIn"></div></div>';
+        outer.id = 'bodyOuter'; $('paneIn').id = 'body';
+        return cur;
+    }
+    /** Advanced: the settings that aren't screens, family or rewards – in a menu down the left. */
+    function renderAdvanced(sub) {
+        var line = function (k) { try { return sectionLine(k); } catch (e) { return ''; } };
+        var items = [['info', 'ℹ️', 'About these settings'],
+            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'Data keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Licence'], ['updates', '⟳', 'Updates'],
+            ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)'],
+            ['-', 'My devices'], ['devices', '📱', 'Devices'],
+            ['-', 'System'], ['support', '🩺', 'About & diagnostics']];
+        if (sub === 'system') sub = 'screen';
+        var cur = sidePane('advanced', items, sub);
+        if (cur !== 'info') { renderSection(cur); return; }
         title('Advanced');
-        var row = function (k) { var x = SECTIONS[k]; return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>'; };
-        $('body').innerHTML = card('Settings', '<div class="menu">' + row('places') + row('keys') + row('system') + '</div>') +
-            card('My data', '<p class="mute small">Your family’s information lives in a Google Sheet in your own Google account.</p><div class="menu">' + row('mydata') + '</div>') +
-            card('My devices', '<p class="mute small">The screens, tablets, phones and computers connected to your dashboard.</p><div class="menu">' + row('devices') + '</div>') +
-            card('About & diagnostics', '<div class="menu">' + row('support') + '</div>') +
-            '<p class="mute small center">Family Dashboard setup · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+        $('body').innerHTML = explain('About these settings',
+            '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
+            '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
+            '<li><b>Data keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +
+            '<li><b>Screen &amp; sleep</b> – when the screen dims and sleeps at night. <b>Licence</b> – your licence key. <b>Updates</b> – the Google script’s version and automatic updates.</li>' +
+            '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
+            '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
+            '<li><b>About &amp; diagnostics</b> – every version number, what’s new, and a report to send if something goes wrong.</li></ul>') +
+            '<p class="mute small">Family Dashboard setup · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderHelp() {
         title('Help');
@@ -921,7 +960,9 @@
         var cfg = LISTS[k], rs = (DATA[k] || []).slice();
         if (!rs.length) rs.push({});
         return '<details class="card fold" id="f_' + k + '"><summary><b>' + cfg.title + '</b><span class="mute">' + (DATA[k] || []).length + ' · ' + cfg.what + '</span></summary>' +
-            '<p class="mute small help">' + esc(cfg.help) + '</p><div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
+            (DESK ? '' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
+            (DESK ? '<div class="lhead">' + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
+            '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
             '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button><button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
     }
     function wireListFold(k) {

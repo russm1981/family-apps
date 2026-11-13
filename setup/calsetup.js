@@ -1,9 +1,8 @@
 /*
  * The calendar set-up on the Setup website (Screens & widgets → a calendar page):
  *   1. Categories – shared by every calendar page: the family groups (Family is everyone; drag people into the others)
- *      and the general categories (Holiday, School holiday…). Each has one of Google Calendar's event colours, so an event
- *      made in Google Calendar or Gmail lands in the right one. Graphite is kept for one person's own events –
- *      their name goes in brackets at the end of the title, "Drums (Ben)".
+ *      and the general categories (Holiday, School holiday…). Behind the scenes each has one of Google Calendar's event
+ *      colours (worked out by the Google script), so an event made in Google Calendar or Gmail lands in the right one.
  *   2. This page's key – what has a place on the key (the last place is always Other), up to two shown as lines, and
  *      what's hidden on this page. Every person needs a home: their own place, their group's, or Family's.
  *   3. Tidying up the Google calendar – a table of events that aren't in a category, are in the old "Ben – " form, or
@@ -16,19 +15,12 @@
     var clone = function (o) { return JSON.parse(JSON.stringify(o)); };
     var SUGGEST = ['Holiday', 'School holiday', 'Birthday', 'Work', 'Clubs', 'Appointments'];
 
-    function gName(g) { return CS.gcolours[g] ? CS.gcolours[g][0] : ''; }
-    function gHex(g) { return CS.gcolours[g] ? CS.gcolours[g][1] : '#555'; }
-    function usedG() { var u = {}; cats.groups.concat(cats.generals).forEach(function (c) { if (c.g) u[c.g] = c.name || '?'; }); return u; }
-    function gSelect(cur, idx) {
-        var u = usedG();
-        return '<select class="cs-g" data-gi="' + idx + '" style="--gc:' + gHex(cur) + '">' + Object.keys(CS.gcolours).filter(function (k) { return k !== CS.personG; }).map(function (k) {
-            var taken = u[k] && k !== cur;
-            return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + (taken ? ' disabled' : '') + '>● ' + esc(gName(k)) + (taken ? ' – ' + esc(u[k]) : '') + '</option>';
-        }).join('') + '</select>';
-    }
-    function freeG() { var u = usedG(); return Object.keys(CS.gcolours).filter(function (k) { return k !== CS.personG && !u[k]; })[0] || ''; }
+    var PALETTE = ['#22d3ee', '#3fa9f5', '#6366f1', '#a855f7', '#f472b6', '#ef4444', '#f97316', '#f59e0b', '#facc15', '#84cc16', '#22c55e', '#14b8a6', '#c08457', '#94a3b8', '#ffffff'];
+    function all() { return cats.groups.concat(cats.generals); }
+    /** A colour swatch: click for the colours to choose from, or any colour you like. */
+    function swatch(ref, colour) { return '<button type="button" class="cs-sw" data-sw="' + ref + '" style="background:' + esc(colour) + '" title="Change the colour"></button>'; }
     function chip(n, extra) {
-        var p = CS.people.filter(function (x) { return x.name === n; })[0], c = p || cats.groups.concat(cats.generals).filter(function (x) { return x.name === n; })[0];
+        var p = CS.people.filter(function (x) { return x.name === n; })[0], c = p || all().filter(function (x) { return x.name === n; })[0];
         var kind = p ? 'person' : cats.groups.some(function (x) { return x.name === n; }) ? 'group' : 'general';
         return '<span class="cs-chip k-' + kind + '" draggable="true" data-n="' + esc(n) + '"><i style="background:' + esc(c ? c.colour : '#888') + '"></i>' + esc(n) + (extra || '') + '</span>';
     }
@@ -36,34 +28,62 @@
     /* ------------------------------------------------------------ 1. categories */
 
     function catsHtml() {
-        var L = CS.limits, n = cats.groups.length + cats.generals.length;
-        var noGroup = CS.people.filter(function (p) { return !cats.groups.some(function (g) { return !g.fixed && g.members.indexOf(p.name) >= 0; }); });
-        var grp = function (g, i) {
-            var head = g.fixed ? '<b class="cs-fixed">Family</b><span class="mute small">everyone – for things you all do together</span>'
-                : '<input class="cs-name" data-gname="' + i + '" maxlength="' + L.name + '" value="' + esc(g.name) + '" placeholder="Group name">';
-            return '<div class="cs-group" data-zone="group" data-i="' + i + '"><div class="cs-ghead">' + head +
-                '<input type="color" class="cs-col" data-gcol="' + i + '" value="' + esc(g.colour) + '" title="Colour on the dashboard">' + gSelect(g.g, 'g' + i) +
-                (g.fixed ? '' : '<button class="cs-x" data-gdel="' + i + '" title="Remove this group">✕</button>') + '</div>' +
-                (g.fixed ? '' : '<div class="cs-members">' + (g.members.length ? g.members.map(function (m) { return chip(m); }).join('') : '<span class="mute small">Drag people here</span>') + '</div>') + '</div>';
-        };
+        var L = CS.limits, n = all().length;
+        var fam = cats.groups.filter(function (g) { return g.fixed; })[0], own = cats.groups.filter(function (g) { return !g.fixed; });
+        var noGroup = CS.people.filter(function (p) { return !own.some(function (g) { return g.members.indexOf(p.name) >= 0; }); });
+        var gi = function (g) { return cats.groups.indexOf(g); };
         return '<div class="cs-card"><h3>Categories <span class="mute small">– the same on every calendar page</span></h3>' +
-            '<p class="mute small">Two kinds. <b>Family groups</b> are for events about some of the family – drag people into a group (each person can be in one, as well as Family). ' +
-            '<b>General</b> categories aren’t about particular people – holidays, school holidays, birthdays. Each category has one of <b>Google Calendar’s event colours</b>: pick that colour on an event in Google Calendar or Gmail and it lands in that category here. ' +
-            'Events for <b>one person</b> use <b>Graphite</b>, with their name in brackets at the end – “Drums (Ben)” – so Graphite isn’t offered below. Names up to ' + L.name + ' letters, so they fit on the key.</p>' +
-            '<p class="cs-count' + (n > L.cats ? ' bad' : '') + '">' + n + ' of ' + L.cats + ' categories (Google colours) used</p>' +
-            '<h4>Family groups</h4><div class="cs-groups">' + cats.groups.map(grp).join('') +
-                '<div class="cs-group cs-nogroup" data-zone="group" data-i="-1"><div class="cs-ghead"><b>Not in a group</b><span class="mute small">Family only</span></div><div class="cs-members">' +
-                (noGroup.length ? noGroup.map(function (p) { return chip(p.name); }).join('') : '<span class="mute small">Everyone’s in a group</span>') + '</div></div></div>' +
-            (cats.groups.filter(function (g) { return !g.fixed; }).length < L.groups && n < L.cats ? '<button class="btn ghost sm" id="csAddGroup">+ Add a group</button>' : '') +
-            '<h4>General categories</h4><div class="cs-gens">' + cats.generals.map(function (c, i) {
-                return '<div class="cs-gen"><input class="cs-name" data-cname="' + i + '" maxlength="' + L.name + '" value="' + esc(c.name) + '" placeholder="Name">' +
-                    '<input type="color" class="cs-col" data-ccol="' + i + '" value="' + esc(c.colour) + '" title="Colour on the dashboard">' + gSelect(c.g, 'c' + i) +
+            '<p class="mute small">Every event on the calendar is in a category, which gives it its colour. Up to <b>' + L.cats + '</b> categories in all (' + n + ' now). ' +
+            'When you add an event in Google Calendar or Gmail, give it the category’s colour there and it lands in that category here – the dashboard looks after matching the colours up. Names up to ' + L.name + ' letters, so they fit on the key.</p>' +
+
+            '<h4>Family groups</h4><p class="mute small cs-expl">For events about some of the family. <b>Family</b> is everyone. You can make up to ' + L.groups + ' more – the children, the grown-ups… – and drag each person into one of them. ' +
+                'Someone’s own events (“Drums (Ben)”) show in their group’s colour, unless they have a place of their own on the key.</p>' +
+            '<div class="cs-groups">' +
+                (fam ? '<div class="cs-group cs-famg"><div class="cs-ghead">' + swatch('g' + gi(fam), fam.colour) + '<b>Family</b><span class="mute small">everyone – for things you all do together</span></div></div>' : '') +
+                own.map(function (g) {
+                    var i = gi(g);
+                    return '<div class="cs-group" data-zone="group" data-i="' + i + '"><div class="cs-ghead">' + swatch('g' + i, g.colour) +
+                        '<input class="cs-name" data-gname="' + i + '" maxlength="' + L.name + '" value="' + esc(g.name) + '" placeholder="Group name, e.g. The children">' +
+                        '<button class="cs-x" data-gdel="' + i + '" title="Remove this group">✕</button></div>' +
+                        '<div class="cs-members">' + (g.members.length ? g.members.map(function (m) { return chip(m); }).join('') : '<span class="mute small">Drag people here</span>') + '</div></div>';
+                }).join('') +
+                '<div class="cs-group cs-nogroup" data-zone="group" data-i="-1"><div class="cs-ghead"><b>Not in a group</b></div>' +
+                    '<p class="mute small">Only in Family – their own events show in Family’s colour. Drag someone here to take them out of a group.</p><div class="cs-members">' +
+                    (noGroup.length ? noGroup.map(function (p) { return chip(p.name); }).join('') : '<span class="mute small">Everyone is in a group</span>') + '</div></div>' +
+            '</div>' +
+            (own.length < L.groups && n < L.cats ? '<button class="btn ghost sm" id="csAddGroup">+ Add a group</button>' : '') +
+
+            '<h4>General categories</h4><p class="mute small cs-expl">For events that aren’t about particular people – holidays, school holidays, birthdays, work…</p>' +
+            '<div class="cs-gens">' + cats.generals.map(function (c, i) {
+                return '<div class="cs-gen">' + swatch('c' + i, c.colour) + '<input class="cs-name" data-cname="' + i + '" maxlength="' + L.name + '" value="' + esc(c.name) + '" placeholder="Name">' +
                     '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button></div>';
             }).join('') + '</div>' +
             (n < L.cats ? '<div class="chips cs-sug">' + SUGGEST.filter(function (x) { return !cats.generals.some(function (c) { return c.name.toLowerCase() === x.toLowerCase(); }); }).map(function (x) {
-                return '<button class="chip" data-sug="' + esc(x) + '">+ ' + esc(x) + '</button>'; }).join('') + '<button class="chip" data-sug="">+ Other…</button></div>' : '') +
+                return '<button class="chip" data-sug="' + esc(x) + '">+ ' + esc(x) + '</button>'; }).join('') + '<button class="chip" data-sug="">+ Other…</button></div>' : '<p class="mute small">That’s the most (' + L.cats + ').</p>') +
+            '<details class="cs-gmap"><summary>Which colour to pick in Google Calendar</summary><p class="mute small">When you add an event in Google Calendar or Gmail, choose its colour from this list:</p><ul>' +
+                CS.groups.concat(CS.generals).filter(function (c) { return c.g && CS.gcolours[c.g]; }).map(function (c) {
+                    return '<li><i style="background:' + CS.gcolours[c.g][1] + '"></i><b>' + esc(CS.gcolours[c.g][0]) + '</b> → ' + esc(c.name) + '</li>'; }).join('') +
+                (CS.gcolours[CS.personG] ? '<li><i style="background:' + CS.gcolours[CS.personG][1] + '"></i><b>' + esc(CS.gcolours[CS.personG][0]) + '</b> → one person – with their name in brackets at the end, e.g. “Drums (Ben)”</li>' : '') +
+                '<li><i style="background:#8a93a3"></i><b>No colour</b> → Other</li></ul></details>' +
             '<button class="btn good" id="csSaveCats">Save the categories</button></div>';
     }
+    function nextColour() { var used = all().map(function (c) { return c.colour; }); return PALETTE.filter(function (x) { return used.indexOf(x) < 0; })[0] || PALETTE[0]; }
+    function openPalette(btn) {
+        closePalette();
+        var ref = btn.getAttribute('data-sw'), list = ref[0] === 'g' ? cats.groups : cats.generals, c = list[+ref.slice(1)];
+        var pop = document.createElement('div');
+        pop.className = 'cs-pop';
+        pop.innerHTML = PALETTE.map(function (x) { return '<button type="button" class="cs-pc' + (x === c.colour ? ' on' : '') + '" data-pc="' + x + '" style="background:' + x + '"></button>'; }).join('') +
+            '<label class="cs-custom">Any colour <input type="color" value="' + esc(c.colour) + '"></label>';
+        var r = btn.getBoundingClientRect();
+        pop.style.left = (r.left + window.scrollX) + 'px'; pop.style.top = (r.bottom + window.scrollY + 6) + 'px';
+        document.body.appendChild(pop);
+        pop.onclick = function (e) { var b = e.target.closest('[data-pc]'); if (!b) return; c.colour = b.getAttribute('data-pc'); closePalette(); draw(); };
+        pop.querySelector('input').onchange = function () { c.colour = this.value; closePalette(); draw(); };
+        setTimeout(function () { document.addEventListener('click', outside, true); }, 0);
+    }
+    function outside(e) { if (!e.target.closest('.cs-pop')) closePalette(); }
+    function closePalette() { var p = document.querySelector('.cs-pop'); if (p) p.remove(); document.removeEventListener('click', outside, true); }
 
     /* ------------------------------------------------------------ 2. this page's key */
 
@@ -80,13 +100,13 @@
     function keyHtml() {
         var L = CS.limits, all = cats.groups.concat(cats.generals).map(function (c) { return c.name; }).concat(CS.people.map(function (p) { return p.name; }));
         var pool = all.filter(function (n) { return key.slots.indexOf(n) < 0 && key.hide.indexOf(n) < 0; }), h = homes();
-        return '<div class="cs-card"><h3>This page’s key</h3>' +
+        return '<div class="cs-card"><h3>The key, as it will appear on this calendar page</h3>' +
             '<p class="mute small">Drag into the key what should have a place (and a colour) of its own – a category, a group or one person. Up to <b>' + (L.key - 1) + '</b>, and the last place is always <b>Other</b>. ' +
             'Anything not on the key still shows, in grey, as <b>Other</b> – tap the day on the screen and it shows its real category. ' +
-            'Someone not on the key shows in their group’s colour, or Family’s. Up to <b>two</b> can be drawn as a <b>line</b> under each day (like school holidays). <b>Hidden</b> ones don’t show on this page at all.</p>' +
+            'Someone not on the key shows in their group’s colour, or Family’s. Tick <b>as a line</b> for up to <b>two</b> of them to draw them as a line under each day instead of a box (good for school holidays). <b>Hidden</b> ones don’t show on this page at all.</p>' +
             '<div class="cs-zone cs-key" data-zone="key">' + key.slots.map(function (n) {
                 var li = key.lines.indexOf(n);
-                return chip(n, '<button class="cs-line' + (li >= 0 ? ' on' : '') + '" data-line="' + esc(n) + '" title="Show as a line under each day">▁ line</button>');
+                return chip(n, '<label class="cs-linebox" title="Draw it as a line under each day instead of a box"><input type="checkbox" data-line="' + esc(n) + '"' + (li >= 0 ? ' checked' : '') + '>as a line</label>');
             }).join('') + '<span class="cs-chip cs-other"><i style="background:#8a93a3"></i>Other</span>' +
             (key.slots.length < L.key - 1 ? '<span class="cs-room">' + (L.key - 1 - key.slots.length) + ' more place' + (L.key - 1 - key.slots.length === 1 ? '' : 's') + '</span>' : '') + '</div>' +
             '<h4>Not on the key <span class="mute small">– shown as Other</span></h4><div class="cs-zone" data-zone="pool">' + (pool.length ? pool.map(function (n) { return chip(n); }).join('') : '<span class="mute small">Everything is on the key or hidden</span>') + '</div>' +
@@ -99,7 +119,7 @@
 
     function tidyHtml() {
         return '<div class="cs-card"><h3>Tidy up your Google calendar</h3><p class="mute small">Goes through the last three months and the next year of your family calendar and lists anything to put right: ' +
-            'events in the old “Ben – Drums” form (they become “Drums (Ben)” in Graphite), events with no category, and titles too long for the screen. You choose; nothing changes until you press Apply.</p>' +
+            'events in the old “Ben – Drums” form (they become “Drums (Ben)”), events with no category, and titles too long for the screen. You choose; nothing changes until you press Apply.</p>' +
             '<button class="btn" id="csScan">Check the Google calendar</button></div>';
     }
     function tidy() {
@@ -159,7 +179,6 @@
 
     function draw() {
         box.innerHTML = catsHtml() + keyHtml() + tidyHtml();
-        Array.prototype.forEach.call(box.querySelectorAll('.cs-g'), function (s) { s.style.setProperty('--gc', gHex(s.value)); });
     }
     function moveTo(n, zone, before) {
         key.slots = key.slots.filter(function (x) { return x !== n; }); key.hide = key.hide.filter(function (x) { return x !== n; });
@@ -176,24 +195,23 @@
             var t = e.target, i;
             if ((i = t.getAttribute('data-gname')) !== null) cats.groups[+i].name = t.value;
             else if ((i = t.getAttribute('data-cname')) !== null) cats.generals[+i].name = t.value;
-            else if ((i = t.getAttribute('data-gcol')) !== null) cats.groups[+i].colour = t.value;
-            else if ((i = t.getAttribute('data-ccol')) !== null) cats.generals[+i].colour = t.value;
         };
         box.onchange = function (e) {
-            var t = e.target, gi = t.getAttribute('data-gi');
-            if (gi) { (gi[0] === 'g' ? cats.groups : cats.generals)[+gi.slice(1)].g = t.value; draw(); }
+            var t = e.target, n = t.getAttribute('data-line');
+            if (n === null) return;
+            var i = key.lines.indexOf(n);
+            if (t.checked && i < 0) { if (key.lines.length >= 2) { t.checked = false; H.toast('Up to two can be lines – untick one first', true); return; } key.lines.push(n); }
+            if (!t.checked && i >= 0) key.lines.splice(i, 1);
         };
         box.onclick = function (e) {
             var t;
-            if ((t = e.target.closest('#csAddGroup'))) { cats.groups.splice(cats.groups.length - 1, 0, { name: '', colour: '#22d3ee', g: freeG(), members: [] }); draw(); }
+            if ((t = e.target.closest('[data-sw]'))) { openPalette(t); return; }
+            if (e.target.closest('.cs-linebox')) return;
+            if ((t = e.target.closest('#csAddGroup'))) { cats.groups.splice(cats.groups.length - 1, 0, { name: '', colour: nextColour(), members: [] }); draw(); }
             else if ((t = e.target.closest('[data-gdel]'))) { cats.groups.splice(+t.getAttribute('data-gdel'), 1); draw(); }
             else if ((t = e.target.closest('[data-cdel]'))) { cats.generals.splice(+t.getAttribute('data-cdel'), 1); draw(); }
-            else if ((t = e.target.closest('[data-sug]'))) { cats.generals.push({ name: t.getAttribute('data-sug'), colour: '#facc15', g: freeG() }); draw(); }
-            else if ((t = e.target.closest('[data-line]'))) {
-                var n = t.getAttribute('data-line'), i = key.lines.indexOf(n);
-                if (i >= 0) key.lines.splice(i, 1); else if (key.lines.length >= 2) { H.toast('Up to two lines – turn one off first', true); return; } else key.lines.push(n);
-                draw();
-            }
+            else if ((t = e.target.closest('[data-sug]'))) { cats.generals.push({ name: t.getAttribute('data-sug'), colour: nextColour() }); draw();
+                if (!t.getAttribute('data-sug')) { var ins = box.querySelectorAll('[data-cname]'); if (ins.length) ins[ins.length - 1].focus(); } }
             else if ((t = e.target.closest('#csSaveCats'))) {
                 t.disabled = true; t.textContent = 'Saving…';
                 H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals }, 'Categories saved – the screen updates within a few minutes');

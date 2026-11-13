@@ -149,3 +149,20 @@ body.desk .top-row { max-width: 1500px; }
 .cs-table select, .cs-table input.cs-title { padding: 5px 7px !important; font-size: .85rem; width: 100%; }
 .cs-len { display: block; font-size: .7rem; color: var(--mute, #8b95a5); } .cs-len.bad { color: #f87171; }
 .cs-prob { background: rgba(248,113,113,.15); color: #fca5a5; border-radius: 6px; padding: 2px 6px; font-size: .75rem; white-space: nowrap; }
+
+.cs-expl { margin: 0 0 8px; }
+.cs-sw { width: 30px; height: 30px; border-radius: 8px; border: 2px solid rgba(255,255,255,.25); cursor: pointer; flex: none; padding: 0; }
+.cs-sw:hover { border-color: #fff; }
+.cs-famg { border-style: solid; }
+.cs-famg .cs-ghead .mute { flex-basis: auto; }
+.cs-pop { position: absolute; z-index: 9500; background: var(--panel, #12161d); border: 1px solid var(--line, #2a303b); border-radius: 12px; padding: 10px; display: grid; grid-template-columns: repeat(5, 28px); gap: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.cs-pc { width: 28px; height: 28px; border-radius: 7px; border: 2px solid transparent; cursor: pointer; padding: 0; }
+.cs-pc.on { border-color: #fff; }
+.cs-custom { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; font-size: .8rem; color: var(--mute, #8b95a5); margin-top: 4px; }
+.cs-custom input { width: 40px; height: 26px; padding: 0; border: 0; background: none; }
+.cs-linebox { display: inline-flex; align-items: center; gap: 4px; font-size: .75rem; color: var(--mute, #8b95a5); margin-left: 4px; padding-left: 8px; border-left: 1px solid var(--line, #2a303b); cursor: pointer; }
+.cs-linebox input { width: 15px; height: 15px; margin: 0; }
+.cs-gmap { margin-top: 14px; font-size: .9rem; } .cs-gmap summary { cursor: pointer; color: #3fa9f5; }
+.cs-gmap ul { list-style: none; padding: 0; margin: 6px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 4px 16px; }
+.cs-gmap li i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+.cs-gen .cs-name { max-width: 320px; }

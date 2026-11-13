@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.83",
+    "date": "2026-11-13",
+    "notes": [
+      "Calendar categories, simpler: Family first, then your own groups (drag people in), then general categories – each with a colour you pick from a palette (or any colour). The Google Calendar colours are worked out for you; “Which colour to pick in Google Calendar” lists them",
+      "The calendar key: “as a line” is a tick box",
+      "Rewards and Advanced have a menu down the left – the first item explains the page, and each item opens on the right. No more clicking through pages",
+      "Morning to-dos and reminders: one compact line each, with the column names at the top"
+    ]
+  },
+  {
     "version": "2026.11.82",
     "date": "2026-11-13",
     "notes": [

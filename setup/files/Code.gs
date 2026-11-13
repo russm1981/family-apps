@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.53';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.54';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -2878,11 +2878,9 @@ function saveCalCats_(b) {
     const name = catName_(what, x.name, CAL.name), k = norm_(name);
     if (used[k]) throw new Error('“' + name + '” is used twice' + (used[k] === 'person' ? ' (someone in the family is called that)' : '') + ' – every name needs to be different');
     used[k] = 1;
-    const g = String(x.g || '').trim();
-    if (!GCOLOURS[g] || g === PERSON_G) throw new Error('Pick a Google colour for ' + name + (g === PERSON_G ? ' (Graphite is kept for one person’s own events)' : ''));
-    if (gUsed[g]) throw new Error(name + ' and ' + gUsed[g] + ' both use ' + GCOLOURS[g][0] + ' – each category needs its own Google colour');
-    gUsed[g] = name;
-    return { name: name, was: x.was, colour: catColour_(name, x.colour), g: g, match: x.match != null ? String(x.match).slice(0, FAMILY_LIMITS.match) : ((M.cats.find(c => c.name === (x.was || name)) || {}).match || ''), line: !!x.line };
+    // Its Google event colour is worked out below: the one it had, or the nearest free one to its colour on the dashboard.
+    const colour = catColour_(name, x.colour), prev = M.cats.find(c => c.name === (x.was || name));
+    return { name: name, was: x.was, colour: colour, g: '', prevG: String((prev && prev.g) || '').trim(), match: x.match != null ? String(x.match).slice(0, FAMILY_LIMITS.match) : ((M.cats.find(c => c.name === (x.was || name)) || {}).match || ''), line: !!x.line };
   };
   const groupsIn = (b.groups || []).filter(x => x && String(x.name || '').trim());
   const fam = groupsIn.find(x => x.fixed) || { name: 'Family', colour: '#c08457', g: '6', fixed: true };
@@ -2890,6 +2888,14 @@ function saveCalCats_(b) {
   if (others.length > CAL.groups) throw new Error('Up to ' + CAL.groups + ' groups besides Family');
   const groups = others.map(x => Object.assign(one('Each group', x), { members: (x.members || []).map(String) })).concat([Object.assign(one('Family', Object.assign({}, fam, { name: 'Family' })), { fixed: true })]);
   const generals = (b.generals || []).filter(x => x && String(x.name || '').trim()).map(x => one('Each category', x));
+  // Google colours: first everyone keeps the one they had (so events already coloured stay where they are), then the new ones get one.
+  groups.concat(generals).forEach(c => { if (GCOLOURS[c.prevG] && c.prevG !== PERSON_G && !gUsed[c.prevG]) { c.g = c.prevG; gUsed[c.g] = c.name; } });
+  groups.concat(generals).forEach(c => {
+    if (c.g) return;
+    c.g = nearestG_(c.colour, Object.keys(gUsed).concat([PERSON_G]));
+    if (!c.g) throw new Error('Google Calendar has run out of colours – up to ' + CAL.cats + ' categories');
+    gUsed[c.g] = c.name;
+  });
   if (groups.length + generals.length > CAL.cats) throw new Error('Up to ' + CAL.cats + ' categories (groups and general ones together) – Google Calendar has 11 colours and one is kept for people’s own events');
   const groupOf = {};
   groups.forEach(g => { if (!g.fixed) g.members.forEach(n => { if (groupOf[n]) throw new Error(n + ' is in two groups – each person can be in one (as well as Family)'); groupOf[n] = g.name; }); });
