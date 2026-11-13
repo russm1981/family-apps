@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.87",
+    "date": "2026-11-13",
+    "notes": [
+      "Saving is safer: pressing Save locks that part of the page (⏳ Saving…) until it has saved, so you can’t get ahead of it – and if a save fails, your changes stay on the page",
+      "Changes you haven’t saved yet are never wiped by the page refreshing in the background (coming back to the window, ↻, or another save finishing); leaving the page asks first",
+      "Daily to-dos and reminders save faster",
+      "Diagnostics: the button says it’s working while the report is made"
+    ]
+  },
+  {
     "version": "2026.11.86",
     "date": "2026-11-13",
     "notes": [

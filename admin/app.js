@@ -63,22 +63,72 @@
     function setData(d) {
         DATA = d;
         try { localStorage.setItem('fdadmin.data', JSON.stringify(d)); } catch (e) { /* ignore */ }
+        if (hasEdits()) { stale = true; return; }      // never redraw over changes you haven't saved yet
         render();
     }
     function load() {
         sync('busy');
         return FD.post({ action: 'admin' }).then(function (d) { sync('ok'); setData(d); })
-            .catch(function (e) { sync('err'); FD.toast(e.message, true); render(); });
+            .catch(function (e) { sync('err'); FD.toast(e.message, true); if (!hasEdits()) render(); });
     }
+
+    /* ---- Unsaved changes and saving.
+     * Typing in a part of a page that has a Save button marks that part as changed. While anything is unsaved, data
+     * arriving in the background (coming back to the app, a refresh, another save finishing) doesn't redraw the page –
+     * it's drawn once everything is saved, or when you go to another page. Pressing Save locks that part
+     * (⏳ Saving…) until the save has finished, so you can't get ahead of it; if it fails your changes stay. */
+    var edits = [], stale = false, locks = [], actsAt = 0;
+    function isSave(b) { return b && b.tagName === 'BUTTON' && (b.hasAttribute('data-lsave') || b.hasAttribute('data-psave') || /^Save\b/.test(b.textContent.trim())); }
+    function partOf(el) {      // the smallest part of the page around el that has a Save button
+        for (var n = el; n && n.id !== 'body' && n !== document.body; n = n.parentElement)
+            if (Array.prototype.some.call(n.querySelectorAll('button'), isSave)) return n;
+        return null;
+    }
+    function hasEdits() { edits = edits.filter(function (n) { return n.isConnected; }); return edits.length > 0; }
+    function markEdit(e) {
+        var b = $('body'); if (!b || !b.contains(e.target)) return;
+        if (e.type === 'click' && !e.target.closest('[data-x],[data-mv],[data-ladd],.dp-day,.cd-add,.cd-x')) return;
+        var part = partOf(e.target);
+        if (part && edits.indexOf(part) < 0) edits.push(part);
+    }
+    ['input', 'change', 'click'].forEach(function (t) { document.addEventListener(t, markEdit, true); });
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('button'); if (!isSave(b)) return;
+        var part = b.closest('#sheet') || partOf(b) || b.parentElement;
+        var mine = edits.filter(function (n) { return n.contains(b); });
+        edits = edits.filter(function (n) { return mine.indexOf(n) < 0; });
+        var started = actsAt;
+        setTimeout(function () {      // nothing was sent (e.g. something needs fixing first): it's still unsaved
+            if (actsAt === started && !pending) { edits = edits.concat(mine); return; }
+            lock(part, b, mine);
+        }, 0);
+    }, true);
+    function lock(part, btn, mine) {
+        if (!part || !part.isConnected || part.hasAttribute('inert')) return;
+        part.setAttribute('inert', ''); part.classList.add('is-saving');
+        var was = btn.innerHTML; btn.innerHTML = '⏳ Saving…'; btn.classList.add('saving');
+        locks.push({ part: part, btn: btn, was: was, mine: mine });
+    }
+    function unlock(failed) {
+        locks.forEach(function (l) {
+            l.part.removeAttribute('inert'); l.part.classList.remove('is-saving');
+            l.btn.innerHTML = l.was; l.btn.classList.remove('saving');
+            if (failed) edits = edits.concat(l.mine.filter(function (n) { return n.isConnected; }));
+        });
+        locks = [];
+        if (!failed && stale && !hasEdits()) { stale = false; render(); }
+    }
+    window.addEventListener('beforeunload', function (e) { if (hasEdits() || pending) { e.preventDefault(); e.returnValue = ''; } });
     /** Run an action. Actions that return points state update the points page; others return all admin data. */
     // Changes go to the Google script one after another. A tap while one is still on its way waits its turn –
     // it's never dropped (dropping it used to close the form as if it had been saved).
     var queue = Promise.resolve(), pending = 0;
     function act(body, okText, undoable) {
-        pending++; busy = true; sync('busy');
+        pending++; actsAt++; busy = true; sync('busy');
         var run = function () {
             return FD.post(body).then(function (d) {
-                if (d.layoutOnly) { if (pending === 1) { DATA.pages = d.pages; DATA.widgets = d.widgets; setData(DATA); } }     // later changes still on their way: keep what's on the phone
+                if (d.saved && d.rows) { DATA[d.saved] = d.rows; setData(DATA); }      // a list on its own: quicker
+                else if (d.layoutOnly) { if (pending === 1) { DATA.pages = d.pages; DATA.widgets = d.widgets; setData(DATA); } }     // later changes still on their way: keep what's on the phone
                 else if (d.state && !d.tasks) { DATA.state = d.state; setData(DATA); }
                 else if (d.tasks) setData(d);
                 else if (d.data && d.id && DATA.lists) { DATA.lists[d.id] = d.data; setData(DATA); }
@@ -88,8 +138,8 @@
         };
         var p = queue.then(run, run);
         queue = p.catch(function () { /* the next change still goes */ });
-        return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); } return d; },
-            function (e) { if (--pending === 0) busy = false; sync('err'); FD.toast(e.message, true); load(); throw e; });
+        return p.then(function (d) { if (--pending === 0) { busy = false; sync('ok'); unlock(false); } return d; },
+            function (e) { if (--pending === 0) busy = false; sync('err'); unlock(true); FD.toast(e.message, true); load(); throw e; });
     }
     /** Move a widget or page straight away on this phone, then tell the Google script. */
     function moveNow(kind, id, dir) {
@@ -118,7 +168,7 @@
         })).then(function () {
             glanceBusy = false;
             try { localStorage.setItem('fdadmin.glance', JSON.stringify(GL)); } catch (e) { /* too big – fine */ }
-            if (route().tab === 'family' || route().tab === 'other' || route().w) render();
+            if ((route().tab === 'family' || route().tab === 'other' || route().w) && !hasEdits()) render();
         });
     }
     function fetchWidget(id) {
@@ -140,7 +190,10 @@
         if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'settings' };
         return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'family') };
     }
-    function go(where) { if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
+    function go(where) {
+        if (hasEdits() && !confirm('You haven’t saved your changes on this page. Leave without saving them?')) return;
+        edits = [];
+        if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
             '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard configurator' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
@@ -165,7 +218,7 @@
 
     function render() {
         var bo = document.getElementById('bodyOuter'); if (bo) bo.id = 'body';      // leaving a page with a side menu
-        pageName = '';
+        pageName = ''; stale = false;
         if (!$('body')) return;
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
@@ -1906,7 +1959,7 @@
                 '<p class="mute small">Your access code, API keys, addresses, names and calendar details go in a <b>locked</b> part that only Family Dashboard support can open. Nothing is sent anywhere until you send the file yourself.</p>' +
                 '<button class="btn wide" id="diag">Generate diagnostics</button><div id="diagOut"></div>');
         $('diag').onclick = function () {
-            var b = this; b.disabled = true; b.textContent = 'Checking everything… (up to a minute)';
+            var b = this; b.disabled = true; b.textContent = '⏳ Checking everything – this can take up to a minute…';
             FD.get('diagnostics', { app: FD.VERSION }, 240000).then(function (d) { return buildReport(d); }).then(function (txt) {
                 b.disabled = false; b.textContent = 'Generate again';
                 var name = 'family-dashboard-diagnostics-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.txt';

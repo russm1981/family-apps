@@ -1,10 +1,12 @@
 {
-  "app": "2026.11.86",
-  "script": "2026.11.57",
+  "app": "2026.11.87",
+  "script": "2026.11.58",
   "date": "2026-11-13",
   "notes": [
-    "Holiday countdown settings: tick the calendar categories to count down to, instead of typing their names",
-    "Holiday countdown: your own dates are now a list – a name, a date picker and an “every year” tick box for each, with + Add a date"
+    "Saving is safer: pressing Save locks that part of the page (⏳ Saving…) until it has saved, so you can’t get ahead of it – and if a save fails, your changes stay on the page",
+    "Changes you haven’t saved yet are never wiped by the page refreshing in the background (coming back to the window, ↻, or another save finishing); leaving the page asks first",
+    "Daily to-dos and reminders save faster",
+    "Diagnostics: the button says it’s working while the report is made"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

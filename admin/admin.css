@@ -244,3 +244,9 @@ details.when summary { font-weight: 600; cursor: pointer; }
 .cd-yr input { margin: 0; width: auto; }
 .cd-x { border: 0; background: none; font-size: 16px; cursor: pointer; color: var(--mute, #888); padding: 6px; }
 @media (max-width: 700px) { .cd-row { grid-template-columns: minmax(0, 1fr) auto auto; } .cd-row .cd-name { grid-column: 1 / -1; } }
+
+/* A part of the page that's being saved: locked until the save has finished */
+.is-saving { position: relative; }
+.is-saving input, .is-saving select, .is-saving textarea, .is-saving .lrow, .is-saving .cd-row { opacity: .55; }
+.is-saving button:not(.saving) { opacity: .55; }
+button.saving { cursor: progress; }

@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.57';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.58';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1041,6 +1041,9 @@ function saveList_(list, rows) {
   }));
   if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, head.length).clearContent();
   if (values.length) sh.getRange(2, 1, values.length, head.length).setValues(values);
+  // Daily to-dos and reminders: just send the list back – quicker than all the admin data, so the app is ready sooner.
+  if (list === 'todos') return { saved: list, rows: rows_('todos') };
+  if (list === 'timetable') return { saved: list, rows: rows_('timetable').map(r => Object.assign(r, { Day: r.Day instanceof Date ? fmt_(r.Day, 'yyyy-MM-dd') : r.Day })) };
   return getAdmin_();
 }
 
