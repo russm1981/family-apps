@@ -342,7 +342,7 @@
     function renderOther() {
         title('Widgets');
         // Every widget on the screens (hidden ones too), then every kind that isn't on any screen – its settings can still be changed.
-        var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type]; };
+        var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type] && w.type !== 'child'; };   // children: on the Family tab
         fi.hidden = fr.hidden = true;
         var info = distinct(fi), rest = distinct(fr);
         var order = ['bins', 'weather', 'trains', 'bus', 'traffic'];
@@ -1011,7 +1011,12 @@
         // The Setup website has the drag-and-drop editor (setup/editor.js).
         if (DESK && window.FDEditor) {
             window.FDEditor.render($('body'), { data: function () { return DATA; }, act: act, setData: setData, esc: esc, typeOf: typeOf, pageTypeOf: pageTypeOf,
-                widgetSheet: function (id) { widgetSheet(widgetOf(id)); }, pageSheet: function (id) { pageSheet(pageOf(id)); }, summary: summary, toast: FD.toast });
+                widgetSheet: function (id) { widgetSheet(widgetOf(id)); }, pageSheet: function (id) { pageSheet(pageOf(id)); }, summary: summary, toast: FD.toast,
+                // A calendar page's own settings, shown under its picture in the editor.
+                pageForm: function (id) { var p = pageOf(id); return p ? fields(pageTypeOf(p.type).settings, p.settings || {}) : ''; },
+                afterForm: applyWhen, familyLink: function () { return setupLink('family'); },
+                savePageSettings: function (id, vals) { var p = pageOf(id); if (p) Object.keys(vals).forEach(function (k) { (p.settings = p.settings || {})[k] = vals[k]; });
+                    return act({ action: 'savePage', page: { id: id, settings: vals } }, 'Saved – the screen updates within a minute'); } });
             return;
         }
         var pages = DATA.pages || [];
@@ -1234,15 +1239,18 @@
             '<label>Name in the side bar <span class="cnt">max ' + (L().pageTitle || 10) + '</span></label><input id="pTitle" maxlength="' + (L().pageTitle || 10) + '" value="' + esc(p.title) + '" autocomplete="off">' +
             '<label>Icon</label><div class="chips icons" id="pIcons">' + icons.map(function (i) { return '<button class="chip' + (i === p.icon ? ' on' : '') + '" data-i="' + i + '">' + i + '</button>'; }).join('') + '</div>' +
             '<label class="tog"><input type="checkbox" id="pShow"' + (p.show ? ' checked' : '') + '><span>Show this page</span></label>' +
-            (PT.settings.length ? '<h3 class="sh">Settings</h3>' + fields(PT.settings, p.settings || {}) : '') +
+            (PT.settings.length && !(DESK && p.type === 'calendar') ? '<h3 class="sh">Settings</h3>' + fields(PT.settings, p.settings || {}) : '') +
+            (DESK && p.type === 'calendar' ? '<p class="mute small">This calendar page’s settings (which calendars, what it opens on…) are under its picture on the Screen layout page.</p>' : '') +
             '<div class="sheet-actions"><button class="btn ghost" id="pCancel">Cancel</button><button class="btn good" id="pSave">Save</button></div>' +
-            (p.type === 'widgets' ? '<div class="sheet-actions"><button class="btn bad" id="pDel">Delete this page</button></div>' : ''));
+            (p.type === 'widgets' || (p.type === 'calendar' && (DATA.pages || []).filter(function (x) { return x.type === 'calendar'; }).length > 1) ? '<div class="sheet-actions"><button class="btn bad" id="pDel">Delete this page</button></div>' : ''));
         var icon = p.icon;
         $('pIcons').onclick = function (e) { var b = e.target.closest('[data-i]'); if (!b) return; icon = b.getAttribute('data-i');
             Array.prototype.forEach.call($('pIcons').children, function (c) { c.classList.toggle('on', c === b); }); };
         $('pCancel').onclick = closeSheet;
         $('pSave').onclick = function () {
-            act({ action: 'savePage', page: { id: p.id, title: $('pTitle').value.trim(), icon: icon, show: $('pShow').checked, settings: readFields() } }, 'Saved').then(closeSheet, function () {});
+            var pg = { id: p.id, title: $('pTitle').value.trim(), icon: icon, show: $('pShow').checked };
+            if (!(DESK && p.type === 'calendar')) pg.settings = readFields();
+            act({ action: 'savePage', page: pg }, 'Saved').then(closeSheet, function () {});
         };
         if ($('pDel')) $('pDel').onclick = function () { if (confirm('Delete the ' + p.title + ' page?')) act({ action: 'deletePage', id: p.id }, 'Deleted').then(closeSheet, function () {}); };
     }

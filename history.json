@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.79",
+    "date": "2026-11-13",
+    "notes": [
+      "Setup → Screen layout: a calendar page’s settings sit under its picture – which Google calendars it shows, where new events go, what it opens on, lining up weekdays",
+      "You can have more than one calendar page, each showing different Google calendars (add one with “Add a screen” → Calendar)",
+      "Widgets tab: the children’s points widgets aren’t listed (they’re on the Family tab)"
+    ]
+  },
+  {
     "version": "2026.11.78",
     "date": "2026-11-13",
     "notes": [

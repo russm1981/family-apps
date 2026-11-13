@@ -1,13 +1,14 @@
 {
-  "app": "2026.11.78",
-  "script": "2026.11.50",
+  "app": "2026.11.79",
+  "script": "2026.11.51",
   "date": "2026-11-13",
   "notes": [
+    "Setup → Screen layout: a calendar page’s settings sit under its picture – which Google calendars it shows, where new events go, what it opens on, lining up weekdays",
+    "You can have more than one calendar page, each showing different Google calendars (add one with “Add a screen” → Calendar)",
+    "Widgets tab: the children’s points widgets aren’t listed (they’re on the Family tab)",
     "Holiday countdown: clearer help for “Your own dates” – one per line as name | date, e.g. Orlando | 3/4/2027, or Christmas | 25 Dec (no year) for one that comes round every year",
     "Setup → Family: four buttons at the top – Family Calendar (opens in a new tab), Today & tomorrow, Where is everyone and Reconfigure the family – then the children side by side with everything showing",
-    "Setup: the tabs are in two groups, “Set up” and “Everyday”",
-    "The holiday countdown’s settings are under Widgets",
-    "Setup → Screen layout: clicking a widget shows how it appears (height, show, when to show, remove) on the left and its own settings on the right, saved together – no page picker (drag it instead)"
+    "Setup: the tabs are in two groups, “Set up” and “Everyday”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

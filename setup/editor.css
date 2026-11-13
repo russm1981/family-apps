@@ -94,3 +94,9 @@ body.desk .top-row { max-width: 1500px; }
 .ed-trash { margin-top: 10px; border: 2px dashed #3a4252; border-radius: 12px; padding: 12px; text-align: center; color: #64748b; font-size: 13px; }
 .ed-trash.over { border-color: #ef4444; color: #fca5a5; background: rgba(239,68,68,.12); outline: none; }
 .ed-tile.split .sp-a:hover, .ed-tile.split .sp-b[data-sub]:hover { filter: brightness(1.35); cursor: pointer; }
+
+/* A calendar page's own settings, under its picture */
+.ed-pset { margin-top: 16px; padding: 16px 18px; border: 1px solid var(--line, #2a303b); border-radius: 14px; background: rgba(255,255,255,.02); max-width: 760px; }
+.ed-pset h3 { margin: 0 0 6px; font-size: 1rem; }
+.ed-pset .btn { margin-top: 10px; }
+.ed-pset a { color: #3fa9f5; }

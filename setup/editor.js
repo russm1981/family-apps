@@ -91,7 +91,10 @@
         var fmt = load(KEY_F, 'wide'), out = '';
         if (p.type === 'calendar') {
             out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : mockFrame(p, fmt);
-            return out + '<p class="mute small">The family calendar fills the screen. It opens on the view chosen in this screen’s settings; on a tablet or computer it also has a whole-year wall planner.</p>';
+            return out + '<p class="mute small">The calendar fills the screen; on a tablet or computer it also has a whole-year wall planner. You can have more than one calendar page, each showing different Google calendars.</p>' +
+                (H.pageForm ? '<section class="ed-pset" data-pset="' + esc(p.id) + '"><h3>This calendar page’s settings</h3>' + H.pageForm(p.id) +
+                    '<p class="mute small">The categories and colours (who’s who on the calendar) are the whole family’s – change them in <a href="' + esc(H.familyLink()) + '">Reconfigure → Family &amp; calendar</a>.</p>' +
+                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '');
         }
         var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
         for (var k = 0; k < screens; k++) {
@@ -148,6 +151,7 @@
                 return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
             }).join('') + '</aside>' : '<aside class="ed-palette ed-blank"></aside>') + '</div></div>';
         wire(p);
+        if (H.afterForm) H.afterForm();
     }
 
     /* ------------------------------------------------------------------ changes */
@@ -193,6 +197,13 @@
             if ((t = e.target.closest('[data-fmt]'))) { store(KEY_F, t.getAttribute('data-fmt')); render(); return; }
             if ((t = e.target.closest('[data-pm]'))) { var a = t.getAttribute('data-pm').split(':'); H.act({ action: 'movePage', id: a[0], dir: +a[1] }); return; }
             if ((t = e.target.closest('[data-pedit]'))) { H.pageSheet(t.getAttribute('data-pedit')); return; }
+            if ((t = e.target.closest('[data-psave]'))) {
+                var box = t.closest('.ed-pset'), vals = {};
+                Array.prototype.forEach.call(box.querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
+                t.disabled = true; t.textContent = 'Saving…';
+                H.savePageSettings(t.getAttribute('data-psave'), vals).then(function () { render(); }, function () { render(); });
+                return;
+            }
             if ((t = e.target.closest('[data-del]'))) { e.stopPropagation(); remove(t.getAttribute('data-del')); return; }
             if ((t = e.target.closest('.ed-page'))) { store(KEY_P, t.getAttribute('data-page')); render(); return; }
             if ((t = e.target.closest('[data-sub]')) && !e.target.closest('.pending')) { H.widgetSheet(t.getAttribute('data-sub')); return; }

@@ -93,7 +93,9 @@
     function goToday() { setView(calView, new Date()); loadCalendar(true); }
 
     /** Cached days covering a range (one fetched block covers the 3-month, month and week views together). */
-    try { var kept = JSON.parse(localStorage.getItem('familyDashboard.calBlock.v1') || 'null'); if (kept && kept.key) calCache[kept.key] = { at: 1, days: kept.days, bh: kept.bh }; } catch (e) { /* ignore */ }
+    // Which calendar page is showing: each can show different Google calendars (its own settings).
+    var calPage = '';
+    try { var kept = JSON.parse(localStorage.getItem('familyDashboard.calBlock.v1') || 'null'); if (kept && kept.key) { calCache[kept.key] = { at: 1, days: kept.days, bh: kept.bh }; calPage = kept.page || ''; } } catch (e) { /* ignore */ }
     /** A range longer than one block (the year view): split into 3-month pieces. */
     function pieces(r) {
         var out = [], s0 = monthStart(parseYmd(r.start));
@@ -130,13 +132,15 @@
         if (long(r)) return Promise.all(pieces(r).map(function (x) { return fetchBlock(x, quiet); }));
         var b = block(r), key = b.start + ':' + b.end;
         if (fetching[key]) return fetching[key];
-        fetching[key] = api().get('calendar', b).then(function (d) {
+        var forPage = calPage;
+        fetching[key] = api().get('calendar', { start: b.start, end: b.end, page: calPage }).then(function (d) {
             delete fetching[key];
             if (d.error) throw new Error(d.error);
+            if (forPage !== calPage) return key;      // another calendar page was opened meanwhile
             calCache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
             // Remember the block with today in it, so the calendar appears straight away after a restart.
             var t = ymd(new Date());
-            if (b.start <= t && b.end > t) { try { localStorage.setItem('familyDashboard.calBlock.v1', JSON.stringify({ key: key, days: calCache[key].days, bh: calCache[key].bh })); } catch (e) { /* full */ } }
+            if (b.start <= t && b.end > t) { try { localStorage.setItem('familyDashboard.calBlock.v1', JSON.stringify({ key: key, page: calPage, days: calCache[key].days, bh: calCache[key].bh })); } catch (e) { /* full */ } }
             if (d.categories && d.categories.length) {
                 calCats = d.categories; calAdd = d.addable || [];
                 try { localStorage.setItem('familyDashboard.cats.v2', JSON.stringify(calCats)); localStorage.setItem('familyDashboard.add.v2', JSON.stringify(calAdd)); } catch (e) { /* ignore */ }
@@ -379,7 +383,7 @@
     function saveEvent() {
         if (!adding || $('abSave').disabled) return;
         var body = { action: 'addEvent', category: adding.cat, title: $('abTitle').value.trim(), note: $('abNote').value.trim(),
-            start: adding.start, end: adding.end || adding.start };
+            start: adding.start, end: adding.end || adding.start, page: calPage };
         $('abSave').disabled = true; $('abSave').textContent = 'Saving…';
         api().post(body).then(function () {
             api().toast('Added “' + body.title + '” to ' + body.category);
@@ -514,6 +518,8 @@
                 setTimeout(warm, 8000); setInterval(warm, 10 * 60000);
             },
             onShow: function () { loadCalendar(); },
+            /** A calendar page is opening: its own calendars (fresh entries if it's a different page from before). */
+            setPage: function (id) { id = id || ''; if (id === calPage) return; calPage = id; calCache = {}; fetching = {}; },
             /** Admin setting "Opens on": 3 months, Month or Week. Used until someone picks a view on the screen. */
             setDefault: function (v, align) {
                 align = align !== false;

@@ -65,6 +65,7 @@
         });
         // Calendar opens on the view chosen in the admin app.
         var cal = pages.filter(function (p) { return p.type === 'calendar'; })[0];
+        if (cal && window.FDScreens && window.FDScreens.calendar && window.FDScreens.calendar.setPage && !(current && page(current) && page(current).type === 'calendar')) window.FDScreens.calendar.setPage(cal.id);
         if (cal && window.FDScreens && window.FDScreens.calendar && window.FDScreens.calendar.setDefault) window.FDScreens.calendar.setDefault(cal.settings && cal.settings.DefaultView, !(cal.settings && cal.settings.AlignWeekdays === false));
     }
 
@@ -136,7 +137,12 @@
         } else if (p.type === 'boys') {
             if (window.FDBoys) window.FDBoys.onShow(p.part || 0, p.parts || 1);
         } else if (p.type === 'calendar') {
-            if (window.FDScreens && window.FDScreens.calendar) window.FDScreens.calendar.onShow();
+            var C = window.FDScreens && window.FDScreens.calendar;
+            if (C) {
+                if (C.setPage) C.setPage(p.id);
+                if (C.setDefault) C.setDefault(p.settings && p.settings.DefaultView, !(p.settings && p.settings.AlignWeekdays === false));
+                C.onShow();
+            }
         }
     }
 

@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.50';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.51';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -130,7 +130,10 @@ const PAGE_TYPES = {
     { k: 'CashInValue', label: 'Cash-in value (\u00a3)', type: 'number', def: 5, min: 1, max: 100 },
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
   ] },
-  calendar: { name: 'Calendar', single: true, settings: [
+  calendar: { name: 'Calendar', settings: [
+    { k: 'Calendars', label: 'Google calendars to show', type: 'text', def: '', max: 400,
+      help: 'Blank = the family’s calendars (the same as Today & tomorrow and the phone Calendar app). Or: default = your main calendar, all = every calendar, or calendar IDs separated by commas – so a second calendar page can show different calendars.' },
+    { k: 'AddTo', label: 'Calendar for new events', type: 'text', def: '', max: 200, help: 'Where + Add on this page saves events. Blank = the family’s setting.' },
     { k: 'DefaultView', label: 'Opens on', type: 'select', def: '3 months', options: ['3 months', '3 months (scroll)', 'Month', 'Week'] },
     { k: 'AlignWeekdays', label: 'Line up weekdays in the 3-month views (each month starts under its weekday, so weekends form columns)', type: 'bool', def: true },
   ] },
@@ -683,7 +686,7 @@ function doGet(e) {
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
       if (p.action === 'layout') { const blocked = screenCheck_(p); return Object.assign({ ok: true }, screenLayout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) }); }
-      if (p.action === 'calendar') return getCalendar_(p.start, p.end);
+      if (p.action === 'calendar') return getCalendar_(p.start, p.end, p.page);
       // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Ben&place=School  or  &lat=..&lon=..
       if (p.action === 'where') return withLock_(() => setWhere_(p));
       throw new Error('Unknown action');
@@ -1393,6 +1396,9 @@ function checkWidget_(type, s) {
     if (!n.every(x => x > 0 && x <= LIMITS.maxPoints && Math.round(x) === x)) throw new Error('Penalties must be whole numbers up to ' + LIMITS.maxPoints + ', separated by commas, e.g. 10,20,50');
     if (n.length > LIMITS.maxPenaltyButtons) throw new Error('At most ' + LIMITS.maxPenaltyButtons + ' penalty buttons fit on the screen');
   }
+  if (type === 'calendar') {
+    ['Calendars', 'AddTo'].forEach(k => { if (String(s[k] || '').trim() && !calendarsFrom_(s[k]).length) throw new Error('Couldn’t open ' + (k === 'AddTo' ? 'the calendar for new events' : 'any of those calendars') + ' – check the calendar IDs (in Google Calendar: Settings → the calendar → Integrate calendar)'); });
+  }
   if (type === 'whereabouts') {
     const ppl = people_(s.People), pl = places_(s.Places);
     if (!ppl.length) throw new Error('Add at least one person to the clock');
@@ -1644,7 +1650,12 @@ function addPage_(title, type) {
 function deletePage_(id) {
   const row = rows_('pages').find(x => String(x.Page).trim() === id);
   if (!row) throw new Error('Page not found');
-  if (String(row.Type).toLowerCase() !== 'widgets') throw new Error('The ' + row.Title + ' page can be hidden but not deleted');
+  const rType = String(row.Type).toLowerCase();
+  if (rType === 'calendar' && rows_('pages').filter(p => String(p.Type).toLowerCase() === 'calendar').length > 1) {
+    deleteWhere_('pages', r => String(r[0]).trim() === id); deleteWhere_('wset', r => String(r[0]).trim() === id);
+    renumber_('pages'); bumpVersions_(); return layoutOnly_();
+  }
+  if (rType !== 'widgets') throw new Error('The ' + row.Title + ' page can be hidden but not deleted');
   if (rows_('widgets').some(w => String(w.Page).trim() === id)) throw new Error('Move or remove the widgets on this page first');
   if (rows_('pages').filter(p => String(p.Type).toLowerCase() === 'widgets').length < 2) throw new Error('Keep at least one widget page');
   deleteWhere_('pages', r => String(r[0]).trim() === id);
@@ -2733,7 +2744,7 @@ function bankHolidays_() {
 function deleteEvent_(b) {
   const id = String(b.id || ''), calId = String(b.cal || ''), at = Number(b.s);
   if (!id || !calId || !at) throw new Error('Which entry?');
-  const cal = calendarsFrom_(inst_('CalendarIds')).find(c => c.getId() === calId);
+  const cal = allShownCals_().find(c => c.getId() === calId);
   if (!cal) throw new Error('That calendar isn’t one the dashboard shows');
   const t = new Date(at), evs = cal.getEvents(new Date(at - 2 * 86400000), new Date(at + 2 * 86400000));
   const ev = evs.find(e => e.getId() === id && Math.abs((e.isAllDayEvent() ? e.getAllDayStartDate() : e.getStartTime()).getTime() - t.getTime()) < 36 * 3600000)
@@ -2762,18 +2773,31 @@ function calendarsFrom_(setting) {
 }
 
 /** Events between start and end (yyyy-MM-dd, end exclusive), grouped by day, each tagged with a category. */
-function getCalendar_(start, end) {
+/** The calendars a calendar page shows (its own setting, or the family's), and where it adds events. */
+function pageCals_(pageId, key) {
+  const pg = pageId && rows_('pages').find(r => String(r.Page).trim() === String(pageId) && String(r.Type).toLowerCase() === 'calendar');
+  const own = pg ? String(settingsFor_(String(pg.Page).trim(), PAGE_TYPES.calendar.settings)[key === 'add' ? 'AddTo' : 'Calendars'] || '').trim() : '';
+  return own || String(inst_(key === 'add' ? 'AddToCalendar' : 'CalendarIds') || 'default');
+}
+/** Every calendar the dashboard shows anywhere (entries can only be deleted from these). */
+function allShownCals_() {
+  const specs = [String(inst_('CalendarIds') || 'default')];
+  rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').forEach(r => specs.push(pageCals_(String(r.Page).trim())));
+  return calendarsFrom_(specs.join(','));
+}
+function getCalendar_(start, end, pageId) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(end || '')) throw new Error('Bad dates');
   const from = new Date(start + 'T00:00:00Z'), to = new Date(end + 'T00:00:00Z');
   if (to - from > 125 * 86400000 || to <= from) throw new Error('Range too long');
   const cache = CacheService.getScriptCache();
-  return cached_(cache, 'cal:' + calVersion_() + ':' + start + ':' + end, 3 * 60, false, () => {
+  const spec = pageCals_(pageId);
+  return cached_(cache, 'cal:' + calVersion_() + ':' + hash_(spec) + ':' + start + ':' + end, 3 * 60, false, () => {
     const cats = categories_();
     const scriptTz = Session.getScriptTimeZone();
     const qFrom = new Date(from.getTime() - 86400000), qTo = new Date(to.getTime() + 86400000);
     const days = {}, seen = {}, dupe = {};
     let other = false;
-    calendarsFrom_(inst_('CalendarIds')).forEach(cal => {
+    calendarsFrom_(spec).forEach(cal => {
       cal.getEvents(qFrom, qTo).forEach(ev => {
         const key = ev.getId() + '|' + ev.getStartTime().getTime();
         if (seen[key]) return; seen[key] = 1;
@@ -2827,8 +2851,8 @@ function addEvent_(b) {
   const startDate = Utilities.parseDate(a, tz, 'yyyy-MM-dd');
   const endExcl = Utilities.parseDate(Utilities.formatDate(new Date(Date.parse(z + 'T12:00:00Z') + 86400000), 'UTC', 'yyyy-MM-dd'), tz, 'yyyy-MM-dd');
   if (endExcl - startDate > 366 * 86400000) throw new Error('That is more than a year');
-  const cal = calendarsFrom_(inst_('AddToCalendar') || 'default')[0];
-  if (!cal) throw new Error('Can’t open the calendar in AddToCalendar');
+  const cal = calendarsFrom_(pageCals_(b.page, 'add'))[0];
+  if (!cal) throw new Error('Can’t open the calendar for new events (check the calendar page’s settings)');
   const note = checkLen_('Notes', b.note, LIMITS.eventNote);
   const opts = note ? { description: note } : {};
   let ev;
