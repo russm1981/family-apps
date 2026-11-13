@@ -256,7 +256,7 @@
                         '<span class="r-sub">' + (diff > 0 ? '+' + diff + ' min \u00b7 usually ' : 'Usually ') + r.usualMins + ' min \u00b7 ' + r.miles + ' mi</span></div>' +
                         '<span class="pill ' + r.status + '">' + STATUS[r.status] + '</span>' +
                         '<div class="r-time"><b>' + r.mins + '</b> min</div></div>';
-                }).join('') || '<div class="empty">Add destinations in the admin app</div>';
+                }).join('') || '<div class="empty">' + esc(t.resting || 'Add destinations in the admin app') + '</div>';
                 draw(t);
             },
             show: function () { setTimeout(fit, 60); },

@@ -46,6 +46,11 @@ tbody tr { cursor: pointer; } tbody tr:hover { background: var(--panel2); }
 .pill.Active { color: var(--good); border-color: rgba(52,199,89,.5); }
 .pill.Issued { color: var(--acc); border-color: rgba(63,169,245,.5); }
 .pill.Revoked { color: var(--bad); border-color: rgba(255,91,91,.5); }
+.pill.New { color: var(--warn); border-color: rgba(255,176,32,.5); }
+.pill.st-In { color: var(--acc); border-color: rgba(63,169,245,.5); }
+.pill.Waiting { color: var(--mute); border-color: var(--line); }
+.pill.Resolved, .pill.Closed { color: var(--good); border-color: rgba(52,199,89,.5); }
+.fb-msg { white-space: pre-wrap; background: var(--panel2); border-radius: 10px; padding: 12px; margin: 8px 0; }
 .err { color: var(--bad); } .ok { color: var(--good); }
 .status { margin-top: 12px; font-size: 14px; }
 .keys { font-family: "Roboto Mono", ui-monospace, monospace; background: var(--panel2); border-radius: 10px; padding: 12px; white-space: pre-wrap; user-select: all; }
@@ -111,7 +116,7 @@ function login(msg) {
 /* ---------------------------------------------------------------- frame */
 function frame() {
   $('app').innerHTML = '<header><h1>🔑 Family Dashboard licences</h1><nav id="nav">' +
-    [['overview', 'Overview'], ['licences', 'Licences'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['support', 'Support'], ['settings', 'Settings']].map(function (t) {
+    [['overview', 'Overview'], ['licences', 'Licences'], ['feedback', 'Feedback'], ['issue', 'Issue keys'], ['import', 'Import CSV'], ['support', 'Support'], ['settings', 'Settings']].map(function (t) {
       return '<button data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') +
     (IN_SHEET ? '' : '<button id="out">Sign out</button>') + '</nav></header><main id="main"></main>';
   $('nav').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) { TAB = b.getAttribute('data-t'); render(); } };
@@ -121,7 +126,7 @@ function frame() {
 }
 function render() {
   Array.prototype.forEach.call(document.querySelectorAll('#nav [data-t]'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === TAB); });
-  ({ overview: overview, licences: licences, issue: issuePage, import: importPage, settings: settingsPage, support: supportPage })[TAB]();
+  ({ overview: overview, licences: licences, issue: issuePage, import: importPage, settings: settingsPage, support: supportPage, feedback: feedbackPage })[TAB]();
 }
 function loadRows() { return call('list').then(function (d) { ROWS = d.rows; return ROWS; }); }
 
@@ -133,7 +138,7 @@ function overview() {
     var vs = Object.keys(d.versions).sort().reverse().map(function (v) { return esc(v) + ': ' + d.versions[v]; }).join(' · ');
     $('main').innerHTML = '<div class="stats">' +
       stat(c.active, 'in use') + stat(c.issued, 'issued, not used yet') + stat(c.revoked, 'revoked') + stat(c.seenWeek, 'checked in this week') +
-      stat(c.unsent, 'not emailed yet') + stat(c.total, 'keys altogether') + '</div>' +
+      stat(c.unsent, 'not emailed yet') + stat(c.total, 'keys altogether') + stat(d.feedbackOpen || 0, 'feedback and support requests outstanding') + '</div>' +
       (c.unsent ? '<div class="card"><div class="row"><span style="flex:1"><b>' + c.unsent + ' key' + (c.unsent > 1 ? 's have' : ' has') + ' an email address but hasn’t been sent.</b></span><button class="btn" id="sendUnsent">Email them now</button></div></div>' : '') +
       (c.quiet ? '<div class="card"><b>' + c.quiet + '</b> <span class="mute">dashboard' + (c.quiet > 1 ? 's haven’t' : ' hasn’t') + ' checked in for a month (switched off, or moved).</span></div>' : '') +
       '<div class="card"><h2>Recent activity</h2>' + (d.recent.length ? d.recent.map(logLine).join('') : '<p class="mute">Nothing yet.</p>') + '</div>' +
@@ -352,6 +357,64 @@ function download(name, text) {
 // The private half never leaves this licence server; it's fetched (after the admin password) only to unlock reports here.
 function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
 function unb64(t) { var s = atob(t), b = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) b[i] = s.charCodeAt(i); return b; }
+/* ---------------------------------------------------------------- feedback */
+var FB = null, FBF = 'open';
+function feedbackPage() {
+  $('main').innerHTML = '<div class="card"><div class="row"><h2 style="margin:0;flex:1">Feedback and support requests</h2>' +
+    '<select id="fbF" style="width:auto">' + [['open', 'Outstanding'], ['all', 'Everything'], ['Support request', 'Support requests'], ['Feature request', 'Feature requests'], ['Feedback', 'Feedback']].map(function (o) {
+      return '<option value="' + o[0] + '"' + (o[0] === FBF ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></div>' +
+    '<p class="mute small">Sent from the Feedback button on families’ dashboards. Outstanding = New, In progress or Waiting for them. A reply you write here shows on their Feedback page.</p>' +
+    '<table><thead><tr><th>Ref</th><th>Received</th><th>Type</th><th>Subject</th><th>Status</th><th>Report</th></tr></thead><tbody id="fbT"><tr><td colspan="6" class="mute">Loading…</td></tr></tbody></table></div>';
+  $('fbF').onchange = function () { FBF = this.value; fbTable(); };
+  $('fbT').onclick = function (e) { var tr = e.target.closest('[data-ref]'); if (tr) openFb(tr.getAttribute('data-ref')); };
+  call('feedbackList').then(function (d) { FB = d; fbTable(); }, function (e) { $('fbT').innerHTML = '<tr><td colspan="6" class="err">' + esc(e.message) + '</td></tr>'; });
+}
+function fbPill(st) { return '<span class="pill ' + esc(String(st).split(' ')[0] === 'In' ? 'st-In' : String(st).split(' ')[0]) + '">' + esc(st) + '</span>'; }
+function fbTable() {
+  var rows = (FB.rows || []).filter(function (r) {
+    return FBF === 'all' ? true : FBF === 'open' ? ['Resolved', 'Closed'].indexOf(r.Status) < 0 : r.Type === FBF;
+  });
+  $('fbT').innerHTML = rows.length ? rows.map(function (r) {
+    return '<tr data-ref="' + esc(r.Ref) + '"><td>' + esc(r.Ref) + '</td><td>' + esc(r.Received) + '</td><td>' + esc(r.Type) + '</td><td>' + esc(r.Subject || String(r.Message).slice(0, 60)) + '</td><td>' + fbPill(r.Status) + '</td><td>' + (r.Report ? '📎 ' + esc(r.Report) : '') + '</td></tr>';
+  }).join('') : '<tr><td colspan="6" class="mute">Nothing here.</td></tr>';
+}
+function openFb(ref) {
+  var r = (FB.rows || []).filter(function (x) { return x.Ref === ref; })[0]; if (!r) return;
+  openDrawer('<h2>' + esc(r.Type) + ' ' + esc(r.Ref) + '</h2><p class="mute small">' + esc(r.Received) + ' · licence ' + esc(r.Key || 'none') + ' · version ' + esc(r.Version || '?') + (r.Email ? ' · reply to <a href="mailto:' + esc(r.Email) + '">' + esc(r.Email) + '</a>' : '') + '</p>' +
+    (r.Subject ? '<b>' + esc(r.Subject) + '</b>' : '') + '<div class="fb-msg">' + esc(r.Message) + '</div>' +
+    (r.Report ? '<button class="btn ghost" id="fbRep">📎 Open the diagnostics report (' + esc(r.Report) + ')</button><div id="fbRepOut" class="status"></div>' : '') +
+    '<label>Status</label><select id="fbSt">' + FB.statuses.map(function (s) { return '<option' + (s === r.Status ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select>' +
+    '<label>Reply – shown to them on their Feedback page</label><textarea id="fbReply" style="min-height:90px">' + esc(r.Reply || '') + '</textarea>' +
+    '<label>Your notes (only you see these)</label><textarea id="fbNotes" style="min-height:70px">' + esc(r.Notes || '') + '</textarea>' +
+    '<div class="row" style="margin-top:12px"><button class="btn" id="fbSave">Save</button><button class="btn ghost" id="fbClose">Close</button></div>');
+  $('fbClose').onclick = closeDrawer;
+  $('fbSave').onclick = function () {
+    var a = { ref: ref, status: $('fbSt').value, reply: $('fbReply').value, notes: $('fbNotes').value };
+    call('feedbackUpdate', a).then(function () { r.Status = a.status; r.Reply = a.reply; r.Notes = a.notes; toast('Saved'); fbTable(); closeDrawer(); }, function (e) { toast(e.message, true); });
+  };
+  if ($('fbRep')) $('fbRep').onclick = function () {
+    $('fbRepOut').textContent = 'Opening…';
+    call('feedbackReport', { ref: ref }).then(function (d) { return unlockReport(d.text); }).then(function (full) {
+      $('fbRepOut').innerHTML = '<div class="row"><button class="btn ghost" id="fbRC">Copy all</button><button class="btn ghost" id="fbRD">Download</button></div><pre class="keys" style="max-height:50vh;overflow:auto;font-size:12px">' + esc(full) + '</pre>';
+      $('fbRC').onclick = function () { copy(full); };
+      $('fbRD').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([full], { type: 'text/plain' })); a.download = ref + '-diagnostics.txt'; document.body.appendChild(a); a.click(); a.remove(); };
+    }, function (e) { $('fbRepOut').innerHTML = '<p class="err">' + esc(e.message) + '</p>'; });
+  };
+}
+/** A diagnostics report with its locked part opened (with the support key), or as it is if it has none. */
+function unlockReport(text) {
+  var m = /FDENC1:([A-Za-z0-9+\/=\s]+)/.exec(text || '');
+  if (!m) return Promise.resolve(text || '');
+  var box = JSON.parse(atob(m[1].replace(/\s/g, '')));
+  return call('supportKey', { withPrivate: true }).then(function (d) {
+    if (!d.privateKey) throw new Error('No support key yet – make one in Settings');
+    return crypto.subtle.importKey('jwk', d.privateKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['decrypt']);
+  }).then(function (pk) { return crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pk, unb64(box.k)); })
+    .then(function (raw) { return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['decrypt']); })
+    .then(function (ak) { return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, ak, unb64(box.d)); })
+    .then(function (plain) { return text.replace(/-----[^\n]*ENCRYPTED[\s\S]*$/, '').trim() + '\n\n===== PRIVATE PART (unlocked) =====\n' + JSON.stringify(JSON.parse(new TextDecoder().decode(plain)), null, 2); });
+}
+
 function supportPage() {
   $('main').innerHTML = '<div class="card"><h2>Open a diagnostics report</h2><p class="mute small">When a customer sends a report from Family Admin → Settings → Versions & diagnostics, its private part (access code, API keys, addresses, names) is locked so only you can read it. Paste the whole report, or choose the file.</p>' +
     '<div class="row"><label style="margin:0;color:var(--acc);cursor:pointer">Choose the file<input type="file" id="dFile" accept=".txt,text/plain" style="display:none"></label></div>' +

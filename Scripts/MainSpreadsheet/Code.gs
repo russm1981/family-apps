@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.61';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.62';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -181,9 +181,11 @@ const WIDGET_TYPES = {
     data: (s) => weather_(s.Location || inst_('HomeAddress')) },
   traffic: { name: 'Traffic', icon: '\uD83D\uDE97', sizes: ['full', 'half'], ttl: 10 * 60, about: 'Live map and journey times compared with the usual time.',
     settings: [
-      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: '',
-        help: 'One per line: Label | address or postcode. Up to 3. Labels up to ' + LIMITS.destination + ' characters.' },
-      { k: 'From', label: 'Start from', type: 'text', def: '', max: 150, help: 'Leave blank for home.' },
+      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: '', ui: 'rows', addLabel: '+ Add a destination', timed: true,
+        rows: [{ k: 'name', label: 'Name', type: 'text', max: LIMITS.destination, ph: 'e.g. School' }, { k: 'address', label: 'Address or postcode', type: 'text', max: 150, ph: 'e.g. BS1 4DJ' },
+          { k: 'days', label: 'Days', type: 'days' }, { k: 'times', label: 'Times', type: 'span' }],
+        help: 'Up to 3. Each can show all the time, or only on some days and between two times – e.g. school on Monday and Wednesday, 8am to 12 noon.' },
+      { k: 'From', label: 'Start from', type: 'text', def: '', max: 150, help: 'An address or postcode. Leave blank for home.' },
     ],
     data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations) },
   trains: { name: 'Trains', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
@@ -208,8 +210,9 @@ const WIDGET_TYPES = {
       { k: 'Postcode', label: 'Postcode', type: 'text', def: '', max: 10, when: ['Source', ['My council (automatic)']] },
       { k: 'House', label: 'House name or number', type: 'text', def: '', max: 60, when: ['Source', ['My council (automatic)']], help: 'Words that pick your house out of the council\u2019s list (My council only).' },
       { k: 'CalendarLink', label: 'Council calendar link (iCal / .ics)', type: 'url', def: '', when: ['Source', ['Calendar link']], help: 'Calendar link only. Copy the "subscribe" or "add to calendar" link from your council\u2019s bin-day page.' },
-      { k: 'Schedule', label: 'Repeating schedule', type: 'lines', maxLines: 6, def: '', when: ['Source', ['Repeating schedule']],
-        help: 'Repeating schedule only. One bin per line: Bin | every how many weeks | a recent or next collection date, e.g. "Black bin | 2 | 2026-11-11" or "Recycling | 1 | 12/11/2026".' },
+      { k: 'Schedule', label: 'Repeating schedule', type: 'lines', maxLines: 6, def: '', when: ['Source', ['Repeating schedule']], ui: 'rows', addLabel: '+ Add a bin',
+        rows: [{ k: 'bin', label: 'Bin', type: 'text', max: 22, ph: 'e.g. Black bin' }, { k: 'weeks', label: 'Every … weeks', type: 'number', min: 1, max: 8, ph: '2' }, { k: 'date', label: 'A recent or next collection', type: 'date' }],
+        help: 'Repeating schedule only. Each bin, how often it’s collected, and one collection date.' },
       { k: 'ReminderFrom', label: '"Put out tonight" from', type: 'time', def: '15:00', help: 'Time the day before a collection when the reminder appears.' },
       { k: 'Council', label: 'Council (code)', type: 'text', def: '', max: 12, advanced: true, help: 'Filled in by “Set up bin days” in the Family Admin app. Blank = worked out from the postcode.' },
       { k: 'UPRN', label: 'Property number (UPRN)', type: 'text', def: '', max: 20, advanced: true, help: 'Your home’s unique property reference number. Some councils need it – “Set up bin days” helps you find it.' },
@@ -256,8 +259,9 @@ const WIDGET_TYPES = {
       { k: 'Hour24', label: '24-hour clock', type: 'bool', def: true },
       { k: 'Seconds', label: 'Show seconds', type: 'bool', def: false },
       { k: 'ShowDate', label: 'Show the date', type: 'bool', def: true },
-      { k: 'Zones', label: 'Other places', type: 'lines', maxLines: 3, def: 'New York | America/New_York\nDubai | Asia/Dubai',
-        help: 'One per line: Name | time zone, e.g. Orlando | America/New_York, Sydney | Australia/Sydney. Up to 3.' },
+      { k: 'Zones', label: 'Other places', type: 'lines', maxLines: 3, def: 'New York | America/New_York\nDubai | Asia/Dubai', ui: 'rows', addLabel: '+ Add a place',
+        rows: [{ k: 'name', label: 'Name', type: 'text', max: 12, ph: 'e.g. Orlando' }, { k: 'tz', label: 'Time zone', type: 'tz' }],
+        help: 'Up to 3.' },
     ] },
   list: { name: 'List', icon: '\uD83D\uDED2', sizes: ['half', 'full'], about: 'Shopping or to-do list. Tick items off on the screen; add them from your phone.',
     settings: [
@@ -285,10 +289,12 @@ Object.assign(WIDGET_TYPES, {
     data: (s) => countdown_(s) },
   whereabouts: { name: 'Where is everyone? (Weasley clock)', icon: '🕰️', sizes: ['full'], about: 'A clock whose hands show where each person is. Tap a name to move it, or let phones update it automatically.',
     settings: [
-      { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Russ | #a855f7\nBecky | #f472b6\nBen | #3fa9f5\nJosh | #f5a623\nAlex | #7ed321',
-        help: 'One per line: Name | colour. Up to 6.' },
-      { k: 'Places', label: 'Places on the clock', type: 'lines', maxLines: 10, def: 'Home | home\nSchool\nWork\nShops\nSport\nFriends\nHoliday\nTravelling',
-        help: 'One per line: Name, optionally | address so phones can set it automatically. "home" means the home address. Anywhere else counts as Travelling. Up to 10.' },
+      { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Russ | #a855f7\nBecky | #f472b6\nBen | #3fa9f5\nJosh | #f5a623\nAlex | #7ed321', ui: 'rows', addLabel: '+ Add a person',
+        rows: [{ k: 'name', label: 'Name', type: 'text', max: 12, ph: 'Name' }, { k: 'colour', label: 'Colour', type: 'colour' }],
+        help: 'Up to 6.' },
+      { k: 'Places', label: 'Places on the clock', type: 'lines', maxLines: 10, def: 'Home | home\nSchool\nWork\nShops\nSport\nFriends\nHoliday\nTravelling', ui: 'rows', addLabel: '+ Add a place',
+        rows: [{ k: 'name', label: 'Place', type: 'text', max: 12, ph: 'e.g. School' }, { k: 'address', label: 'Address or postcode (optional)', type: 'text', max: 150, ph: 'so phones can set it – “home” = home' }],
+        help: 'Up to 10. With an address, phones move the hand by themselves. Anywhere else counts as Travelling.' },
       { k: 'Radius', label: 'How close counts as being there (metres)', type: 'number', def: 300, min: 50, max: 5000, advanced: true },
     ],
     data: (s) => whereabouts_(s), nocache: true },
@@ -773,6 +779,8 @@ function dispatch_(b) {
     case 'saveFamilyPeople': return saveFamilyPeople_(b);
     case 'saveCalCats': return saveCalCats_(b);
     case 'saveCalKey': return saveCalKey_(b);
+    case 'feedback': return feedback_(b);
+    case 'myFeedback': return toLicenceServer_({ action: 'myFeedback' });
     case 'calScan': return calScan_(b);
     case 'calFix': return calFix_(b);
     case 'saveInstall': return saveInstall_(b.values);
@@ -1429,10 +1437,15 @@ function checkWidget_(type, s) {
     if (src === 'Repeating schedule') binSchedule_(s.Schedule);   // throws if a line can't be read
   }
   if (type === 'traffic') {
+    // Every address has to be found on the map – so a typo shows now, not as an error on the screen later.
+    const find = (what, a) => { try { geocode_(a); } catch (e) { throw new Error('Couldn’t find ' + what + ' “' + a + '” on the map – check the address, or use a postcode'); } };
+    if (String(s.From || '').trim()) find('the start', String(s.From).trim());
     String(s.Destinations || '').split('\n').filter(Boolean).forEach(line => {
-      const p = line.split('|');
-      if (p.length < 2 || !p[0].trim() || !p[1].trim()) throw new Error('Each destination needs "Label | address", e.g. "School | BS1 4DJ"');
-      checkLen_('Destination label', p[0], LIMITS.destination);
+      const p = line.split('|').map(x => x.trim());
+      if (p.length < 2 || !p[0] || !p[1]) throw new Error('Each destination needs a name and an address or postcode');
+      checkLen_('Destination name', p[0], LIMITS.destination);
+      if (p[3] && !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(p[3])) throw new Error(p[0] + ': the times need a start and an end, e.g. 08:00 to 12:00');
+      find(p[0], p[1]);
     });
   }
   if (type === 'clock') {
@@ -1879,9 +1892,20 @@ function weather_(place) {
 }
 
 /** "Label | address" lines → [{name, address}]. */
+/** "School | BS1 4DJ | Mon,Wed | 08:00-12:00" – the days and times are optional (blank = all the time). */
 function destinations_(text) {
-  return String(text || '').split('\n').map(l => l.split('|')).filter(p => p.length >= 2 && p[0].trim() && p[1].trim())
-    .slice(0, 3).map(p => ({ name: p[0].trim(), address: p.slice(1).join('|').trim() }));
+  return String(text || '').split('\n').map(l => l.split('|').map(x => x.trim())).filter(p => p.length >= 2 && p[0] && p[1])
+    .slice(0, 3).map(p => {
+      const t = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/.exec(p[3] || '');
+      return { name: p[0], address: p[1], days: p[2] || '', from: t ? pad2_(t[1].split(':')[0]) + ':' + t[1].split(':')[1] : '', until: t ? pad2_(t[2].split(':')[0]) + ':' + t[2].split(':')[1] : '' };
+    });
+}
+/** Is this destination meant to show now? */
+function destNow_(r, now) {
+  now = now || new Date();
+  if (r.days && !dayMatches_(r.days, fmt_(now, 'EEE'))) return false;
+  if (r.from && r.until) { const hm = fmt_(now, 'HH:mm'); if (r.from < r.until ? (hm < r.from || hm >= r.until) : (hm < r.from && hm >= r.until)) return false; }
+  return true;
 }
 
 /**
@@ -1892,7 +1916,8 @@ function traffic_(home, destText) {
   const key = String(inst_('TomTomKey') || '').trim();
   if (!key) throw new Error('Add a TomTom API key on the Installation tab of the admin app');
   const from = geocode_(home);
-  const routes = destinations_(destText).map(r => {
+  const all = destinations_(destText), now = new Date();
+  const routes = all.filter(r => destNow_(r, now)).map(r => {
     try {
       const to = geocode_(r.address);
       const url = 'https://api.tomtom.com/routing/1/calculateRoute/' + from.lat + ',' + from.lng + ':' + to.lat + ',' + to.lng +
@@ -1920,7 +1945,7 @@ function traffic_(home, destText) {
       return { name: r.name, error: String(err && err.message || err) };
     }
   });
-  return { home: [from.lat, from.lng], routes: routes };
+  return { home: [from.lat, from.lng], routes: routes, resting: all.length && !routes.length ? 'No journeys to show at this time' : '' };
 }
 function round5_(n) { return Math.round(n * 1e5) / 1e5; }
 /** Keep at most max points; map[oldIndex] = newIndex so traffic sections still line up. */
@@ -4385,4 +4410,25 @@ function newer_(a, b) {
   const x = String(a || '').split('.').map(Number), y = String(b || '').split('.').map(Number);
   for (let i = 0; i < Math.max(x.length, y.length); i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); }
   return false;
+}
+
+
+/* ---------------------------------------------------------------- feedback and support requests */
+
+/** Sent on to the Family Dashboard licence server, with this dashboard's licence key and installation number. */
+function toLicenceServer_(body) {
+  const server = licenceServer_();
+  if (!server) throw new Error('Can’t reach Family Dashboard support just now – try again later');
+  const r = uf_(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
+    payload: JSON.stringify(Object.assign({ key: String(inst_('LicenceKey') || ''), install: installId_(), version: SCRIPT_VERSION }, body)) });
+  if (r.getResponseCode() !== 200) throw new Error('Family Dashboard support said ' + r.getResponseCode() + ' – try again later');
+  const d = JSON.parse(r.getContentText());
+  if (d.ok === false || d.error) throw new Error(d.error || 'Couldn’t send it');
+  return d;
+}
+function feedback_(b) {
+  const report = String(b.report || '');
+  if (report.length > 400000) throw new Error('The diagnostics report is too big to send – send it without one');
+  return toLicenceServer_({ action: 'feedback', type: String(b.type || 'Feedback'), subject: String(b.subject || '').slice(0, 120),
+    message: String(b.message || '').slice(0, 8000), email: String(b.email || '').slice(0, 120), report: report });
 }

@@ -6,6 +6,8 @@
  *
  *   Licences  Key | Status | Name | Email | Order | Source | Issued | Emailed | Activated | Install | Last check | Version | Checks | Notes
  *   Activity  When | Key | Event | Install | Detail
+ *   Feedback  Ref | Received | Type | Status | Subject | Message | Email | Key | Install | Version | Report | Updated | Reply | Notes
+ *   Reports   Ref | Part | Text   (diagnostics reports sent with a support request, in pieces – a cell holds 50,000 characters)
  *
  * Status:  Issued  = made, not used yet
  *          Active  = in use on one dashboard (Install = that dashboard's random installation number)
@@ -18,13 +20,16 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.15';
+const LS_VERSION = '2026.11.16';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
 const APPS_BASE = 'https://russm1981.github.io/family-apps/';
-const TABS = { lic: 'Licences', log: 'Activity' };
+const TABS = { lic: 'Licences', log: 'Activity', fb: 'Feedback', rep: 'Reports' };
+const FBCOLS = ['Ref', 'Received', 'Type', 'Status', 'Subject', 'Message', 'Email', 'Key', 'Install', 'Version', 'Report', 'Updated', 'Reply', 'Notes'];
+const FB_TYPES = ['Feedback', 'Feature request', 'Support request'];
+const FB_STATUS = ['New', 'In progress', 'Waiting for them', 'Resolved', 'Closed'];   // Resolved and Closed are done; the rest are outstanding
 const COLS = ['Key', 'Status', 'Name', 'Email', 'Order', 'Source', 'Issued', 'Emailed', 'Activated', 'Install', 'Last check', 'Version', 'Checks', 'Notes', 'Screens'];
 // Screens: how many screens (Corsair, tablet, computer…) may show this family's dashboard at once. Phones don't count.
 const LOGCOLS = ['When', 'Key', 'Event', 'Install', 'Detail'];
@@ -185,6 +190,9 @@ function api_(b) {
     case 'check': case 'activate': return withLock_(() => verify_(b));
     case 'move': return withLock_(() => move_(b));
     case 'release': return withLock_(() => selfRelease_(b));
+    // Feedback, feature requests and support requests, sent from a family's dashboard (through their Google script).
+    case 'feedback': return withLock_(() => feedbackIn_(b));
+    case 'myFeedback': return myFeedback_(b);
     default: throw new Error('Unknown action');
   }
 }
@@ -304,6 +312,9 @@ function admin(password, op, args) {
   args = args || {};
   switch (op) {
     case 'hello': return { ok: true };
+    case 'feedbackList': return { ok: true, rows: fbRows_(), statuses: FB_STATUS };
+    case 'feedbackReport': return { ok: true, text: fbReport_(args.ref) };
+    case 'feedbackUpdate': return withLock_(() => fbUpdate_(args.ref, args));
     case 'summary': return summary_();
     case 'list': return { ok: true, rows: allRows_() };
     case 'issue': return withLock_(() => ({ ok: true, keys: issue_({ count: args.count, name: args.name, email: args.email, order: args.order, notes: args.notes, screens: args.screens, source: 'Issued by hand' }),
@@ -384,7 +395,8 @@ function summary_() {
   const versions = {};
   rows.filter(r => r.Status === 'Active' && r.Version).forEach(r => { versions[r.Version] = (versions[r.Version] || 0) + 1; });
   let upd = {}; try { upd = JSON.parse(PropertiesService.getScriptProperties().getProperty('lastUpdate') || '{}'); } catch (e) { upd = {}; }
-  return { ok: true, counts: c, versions: versions, recent: logRows_(null, 15), version: LS_VERSION, loader: LOADED ? LOADED.info() : null, lastUpdate: upd, saved: lsVersionsUsed_(),
+  const fbOpen = fbRows_().filter(r => ['Resolved', 'Closed'].indexOf(r.Status) < 0).length;
+  return { ok: true, counts: c, feedbackOpen: fbOpen, versions: versions, recent: logRows_(null, 15), version: LS_VERSION, loader: LOADED ? LOADED.info() : null, lastUpdate: upd, saved: lsVersionsUsed_(),
     autoUpdate: ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === 'updateTick') };
 }
 
@@ -685,4 +697,89 @@ function selfUpdate_(why, force) {
     if (why !== 'timer') throw err;
     return { failed: true, message: err.message };
   } finally { P.deleteProperty('updating'); }
+}
+
+
+/* ================================================================ feedback and support requests */
+
+/** The Feedback and Reports tabs, made the first time they're needed. */
+function fbSheet_(name) {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(name);
+  if (!sh) {
+    sh = ss.insertSheet(name);
+    const head = name === TABS.fb ? FBCOLS : ['Ref', 'Part', 'Text'];
+    sh.getRange(1, 1, 1, head.length).setValues([head]).setFontWeight('bold').setBackground('#1f2937').setFontColor('#ffffff');
+    sh.setFrozenRows(1);
+    if (name === TABS.fb) {
+      sh.getRange(2, FBCOLS.indexOf('Status') + 1, 999, 1).setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(FB_STATUS, true).build());
+      sh.setColumnWidth(FBCOLS.indexOf('Message') + 1, 420);
+    }
+  }
+  return sh;
+}
+function feedbackIn_(b) {
+  const key = normKey_(b.key), install = String(b.install || '').replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  if (!install) throw new Error('No installation number');
+  const type = FB_TYPES.indexOf(String(b.type)) >= 0 ? String(b.type) : 'Feedback';
+  const subject = clip_(b.subject, 120), message = String(b.message || '').trim().slice(0, 8000);
+  if (!subject && !message) throw new Error('Write something first');
+  const email = String(b.email || '').trim().slice(0, 120);
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('That email address doesn’t look right');
+  // A few an hour from each dashboard is plenty.
+  const c = CacheService.getScriptCache(), rk = 'fb:' + install, n = Number(c.get(rk) || 0);
+  if (n >= 10) throw new Error('Lots sent already – try again in an hour');
+  c.put(rk, String(n + 1), 3600);
+  const ref = 'FB-' + Utilities.formatDate(new Date(), 'Europe/London', 'yyMMdd') + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+  const report = String(b.report || '').slice(0, 400000);
+  if (report) {
+    const rs = fbSheet_(TABS.rep), parts = [];
+    for (let i = 0; i < report.length; i += 45000) parts.push([ref, parts.length + 1, report.slice(i, i + 45000)]);
+    rs.getRange(rs.getLastRow() + 1, 1, parts.length, 3).setValues(parts);
+  }
+  const now = new Date();
+  fbSheet_(TABS.fb).appendRow([ref, now, type, 'New', subject, message, email, key || '', install, clip_(b.version, 20), report ? Math.ceil(report.length / 1024) + ' KB' : '', now, '', '']);
+  // Tell the owner (best effort).
+  try {
+    MailApp.sendEmail(Session.getEffectiveUser().getEmail(), 'Family Dashboard ' + type.toLowerCase() + ' ' + ref + (subject ? ': ' + subject : ''),
+      type + ' ' + ref + '\n\n' + (subject ? subject + '\n\n' : '') + message + '\n\n' + (email ? 'Reply to: ' + email + '\n' : '') + 'Licence: ' + (key || 'none') + '\n' +
+      (report ? 'A diagnostics report is attached in the licence portal (Feedback).\n' : '') + '\nOpen the licence portal to reply or change its status.');
+  } catch (e) { /* the row is saved – that's what matters */ }
+  return { ok: true, ref: ref };
+}
+/** A dashboard's own requests and where they're up to (only its own – matched on its installation number). */
+function myFeedback_(b) {
+  const install = String(b.install || '').replace(/[^A-Za-z0-9-]/g, '').slice(0, 64);
+  if (!install) throw new Error('No installation number');
+  const sh = SpreadsheetApp.getActive().getSheetByName(TABS.fb);
+  if (!sh || sh.getLastRow() < 2) return { ok: true, rows: [] };
+  const I = {}; FBCOLS.forEach((h, i) => { I[h] = i; });
+  const rows = sh.getRange(2, 1, sh.getLastRow() - 1, FBCOLS.length).getValues().filter(r => String(r[I.Install]) === install).reverse().slice(0, 30);
+  const d = v => v instanceof Date ? Utilities.formatDate(v, 'Europe/London', 'yyyy-MM-dd') : String(v || '');
+  return { ok: true, rows: rows.map(r => ({ ref: r[I.Ref], date: d(r[I.Received]), type: r[I.Type], subject: r[I.Subject], status: r[I.Status], reply: r[I.Reply], updated: d(r[I.Updated]) })) };
+}
+function fbRows_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName(TABS.fb);
+  if (!sh || sh.getLastRow() < 2) return [];
+  const tz = Session.getScriptTimeZone();
+  return sh.getRange(2, 1, sh.getLastRow() - 1, FBCOLS.length).getValues().map(r => {
+    const o = {}; FBCOLS.forEach((h, i) => { o[h] = r[i] instanceof Date ? Utilities.formatDate(r[i], tz, 'yyyy-MM-dd HH:mm') : r[i]; });
+    return o;
+  }).reverse();
+}
+function fbReport_(ref) {
+  const sh = SpreadsheetApp.getActive().getSheetByName(TABS.rep);
+  if (!sh || sh.getLastRow() < 2) return '';
+  return sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues().filter(r => String(r[0]) === String(ref)).sort((a, b) => a[1] - b[1]).map(r => String(r[2])).join('');
+}
+function fbUpdate_(ref, a) {
+  const sh = fbSheet_(TABS.fb), last = sh.getLastRow();
+  const refs = last < 2 ? [] : sh.getRange(2, 1, last - 1, 1).getValues().map(r => String(r[0]));
+  const i = refs.indexOf(String(ref)); if (i < 0) throw new Error('Not found: ' + ref);
+  const row = i + 2, col = h => FBCOLS.indexOf(h) + 1;
+  if (a.status != null) { if (FB_STATUS.indexOf(a.status) < 0) throw new Error('Unknown status'); sh.getRange(row, col('Status')).setValue(a.status); }
+  if (a.reply != null) sh.getRange(row, col('Reply')).setValue(String(a.reply).slice(0, 4000));
+  if (a.notes != null) sh.getRange(row, col('Notes')).setValue(String(a.notes).slice(0, 4000));
+  sh.getRange(row, col('Updated')).setValue(new Date());
+  return { ok: true };
 }

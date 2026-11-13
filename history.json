@@ -1,5 +1,19 @@
 [
   {
+    "version": "2026.11.92",
+    "date": "2026-11-13",
+    "notes": [
+      "Configurator: 💬 Feedback by the title – send a support request (with a diagnostics report), a feature request or feedback, and see support’s replies and where each one is up to",
+      "Help: five topics to choose from – Getting started, Screens and widgets, Calendar and rewards, Troubleshooting, Your data and account – plus Ask for help; the menu on the left opens each one",
+      "The website uses the full width of the screen (as wide as the title bar), and still fits smaller screens",
+      "Screens: the preview’s menu is exactly as on the screen – every button, the microphone and its dot, and the version",
+      "Traffic: each destination has a name and an address or postcode (checked when you save), and can show all the time or only on some days and between two times",
+      "No more typing “Name | …” lines: destinations, the clock’s other places, the Weasley clock’s people and places and the bins’ repeating schedule are rows of boxes",
+      "Family Admin app: Rewards (every part, including manual edits), Calendar, Notes, Lists, Widgets – and More, with Help, Feedback and support, About & diagnostics and the phone’s settings",
+      "Licence server 2026.11.16: a Feedback tab for support requests, feature requests and feedback, with a status for each and a reply the family sees"
+    ]
+  },
+  {
     "version": "2026.11.91",
     "date": "2026-11-13",
     "notes": [

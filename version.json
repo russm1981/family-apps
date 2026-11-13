@@ -1,15 +1,18 @@
 {
-  "app": "2026.11.91",
-  "script": "2026.11.61",
+  "app": "2026.11.92",
+  "script": "2026.11.62",
   "date": "2026-11-13",
   "notes": [
-    "Calendar page: uses the full width (no empty column on the right)",
-    "“Line up days of the week in the 3-month views” – tick or untick it and the picture underneath shows the difference straight away",
-    "Categories, much simpler, and the same on every calendar page: one row each – name, colour, as a line, shown, and how it will look. General categories first, then the people ones (Family, then your groups with their people underneath, then anyone not in a group)",
-    "A category that isn’t shown goes in Other; Other itself can now be switched off. The separate key editor has gone – the key is made from what’s shown",
-    "The list of which colour to pick in Google Calendar has gone"
+    "Configurator: 💬 Feedback by the title – send a support request (with a diagnostics report), a feature request or feedback, and see support’s replies and where each one is up to",
+    "Help: five topics to choose from – Getting started, Screens and widgets, Calendar and rewards, Troubleshooting, Your data and account – plus Ask for help; the menu on the left opens each one",
+    "The website uses the full width of the screen (as wide as the title bar), and still fits smaller screens",
+    "Screens: the preview’s menu is exactly as on the screen – every button, the microphone and its dot, and the version",
+    "Traffic: each destination has a name and an address or postcode (checked when you save), and can show all the time or only on some days and between two times",
+    "No more typing “Name | …” lines: destinations, the clock’s other places, the Weasley clock’s people and places and the bins’ repeating schedule are rows of boxes",
+    "Family Admin app: Rewards (every part, including manual edits), Calendar, Notes, Lists, Widgets – and More, with Help, Feedback and support, About & diagnostics and the phone’s settings",
+    "Licence server 2026.11.16: a Feedback tab for support requests, feature requests and feedback, with a status for each and a reply the family sees"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.15",
+  "licenceServer": "2026.11.16",
   "loader": "1"
 }

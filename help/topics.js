@@ -4,12 +4,12 @@
  */
 window.FD_HELP = [
   {
-    id: 'where', icon: '🧭', title: 'Family Admin or Setup?',
-    summary: 'Everyday things are in Family Admin on your phone; the screen layout, rare settings and the step-by-step guides are on Setup, on a computer.',
+    id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
+    summary: 'Setting things up is on the Family Dashboard Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>Family Admin (phone)</b>: points and tasks, notes, shopping and to-do lists, the calendar, and each widget’s everyday settings – train stations, traffic routes, bins reminder, screen sleep. Also your licence key and connecting phones and screens.</p>
-<p><b>Setup (computer)</b> – <b>russm1981.github.io/family-apps/setup</b>: first-time setup and every step-by-step guide, which widgets go on which page and how tall (and “When to show”), adding and removing widgets and pages, family &amp; calendar set-up, home address and places, API keys, updates, your Google data (access code, moving, starting again) and diagnostics.</p>
-<p>The first time you open Setup on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → Settings → Devices → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
+<p><b>The Family Dashboard Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Set up</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
+<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → Settings → Devices → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
@@ -313,16 +313,17 @@ window.FD_HELP = [
 <li>Connect your screen and phones again (the setup app shows how).</li></ol>`
   },
   {
-    id: 'report', icon: '🩺', title: 'Send a diagnostics report to support',
-    summary: 'If something’s wrong and you can’t fix it, make a diagnostics report and email it to support. Your private details in it are locked so only support can read them.',
+    id: 'report', icon: '🩺', title: 'Ask support for help (with a diagnostics report)',
+    summary: 'Send a support request from the Feedback button – tick “attach a diagnostics report” and support can see exactly what’s wrong. You can follow its progress there too.',
     body: `
-<h2>From your phone (easiest)</h2>
-<ol><li><b>Family Admin → Settings → Versions &amp; diagnostics → Generate diagnostics</b>. It takes up to a minute.</li>
-<li>Press <b>Share / email it</b> and send it to the support address in your order email, with a sentence about what’s wrong.</li></ol>
+<h2>The easiest way</h2>
+<ol><li>On a computer, open the <b>Family Dashboard Configurator</b> and press <b>💬 Feedback</b> at the top, by the title. (In the Family Admin app on your phone it’s under <b>Help &amp; support</b>.)</li>
+<li>Choose <b>Support request</b>, say what’s wrong in a sentence or two, and leave <b>Attach a diagnostics report</b> ticked.</li>
+<li>Press <b>Send</b>. You get a reference number, and the same page shows your requests and support’s replies as they come in.</li></ol>
 <h2>From the screen</h2>
-<p>Tap the version number at the bottom of the side bar → <b>Save a diagnostics report to this PC</b>. It goes in the PC’s Downloads folder.</p>
-<h2>What’s in it</h2>
-<p>Version numbers, which widgets work, recent errors, and your settings. Your access code, API keys, addresses, names and calendar details are <b>encrypted</b> – they look like a block of random letters and only Family Dashboard support can unlock them. Nothing is sent anywhere until you send the file yourself.</p>`
+<p>Tap the version number at the bottom of the side bar → <b>Save a diagnostics report to this PC</b>. It goes in the PC’s Downloads folder, if support asks you for it.</p>
+<h2>What’s in a diagnostics report</h2>
+<p>Version numbers, which widgets work, recent errors, and your settings. Your access code, API keys, addresses, names and calendar details are <b>encrypted</b> – they look like a block of random letters and only Family Dashboard support can unlock them. Nothing is sent unless you send it.</p>`
   },
   {
     id: 'privacy', icon: '🔒', title: 'Your data and privacy',

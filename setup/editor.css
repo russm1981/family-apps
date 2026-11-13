@@ -1,6 +1,4 @@
 /* The screen layout editor (settings website) */
-body.desk .main:has(.ed) { max-width: 1500px; }
-body.desk .top-row { max-width: 1500px; }
 .ed-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 14px; }
 .ed-fmt { display: flex; flex-direction: column; align-items: flex-start; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--text); }
 .ed-fmt small { color: var(--mute); font-size: 11px; }
@@ -199,7 +197,7 @@ body.desk .top-row { max-width: 1500px; }
 .ed-rail .ed-rb small { font-size: 9px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ed-rail .ed-rb.on { background: #3fa9f5; color: #fff; }
 .ed-rail .ed-rb.over, .ed-rail .ed-rb:hover { border-color: var(--acc); }
-.ed-rmic { margin-top: auto; text-align: center; font-size: 14px; opacity: .6; }
+
 .ed-frame.tab .ed-rail { width: 44px; }
 /* Tablet: the parts of a screen one after the other, down the page */
 .ed-tabs.stack { grid-template-columns: minmax(0, 620px); justify-content: center; }
@@ -244,3 +242,10 @@ body.desk .top-row { max-width: 1500px; }
 .mk3-g i.we { background: #26303f; }
 .mk3-g i.ev::after { content: ''; position: absolute; left: 2px; right: 2px; top: 30%; height: 3px; border-radius: 2px; background: var(--ec); }
 .mk3-g i.gap { background: transparent; }
+
+/* The screen's menu, as on the screen: buttons share the height; the microphone (with its status dot) and the version at the bottom */
+.ed-rail .ed-rb { flex: 1 1 0; min-height: 0; max-height: 48px; }
+.ed-rfoot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 2px; padding-top: 4px; }
+.ed-rmic { position: relative; width: 22px; height: 22px; border-radius: 50%; background: #1b2029; display: grid; place-items: center; font-size: 11px; }
+.ed-rmic i { position: absolute; right: -1px; bottom: -1px; width: 6px; height: 6px; border-radius: 50%; background: #22c55e; }
+.ed-rfoot small { font-size: 7px; color: #f59e0b; white-space: nowrap; }

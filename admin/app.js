@@ -30,16 +30,17 @@
     var DESK = !!window.FD_DESK;
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Other widgets']]
-        : [['family', '👪', 'Family'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['settings', '⚙', 'Settings']];
+        // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
+        : [['rewards', '⭐', 'Rewards'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
     // Settings sections on the phone (the rest are on the computer website).
-    var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1 };   // updates: the "update now" override, if the script hasn't updated itself
+    var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
     function deskUrl() { return appsRoot() + 'setup/'; }
     function guideUrl() { return appsRoot() + 'setup/guide/'; }
     function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
     var FAMILY_W = { agenda: 1, whereabouts: 1 }, LIST_W = { list: 1, todo: 1 }, MEMO_W = { memo: 1 }, INFO_W = { bins: 1, weather: 1, trains: 1, bus: 1, traffic: 1 };
-    function tabFor(type) { return FAMILY_W[type] ? (DESK ? 'other' : 'family') : MEMO_W[type] ? 'memos' : LIST_W[type] ? 'lists' : 'other'; }
+    function tabFor(type) { return FAMILY_W[type] ? 'other' : MEMO_W[type] ? 'memos' : LIST_W[type] ? 'lists' : 'other'; }
     // The Settings menu, in order. Sections marked sub: true are reached from another section (System → Licence…).
     var SECTIONS = {
         family: ['👪', 'Family', 'Who’s in the family, their colours, who takes part in rewards, calendar groups'],
@@ -180,16 +181,20 @@
     function route() {
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
-        if (h[0] === 'points') return DESK ? { tab: 'rewards' } : { pts: true, sec: h[1] || '', tab: 'family' };
+        if (h[0] === 'points') return { tab: 'rewards', sub: h[1] || '' };
         if (DESK && ({ family: 1, tools: 1, settings: 1 })[h[0]]) return { tab: h[0] === 'family' ? 'rewards' : h[0] === 'tools' ? 'start' : 'advanced' };
-        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'dhome' : 'family' };
+        if (!DESK && h[0] === 'family') return { tab: 'rewards' };       // older phone links
+        if (!DESK && h[0] === 'settings') return { tab: 'more' };
+        if (h[0] === 'home' || h[0] === '') return { tab: DESK ? 'dhome' : 'rewards' };
         if (h[0] === 's' && ALIAS[h[1]]) h[1] = ALIAS[h[1]];
         if (h[0] === 's' && h[1] === 'family' && DESK) return { tab: 'famcfg' };
         if (DESK && h[0] === 's' && h[1]) return { tab: 'advanced', sub: ALIAS[h[1]] || h[1] };      // settings open in the Advanced page's side menu
-        if (DESK && (h[0] === 'advanced' || h[0] === 'rewards')) return { tab: h[0], sub: h[1] || '' };
-        if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'settings' };
-        if (DESK && h[0] === 'help') return { tab: 'help' };      // Help: the button by the title
-        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'family') };
+        if (DESK && h[0] === 'advanced') return { tab: h[0], sub: h[1] || '' };
+        if (h[0] === 'rewards') return { tab: 'rewards', sub: h[1] || '' };
+        if (h[0] === 's' && SECTIONS[h[1]]) return { s: h[1], tab: DESK ? 'advanced' : 'more' };
+        if (h[0] === 'help') return { tab: DESK ? 'help' : 'more', help: true };      // Help: the button by the title
+        if (h[0] === 'feedback') return { tab: 'feedback', sub: h[1] || '' };
+        return { tab: TABS.some(function (t) { return t[0] === h[0]; }) ? h[0] : h[0] === 'layout' ? 'layout' : (DESK ? 'dhome' : 'rewards') };
     }
     function go(where) {
         if (hasEdits() && !confirm('You haven’t saved your changes on this page. Leave without saving them?')) return;
@@ -198,7 +203,7 @@
     function frame() {
         $('app').innerHTML =
             '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
-            (DESK ? '<a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
+            (DESK ? '<a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
@@ -225,6 +230,7 @@
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
         if ($('hdrHelp')) $('hdrHelp').classList.toggle('on', r.tab === 'help');
+        if ($('hdrFb')) $('hdrFb').classList.toggle('on', r.tab === 'feedback');
         $('back').style.display = r.w || r.s || r.pts ? '' : 'none';
         $('body').onclick = null;
         if (r.tab !== 'famcfg') { famEdit = null; famName = null; }      // unsaved changes on the Family page go when you leave it
@@ -235,7 +241,7 @@
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
         else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart,
-            famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp })[r.tab]();
+            famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
         // On the website the title bar always says "Family Dashboard Configurator"; the page's own name is its heading.
@@ -378,6 +384,7 @@
     function renderRewards(sub) {
         var s = DATA.state, pp = pointsPage();
         var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
+        if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
         var cur = sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
             ['-', 'Set up'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
             ['timetable', '🎒', 'Reminders', 'e.g. PE kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
@@ -464,6 +471,7 @@
             return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] ? '<small>' + esc(i[3]) + '</small>' : '') + '</span></a>';
         }).join('') + '</nav><div class="pane-body" id="paneIn"></div></div>';
         outer.id = 'bodyOuter'; $('paneIn').id = 'body';
+        if (!DESK) { var on = outer.querySelector('.pn.on'); if (on && on.scrollIntoView) setTimeout(function () { on.scrollIntoView({ inline: 'center', block: 'nearest' }); }, 0); }      // the phone's button row
         return cur;
     }
     /** Advanced: the settings that aren't screens, family or rewards – in a menu down the left. */
@@ -492,6 +500,50 @@
         title('Help');
         $('body').innerHTML = '<div class="frame-bar"><a class="link" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="desk-frame" src="' + esc(helpUrl()) + '" title="Help"></iframe>';
     }
+    /** Feedback, a feature request or a support request – sent to Family Dashboard support (through the family's own
+     * Google script, which adds the licence key and installation number). Below: what you've sent and where it's up to. */
+    var FB_KINDS = [['Support request', '🛠', 'Something isn’t working'], ['Feature request', '💡', 'An idea for something new'], ['Feedback', '💬', 'Tell us what you think']];
+    function renderFeedback(sub) {
+        title('Feedback and support');
+        var kind = sub === 'support' ? 'Support request' : sub === 'idea' ? 'Feature request' : sub === 'feedback' ? 'Feedback' : (renderFeedback.kind || 'Support request');
+        renderFeedback.kind = kind;
+        $('body').innerHTML = '<div class="fb-wrap">' + card('Send something to Family Dashboard support',
+            '<div class="fb-kinds">' + FB_KINDS.map(function (k) { return '<button type="button" class="fb-kind' + (k[0] === kind ? ' on' : '') + '" data-kind="' + k[0] + '"><span>' + k[1] + '</span><b>' + k[0] + '</b><small>' + k[2] + '</small></button>'; }).join('') + '</div>' +
+            '<label for="fbSubj">Subject</label><input id="fbSubj" maxlength="120" placeholder="' + (kind === 'Support request' ? 'e.g. The traffic widget says it can’t find my route' : kind === 'Feature request' ? 'e.g. A widget for the tide times' : 'In a few words') + '">' +
+            '<label for="fbMsg">' + (kind === 'Support request' ? 'What’s happening – and what you expected' : 'Tell us more') + '</label><textarea id="fbMsg" rows="6" maxlength="8000"></textarea>' +
+            '<label for="fbMail">Your email <span class="mute small">(optional – so support can reply by email; replies also show below)</span></label><input id="fbMail" type="email" maxlength="120" autocomplete="email">' +
+            (kind === 'Support request' ? '<label class="tog"><input type="checkbox" id="fbDiag" checked><span>Attach a diagnostics report (recommended) – it shows support exactly what’s going on. Your access code, keys, addresses and names in it are locked so only support can read them.</span></label>' : '') +
+            '<button class="btn good wide" id="fbSend">Send</button><div id="fbOut"></div>') +
+            card('What you’ve sent', '<div id="fbMine" class="mute">Looking…</div>') + '</div>';
+        $('body').querySelector('.fb-kinds').onclick = function (e) { var b = e.target.closest('[data-kind]'); if (!b) return; renderFeedback.kind = b.getAttribute('data-kind'); renderFeedback(''); };
+        $('fbSend').onclick = function () {
+            var b = this, subj = $('fbSubj').value.trim(), msg = $('fbMsg').value.trim(), mail = $('fbMail').value.trim(), diag = $('fbDiag') && $('fbDiag').checked;
+            if (!subj && !msg) { FD.toast('Write something first', true); return; }
+            if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { FD.toast('That email address doesn’t look right', true); return; }
+            b.disabled = true; b.textContent = diag ? '⏳ Making the diagnostics report… (up to a minute)' : '⏳ Sending…';
+            (diag ? FD.get('diagnostics', { app: FD.VERSION }, 240000).then(buildReport) : Promise.resolve('')).then(function (report) {
+                b.textContent = '⏳ Sending…';
+                return FD.post({ action: 'feedback', type: kind, subject: subj, message: msg, email: mail, report: report });
+            }).then(function (d) {
+                $('fbOut').innerHTML = '<p class="pos"><b>✔ Sent – thank you.</b> Your reference is <b>' + esc(d.ref) + '</b>. Replies show below.</p>';
+                $('fbSubj').value = ''; $('fbMsg').value = ''; b.disabled = false; b.textContent = 'Send another';
+                fbMine();
+            }, function (e) { b.disabled = false; b.textContent = 'Send'; $('fbOut').innerHTML = '<p class="bad">Couldn’t send it: ' + esc(e.message) + '</p>'; });
+        };
+        fbMine();
+    }
+    function fbMine() {
+        FD.post({ action: 'myFeedback' }).then(function (d) {
+            if (!$('fbMine')) return;
+            $('fbMine').classList.remove('mute');
+            $('fbMine').innerHTML = (d.rows || []).length ? d.rows.map(function (r) {
+                var done = r.status === 'Resolved' || r.status === 'Closed';
+                return '<div class="fb-row"><div class="fb-rh"><b>' + esc(r.subject || r.type) + '</b><span class="fb-st' + (done ? ' done' : '') + '">' + esc(r.status) + '</span></div>' +
+                    '<div class="mute small">' + esc(r.type) + ' · ' + esc(r.ref) + ' · sent ' + esc(r.date) + (r.updated && r.updated !== r.date ? ' · updated ' + esc(r.updated) : '') + '</div>' +
+                    (r.reply ? '<div class="fb-reply"><b>Support replied:</b> ' + esc(r.reply) + '</div>' : '') + '</div>';
+            }).join('') : '<p class="mute">Nothing yet.</p>';
+        }, function (e) { if ($('fbMine')) $('fbMine').textContent = 'Couldn’t check just now (' + e.message + ').'; });
+    }
     /** The calendar app, on the computer – with a switch between calendar pages when there's more than one. */
     function renderCalApp() {
         title('Calendar');
@@ -506,14 +558,14 @@
     /** On the phone: a page that's on the computer website instead. */
     function renderOnComputer(what) {
         title(what);
-        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on <b>Setup</b>, the Family Dashboard website for computers. On a computer, open:</p>' +
+        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>Family Dashboard Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
             '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Settings → Devices → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
     function deskCard() {
-        return card('💻 More on Setup, on a computer', '<p class="small">The screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data, diagnostics and every step-by-step guide are on <b>Setup</b>:</p>' +
+        return card('💻 Everything else is on the Configurator', '<p class="small">The Setup wizard, which widgets go on which screen, the family, the calendar’s categories, locations, data keys and your Google data are on the <b>Family Dashboard Configurator</b>, on a computer:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>');
     }
 
@@ -627,7 +679,7 @@
                 '<button class="tile" id="ptsRules"><span class="t-ico">⚖️</span><b>Set up reward rules</b><small>' + (S ? S.cashIn.points + ' points = £' + S.cashIn.value + ' · penalties ' + esc(S.penalties.join(', ')) : 'Cash-in and penalties') + '</small></button></div>' +
                 '<h3 class="sec">Each child as they’ll show on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>' : '') +
             (DESK ? '' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, who has points, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
-        if (pp && pointsOn()) $("body").onclick = pointsClick;
+        if (pp && pointsOn()) $('body').onclick = pointsClick;
         if ($('ptsRules')) $('ptsRules').onclick = function (e) { e.stopPropagation(); rulesSheet(); };
         fetchGlance();
     }
@@ -1581,9 +1633,96 @@
         cdSync(b);
     });
 
+    /* A list setting as rows of boxes, instead of typing "Name | address" lines. The server says what's in each row
+     * (f.rows); it's still stored as one line per row, the parts separated by |. With f.timed, each row can be shown all
+     * the time or only on some days and between two times. */
+    var TZS = [['Europe/London', 'UK'], ['Europe/Dublin', 'Ireland'], ['Atlantic/Canary', 'Canary Islands'], ['Europe/Lisbon', 'Portugal'], ['Europe/Paris', 'France, and most of Europe'], ['Europe/Madrid', 'Spain'],
+        ['Europe/Athens', 'Greece, Cyprus'], ['Europe/Istanbul', 'Turkey'], ['Africa/Cairo', 'Egypt'], ['Africa/Johannesburg', 'South Africa'], ['Asia/Dubai', 'Dubai'], ['Asia/Kolkata', 'India'],
+        ['Asia/Bangkok', 'Thailand'], ['Asia/Singapore', 'Singapore'], ['Asia/Hong_Kong', 'Hong Kong'], ['Asia/Shanghai', 'China'], ['Asia/Tokyo', 'Japan'], ['Australia/Perth', 'Perth'],
+        ['Australia/Sydney', 'Sydney, Melbourne'], ['Pacific/Auckland', 'New Zealand'], ['America/New_York', 'New York, Orlando (US Eastern)'], ['America/Chicago', 'Chicago (US Central)'],
+        ['America/Denver', 'Denver (US Mountain)'], ['America/Los_Angeles', 'Los Angeles (US Pacific)'], ['America/Toronto', 'Toronto'], ['America/Sao_Paulo', 'Brazil'], ['UTC', 'UTC']];
+    function rwInput(c, i, v) {
+        var a = ' class="rw-in" data-c="' + i + '"';
+        if (c.type === 'colour') return '<input type="color"' + a + ' value="' + esc(/^#[0-9a-f]{6}$/i.test(v) ? v : '#3fa9f5') + '">';
+        if (c.type === 'number') return '<input type="number" inputmode="numeric"' + a + (c.min != null ? ' min="' + c.min + '"' : '') + (c.max != null ? ' max="' + c.max + '"' : '') + ' placeholder="' + esc(c.ph || '') + '" value="' + esc(v) + '">';
+        if (c.type === 'date') { var m = /^(\d\d?)\/(\d\d?)\/(\d{4})$/.exec(v || ''); return '<input type="date"' + a + ' value="' + esc(m ? m[3] + '-' + pad(m[2]) + '-' + pad(m[1]) : v) + '">'; }
+        if (c.type === 'tz') {
+            var list = TZS.slice(); if (v && !list.some(function (z) { return z[0] === v; })) list.push([v, v]);
+            return '<select' + a + '>' + list.map(function (z) { return '<option value="' + esc(z[0]) + '"' + (z[0] === (v || 'America/New_York') ? ' selected' : '') + '>' + esc(z[1]) + '</option>'; }).join('') + '</select>';
+        }
+        return '<input' + a + (c.max ? ' maxlength="' + c.max + '"' : '') + ' placeholder="' + esc(c.ph || '') + '" value="' + esc(v) + '">';
+    }
+    function rwRow(f, parts) {
+        parts = parts || [];
+        var main = f.rows.map(function (c, i) {
+            if (c.type === 'days' || c.type === 'span') return '';
+            return '<label class="rw-c rw-' + c.type + '"><small>' + esc(c.label) + '</small>' + rwInput(c, i, parts[i] || '') + '</label>';
+        }).join('');
+        var when = '';
+        if (f.timed) {
+            var di = f.rows.findIndex(function (c) { return c.type === 'days'; }), ti = f.rows.findIndex(function (c) { return c.type === 'span'; });
+            var days = parts[di] || '', t = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/.exec(parts[ti] || ''), some = !!(days || t);
+            var hm = function (x) { return x ? pad(x.split(':')[0]) + ':' + x.split(':')[1] : ''; };
+            when = '<div class="rw-when"><select class="rw-mode"><option value="all"' + (some ? '' : ' selected') + '>Show it all the time</option><option value="some"' + (some ? ' selected' : '') + '>Only on some days and times…</option></select>' +
+                '<div class="rw-some"' + (some ? '' : ' hidden') + '>' + dayPick(null, days || 'Mon-Fri') +
+                '<span class="rw-span">from <input type="time" class="rw-from" value="' + esc(t ? hm(t[1]) : '') + '"> to <input type="time" class="rw-until" value="' + esc(t ? hm(t[2]) : '') + '"></span>' +
+                '<small class="mute">No times = all day</small></div></div>';
+        }
+        return '<div class="rw-row"><div class="rw-main">' + main + '<button type="button" class="rw-x" title="Remove" aria-label="Remove">✕</button></div>' + when + '</div>';
+    }
+    function rowsField(f, v, lab, help) {
+        var lines = String(v == null ? '' : v).split('\n').filter(function (l) { return l.trim(); });
+        var max = f.maxLines || 6;
+        return lab + help + '<div class="rw" data-rows="' + esc(f.k) + '" data-max="' + max + '"><div class="rw-list">' +
+            lines.map(function (l) { return rwRow(f, l.split('|').map(function (x) { return x.trim(); })); }).join('') + '</div>' +
+            '<button type="button" class="btn ghost small rw-add"' + (lines.length >= max ? ' disabled' : '') + '>' + esc(f.addLabel || '+ Add') + '</button>' +
+            '<textarea hidden data-f="' + esc(f.k) + '">' + esc(v || '') + '</textarea></div>';
+    }
+    var RW = {};      // the row definitions of each list setting on show, by key
+    function rwSync(box) {
+        var f = RW[box.getAttribute('data-rows')]; if (!f) return;
+        box.querySelector('[data-f]').value = Array.prototype.map.call(box.querySelectorAll('.rw-row'), function (row) {
+            var parts = f.rows.map(function (c, i) {
+                if (c.type === 'days' || c.type === 'span') {
+                    if (row.querySelector('.rw-mode').value !== 'some') return '';
+                    if (c.type === 'days') { var d = formatDays(Array.prototype.map.call(row.querySelectorAll('.dp-day'), function (b) { return b.classList.contains('on'); })); return d === 'Daily' ? '' : d; }
+                    var a = row.querySelector('.rw-from').value, b = row.querySelector('.rw-until').value;
+                    return a && b ? a + '-' + b : '';
+                }
+                var inp = row.querySelector('[data-c="' + i + '"]'); return inp ? inp.value.replace(/\|/g, ' ').trim() : '';
+            });
+            if (!parts[0]) return '';
+            while (parts.length && !parts[parts.length - 1]) parts.pop();
+            return parts.join(' | ');
+        }).filter(Boolean).join('\n');
+        box.querySelector('.rw-add').disabled = box.querySelectorAll('.rw-row').length >= Number(box.getAttribute('data-max'));
+    }
+    document.addEventListener('input', function (e) { var b = e.target.closest && e.target.closest('[data-rows]'); if (b) rwSync(b); });
+    document.addEventListener('change', function (e) {
+        var b = e.target.closest && e.target.closest('[data-rows]'); if (!b) return;
+        if (e.target.classList.contains('rw-mode')) e.target.closest('.rw-when').querySelector('.rw-some').hidden = e.target.value !== 'some';
+        rwSync(b);
+    });
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-rows]'); if (!b) return;
+        var f = RW[b.getAttribute('data-rows')], t;
+        if ((t = e.target.closest('.rw-add'))) {
+            if (b.querySelectorAll('.rw-row').length >= Number(b.getAttribute('data-max'))) return;
+            b.querySelector('.rw-list').insertAdjacentHTML('beforeend', rwRow(f, []));
+            var ins = b.querySelectorAll('.rw-row'); var first = ins[ins.length - 1].querySelector('.rw-in'); if (first) first.focus();
+        } else if ((t = e.target.closest('.rw-x'))) t.closest('.rw-row').remove();
+        else if ((t = e.target.closest('.dp-day'))) {
+            t.classList.toggle('on');
+            var dp = t.closest('.dpick'), on = Array.prototype.map.call(dp.querySelectorAll('.dp-day'), function (x) { return x.classList.contains('on'); });
+            dp.querySelector('.dp-say').textContent = daysSay(on);
+        } else return;
+        rwSync(b);
+    });
+
     function field(f, v) {
         var id = 'f_' + f.k, help = f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '';
         var lab = '<label for="' + id + '">' + esc(f.label) + (f.max && f.type === 'text' ? ' <span class="cnt">max ' + f.max + '</span>' : '') + '</label>';
+        if (f.ui === 'rows' && f.rows) { RW[f.k] = f; return rowsField(f, v, '<label>' + esc(f.label) + '</label>', help); }
         if (f.ui === 'cats' || f.ui === 'dates') {
             var lab2 = '<label>' + esc(f.label) + '</label>', h = f.ui === 'cats' ? catsField(f, v, lab2, help) : datesField(f, v, lab2, help);
             if (h) return h;
@@ -1667,7 +1806,7 @@
                 w.size = body.size; w.show = body.show; w.when = body.when.ShowDays === 'Every day' && body.when.ShowFrom === '00:00' && body.when.ShowUntil === '24:00' ? null : body.when;
             });
             act({ action: 'saveWidget', widget: body }, 'Saved – the screen updates within a minute')
-                .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
         if ($('wDel')) $('wDel').onclick = function () {
             var others = (DATA.widgets || []).some(function (x) { return x.id !== w.id && x.type === w.type; });
@@ -1685,9 +1824,11 @@
     }
     /** Show a change on the phone at once and close the form, while it's saved in the background. */
     function savingNow(w, apply) {
+        if (CHECKED_W[w.type]) return;      // checked by the Google script first (addresses, codes…): the box stays open until it's saved
         apply(); closeSheet(); setData(DATA);
         FD.toast('Saving…');
     }
+    var CHECKED_W = { traffic: 1, bins: 1, clock: 1, timer: 1, trains: 1 };
     /** A time picked from a list (every half hour) – phone keyboards often have no colon. */
     function timeSel(id, v, end) {
         var opts = [];
@@ -1724,7 +1865,7 @@
             var vals = readFields();
             savingNow(w, function () { Object.keys(vals).forEach(function (k) { w.settings[k] = vals[k]; }); });
             act({ action: 'saveWidget', widget: { id: w.id, settings: vals } }, 'Saved – the screen updates within a minute')
-                .then(function () { delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
         };
     }
     function addWidgetSheet(pid) {
@@ -1782,6 +1923,17 @@
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
             (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+    }
+    /** The phone's More: help and support, then the few settings that are on the phone, then the Configurator. */
+    function renderMore() {
+        title('More');
+        var row = function (go, ico, name, what) { return '<button class="mrow" data-go="' + go + '"><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></button>'; };
+        $('body').innerHTML = '<h3 class="sec">Help and support</h3><div class="menu">' +
+            row('help', '❓', 'Help', 'Answers to common questions, by topic') +
+            row('feedback', '💬', 'Feedback and support', 'Ask for help, suggest something, tell us what you think – and see replies') +
+            row('s/support', '🩺', 'About & diagnostics', SECTIONS.support[2]) + '</div>' +
+            '<h3 class="sec">Settings</h3><div class="menu">' + ['screen', 'licence', 'devices', 'updates'].map(function (k) { return row('s/' + k, SECTIONS[k][0], SECTIONS[k][1], sectionLine(k)); }).join('') + '</div>' +
+            deskCard() + '<p class="mute small center">Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);

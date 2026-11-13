@@ -1,6 +1,8 @@
 /* The settings website on a computer: the phone app's pages, wider. */
-body.desk .main { max-width: 980px; margin: 0 auto; width: 100%; box-sizing: border-box; }
-body.desk .top-row { max-width: 980px; margin: 0 auto; }
+/* One width for the whole website: the title bar and every page line up, and use the screen up to --deskw (narrower screens: all of it) */
+body.desk { --deskw: 1600px; }
+body.desk .main { max-width: var(--deskw); margin: 0 auto; width: 100%; box-sizing: border-box; padding-left: clamp(14px, 2vw, 28px); padding-right: clamp(14px, 2vw, 28px); }
+body.desk .top-row { max-width: var(--deskw); margin: 0 auto; padding-left: clamp(14px, 2vw, 28px); padding-right: clamp(14px, 2vw, 28px); box-sizing: border-box; }
 body.desk #app { display: flex; flex-direction: column; }
 body.desk .top { order: 0; } body.desk .tabbar { order: 1; } body.desk .main { order: 2; padding-bottom: 40px; }
 body.desk .tabbar { position: sticky; top: 61px; left: auto; right: auto; bottom: auto; transform: none; width: 100%; border-radius: 0; border-top: 0; border-bottom: 1px solid var(--line); justify-content: center; padding-bottom: 0; }
@@ -21,7 +23,7 @@ body.desk .sheet { max-width: 620px; border-radius: 18px; max-height: 88vh; }
 body.desk .tabbar button { font-size: 13px; }
 
 /* The widget box: how it appears on the left, its own settings on the right */
-body.desk .sheet.wide { max-width: 980px; width: 94vw; }
+body.desk .sheet.wide { max-width: 1200px; width: 94vw; }
 .ws-cols { display: grid; gap: 14px; margin-top: 14px; }
 body.desk .ws-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 26px; align-items: start; }
 body.desk .ws-cols.one { grid-template-columns: minmax(0, 1fr); }
@@ -61,7 +63,7 @@ body.desk .lrow .x { top: 50%; transform: translateY(-50%); width: 28px; height:
 /* Help and the calendar, inside the website */
 .frame-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
 .desk-frame { width: 100%; height: calc(100vh - 190px); min-height: 520px; border: 1px solid var(--line, #2a303b); border-radius: 14px; background: #0b0d12; }
-body.desk .main:has(.desk-frame) { max-width: 1500px; }
+
 
 /* Family: one line per person */
 .fp-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -70,7 +72,7 @@ body.desk .main:has(.desk-frame) { max-width: 1500px; }
 .fp-row .ptb { flex: none; }
 
 /* Pages with a menu down the left (Rewards, Advanced) */
-body.desk .main:has(.pane) { max-width: 1280px; }
+
 .pane { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 22px; align-items: start; }
 .pane-nav { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 2px; background: var(--panel, #12161d); border: 1px solid var(--line, #2a303b); border-radius: 14px; padding: 8px; }
 .pn { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; color: inherit; text-decoration: none; }
@@ -105,7 +107,7 @@ body.desk .lrow.l-todos, body.desk .lhead.l-todos { grid-template-columns: 34px 
 body.desk { font-size: 16px; }
 body.desk .page-h, body.desk .pane-h { font-size: 28px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; margin: 4px 0 18px; }
 body.desk .pane-h { margin-bottom: 6px; }
-body.desk .pane-what { font-size: 15.5px; line-height: 1.55; margin: 0 0 18px; max-width: 900px; }
+body.desk .pane-what { font-size: 15.5px; line-height: 1.55; margin: 0 0 18px; max-width: 1100px; }
 body.desk .card { padding: 20px 22px; margin-bottom: 18px; border-radius: 16px; }
 body.desk .card > h2, body.desk .card.explain summary b { font-size: 20px; font-weight: 750; line-height: 1.25; margin: 0 0 12px; display: block; }
 body.desk .card p, body.desk .card li { font-size: 16px; line-height: 1.55; }
@@ -150,3 +152,6 @@ body.desk .hdr-help:hover, body.desk .hdr-help.on { border-color: #3fa9f5; color
 .hm-go span { grid-column: 1; font-size: 14px; color: var(--mute, #8b95a5); }
 .hm-go i { grid-column: 2; grid-row: 1 / 3; font-style: normal; font-size: 26px; color: #4ade80; }
 .hm-go:hover { border-color: #4ade80; }
+
+/* The tab bar lines up with the title bar too */
+body.desk .tabbar { box-sizing: border-box; }

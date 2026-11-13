@@ -76,17 +76,20 @@
         return '<div class="ed-col">' + c.map(tile).join('') + '</div>';
     }
     /** The menu down the left of the screen: a button for each screen (click one to go to it, or drop a widget on it). */
-    // On a tablet a widget screen with more than two columns is in parts (Home 1, Home 2), each with its own button.
+    // The screen's own menu, exactly as the screen builds it: every screen that's shown (the points screen too, one button
+    // for each 3 children), and on a tablet a widget screen with more than two columns in two parts (Home 1, Home 2).
+    // Then the microphone with its status dot, and the version.
     function rail(p, part) {
-        var tab = load(KEY_F, 'wide') === 'standard', out = '';
-        pages().filter(function (x) { return x.show || x.id === p.id; }).forEach(function (x) {
-            var n = tab && x.type === 'widgets' ? Math.max(1, Math.ceil(Math.min(pack(onPage(x.id)).length, 4) / 2)) : 1;
+        var tab = load(KEY_F, 'wide') === 'standard', out = '', all = (D().pages || []).slice().sort(function (a, b) { return a.order - b.order; });
+        all.filter(function (x) { return x.show || x.id === p.id; }).forEach(function (x) {
+            var n = x.type === 'boys' ? Math.max(1, Math.ceil((x.children || 0) / 3)) : tab && x.type === 'widgets' && pack(onPage(x.id)).length > 2 ? 2 : 1;
             for (var k = 0; k < n; k++) {
-                var t = n > 1 ? x.title + ' ' + (k + 1) : x.title;
-                out += '<div class="ed-page ed-rb' + (x.id === p.id && (n === 1 || k === (part || 0)) ? ' on' : '') + '" data-page="' + esc(x.id) + '" title="' + esc(t) + '"><span>' + esc(x.icon) + '</span><small>' + esc(t) + '</small></div>';
+                var t = n > 1 ? x.title + ' ' + (k + 1) : x.title, on = x.id === p.id && (n === 1 || k === (part || 0));
+                out += '<div class="' + (x.type === 'boys' ? '' : 'ed-page ') + 'ed-rb' + (on ? ' on' : '') + '" data-page="' + esc(x.id) + '" title="' + esc(t) + '"><span>' + esc(x.type === 'calendar' ? '📅' : x.icon) + '</span><small>' + esc(t) + '</small></div>';
             }
         });
-        return '<div class="ed-rail">' + out + '<div class="ed-rmic" title="Voice">🎤</div></div>';
+        var ver = (window.FD && window.FD.VERSION) || '';
+        return '<div class="ed-rail">' + out + '<div class="ed-rfoot"><span class="ed-rmic">🎤<i></i></span>' + (ver ? '<small>v' + esc(ver) + '</small>' : '') + '</div></div>';
     }
     function frame(cols, n, label, cls, p, part) {
         var shown = cols.slice(0, n), body = shown.map(column).join('');
