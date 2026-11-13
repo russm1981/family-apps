@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.118",
+    "date": "2026-11-13",
+    "notes": [
+      "Screens: the buttons down the left of the calendar and children’s pictures now work like on the widget screens – click one to go to that screen",
+      "Screens: the version number on the pictures is grey, not orange"
+    ]
+  },
+  {
     "version": "2026.11.117",
     "date": "2026-11-13",
     "notes": [

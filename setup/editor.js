@@ -313,7 +313,7 @@
                 return;
             }
             if ((t = e.target.closest('[data-del]'))) { e.stopPropagation(); remove(t.getAttribute('data-del')); return; }
-            if ((t = e.target.closest('.ed-page'))) { store(KEY_P, t.getAttribute('data-page')); render(); return; }
+            if ((t = e.target.closest('.ed-page, .ed-rb[data-page]'))) { store(KEY_P, t.getAttribute('data-page')); render(); return; }
             if ((t = e.target.closest('[data-sub]')) && !e.target.closest('.pending')) { H.widgetSheet(t.getAttribute('data-sub')); return; }
             if ((t = e.target.closest('.ed-tile, .ed-chip')) && !t.classList.contains('pending')) { H.widgetSheet(t.getAttribute('data-id')); return; }
         };

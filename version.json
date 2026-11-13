@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.117",
+  "app": "2026.11.118",
   "script": "2026.11.68",
   "date": "2026-11-13",
   "notes": [
-    "Widget row editors (e.g. traffic destinations): the days and times sit on one row, without the “school days” and “No times = all day” explanations"
+    "Screens: the buttons down the left of the calendar and children’s pictures now work like on the widget screens – click one to go to that screen",
+    "Screens: the version number on the pictures is grey, not orange"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",
