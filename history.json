@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.123",
+    "date": "2026-11-13",
+    "notes": [
+      "Setup wizard page: the second button is blue too, and says “Rerun the wizard to reconfigure the current MacMillan family data” (with your family name)"
+    ]
+  },
+  {
     "version": "2026.11.122",
     "date": "2026-11-13",
     "notes": [
