@@ -1,12 +1,11 @@
 {
-  "app": "2026.11.72",
-  "script": "2026.11.46",
-  "date": "2026-11-08",
+  "app": "2026.11.73",
+  "script": "2026.11.47",
+  "date": "2026-11-13",
   "notes": [
-    "Setup → Screen layout: a 🗑 on each widget, and a bin to drag widgets onto, to remove them; removing (from there or the widget’s own box) happens straight away, and a “won’t fit” box disappears as soon as it’s empty",
-    "Setup → Screen layout: widgets that don’t fit are shown underneath, ready to drag elsewhere or click to remove; calendar and points screens are drawn at the same size (without your data), and the points screen explains that extra screens are added for more children",
-    "Setup → Reconfigure opens each page on its own (no step list), with “Back to Setup”",
-    "The Family tab has a “Reconfigure the family” link – on the phone it points to Setup"
+    "Children are now widgets: each child’s points card is a full-height widget you can put on any screen (four fit on one). Your points page has been turned into a screen of child widgets in the same place – move them about in Setup → Screen layout",
+    "A new child (Family & calendar → ⭐ Points) gets a widget of their own; renaming a child keeps theirs, and taking a child off points removes it (their points are kept)",
+    "Setup → Screen layout: no separate points screen to add any more – drag “Child (points)” from the widget list instead"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.15",

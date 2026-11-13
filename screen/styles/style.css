@@ -1133,3 +1133,22 @@ body.fmt-standard .cal-month span { font-size: 0.62rem; }
 body.fmt-standard .boy-body { overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 body.fmt-standard .col-right { overflow: visible; }
 body.fmt-standard .boy-body { grid-template-rows: auto auto; }
+
+/* ---- Child widget: one child's points card, a quarter of the screen wide and full height */
+.wg-child { padding: 0; background: none; border: 0; display: flex; }
+.wg-child .child-slot { flex: 1; min-width: 0; min-height: 0; display: flex; }
+.wg-child .boy { flex: 1; padding: 0.8rem 0.9rem; }
+.wg-child .boy-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); gap: 0.6rem; margin-top: 0.45rem; }
+.wg-child .col-left { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "score cash" "bar bar" "lbl lbl" "pens pens"; gap: 0.4rem 0.7rem; align-items: center; }
+.wg-child .score { grid-area: score; } .wg-child .score .num { font-size: 3.2rem; }
+.wg-child .cash { grid-area: cash; height: 2.8rem; font-size: 1rem; }
+.wg-child .bar { grid-area: bar; } .wg-child .bar-lbl { grid-area: lbl; }
+.wg-child .pens { grid-area: pens; } .wg-child .pen { height: 2.5rem; }
+.wg-child .stmt { display: none; }
+.wg-child .col-right { overflow: hidden; }
+.wg-child .rem-row .chip { max-width: 8.5rem; }
+.wg-child .task { min-height: 2.9rem; } .wg-child .todo { min-height: 2.3rem; }
+.wg-child .col-right { gap: 0.45rem; }
+.child-msg { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--mute);
+    font-size: 1.15rem; line-height: 1.5; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1rem; }
+.child-msg b { color: var(--text); }

@@ -452,9 +452,7 @@
                 $('ptsRow').style.display = pk.length ? '' : 'none';
                 $('ptsNote').textContent = (!kids.length ? 'Mark someone as a child to use the points page.'
                     : !pk.length ? 'Nobody has ⭐ Points ticked, so the points page is left as it is.'
-                    : pk.length <= 3 ? 'The “' + title + '” points page shows ' + names(pk) + ' side by side.'
-                    : 'With ' + pk.length + ' children the points page is split in two to keep it neat: “' + title + ' 1” (' + names(pk.slice(0, Math.ceil(pk.length / 2))) +
-                      ') and “' + title + ' 2” (' + names(pk.slice(Math.ceil(pk.length / 2))) + ').') +
+                    : 'Each of ' + names(pk) + ' gets a points widget, on a “' + title + '” screen (four fit on a screen). You can move them to any screen in Screen layout.') +
                     (pk.length && off.length ? ' Not on it: ' + names(off) + ' (their points are kept if you tick them again).' : '');
             }
         } },

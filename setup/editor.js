@@ -1,5 +1,5 @@
 /* The screen layout editor on the Setup website (computer only).
- *   left    the screens (pages): pick one, reorder, add one (widgets, calendar or children's points)
+ *   left    the screens (pages): pick one, reorder, add one (widgets or calendar; each child is a widget)
  *   middle  the chosen screen as it will look on a Corsair XENEON EDGE, a tablet or a computer – drag widgets about
  *   right   every kind of widget: drag one onto the screen to add it
  * A widget with "When to show" is drawn split diagonally: itself top-left, the widget shown at other times bottom-right,
@@ -18,7 +18,7 @@
 
     function D() { return H.data(); }
     function esc(s) { return H.esc(s); }
-    function pages() { return (D().pages || []).slice().sort(function (a, b) { return a.order - b.order; }); }
+    function pages() { return (D().pages || []).filter(function (p) { return p.type !== 'boys'; }).slice().sort(function (a, b) { return a.order - b.order; }); }
     function onPage(pid, all) { return (D().widgets || []).filter(function (w) { return w.page === pid && (all || w.show); }).sort(function (a, b) { return a.order - b.order; }); }
     function pack(ws) {   // the same as the screen (widgets.js)
         var cols = [];
@@ -50,6 +50,8 @@
             return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
                 '<small class="when">⏰ ' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + ' · empty otherwise</small></div>';
         }
+        if (w.type === 'child') return '<div class="' + cls + ' kid" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(w.settings && w.settings.Child || 'Child') + '</b>' +
+            '<small>Points, tasks, morning to-dos and reminders</small></div>';
         return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
             '<small>' + esc(H.summary(w) || '') + '</small></div>';
     }
@@ -132,7 +134,7 @@
                     '<span class="pt"><b>' + esc(x.title) + '</b><small>' + esc(x.type === 'widgets' ? onPage(x.id).length + ' widgets' : H.pageTypeOf(x.type).name) + (x.show ? '' : ' · hidden') + '</small></span>' +
                     '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + '>▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + '>▼</button></span></div>';
             }).join('') +
-            '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option><option value="boys">Children’s points</option></select>' +
+            '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
             '<button class="btn sm" id="edAdd">Add</button></div></aside>' +
             '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2><span class="mute small">' + esc(H.pageTypeOf(p.type).name) + (p.show ? '' : ' · hidden') + '</span>' +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button></div>' + screenView(p) +

@@ -282,6 +282,8 @@
     function widgetsOn(pid) { return (DATA.widgets || []).filter(function (w) { return w.page === pid; }); }
     function calPage() { return (DATA.pages || []).filter(function (p) { return p.type === 'calendar'; })[0]; }
     function pointsPage() { return (DATA.pages || []).filter(function (p) { return p.type === 'boys'; })[0]; }
+    /** Points are in use: a child widget on a screen (or, on an older layout, the points page showing). */
+    function pointsOn() { var pp = pointsPage(); return (DATA.widgets || []).some(function (w) { return w.type === 'child'; }) || !!(pp && pp.show !== false); }
     function lines(v) { return String(v || '').split('\n').map(function (l) { return l.split('|')[0].trim(); }).filter(Boolean); }
     var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     function nice(ymd) { var d = FD.parse(ymd); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
@@ -327,10 +329,10 @@
             '<a class="tile" href="' + esc(cal) + '"><span class="t-ico">📅</span><b>Family Calendar</b><small>Opens the calendar app – see and add events</small></a>' +
             (cp ? '<button class="tile" id="calSet"><span class="t-ico">⚙</span><b>Calendar page</b><small>' + esc((cp.settings || {}).DefaultView || 'Which view it opens on') + '</small></button>' : '') +
             fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') + '</div>' +
-            (pp && pp.show !== false ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
+            (pp && pointsOn() ? '<h3 class="sec">' + esc(pp.title) + ' <button class="link" data-go="points">Set up points ›</button></h3>' + boysCards() : '') +
             (DESK ? '<a class="link-card" href="' + esc(setupLink('family')) + '"><b>👪 Reconfigure the family ›</b><span class="mute small">Who’s in the family, who’s on the points page, calendar groups and colours, which Google calendars.</span></a>' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, the points page, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
         if ($('calSet')) $('calSet').onclick = function () { pageSheet(cp); };
-        if (pp && pp.show !== false) $('body').onclick = pointsClick;
+        if (pp && pointsOn()) $("body").onclick = pointsClick;
         fetchGlance();
     }
     function renderOther() {
@@ -1646,7 +1648,7 @@
         };
         var pp = pointsPage();
         $('body').innerHTML = '<div id="famForm">' +
-            card('Everyone in the family', '<p class="mute small">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Tap ⭐ to put a child on the points page, or take them off – their points are kept.</p>' +
+            card('Everyone in the family', '<p class="mute small">Up to ' + LM.people + ' people, of whom up to ' + LM.children + ' children. Tap ⭐ to give a child points (a points widget for the screen), or take them off – their points are kept.</p>' +
                 '<div id="ppl">' + F.people.map(person).join('') + '</div><button class="btn ghost wide" id="addP">+ Add a person</button>') +
             card('Groups on the calendar', '<p class="mute small">Each person shows in their group’s colour on the calendar key, with their name in brackets, e.g. “Drums (Ben)”.</p>' +
                 group('children', 'Children’s group', F.children) + group('adults', 'Adults’ group', F.adults) +
@@ -1712,7 +1714,7 @@
             var f = collect(), on = f.people.filter(function (p) { return p.points; }), off = f.people.filter(function (p) { return p.role === 'child' && !p.points; });
             var names = function (a) { return a.map(function (p) { return p.name; }).join(', '); };
             $('famNote').textContent = !on.length ? 'Nobody is on the points page, so it’s left as it is.' :
-                'Points page: ' + names(on) + (on.length > 3 ? ' (split over two screens)' : '') + '.' + (off.length ? ' Not on it: ' + names(off) + '.' : '');
+                'Points widgets: ' + names(on) + ' (move them about in Setup → Screen layout).' + (off.length ? ' Not on it: ' + names(off) + '.' : '');
         }
         note();
         $('famSave').onclick = function () {

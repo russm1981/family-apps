@@ -131,7 +131,7 @@
         var base = Math.floor(n / parts), extra = n % parts, start = part * base + Math.min(part, extra);
         return [start, start + base + (part < extra ? 1 : 0)];
     }
-    window.FDBoys = { onShow: function (part, parts) { boysPart = part || 0; boysParts = parts || 1; renderBoys(); if (!busy) refresh(); }, range: boysRange,
+    window.FDBoys = { paint: function () { paintChildren(); }, click: function (e) { onBoysClick(e); }, onShow: function (part, parts) { boysPart = part || 0; boysParts = parts || 1; renderBoys(); if (!busy) refresh(); }, range: boysRange,
         state: function () { return state; }, refresh: function () { return refresh(); } };
 
     /* ---------------------------------------------------------- refresh */
@@ -169,12 +169,14 @@
             grid.innerHTML = '';
             msg.innerHTML = '<b>Not connected yet.</b><br>In iCUE, open this widget’s settings and paste the web app URL and access code from your Google Sheet.';
             msg.style.display = 'flex';
+            paintChildren();
             return;
         }
         if (!state) {
             grid.innerHTML = '';
             msg.innerHTML = lastSyncError ? '<b>Can’t reach the Google Sheet.</b><br>' + esc(lastSyncError) : 'Loading…';
             msg.style.display = 'flex';
+            paintChildren();
             return;
         }
         msg.style.display = 'none';
@@ -182,11 +184,29 @@
         // 1–3 children share one screen; 4–6 are split over two (4 → 2+2, 5 → 3+2, 6 → 3+3).
         var rng = boysRange(s.boys.length, boysPart);
         grid.style.gridTemplateColumns = 'repeat(' + Math.max(rng[1] - rng[0], 1) + ', minmax(0, 1fr))';
-        grid.innerHTML = s.boys.map(function (b, bi) {
-            if (bi < rng[0] || bi >= rng[1]) return '';
+        grid.innerHTML = s.boys.map(function (b, bi) { return bi < rng[0] || bi >= rng[1] ? '' : boyCard(b, bi, s); }).join('');
+        paintChildren();
+        if (panel) renderPanel();
+    }
+    /** Child widgets (on any widget page): each shows one child's card, found by name. */
+    function paintChildren() {
+        Array.prototype.forEach.call(document.querySelectorAll('.child-slot'), function (el) {
+            var name = el.getAttribute('data-child') || '', s = state;
+            if (!cfg.url || !cfg.code) { el.innerHTML = '<div class="child-msg">Not connected yet.</div>'; return; }
+            if (!s) { el.innerHTML = '<div class="child-msg">' + (lastSyncError ? 'Can’t reach the Google Sheet.<br>' + esc(lastSyncError) : 'Loading…') + '</div>'; return; }
+            var bi = -1;
+            s.boys.forEach(function (b, i) { if (bi < 0 && String(b.name).toLowerCase() === name.toLowerCase()) bi = i; });
+            if (bi < 0 && !name && s.boys.length) bi = 0;
+            el.innerHTML = bi < 0 ? '<div class="child-msg"><b>' + esc(name || 'No child picked') + '</b><br>isn’t on the points list – pick a child in this widget’s settings.</div>' : boyCard(s.boys[bi], bi, s, true);
+        });
+    }
+    function boyCard(b, bi, s, compact) {     // compact: the child widget (a quarter of the screen) – two tasks, not three
+        var target = s.cashIn.points;
+        {
             var pct = Math.max(0, Math.min(100, (b.balance / target) * 100));
             var canCash = b.balance >= target;
-            var tasks = b.tasks.length ? b.tasks.map(function (t) { return taskBtn(bi, t); }).join('') : '<div class="empty">No tasks waiting 🎉</div>';
+            var shownTasks = compact ? b.tasks.slice(0, 2) : b.tasks;
+            var tasks = shownTasks.length ? shownTasks.map(function (t) { return taskBtn(bi, t); }).join('') : '<div class="empty">No tasks waiting 🎉</div>';
             var nTasks = b.openTaskCount || b.tasks.length;
             // Only 3 to-dos fit: show what's still to do first, then the rest as "+2 more".
             var order = b.todos.map(function (t, ti) { return ti; }).sort(function (x, y) { return (b.todos[x].done - b.todos[y].done) || (x - y); });
@@ -234,15 +254,14 @@
                         '<div class="stmt">' + stmt + '</div>' +
                     '</div>' +
                     '<div class="col-right">' +
-                        '<h3>Next tasks' + (nTasks > b.tasks.length ? '<button class="more-btn" data-act="panel" data-sec="tasks" data-boy="' + bi + '" title="All ' + nTasks + ' tasks">\u203a\u203a\u203a</button>' : '') + '</h3>' +
+                        '<h3>Next tasks' + (nTasks > shownTasks.length ? '<button class="more-btn" data-act="panel" data-sec="tasks" data-boy="' + bi + '" title="All ' + nTasks + ' tasks">\u203a\u203a\u203a</button>' : '') + '</h3>' +
                         '<div class="tasks">' + tasks + '</div>' +
                         '<h3>This morning' + (order.length > showN ? '<button class="more-btn" data-act="panel" data-sec="todos" data-boy="' + bi + '" title="All ' + order.length + ' to-dos">\u203a\u203a\u203a</button>' : '') + '</h3>' +
                         '<div class="todos">' + todos + '</div>' +
                     '</div>' +
                 '</div>' +
             '</article>';
-        }).join('');
-        if (panel) renderPanel();
+        }
     }
 
     function taskBtn(bi, t) {
@@ -381,6 +400,7 @@
         } catch (e) { /* ignore */ }
 
         $('boysGrid').addEventListener('click', onBoysClick);
+        if ($('screens')) $('screens').appendChild($('boyPanel'));     // over whichever page is showing (child widgets are on widget pages)
         $('boyPanel').addEventListener('click', function (e) {
             poke();
             if (e.target.closest('[data-close]') || e.target === $('boyPanel')) { closePanel(); return; }

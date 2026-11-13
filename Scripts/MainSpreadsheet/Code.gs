@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.46';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.47';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -301,6 +301,10 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
+  child: { name: 'Child (points)', icon: '\u2B50', sizes: ['full'], about: 'One child’s points, tasks, morning to-dos and reminders. There’s one for each child – put them on any screen.',
+    settings: [
+      { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
+    ] },
   memo: { name: 'Memo', icon: '📌', sizes: ['half', 'full'], about: 'Sticky notes for the family. Add from the phone or the screen; tap one to remove it.',
     settings: [
       { k: 'KeepDays', label: 'Remove notes after (days)', type: 'number', def: 7, min: 1, max: 90 },
@@ -330,11 +334,11 @@ Object.assign(WIDGET_TYPES, {
     ],
     data: (s) => s.Duolingo ? duolingo_(s.Duolingo) : null },
 });
-const LAYOUT_VER = '7';   // 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
+const LAYOUT_VER = '8';   // 8: each child is a widget (the separate points page is hidden; its settings stay on it) · 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
-  ['boys', 'Boys', 'boys', '\u2605', 2, 'Yes'],
+  ['boys', 'Boys', 'boys', '\u2605', 2, 'No'],     // holds the points settings; the children themselves are widgets
   ['calendar', 'Calendar', 'calendar', '\u25A6', 3, 'Yes'],
   ['other', 'Other', 'widgets', '\u25C8', 4, 'Yes'],
   ['family', 'Family', 'widgets', '\u2726', 5, 'Yes'],
@@ -477,6 +481,7 @@ function migrate_() {
       if (lines.length) carry.push(['traffic1', 'Destinations', lines.slice(0, 3).join('\n')]);
     }
     if (carry.length) sheet_('wset').getRange(sheet_('wset').getLastRow() + 1, 1, carry.length, 3).setValues(carry.map(r => [r[0], r[1], String(r[2])]));
+    if (childNames_().length) syncChildWidgets_(childNames_());     // children already on the points list: a widget each
   }
   if (oldSh && !ss.getSheetByName('Old settings')) oldSh.setName('Old settings');
   const oldDest = ss.getSheetByName('Destinations');
@@ -489,6 +494,7 @@ function migrate_() {
  * Family and Discover, are added with the new widgets. Anything you already have is left alone.
  */
 function upgradeLayout_() {
+  const was = Number(PropertiesService.getScriptProperties().getProperty('layoutVer')) || 0;
   const pages = rows_('pages').map(p => String(p.Page).trim());
   const ws = rows_('widgets');
   const ids = ws.map(w => String(w.Widget).trim());
@@ -521,7 +527,7 @@ function upgradeLayout_() {
   // Kitchen timer: the old standard buttons (1–20 minutes) become 3, 5, 10, 15, 20, 30.
   setColumn_('wset', 'Value', r => String(r[1]).trim() === 'Presets' && String(r[2]).replace(/\s/g, '') === '1,3,5,10,15,20' ? '3,5,10,15,20,30' : undefined);
   // Version 5 (Nov 2026): the word of the day was Spanish by default; this family learns French.
-  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '5') {
+  if (was < 5) {
     const words = rows_('widgets').filter(w => String(w.Type).trim() === 'words').map(w => String(w.Widget).trim());
     setColumn_('wset', 'Value', r => words.indexOf(String(r[0]).trim()) >= 0 && String(r[1]).trim() === 'Language' && String(r[2]).trim() === 'Spanish' ? 'French' : undefined);
     const has = rows_('wset').filter(r => String(r.Setting).trim() === 'Language').map(r => String(r.Widget).trim());
@@ -529,7 +535,7 @@ function upgradeLayout_() {
   }
   // Version 6 (Nov 2026): write every setting that's still on its default into the Sheet, so a later change of
   // default (e.g. the home address and destinations becoming blank for new families) never changes this one.
-  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '6') {
+  if (was < 6) {
     const have = {}; rows_('install').forEach(r => { have[String(r.Setting).trim()] = 1; });
     INSTALL.filter(f => !f.hidden && f.def != null && f.def !== '' && !have[f.k]).forEach(f => setInst_(f.k, f.def));
     const got = {}; rows_('wset').forEach(r => { got[String(r.Widget).trim() + '|' + String(r.Setting).trim()] = 1; });
@@ -542,12 +548,67 @@ function upgradeLayout_() {
   }
   // Version 7 (Nov 2026): automatic updates are the default now. Sheets made before that had them off without anyone
   // choosing it – switch them on, unless a person has turned them off on purpose since (autoUpdateChosen).
-  if (PropertiesService.getScriptProperties().getProperty('layoutVer') !== '7' && !autoUpdateOn_() &&
+  if (was < 7 && !autoUpdateOn_() &&
       PropertiesService.getScriptProperties().getProperty('autoUpdateChosen') !== 'off') {
     try { setAutoUpdate_(true); } catch (err) { console.warn('Automatic updates: ' + err.message); }
   }
+  // Version 8 (Nov 2026): the points page becomes one widget per child, on a widget page in the same place.
+  // The old page stays (hidden) because it holds the cash-in and penalty settings.
+  if (was < 8) {
+    const bp = rows_('pages').find(p => String(p.Type).toLowerCase() === 'boys');
+    if (bp && yes_(bp.Show, true) && !rows_('widgets').some(w => String(w.Type).trim() === 'child')) {
+      setColumn_('pages', 'Show', r => String(r[2]).toLowerCase() === 'boys' ? 'No' : undefined);
+      syncChildWidgets_(rows_('boys').map(b => String(b.Name || '').trim()).filter(Boolean));
+    }
+  }
   renumber_('widgets');
 }
+
+/**
+ * Child widgets follow the points list: a child taken off loses their widget (its settings stay), and each child in
+ * "added" who has no widget yet gets one – on a page that already has child widgets and room for it, or on a new page
+ * named like the points page, placed where the points page was.
+ */
+function syncChildWidgets_(added) {
+  const names = rows_('boys').map(b => String(b.Name || '').trim()).filter(Boolean);
+  const all = wsetAll_(), has = {}, gone = [];
+  rows_('widgets').filter(w => String(w.Type).trim() === 'child').forEach(w => {
+    const id = String(w.Widget).trim(), c = String((all[id] || {}).Child || '').trim();
+    if (names.indexOf(c) >= 0) has[c] = has[c] || id; else gone.push(id);
+  });
+  if (gone.length) deleteWhere_('widgets', r => gone.indexOf(String(r[0]).trim()) >= 0);
+  const need = names.filter(n => !has[n] && (added || []).indexOf(n) >= 0);
+  if (need.length) {
+    const bp = rows_('pages').find(p => String(p.Type).toLowerCase() === 'boys');
+    const title = String(bp && bp.Title || 'Points');
+    const used = pg => rows_('widgets').filter(w => String(w.Page).trim() === pg && yes_(w.Show, true))
+      .reduce((n, w) => n + (String(w.Size).trim().toLowerCase() === 'half' ? 1 : 2), 0);    // half-height slots used (8 on a page)
+    const homes = [];
+    rows_('widgets').filter(w => String(w.Type).trim() === 'child').forEach(w => { const pg = String(w.Page).trim(); if (homes.indexOf(pg) < 0) homes.push(pg); });
+    need.forEach(name => {
+      let pg = homes.find(x => used(x) <= LIMITS.columns * 2 - 2);
+      if (!pg) {
+        const pages = rows_('pages');
+        if (pages.length >= 8) return;      // no room for another page: it can be added from Setup → Screen layout
+        let id = 'kids', n = '';
+        while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
+        const last = homes.length ? pages.find(p => String(p.Page).trim() === homes[homes.length - 1]) : bp;
+        sheet_('pages').appendRow([id + n, title, 'widgets', '\u2605', (Number(last && last.Order) || pages.length) + 0.5, 'Yes']);
+        renumber_('pages');
+        pg = id + n; homes.push(pg);
+      }
+      const ids = rows_('widgets').map(w => String(w.Widget).trim());
+      const kept = Object.keys(all).filter(k => /^child\d+$/.test(k) && ids.indexOf(k) < 0 && String(all[k].Child || '').trim() === name)[0];
+      let k = 1; while (ids.indexOf('child' + k) >= 0 || (all['child' + k] && 'child' + k !== kept)) k++;
+      const id = kept || 'child' + k;
+      sheet_('widgets').appendRow([id, pg, 999, 'child', 'full', 'Yes']);
+      setWset_(id, 'Child', name);
+    });
+  }
+  renumber_('widgets');
+}
+/** The children on the points list (for the "Which child" setting). */
+function childNames_() { return rows_('boys').map(b => String(b.Name || '').trim()).filter(Boolean); }
 
 /** New code, old Sheet: set up the new tabs automatically on the first request. */
 /* ---- A copy of someone else's dashboard Sheet must never show their family.
@@ -889,7 +950,7 @@ function getAdmin_() {
 }
 function schemaOut_(k, T) {
   return { type: k, name: T.name, icon: T.icon || '', about: T.about || '', sizes: T.sizes || [], single: !!T.single,
-    settings: T.settings.map(f => Object.assign({}, f)) };
+    settings: T.settings.map(f => f.type === 'child' ? Object.assign({}, f, { type: 'select', options: childNames_() }) : Object.assign({}, f)) };
 }
 
 function saveTask_(t) {
@@ -1187,7 +1248,7 @@ function whenSettings_() {
     { k: 'ShowDays', label: 'Show on', type: 'select', def: 'Every day', options: Object.keys(WHEN_DAYS) },
     { k: 'ShowFrom', label: 'From', type: 'time', def: '00:00' },
     { k: 'ShowUntil', label: 'Until', type: 'time', def: '24:00' },
-    { k: 'OtherTimes', label: 'At other times show', type: 'select', def: '', options: [''].concat(Object.keys(WIDGET_TYPES)) },
+    { k: 'OtherTimes', label: 'At other times show', type: 'select', def: '', options: [''].concat(Object.keys(WIDGET_TYPES).filter(k => k !== 'child')) },
   ];
 }
 function whenLimited_(W) { return !!W && (W.ShowDays !== 'Every day' || W.ShowFrom !== '00:00' || W.ShowUntil !== '24:00'); }
@@ -1281,6 +1342,7 @@ function cleanSetting_(f, v) {
     return n;
   }
   if (f.type === 'bool') return yes_(v, f.def) ? 'Yes' : 'No';
+  if (f.type === 'child') { if (s && childNames_().indexOf(s) < 0) throw new Error(what + ': pick one of ' + childNames_().join(', ')); return s; }
   if (f.type === 'select') { if (s && f.options.indexOf(s) < 0) throw new Error(what + ': pick one of ' + f.options.join(', ')); return s; }
   if (f.type === 'time') {
     if (!/^\d{1,2}:\d{2}$/.test(s)) throw new Error(what + ' must look like 15:00');
@@ -1429,7 +1491,7 @@ function saveWidget_(w) {
 /** Every kind of widget that isn't on any screen: its settings (kept from before, or the defaults) can still be changed. */
 function unusedWidgets_(widgets) {
   const all = wsetAll_(), have = {}; widgets.forEach(w => { have[w.type] = 1; });
-  return Object.keys(WIDGET_TYPES).filter(t => !have[t]).map(t => {
+  return Object.keys(WIDGET_TYPES).filter(t => !have[t] && t !== 'child').map(t => {
     const id = Object.keys(all).filter(k => new RegExp('^' + t + '\\d+$').test(k)).sort()[0] || t + '1';
     return { id: id, type: t, unused: true, settings: settingsFor_(id, WIDGET_TYPES[t].settings, all) };
   });
@@ -1450,11 +1512,17 @@ function addWidget_(pageId, type, at) {
   if (!T) throw new Error('Unknown widget');
   const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
   if (!p || String(p.Type).toLowerCase() !== 'widgets') throw new Error('Pick a widget page');
+  if (type === 'child' && !childNames_().length) throw new Error('Add the children first (Family tab)');
   const ids = rows_('widgets').map(w => String(w.Widget).trim());
   const kept = Object.keys(wsetAll_()).filter(k => new RegExp('^' + type + '\\d+$').test(k) && ids.indexOf(k) < 0).sort()[0];
   let n = 1; while (ids.indexOf(type + n) >= 0) n++;
   if (kept) n = kept.slice(type.length);
   sheet_('widgets').appendRow([type + n, pageId, 999, type, T.sizes[0], 'Yes']);
+  if (type === 'child') {     // the first child who hasn't got a widget yet (or the first child)
+    const all = wsetAll_(), names = childNames_(), mine = String((all[type + n] || {}).Child || '');
+    const taken = rows_('widgets').filter(w => String(w.Type).trim() === 'child' && String(w.Widget).trim() !== type + n).map(w => String((all[String(w.Widget).trim()] || {}).Child || ''));
+    if (names.indexOf(mine) < 0 || taken.indexOf(mine) >= 0) setWset_(type + n, 'Child', names.find(x => taken.indexOf(x) < 0) || names[0]);
+  }
   renumber_('widgets');
   if (at !== undefined && at !== null && isFinite(Number(at))) {     // dropped in a particular place (the settings website)
     const ids = rows_('widgets').filter(w => String(w.Page).trim() === pageId).sort((a, b) => (Number(a.Order) || 99) - (Number(b.Order) || 99))
@@ -2552,6 +2620,7 @@ function saveFamily_(b) {
     sh.getRange(1, 1, 1, SHEETS.categories.length).setValues([SHEETS.categories]).setFontWeight('bold');
     sh.getRange(2, 1, rows.length, SHEETS.categories.length).setValues(rows);
     // Renaming a child keeps their points, tasks and reminders.
+    const before = childNames_(), oldPage = rows_('pages').find(p => String(p.Type).toLowerCase() === 'boys'), oldTitle = oldPage ? String(oldPage.Title || '') : '';
     kids.forEach(k => { if (k.was && k.was !== k.name) renameChild_(k.was, k.name); });
     // The ticked children are the points page. Someone taken off keeps their points history, so ticking them
     // again later brings it all back. Nobody ticked: the points page is left as it is.
@@ -2562,7 +2631,11 @@ function saveFamily_(b) {
     }
     const title = String(b.pointsTitle || '').trim() || groups.children.name;
     if (title.length > 14) throw new Error('The points page name can be up to 14 characters');
-    setColumn_('pages', 'Title', r => String(r[2]).toLowerCase() === 'boys' ? title : undefined);
+    // The pages made for the child widgets carry the same name.
+    const kidPages = {}; rows_('widgets').filter(w => String(w.Type).trim() === 'child').forEach(w => { kidPages[String(w.Page).trim()] = 1; });
+    setColumn_('pages', 'Title', r => String(r[2]).toLowerCase() === 'boys' || (oldTitle && kidPages[String(r[0]).trim()] && String(r[1]) === oldTitle) ? title : undefined);
+    const renamed = {}; kids.forEach(k => { if (k.was) renamed[k.name] = 1; });
+    syncChildWidgets_(childNames_().filter(n => before.indexOf(n) < 0 && !renamed[n]));
     bumpCalVersion_(); bumpVersions_();
     return { ok: true, family: family_() };
   }
@@ -2570,6 +2643,7 @@ function saveFamily_(b) {
 
 /** A child has been renamed: move their points, tasks, to-dos and reminders to the new name. */
 function renameChild_(was, name) {
+  setColumn_('wset', 'Value', r => String(r[1]).trim() === 'Child' && String(r[2]).trim() === was ? name : undefined);
   [['tasks', 'Boy'], ['ledger', 'Boy'], ['todos', 'Boy'], ['todoLog', 'Boy'], ['timetable', 'Boy']].forEach(t => {
     const sh = SpreadsheetApp.getActive().getSheetByName(TAB[t[0]]); if (!sh) return;
     const data = sh.getDataRange().getValues(), c = data[0].map(String).indexOf(t[1]);

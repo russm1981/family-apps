@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.73",
+    "date": "2026-11-13",
+    "notes": [
+      "Children are now widgets: each child’s points card is a full-height widget you can put on any screen (four fit on one). Your points page has been turned into a screen of child widgets in the same place – move them about in Setup → Screen layout",
+      "A new child (Family & calendar → ⭐ Points) gets a widget of their own; renaming a child keeps theirs, and taking a child off points removes it (their points are kept)",
+      "Setup → Screen layout: no separate points screen to add any more – drag “Child (points)” from the widget list instead"
+    ]
+  },
+  {
     "version": "2026.11.72",
     "date": "2026-11-12",
     "notes": [

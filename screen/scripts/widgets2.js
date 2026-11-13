@@ -247,6 +247,15 @@
         };
     };
 
+    /* ================================================================ CHILD (one child's points card) */
+
+    T.child = function (el, w) {
+        el.innerHTML = '<div class="child-slot" data-child="' + esc(w.settings.Child || '') + '"></div>';
+        el.addEventListener('click', function (e) { if (window.FDBoys) window.FDBoys.click(e); });
+        if (window.FDBoys) window.FDBoys.paint();
+        return { update: function () { if (window.FDBoys) window.FDBoys.paint(); } };
+    };
+
     /* ================================================================= MEMO */
 
     var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff'];
