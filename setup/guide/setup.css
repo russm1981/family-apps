@@ -118,3 +118,4 @@ body.solo .main { max-width: 980px; margin: 0 auto; }
 body.solo .solo-bar { display: flex; }
 .solo-bar { display: none; align-items: center; gap: 12px; padding: 14px 24px 0; }
 .solo-bar a { color: var(--acc); text-decoration: none; font-weight: 600; }
+.note.warn { background: rgba(250, 204, 21, .12); border: 2px solid rgba(250, 204, 21, .6); } .note.warn h3 { margin: 0 0 8px; color: #facc15; } .note.warn p { margin: 6px 0; }

@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.125",
+    "date": "2026-11-14",
+    "notes": [
+      "Setup wizard: the welcome page is simpler – a yellow “What you need before you start” box (just a Google account, with a link to make one), no list of steps (each step explains itself), and “What you’ll end up with” full width",
+      "Setup wizard: no licence key needed to start (14-day free trial), and a “No screen yet – use this computer” option that opens the dashboard in another tab",
+      "Setup wizard: the steps are numbered in order"
+    ]
+  },
+  {
     "version": "2026.11.124",
     "date": "2026-11-14",
     "notes": [

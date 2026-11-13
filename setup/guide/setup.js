@@ -132,29 +132,19 @@
                 '<h1>Let’s set up your Family Dashboard</h1>' +
                 (connected() ? '' : '<p class="mute">Already have a Family Dashboard, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
                 '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
-                'You can stop at any point – this page remembers where you got to.</p>' +
+                'You can stop at any point – this page remembers where you got to. Each step explains what it does when you get to it.</p>' +
+                '<div class="note warn"><h3>What you need before you start</h3><p>Just a <b>Google (Gmail) account</b> – ideally the one your family calendar is in – and this page open on a <b>computer</b>. ' +
+                    'No Google account yet? <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Create one free</a>, then come back here.</p>' +
+                    '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No screen yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
                 '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
                 'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
                 '<p>The software reaches your Sheet with a <b>private access code</b> that setup creates for you. The code stays on your own screen and phones and isn’t sent ' +
                 'anywhere else, so your family’s information stays private – nobody else can see it.</p></div>' +
-                '<div class="card big"><h3>The steps</h3><ol class="howto">' +
-                '<li><b>Your own copy.</b> We make your family’s Google Sheet from a blank template, in your Google account. <span class="mute">(2 minutes)</span></li>' +
-                '<li><b>Switching it on.</b> You “publish” your Sheet so your screen and phones can talk to it. Google asks you to allow this – that’s normal. <span class="mute">(5 minutes – the page shows you every click)</span></li>' +
-                '<li><b>Your licence key.</b> From your order email – usually filled in for you. <span class="mute">(1 minute)</span></li>' +
-                '<li><b>Your family.</b> Names and colours for the calendar and the children’s points. <span class="mute">(5 minutes)</span></li>' +
-                '<li><b>Your screen and phones.</b> Each is connected with a short code or by scanning a QR code. <span class="mute">(5 minutes)</span></li>' +
-                '<li><b>Live information</b> (optional). Trains, buses and traffic come from other services through an “API” – a way for the dashboard to fetch information from them. ' +
-                    'Most need a free account with that service, which gives you your own key. Skip any you don’t want. <span class="mute">(up to 10 minutes)</span></li>' +
-                '<li><b>A final check</b> that everything works.</li></ol></div>' +
-                '<div class="grid2"><div class="card"><h3>What you need</h3><ul>' +
-                '<li>This page open on a <b>computer</b>.</li><li>A <b>Google (Gmail) account</b> – the one the family calendar is in.</li>' +
-                '<li>Your <b>licence email</b> (it has your key).</li>' +
-                '<li>The <b>screen</b>: a Windows PC with a Corsair XENEON EDGE, a tablet, or a Raspberry Pi with a screen.</li></ul></div>' +
-                '<div class="card"><h3>What you’ll end up with</h3><ul>' +
+                '<div class="card big"><h3>What you’ll end up with</h3><ul>' +
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
-                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (adults).</li></ul></div></div>' +
+                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (adults).</li></ul></div>' +
                 '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
                 '<div class="card privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
                 '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
@@ -188,7 +178,7 @@
 
         { id: 'sheet', title: 'Make your Google Sheet', render: function () {
             var tpl = CFG.templateId;
-            return '<h1>1. Make your own Google Sheet</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account. It’s where everything your dashboard shows is kept – only you can see it.</p>' +
+            return '<h1>1. Make your own Google Sheet</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account. It’s where everything your dashboard shows is kept – only you can see it. <span class="mute">(About 2 minutes.)</span></p>' +
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span></li>' +
                     '<li>If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
@@ -276,14 +266,14 @@
 
         { id: 'licence', title: 'Your licence key', render: function () {
             if (!connected()) return '<h1>3. Your licence key</h1>' + needConnect();
-            return '<h1>3. Your licence key</h1><p class="lead">Your key is in the email you got when you bought the dashboard. It starts <b>FD-</b>.</p>' +
+            return '<h1>3. Your licence key</h1><p class="lead">Your key is in the email you got when you bought the dashboard. It starts <b>FD-</b>. <b>No key yet?</b> Just press <b>Next</b> – the dashboard works as a free trial for 14 days, and you can add the key later.</p>' +
                 '<div class="card big" id="licCard"><div id="licStatus" class="status">Checking…</div>' +
                 '<div id="licForm"><label>Licence key</label><div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
                 '<button class="btn" id="licGo">Check and save</button></div>' +
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
-                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in the Family Admin app → Settings → System → Licence.</p></details>' + helpLink('licence');
+                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in the Family Admin app → More → Software Licence, or the Configurator → Advanced → Software Licence.</p></details>' + helpLink('licence');
         }, wire: function () {
             if (!connected()) return;
             var show = function (L) {
@@ -308,16 +298,16 @@
         } },
 
         { id: 'family', title: 'Family & calendar', render: function () {
-            if (!connected()) return '<h1>5. Your family and calendar</h1>' + needConnect();
+            if (!connected()) return '<h1>4. Your family and calendar</h1>' + needConnect();
             if (!S.fam) {
                 setTimeout(function () {
                     post({ action: 'family' }).then(function (d) { S.fam = fromServer(d.family); if (!S.home && d.home) S.home = d.home; save(); render(); })
                         .catch(function (e) { $('famLoad').innerHTML = okLine(false, e.message); });
                 }, 0);
-                return '<h1>5. Your family and calendar</h1><div class="card" id="famLoad"><div class="status">Reading your Sheet…</div></div>';
+                return '<h1>4. Your family and calendar</h1><div class="card" id="famLoad"><div class="status">Reading your Sheet…</div></div>';
             }
             var F = S.fam, LM = F.limits;
-            return '<h1>5. Your family and calendar</h1>' +
+            return '<h1>4. Your family and calendar</h1>' +
                 '<p class="lead">Who’s in the family, and how the calendar groups and colours them. Change it any time by coming back to this step.</p>' +
                 '<div class="card big"><label style="margin-top:0">Home address or postcode</label><input id="home" value="' + esc(S.home || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ">' +
                 '<p class="mute">Used for the weather, traffic, the nearest bus stop and the flights map.</p></div>' +
@@ -476,10 +466,13 @@
             }
         } },
         { id: 'devices', title: 'Connect your devices', render: function () {
-            if (!connected()) return '<h1>4. Connect your screen and phones</h1>' + needConnect();
-            return '<h1>4. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
-                '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button></div>' +
-                (S.dev === 'other' ? '<div class="card big"><h3>Android / Fire tablet</h3><ol class="howto">' +
+            if (!connected()) return '<h1>5. Connect your screen and phones</h1>' + needConnect();
+            return '<h1>5. Connect your screen and phones</h1><p class="lead">These links are <b>private</b> – they point the apps at your Sheet and contain your access code. Only use them on family devices.</p>' +
+                '<div class="tabs" id="devTabs"><button data-dev="pc" class="' + (S.dev !== 'other' && S.dev !== 'here' ? 'on' : '') + '">Windows + XENEON EDGE</button><button data-dev="other" class="' + (S.dev === 'other' ? 'on' : '') + '">Raspberry Pi or tablet</button><button data-dev="here" class="' + (S.dev === 'here' ? 'on' : '') + '">No screen yet – use this computer</button></div>' +
+                (S.dev === 'here' ? '<div class="card big"><h3>Try it on this computer</h3><p>No screen to connect yet? Open the dashboard in a new tab here – it’s the same as the screen will show, already connected.</p>' +
+                    '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
+                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, connect it from the Family Admin app → More → Devices and Phones.</p></div>'
+                  : S.dev === 'other' ? '<div class="card big"><h3>Android / Fire tablet</h3><ol class="howto">' +
                     '<li>On the tablet, install <b>Fully Kiosk Browser</b> (Google Play, or the Amazon Appstore on a Fire tablet).</li>' +
                     '<li>Open it. Where it asks for a <b>Start URL</b> (or in its Settings → Web Content Settings → Start URL), type this short address:' +
                     '<div class="bigaddr">' + esc(appsBase.replace(/^https:\/\//, '') + 'screen/') + '</div>' +
@@ -514,7 +507,7 @@
         { id: 'keys', title: 'Free API keys', render: function () {
             if (!connected()) return '<h1>6. Free keys for live data</h1>' + needConnect();
             S.keys = S.keys || {}; S.skip = S.skip || {};
-            return '<h1>5. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
+            return '<h1>6. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
                 'a way for one computer system to ask another for information. Each service wants to know who’s asking, so you make a free account with it and it gives you a <b>key</b> ' +
                 '(a bit like a licence) to paste in here. They’re all free. Skip any you don’t want – that widget is just hidden.</p>' +
                 '<p class="mute">Weather, bins, news, flights, quotes and photos need no key at all.</p>' +
@@ -557,7 +550,7 @@
         } },
         { id: 'check', title: 'Check everything', render: function () {
             if (!connected()) return '<h1>7. Check everything</h1>' + needConnect();
-            return '<h1>8. Check everything</h1><p class="lead">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
+            return '<h1>7. Check everything</h1><p class="lead">This asks your Sheet to fetch every widget’s live data and reports anything that needs attention.</p>' +
                 '<button class="btn" id="runCheck">Run the check</button><div id="checkOut"></div>';
         }, wire: function () {
             if (!connected()) return;

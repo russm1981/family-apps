@@ -1,9 +1,11 @@
 {
-  "app": "2026.11.124",
+  "app": "2026.11.125",
   "script": "2026.11.68",
   "date": "2026-11-14",
   "notes": [
-    "Setup wizard page: the “Set up the calendar” box is now in “Do one step from the Setup wizard again”, with the wizard’s Family & calendar step next to it"
+    "Setup wizard: the welcome page is simpler – a yellow “What you need before you start” box (just a Google account, with a link to make one), no list of steps (each step explains itself), and “What you’ll end up with” full width",
+    "Setup wizard: no licence key needed to start (14-day free trial), and a “No screen yet – use this computer” option that opens the dashboard in another tab",
+    "Setup wizard: the steps are numbered in order"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",
