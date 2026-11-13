@@ -111,7 +111,13 @@
             '<button class="btn good" id="csSaveCats"' + (over ? ' disabled' : '') + '>Save the colour coding</button></div>';
     }
     function gPalette() { var g = CS.gcolours || {}; return Object.keys(g).sort(function (a, b) { return a - b; }).map(function (k) { return g[k]; }); }
-    function nextColour() { var used = all().map(function (c) { return String(c.colour).toLowerCase(); }), pal = gPalette().map(function (x) { return x[1]; }); if (!pal.length) pal = PALETTE; return pal.filter(function (x) { return used.indexOf(x.toLowerCase()) < 0; })[0] || pal[0]; }
+    /** The colours already on the calendar: shown categories, shown groups and people shown on their own (not `except`). */
+    function usedColours(except) {
+        return cats.generals.filter(function (c) { return c.show === 'show'; }).concat(cats.groups.filter(groupShown))
+            .concat(people.filter(function (p) { return p.display === 'me' && p !== except; })).map(function (c) { return String(c.colour || '').toLowerCase(); });
+    }
+    /** The first of Google's colours nobody is using yet (or the first one, if they're all taken). */
+    function nextColour(except) { var used = usedColours(except), pal = gPalette().map(function (x) { return x[1]; }); if (!pal.length) pal = PALETTE; return pal.filter(function (x) { return used.indexOf(x.toLowerCase()) < 0; })[0] || pal[0]; }
     function openPalette(btn) {
         closePalette();
         var ref = btn.getAttribute('data-sw'), c = catOf(ref); if (!c) return;
@@ -238,7 +244,13 @@
             var t = e.target, ref, c;
             if (t.id === 'csOther') { look.other = t.checked; draw(); return; }
             if ((ref = t.getAttribute('data-show')) !== null) { c = catOf(ref); c.show = t.value; if (c.show !== 'show') c.line = false; draw(); return; }
-            if ((ref = t.getAttribute('data-pshow')) !== null) { catOf(ref).display = t.value; applyMembers(); draw(); return; }
+            if ((ref = t.getAttribute('data-pshow')) !== null) {
+                var pp = catOf(ref), was = pp.display; pp.display = t.value;
+                // Back to "Individually": they need a colour of their own, so give them a free one of Google's colours.
+                var mine = String(pp.colour || '').toLowerCase(), isG = gPalette().some(function (x) { return x[1].toLowerCase() === mine; });
+                if (t.value === 'me' && was !== 'me' && (!isG || usedColours(pp).indexOf(mine) >= 0)) pp.colour = nextColour(pp);
+                applyMembers(); draw(); return;
+            }
             if ((ref = t.getAttribute('data-line')) !== null) {
                 c = catOf(ref);
                 c.line = t.checked; draw();

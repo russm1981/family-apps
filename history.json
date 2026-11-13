@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.120",
+    "date": "2026-11-13",
+    "notes": [
+      "Colour coding: moving someone in “People in the family” back to Individually gives them one of Google’s colours that isn’t already in use, instead of keeping their group’s colour"
+    ]
+  },
+  {
     "version": "2026.11.119",
     "date": "2026-11-13",
     "notes": [
