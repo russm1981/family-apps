@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.102",
+    "date": "2026-11-13",
+    "notes": [
+      "Colour coding: plain radio buttons for Show / Hide / Show as Other; the colour square is empty when hidden and Other’s grey when shown as Other; a line is a straight bar along the bottom of the square",
+      "Ticking more than two general categories as lines now shows a big red warning (and Save waits) instead of stopping you",
+      "Other category: clearer wording and spacing, with the tick box lined up under it"
+    ]
+  },
+  {
     "version": "2026.11.101",
     "date": "2026-11-13",
     "notes": [

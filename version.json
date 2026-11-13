@@ -1,10 +1,11 @@
 {
-  "app": "2026.11.101",
+  "app": "2026.11.102",
   "script": "2026.11.65",
   "date": "2026-11-13",
   "notes": [
-    "Family Admin app: turn the phone sideways on the Calendar tab and the calendar fills the screen (turn it upright again for the other tabs). On Android the other tabs stay upright; on an iPhone, turned sideways, they ask you to turn the phone upright",
-    "Family Calendar app: turns sideways too, with a compact bar at the top so the month has the room"
+    "Colour coding: plain radio buttons for Show / Hide / Show as Other; the colour square is empty when hidden and Other’s grey when shown as Other; a line is a straight bar along the bottom of the square",
+    "Ticking more than two general categories as lines now shows a big red warning (and Save waits) instead of stopping you",
+    "Other category: clearer wording and spacing, with the tick box lined up under it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.17",

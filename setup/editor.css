@@ -304,3 +304,16 @@
 .cs-radios label { display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 6px 10px; border: 1px solid var(--line, #2a303b); border-radius: 999px; cursor: pointer; font-size: .9rem; white-space: nowrap; }
 .cs-radios input { margin: 0; width: 15px; height: 15px; }
 .cs-radios label:has(input:checked) { border-color: #3fa9f5; background: rgba(63,169,245,.14); font-weight: 700; }
+/* Colour coding, round 3 */
+.cs-radios label, .cs-radios label:has(input:checked) { border: 0; background: none; padding: 4px 6px; font-weight: 400; }
+.cs-radios { gap: 10px; }
+/* the square: as a line, a straight-topped bar along the bottom (the square's own corners round it); hidden, empty; as Other, grey */
+.cs-row .cs-sw { position: relative; overflow: hidden; }
+.cs-row .cs-sw.line { background: #141821; box-shadow: none; }
+.cs-row .cs-sw.line::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: var(--sc); }
+.cs-row .cs-sw.blank { background: transparent; border-style: dashed; }
+/* Other category */
+.cs-other { margin: 10px 0 14px; align-items: center; }
+.cs-other p { margin: 0; }
+.cs-otick { margin: 0 0 6px; padding: 0; justify-content: flex-start; }
+.cs-onote { margin: 0 0 14px; }

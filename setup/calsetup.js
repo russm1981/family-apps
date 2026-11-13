@@ -42,7 +42,12 @@
         return '<select class="cs-sel" ' + attr + '="' + ref + '">' + opts.map(function (o) { return '<option value="' + esc(o[0]) + '"' + (o[0] === cur ? ' selected' : '') + (o[2] ? ' title="' + esc(o[2]) + '"' : '') + '>' + esc(o[1]) + '</option>'; }).join('') + '</select>';
     }
     // A colour square; as a line, the colour is a bar along the bottom of the square (how it looks on the calendar).
-    function swatchOf(ref, c) { return '<button type="button" class="cs-sw' + (c.line ? ' line' : '') + '" data-sw="' + ref + '" style="--sc:' + esc(c.colour) + '" title="Change the colour"></button>'; }
+    // Hidden: an empty square. Shown as Other: Other's grey. A line: the colour as a bar along the bottom.
+    function swatchOf(ref, c) {
+        var mode = c.show === 'hide' ? ' blank' : c.show === 'other' ? ' grey' : c.line ? ' line' : '';
+        return '<button type="button" class="cs-sw' + mode + '" data-sw="' + ref + '" style="--sc:' + esc(c.show === 'other' ? '#8a93a3' : c.colour) + '" title="Change the colour"></button>';
+    }
+    function lineCount() { return cats.generals.filter(function (x) { return x.line && x.show === 'show'; }).length; }
     function catRow(c, ref, nameCell, del) {
         return '<div class="cs-row" data-row="' + ref + '"><span class="cs-nm">' + nameCell + '</span>' + swatchOf(ref, c) +
             '<span class="cs-ck"><input type="checkbox" data-line="' + ref + '"' + (c.line ? ' checked' : '') + (c.show === 'show' ? '' : ' disabled') + ' title="Draw it as a line along the bottom of each day"></span>' +
@@ -59,14 +64,15 @@
     function head(cols) { return '<div class="cs-row cs-rhead">' + cols.map(function (c) { return '<span>' + c + '</span>'; }).join('') + '</div>'; }
 
     function catsHtml() {
-        var L = CS.limits, n = colourCount(), over = n > L.key;
+        var L = CS.limits, n = colourCount(), tooLines = lineCount() > 2, over = n > L.key || tooLines;
         var fam = cats.groups.filter(function (g) { return g.fixed; })[0], own = cats.groups.filter(function (g) { return !g.fixed; });
         var gi = function (g) { return cats.groups.indexOf(g); };
         var nameIn = function (attr, i, v, ph) { return '<input class="cs-name" ' + attr + '="' + i + '" maxlength="' + L.name + '" value="' + esc(v) + '" placeholder="' + ph + '">'; };
         var where = [['me', 'Individually'], ['family', 'In Family']].concat(own.map(function (g) { return ['g' + gi(g), 'In ' + (g.name || 'a new') + ' group']; })).concat([['hide', 'Hide']]);
         return '<div class="cs-card"><h3 class="cs-h1">Colour coding</h3><p class="cs-sub">The same on all of your calendar pages.</p>' +
             '<p>Events can be in a <b>category</b> (holidays, birthdays…) or be about <b>people</b>. People’s events can be coloured for each person, or – with lots of people – put together in family groups to keep the calendar simple.</p>' +
-            '<div class="cs-limit' + (over ? ' bad' : '') + '">' + (over
+            (tooLines ? '<div class="cs-limit bad">⚠ <b>' + lineCount() + ' general categories are ticked to be lines – the calendar can draw up to 2.</b> Untick some under Line? so the calendar displays properly, then save.</div>' : '') +
+            '<div class="cs-limit' + (n > L.key ? ' bad' : '') + '">' + (n > L.key
                 ? '⚠ <b>' + n + ' things are set to show in their own colour – the calendar can show up to ' + L.key + '.</b> Set some to “Show as Other” or “Hide”, or show some people in a family group, then save.'
                 : 'The calendar can show up to <b>' + L.key + '</b> colours. You’re using <b>' + n + '</b>' + (look.other ? ' (including Other)' : '') + '.') + '</div>' +
 
@@ -90,11 +96,10 @@
             }).join('') +
             '<p class="mute small">In Family or in a group: their own events (“Drums (Ben)”) are shown in that colour.</p>' +
 
-            '<h3 class="cs-h2">Other</h3>' +
-            '<div class="cs-other"><span class="cs-sw" style="--sc:#8a93a3"></span><div><p>Everything that doesn’t have a category in Google, and anything set above to “Show as Other”.</p>' +
-                '<label class="tog"><input type="checkbox" id="csOther"' + (look.other ? ' checked' : '') + '><span>Display the Other category</span></label>' +
-                '<p class="mute small">Not displaying it hides everything with no category in Google, and everything you’ve set to “Show as Other”.</p></div></div>' +
-            '<p class="mute small">Up to two general categories can be lines – drawn along the bottom of each day, good for things that last days or weeks.</p>' +
+            '<h3 class="cs-h2">Other category</h3>' +
+            '<div class="cs-other"><span class="cs-sw" style="--sc:#8a93a3"></span><p>This includes everything that doesn’t have a category in Google, and anything set above to “Show as Other”.</p></div>' +
+            '<label class="tog cs-otick"><input type="checkbox" id="csOther"' + (look.other ? ' checked' : '') + '><span>Display the Other category</span></label>' +
+            '<p class="mute small cs-onote">Not displaying it hides everything with no category in Google, and everything you’ve set to “Show as Other”.</p>' +
             '<button class="btn good" id="csSaveCats"' + (over ? ' disabled' : '') + '>Save the colour coding</button></div>';
     }
     function nextColour() { var used = all().map(function (c) { return c.colour; }); return PALETTE.filter(function (x) { return used.indexOf(x) < 0; })[0] || PALETTE[0]; }
@@ -219,7 +224,6 @@
             if ((ref = t.getAttribute('data-pshow')) !== null) { catOf(ref).display = t.value; applyMembers(); draw(); return; }
             if ((ref = t.getAttribute('data-line')) !== null) {
                 c = catOf(ref);
-                if (t.checked && cats.generals.filter(function (x) { return x.line && x.show === 'show'; }).length >= 2) { t.checked = false; H.toast('Up to two can be lines – untick one first', true); return; }
                 c.line = t.checked; draw();
             }
         };
@@ -237,6 +241,7 @@
                 if (!t.getAttribute('data-sug')) { var ins = box.querySelectorAll('[data-cname]'); if (ins.length) ins[ins.length - 1].focus(); } }
             else if ((t = e.target.closest('#csSaveCats'))) {
                 if (cats.generals.concat(cats.groups).some(function (c) { return !String(c.name).trim(); })) { H.toast('Give every category and group a name (or remove it)', true); return; }
+                if (lineCount() > 2) { H.toast('Up to 2 general categories can be lines – untick some first', true); return; }
                 if (colourCount() > CS.limits.key) { H.toast('The calendar can show up to ' + CS.limits.key + ' colours – set some to Show as Other, or hide them', true); return; }
                 applyMembers();
                 var pc = {}; people.forEach(function (p) { pc[p.name] = p.colour; });
