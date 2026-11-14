@@ -87,7 +87,7 @@
             '<h3 class="cs-h2">General categories</h3>' +
             head(['Name', 'Colour', 'Line?', 'How to display', '']) +
             cats.generals.map(function (c, i) { return catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
-            (all().length < L.cats ? '<button class="btn ghost sm cs-addc" data-sug="">+ Add another</button>' : '<p class="mute small">That’s the most categories and groups together (' + L.cats + ').</p>') +
+            (all().length < L.cats ? '<button class="btn sm cs-addc" data-sug="">+ Add another</button>' : '<p class="mute small">That’s the most categories and groups together (' + L.cats + ').</p>') +
             '<p class="mute small"><b>Show as Other</b>: on the calendar in grey, counted as Other on the key – so it doesn’t use up a colour. <b>Hide</b>: not on the calendar at all.</p>' +
 
             '<h3 class="cs-h2">Family groups</h3>' +
@@ -95,7 +95,7 @@
             '<div class="cs-row cs-grow cs-rhead"><span>Name</span><span>Colour</span><span></span></div>' +
             (fam ? groupRow(fam, 'g' + gi(fam), '<b>Family</b> <span class="mute small">everyone – things you all do together</span>') : '') +
             own.map(function (g) { return groupRow(g, 'g' + gi(g), nameIn('data-gname', gi(g), g.name, 'Group name, e.g. The children'), '<button class="cs-x" data-gdel="' + gi(g) + '" title="Remove this group">✕</button>'); }).join('') +
-            (own.length < L.groups && all().length < L.cats ? '<button class="btn ghost sm" id="csAddGroup">+ Add a group</button>' : '') +
+            (own.length < L.groups && all().length < L.cats ? '<button class="btn sm" id="csAddGroup">+ Add a group</button>' : '') +
 
             '<h3 class="cs-h2">People in the family</h3>' +
             '<div class="cs-row cs-prow cs-rhead"><span>Name</span><span>Colour</span><span>How to display</span><span></span></div>' +

@@ -220,7 +220,7 @@ function openKey(key) {
     '<span>Dashboard</span><span class="small">' + esc(r.Install || 'not in use') + '</span></div>' +
     '<label>Name</label><input id="dName" value="' + esc(r.Name) + '"><label>Email</label><input id="dEmail" value="' + esc(r.Email) + '">' +
     '<label>Order</label><input id="dOrder" value="' + esc(r.Order) + '"><label>Screens allowed (Corsair, tablet, computer… – phones don’t count)</label><input id="dScreens" type="number" min="1" max="20" value="' + esc(r.Screens || 1) + '"><label>Notes</label><input id="dNotes" value="' + esc(r.Notes) + '">' +
-    '<div class="row" style="margin-top:12px"><button class="btn" id="dSave">Save</button>' + (r.Email && r.Status !== 'Revoked' ? '<button class="btn ghost" id="dMail">' + (r.Emailed ? 'Email the key again' : 'Email the key') + '</button>' : '') + '</div>' +
+    '<div class="row" style="margin-top:12px"><button class="btn good" id="dSave">Save</button>' + (r.Email && r.Status !== 'Revoked' ? '<button class="btn ghost" id="dMail">' + (r.Emailed ? 'Email the key again' : 'Email the key') + '</button>' : '') + '</div>' +
     '<h3 style="margin-top:22px">Actions</h3><div class="row">' +
     (r.Install ? '<button class="btn ghost" id="dRel" title="Let it be used on a different dashboard">Release (moving dashboard)</button>' : '') +
     (r.Status === 'Revoked' ? '<button class="btn good" id="dRein">Reinstate</button>' : '<button class="btn bad" id="dRev">Revoke</button>') +
@@ -393,7 +393,7 @@ function openFb(ref) {
     '<label>Status</label><select id="fbSt">' + FB.statuses.map(function (s) { return '<option' + (s === r.Status ? ' selected' : '') + '>' + esc(s) + '</option>'; }).join('') + '</select>' +
     '<label>Reply – shown to them on their Feedback page</label><textarea id="fbReply" style="min-height:90px">' + esc(r.Reply || '') + '</textarea>' +
     '<label>Your notes (only you see these)</label><textarea id="fbNotes" style="min-height:70px">' + esc(r.Notes || '') + '</textarea>' +
-    '<div class="row" style="margin-top:12px"><button class="btn" id="fbSave">Save</button><button class="btn ghost" id="fbClose">Close</button></div>');
+    '<div class="row" style="margin-top:12px"><button class="btn good" id="fbSave">Save</button><button class="btn ghost" id="fbClose">Close</button></div>');
   $('fbClose').onclick = closeDrawer;
   $('fbSave').onclick = function () {
     var a = { ref: ref, status: $('fbSt').value, reply: $('fbReply').value, notes: $('fbNotes').value };
@@ -472,7 +472,7 @@ function settingsPage() {
     $('main').innerHTML = '<h2 class="ph">⚙ Settings</h2><div class="card"><h2>Email to buyers</h2><p class="mute small">{name} = first name, {key} = their key(s), {setup} = the setup link (on a line of its own it becomes a big “Start setting up” button), {help} = the setup help page, {seller} = your name. Google lets you send ' + d.quota + ' more today.</p>' +
       '<div class="grid2"><div><label>From (name)</label><input id="sSeller" value="' + esc(s.sellerName) + '"></div><div><label>Setup link</label><input id="sSetup" value="' + esc(s.setupLink) + '"></div></div>' +
       '<label>Subject</label><input id="sSubj" value="' + esc(s.subject) + '"><label>Message</label><textarea id="sBody" style="min-height:240px">' + esc(s.body) + '</textarea>' +
-      '<div class="row" style="margin-top:12px"><button class="btn" id="sSave">Save</button><button class="btn ghost" id="sTest">Send me a sample</button><button class="btn ghost" id="sReset">Back to the standard wording</button></div><div id="sOut" class="status"></div></div>' +
+      '<div class="row" style="margin-top:12px"><button class="btn good" id="sSave">Save</button><button class="btn ghost" id="sTest">Send me a sample</button><button class="btn ghost" id="sReset">Back to the standard wording</button></div><div id="sOut" class="status"></div></div>' +
       supportKeyCard() +
       '<div class="card"><h2>Admin password</h2><div class="grid2"><div><label>New password (12+ characters)</label><input id="p1" type="password" autocomplete="new-password"></div>' +
       '<div><label>Again</label><input id="p2" type="password" autocomplete="new-password"></div></div><div class="row" style="margin-top:12px"><button class="btn ghost" id="pSave">Change password</button></div><div id="pOut" class="status"></div></div>';

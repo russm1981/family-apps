@@ -278,7 +278,7 @@
             return '<h1>3. Your licence key</h1><p class="lead">Your key is in the email you got when you bought the dashboard. It starts <b>FD-</b>. <b>No key yet?</b> Just press <b>Next</b> – the dashboard works as a free trial for 14 days, and you can add the key later.</p>' +
                 '<div class="card big" id="licCard"><div id="licStatus" class="status">Checking…</div>' +
                 '<div id="licForm"><label>Licence key</label><div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
-                '<button class="btn" id="licGo">Check and save</button></div>' +
+                '<button class="btn good" id="licGo">Check and save</button></div>' +
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
@@ -318,10 +318,10 @@
                 '<div class="card big"><h3>Your home address or postcode</h3><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
                     '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
-                    (FAM.people.length < 10 ? '<button class="btn sm ghost" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
+                    (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
                     '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for tasks, daily to-dos and reminders, and a Reward Widget of their own to put on a screen. ' +
                     'Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is the next step.</p>' +
-                    '<div class="row" style="margin-top:14px"><button class="btn" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
+                    '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
             function famRow(p, i) {
                 return '<div class="fw-row"><input type="color" data-fc="' + i + '" value="' + esc(p.colour || '#3fa9f5') + '" title="Their colour">' +
                     '<input data-fn="' + i + '" maxlength="10" value="' + esc(p.name) + '" placeholder="Name" autocomplete="off">' +
@@ -484,7 +484,7 @@
                     (x.k2 ? '<input data-key="' + x.k2 + '" placeholder="' + (x.k2 === 'TransportApiKey' ? 'Key' : 'Client secret') + '" value="' + esc(S.keys[x.k2] || '') + '" spellcheck="false">' : '') + '</div>' +
                     '<div class="kmsg" id="kmsg"></div>' +
                     '<div class="row knav">' + (at ? '<button class="btn ghost" data-kgo="' + (at - 1) + '">← ' + esc(KEYS[at - 1].name) + '</button>' : '<span></span>') +
-                    '<span class="kgrow"></span><button class="btn ghost" id="kSkip">Skip – hide this widget</button><button class="btn" id="kSave">Save and continue →</button></div></div>';
+                    '<span class="kgrow"></span><button class="btn ghost" id="kSkip">Skip – hide this widget</button><button class="btn good" id="kSave">Save and continue →</button></div></div>';
             }
         }, wire: function () {
             if (!connected()) return;

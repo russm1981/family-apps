@@ -181,3 +181,26 @@ body.desk .card li { margin-bottom: 14px; } body.desk .card ul, body.desk .card 
 body.desk .sec { font-size: 20px; font-weight: 750; text-transform: none; letter-spacing: 0; color: var(--text, #f2f4f7); margin: 32px 2px 14px; }
 body.desk .sec:first-child, body.desk .page-h + .sec { margin-top: 8px; }
 body.desk .sec a, body.desk .sec button { font-size: 15px; font-weight: 600; }
+
+/* Widget settings (Screens → click a widget): the Family page house style – big title, each part in its own box with a big heading, roomy spacing */
+body.desk .sheet.wide { padding: 26px 30px 24px; }
+body.desk .sheet.wide > h2 { font-size: 28px; font-weight: 800; letter-spacing: -.01em; margin: 6px 0 8px; }
+body.desk .sheet.wide > p.mute.small { font-size: 16px; margin: 0 0 6px; }
+body.desk .ws-cols { gap: 18px; margin-top: 18px; }
+body.desk .ws-place, body.desk .ws-set { background: var(--panel-2, #1c2028); border: 1px solid var(--line, #2a2f38); border-radius: 16px; padding: 20px 22px; }
+body.desk .ws-cols > .ws-place { border-right: 1px solid var(--line, #2a2f38); padding-right: 22px; }
+body.desk .ws-h { font-size: 20px; font-weight: 750; text-transform: none; letter-spacing: 0; color: var(--text, #f2f4f7); margin: 0 0 14px; }
+body.desk .ws-place label, body.desk .ws-set label { margin-top: 14px; }
+body.desk .ws-place .tog, body.desk .ws-set .tog { margin: 16px 0 4px; }
+body.desk .sheet.wide .sheet-actions { margin-top: 22px; }
+
+/* Lists you add rows to (daily to-dos, reminders, penalties…) – the Family page style: plain rows, roomy inputs, ✕ at the end,
+ * "+ Add a …" under the rows, then Save (green) and Undo side by side */
+body.desk .lrows { margin-top: 4px; }
+body.desk .lrow { background: none; border: 0; border-radius: 0; padding: 0 44px 0 0; margin-bottom: 10px; }
+body.desk .lrow input, body.desk .lrow select { height: 44px; font-size: 16px; padding: 8px 12px; }
+body.desk .lrow .x { right: 4px; width: 32px; height: 32px; font-size: 17px; }
+body.desk .lhead { padding: 0 44px 6px 0; font-size: 13px; }
+body.desk .ladd-row { display: flex; gap: 10px; margin: 8px 0 0; }
+body.desk .ladd-row .btn { flex: none; margin: 0; }
+body.desk .rem-from { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line, #2a2f38); }

@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.136",
+    "date": "2026-11-14",
+    "notes": [
+      "Buttons are consistent everywhere: every Save is green, and “+ Add …” buttons (add a person, task, to-do, reminder, group, bin…) and Start buttons are blue – in the Configurator, the phone apps, the setup wizard and the licence portal",
+      "Widget settings (Screens → click a widget): in the Family page style – a big title, “On the screen” and the widget’s own settings each in a box with a big heading, and more space",
+      "Lists you add rows to – daily to-dos, reminders, tasks, reward rules – now all look like the Family page: a box with a big heading, plain rows, “+ Add a …” underneath, then Save (green) and Undo changes side by side",
+      "Reminders is back inside Rewards; Reminders under Apps (and on Home) takes you to Rewards → Reminders"
+    ]
+  },
+  {
     "version": "2026.11.135",
     "date": "2026-11-14",
     "notes": [

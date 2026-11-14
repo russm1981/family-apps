@@ -202,7 +202,8 @@
         var h = location.hash.replace(/^#\/?/, '').split('/');
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
         // On the computer, Reminders is its own page under Apps (the Reminders item in Rewards goes there).
-        if (DESK && (h[0] === 'points' || h[0] === 'rewards') && h[1] === 'timetable') { try { history.replaceState(null, '', '#/reminders'); } catch (e) { /* fine */ } return { tab: 'reminders' }; }
+        // On the computer, Reminders under Apps is a shortcut to Rewards → Reminders.
+        if (DESK && h[0] === 'reminders') { try { history.replaceState(null, '', '#/rewards/timetable'); } catch (e) { /* fine */ } return { tab: 'rewards', sub: 'timetable' }; }
         if (h[0] === 'points') return { tab: 'rewards', sub: h[1] || '' };
         if (DESK && ({ family: 1, tools: 1, settings: 1 })[h[0]]) return { tab: h[0] === 'family' ? 'rewards' : h[0] === 'tools' ? 'start' : 'advanced' };
         if (!DESK && h[0] === 'family') return { tab: 'rewards' };       // older phone links
@@ -322,7 +323,7 @@
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
-                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('reminders', '🎒', 'Reminders', 'PE kit, library books – the things to remember each day') +
+                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'PE kit, library books – the things to remember each day') +
                 btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
@@ -400,7 +401,7 @@
                 '<p>Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
             card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “MacMillan” for “The MacMillan family”.</p><input id="fpName" maxlength="30" placeholder="e.g. MacMillan" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
             card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
-                (famEdit.length < 10 ? '<button class="btn ghost fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
+                (famEdit.length < 10 ? '<button class="btn fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
                 '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, tasks, daily to-dos and reminders, with a Reward Widget of their own.</p>' +
                 '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p></div>' +
                 '<div class="sheet-actions"><button class="btn good" id="fpSave">Save the family</button><button class="btn ghost" id="fpUndo">Undo changes</button></div>');
@@ -448,18 +449,18 @@
         else if (cur === 'tasks') {
             var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
             html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, lowest order first; “Repeat” is how often a task comes back once it’s done.') +
-                '<div class="card" id="fTasks">' + (tasks.length ? tasks.map(function (t) {
+                '<div class="card" id="fTasks"><h2>Your tasks</h2>' + (tasks.length ? tasks.map(function (t) {
                     return '<div class="trow' + (t.Active ? '' : ' paused') + '"><div class="tmain"><b>' + esc(t.Task) + '</b><span class="mute">' + esc(t.Boy || 'All') + ' · ' +
                         esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
                         '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
-                }).join('') : '<div class="empty">No tasks yet</div>') + '<button class="btn ghost fp-add" id="newTask">+ New task</button></div>';
+                }).join('') : '<div class="empty">No tasks yet</div>') + '<div class="ladd-row"><button class="btn fp-add" id="newTask">+ Add a task</button></div></div>';
         } else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
         else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
-            '<div class="card" id="rulesBox">' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom'; }), pp.settings || {}) : '') +
+            '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom'; }), pp.settings || {}) : '') +
                 '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
                 '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
-                '<button class="btn wide" id="rulesSave">Save the rules</button></div>';
+                '<div class="sheet-actions"><button class="btn good" id="rulesSave">Save the rules</button><button class="btn ghost" id="rulesUndo">Undo changes</button></div></div>';
         else html = head('Manual adjustments', 'Put a child’s points right by hand – it goes on their statement. Below, each child’s card as it shows on the dashboard (you can tick things off and give points there too).') +
             '<div class="card">' + s.boys.map(function (b, bi) {
                 return '<div class="adj-row"><span class="dot" style="background:' + esc(b.colour) + '"></span><b>' + esc(b.name) + '</b><span class="adj-bal">' + b.balance + ' points</span>' +
@@ -478,7 +479,7 @@
             var drawPens = function () {
                 var list = $('pensVal').value.split(',').map(function (x) { return Math.abs(parseInt(x, 10)); }).filter(function (n) { return n > 0; });
                 $('pensEd').innerHTML = list.map(function (n, i) { return '<span class="pen-chip">−' + n + '<button data-pdel="' + i + '" title="Remove">✕</button></span>'; }).join('') +
-                    (list.length < 4 ? '<span class="pen-add"><input id="penNew" type="number" min="1" max="500" placeholder="e.g. 30"><button class="btn ghost sm" id="penAdd">+ Add</button></span>' : '');
+                    (list.length < 4 ? '<span class="pen-add"><input id="penNew" type="number" min="1" max="500" placeholder="e.g. 30"><button class="btn sm" id="penAdd">+ Add</button></span>' : '');
                 $('pensEd').onclick = function (e) {
                     var d = e.target.closest('[data-pdel]');
                     if (d) { list.splice(+d.getAttribute('data-pdel'), 1); $('pensVal').value = list.join(','); drawPens(); }
@@ -487,6 +488,7 @@
             };
             drawPens();
         }
+        if ($('rulesUndo')) $('rulesUndo').onclick = function () { render(); };
         if ($('rulesSave')) $('rulesSave').onclick = function () {
             var vals = {}; Array.prototype.forEach.call($('rulesBox').querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
             act({ action: 'savePage', page: { id: pp.id, settings: vals } }, 'Saved – the screen updates within a minute');
@@ -1003,7 +1005,7 @@
                 '<div id="bwRows">' + S.rows.map(function (r, i) {
                     return '<div class="card bw-row" data-i="' + i + '">' + opt(r) + '<div class="two"><div><label>Every</label><select data-bw>' + [1, 2, 3, 4].map(function (n) { return '<option value="' + n + '"' + (n === r.weeks ? ' selected' : '') + '>' + (n === 1 ? 'week' : n + ' weeks') + '</option>'; }).join('') + '</select></div>' +
                         '<div><label>Next collection</label><input type="date" data-bd value="' + esc(r.date) + '"></div></div><button class="btn ghost sm" data-bx>Remove</button></div>';
-                }).join('') + '</div><button class="btn ghost wide" id="bwAdd">+ Add another bin</button>' +
+                }).join('') + '</div><button class="btn wide" id="bwAdd">+ Add another bin</button>' +
                 '<h3 class="sh">The next few collections</h3><div id="bwPrev" class="small"></div>' +
                 '<div class="sheet-actions"><button class="btn ghost" id="bwCancel">Cancel</button><button class="btn good" id="bwSave">Save</button></div>');
             function read() {
@@ -1148,9 +1150,9 @@
         $('rSave').onclick = function () { act({ action: 'savePage', page: { id: pp.id, settings: readFields() } }, 'Saved – the screen updates within a minute').then(closeSheet, function () {}); };
     }
     var LISTS = {
-        todos: { title: 'Daily to-dos', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
+        todos: { title: 'Daily to-dos', one: 'to-do', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
             cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'How often']], ordered: true },
-        timetable: { title: 'Reminders', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
+        timetable: { title: 'Reminders', one: 'reminder', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
     };
     function listFold(k) {
@@ -1158,12 +1160,13 @@
         if (cfg.ordered) rs.sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
         if (!rs.length) rs.push({});
         return '<details class="card fold" id="f_' + k + '"><summary><b>' + cfg.title + '</b><span class="mute">' + (DATA[k] || []).length + ' · ' + cfg.what + '</span></summary>' +
-            (DESK ? '' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
+            (DESK ? '<h2>Your ' + cfg.title.toLowerCase() + '</h2>' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
             (DESK ? '<div class="lhead l-' + k + '">' + (cfg.ordered ? '<span></span>' : '') + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
             '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
-            (k === 'timetable' ? '<div class="ladd-row"><button class="btn ghost" data-ladd="' + k + '">+ Add</button><button class="btn ghost" data-lclear title="Deletes every reminder whose date has passed. Weekly ones are kept.">🧹 Clear expired reminders</button></div>' + remFromRow()
-                : '<button class="btn ghost wide" data-ladd="' + k + '">+ Add</button>') +
-            '<button class="btn wide" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button></details>';
+            '<div class="ladd-row"><button class="btn fp-add" data-ladd="' + k + '">+ Add a ' + cfg.one + '</button>' +
+                (k === 'timetable' ? '<button class="btn ghost fp-add" data-lclear title="Deletes every reminder whose date has passed. Weekly ones are kept.">🧹 Clear expired reminders</button>' : '') + '</div>' +
+            (k === 'timetable' ? remFromRow() : '') +
+            '<div class="sheet-actions"><button class="btn good" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button><button class="btn ghost" data-lundo="' + k + '">Undo changes</button></div></details>';
     }
     /** When the screen switches from today's reminders to tomorrow's (a Rewards setting, set with the reminders). */
     function remFrom() { var pp = pointsPage(); return String(((pp && pp.settings) || {}).TomorrowFrom || '17:00'); }
@@ -1205,6 +1208,7 @@
                 dp.querySelector('.dp-say').textContent = daysSay(on);
             }
             else if (e.target.closest('[data-ladd]')) $('rows_' + k).insertAdjacentHTML('beforeend', rowCard(k, {}));
+            else if (e.target.closest('[data-lundo]')) render();
             else if (e.target.closest('[data-lclear]')) {      // one-date reminders whose date has gone (weekly ones never expire)
                 var d0 = new Date(), today = d0.getFullYear() * 1e4 + (d0.getMonth() + 1) * 100 + d0.getDate();
                 var old = Array.prototype.filter.call(box.querySelectorAll('.lrow'), function (r) {
@@ -1587,10 +1591,10 @@
                         return '<div class="wrow' + (w.show ? '' : ' off') + (w.pending ? ' pending' : '') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + esc(T.icon) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
                             esc(bk ? '⏰ Shown in place of ' + bk + ' at other times' : tm || summary(w)) + '</small></span><span class="badge">' + (w.show ? w.size : 'hidden') + '</span></button>' +
                             '<button class="mini" data-wmove="' + esc(w.id) + ':-1"' + (j ? '' : ' disabled') + '>▲</button><button class="mini" data-wmove="' + esc(w.id) + ':1"' + (j < ws.length - 1 ? '' : ' disabled') + '>▼</button></div>';
-                    }).join('') + '</div><button class="btn ghost wide" data-wadd="' + esc(p.id) + '">+ Add a widget to ' + esc(p.title) + '</button>' : '') +
+                    }).join('') + '</div><button class="btn wide" data-wadd="' + esc(p.id) + '">+ Add a widget to ' + esc(p.title) + '</button>' : '') +
                     '</section>';
             }).join('') +
-            '<button class="btn ghost wide" id="pAdd">+ New widget page</button>';
+            '<button class="btn wide" id="pAdd">+ New widget page</button>';
         $('pAdd').onclick = function () { newPageSheet(); };
         $('body').onclick = function (e) {
             var el;
@@ -1827,7 +1831,7 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
-        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set ' + (DESK ? 'on the <a href="#" data-go="reminders">Reminders</a> page (under Apps).' : 'on the <a href="#" data-go="rewards/timetable">Rewards</a> tab (Reminders).') + '</p>';
+        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set ' + (DESK ? 'on the <a href="#" data-go="rewards/timetable">Rewards → Reminders</a> page.' : 'on the <a href="#" data-go="rewards/timetable">Rewards</a> tab (Reminders).') + '</p>';
         if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – tasks, daily to-dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
         var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
             (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';
@@ -2020,7 +2024,7 @@
                 '<div class="mute small hint">' + (f.uses ? '<b>Used by:</b> ' + esc(f.uses) + '. ' : '') + esc(f.help || '') + '</div>';
         }).join('');
     }
-    function saveInstallBtn(id, text) { return '<button class="btn wide" id="' + id + '">' + (text || 'Save') + '</button>'; }
+    function saveInstallBtn(id, text) { return '<button class="btn good wide" id="' + id + '">' + (text || 'Save') + '</button>'; }
     function wireSaveInstall(id, scope) {
         $(id).onclick = function () {
             var values = {}; (scope || document).querySelectorAll('[data-set]').forEach(function (i) { values[i.getAttribute('data-set')] = i.value.trim(); });
@@ -2145,7 +2149,7 @@
             card('Your licence', details) +
             card(Lc.key || DATA.licenceKey ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
                 '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(DATA.licenceKey || '') + '" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
-                '<button class="btn wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
+                '<button class="btn good wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
             (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup app (not moving, which takes your licence by itself), free your key here first. ' +
                 'You can then enter it in the new Sheet. This Sheet will ask for a key again.</p><button class="btn ghost wide" id="licFree">Free up my licence key</button><div id="licFreeOut"></div>') : '') +
             '<p class="mute small help">A key works on one dashboard at a time. If you move to a new Google Sheet or account, ask the seller to release it first. Once a day your Google script checks the key with the seller; if that can’t happen for 21 days, the screen asks for help.</p>';
@@ -2483,7 +2487,7 @@
         var pp = pointsPage();
         $('body').innerHTML = '<div id="famForm">' +
             card('Everyone in the family', '<p class="mute small">Up to ' + LM.people + ' people. Tap ⭐ Rewards for anyone who takes part in the reward system (up to ' + LM.children + '); taking someone off keeps their points.</p>' +
-                '<div id="ppl">' + F.people.map(person).join('') + '</div><button class="btn ghost wide" id="addP">+ Add a person</button>') +
+                '<div id="ppl">' + F.people.map(person).join('') + '</div><button class="btn wide" id="addP">+ Add a person</button>') +
             card('Groups on the calendar', '<p class="mute small">Each person shows in their group’s colour on the calendar key, with their name in brackets, e.g. “Drums (Ben)”.</p>' +
                 group('children', 'Children’s group', F.children) + group('adults', 'Adults’ group', F.adults) +
                 '<label>Name of the rewards screen <span class="cnt">max 14</span></label><input id="ptsTitle" maxlength="14" value="' + esc(pp ? pp.title : (F.pointsTitle || '')) + '" placeholder="Same as the children’s group">') +
@@ -2493,7 +2497,7 @@
                 '<div class="chips" id="spAdd"><button class="chip" data-sug="School holiday">+ School holidays</button><button class="chip" data-sug="Birthday">+ Birthdays</button><button class="chip" data-sug="">+ Other</button></div>') +
             '<label class="tog"><input type="checkbox" id="showMatch"><span>Show matching words (advanced)</span></label>' +
             '<p class="mute small">Events go in a category by the name at the start of their title – “Ben – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Josh.</p>' +
-            '<p class="mute small" id="famNote"></p><button class="btn wide" id="famSave">Save family</button></div>' +
+            '<p class="mute small" id="famNote"></p><button class="btn good wide" id="famSave">Save family</button></div>' +
             '<p class="mute small">Which Google calendars are shown, and each calendar page’s settings, are in <b>Screen layout</b> – pick the calendar page.</p>';
         var form = $('famForm');
         $('showMatch').onchange = function () { form.classList.toggle('show-match', this.checked); };

@@ -128,7 +128,7 @@ body.solo .solo-bar { display: flex; }
 .ptb { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13.5px; color: var(--mute); opacity: .6; white-space: nowrap; background: none; cursor: pointer; }
 .ptb.on { background: rgba(250,204,21,.16); border-color: #facc15; color: var(--text); opacity: 1; }
 /* Calendar step: the Configurator's colour coding */
-.cs-box .btn.good { background: var(--acc); color: #fff; }
+.btn.good { background: var(--good); color: #062b10; }
 .cs-box select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 14px; }
 .toast:empty { visibility: hidden; }
 .cs-box .tog { display: flex; align-items: center; gap: 10px; margin: 14px 0 2px; font-size: 15px; } .cs-box .tog input { width: 22px; height: 22px; flex: none; accent-color: var(--acc); }

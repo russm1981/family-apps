@@ -164,7 +164,7 @@
         var sp = parts(c, selected);
         html += '<section class="daylist" id="dayList"><h2>' + FD.DAY[P(selected).getDay()] + ' ' + P(selected).getDate() + ' ' + FD.MON[P(selected).getMonth()] + dayTags(sp) + '</h2>' +
             (sp.evs.length ? sp.evs.map(function (e) { return evRow(e, true); }).join('') : '<div class="empty">Nothing on' + (loading ? '…' : '') + '</div>') +
-            '<button class="btn ghost wide" data-add="' + selected + '">+ Add on this day</button></section>';
+            '<button class="btn wide" data-add="' + selected + '">+ Add on this day</button></section>';
         $('body').innerHTML = html;
         var ab = document.querySelector('[data-add]'); if (ab) ab.onclick = function (e) { e.stopPropagation(); openAdd(selected); };
     }
