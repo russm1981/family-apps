@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.140",
+  "app": "2026.11.141",
   "script": "2026.11.74",
   "date": "2026-11-14",
   "notes": [
-    "Fixes Rewards → Daily to-dos, which showed Manual adjustments instead (since 2026.11.138)",
-    "Configurator house style everywhere: every input and button the same size, the same text sizes and spacing on every page, and Tasks, Daily to-dos and Reminders now look exactly alike – plain rows the same height, the same gaps, the same column headings and ✕",
-    "Today & tomorrow on the screen: a little more space between entries, with slightly smaller text"
+    "Notes on the website: the post-its sit side by side (no overlap); on the screen they still overlap a little",
+    "Notes: eight post-it colours (yellow, pink, light blue, light green, light purple, peach, mint, periwinkle) – each page of notes on the screen has its own colours"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

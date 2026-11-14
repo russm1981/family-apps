@@ -1489,7 +1489,7 @@
     }
 
     /* Memo widget: notes added from the phone */
-    var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff'];
+    var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff', '#ffd8a8', '#b2f0e6', '#d8e2ff'];
     /** The notes as they look on the screen (sticky notes, newest last), each with ✕ – then a box to add one. */
     function memoEditor() {
         var max = L().maxNotes || 6, n = (DATA.memos || []).length;

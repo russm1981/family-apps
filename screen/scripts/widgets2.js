@@ -265,7 +265,7 @@
 
     /* ================================================================= MEMO */
 
-    var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff'];
+    var NOTE_COLOURS = ['#ffe58a', '#ffc2d4', '#b9e6ff', '#c8f2b5', '#e3d1ff', '#ffd8a8', '#b2f0e6', '#d8e2ff'];
     T.memo = function (el, w) {
         var s = w.settings, full = w.size === 'full', data = null;
         el.innerHTML = '<div class="mm-head"><h3>Notes</h3><button class="mm-page" data-m="page" style="display:none"></button>' + (s.AddOnScreen ? '<button class="ls-btn" data-m="add">+ Note</button>' : '') + '</div><div class="mm-notes">' + loading() + '</div>';
