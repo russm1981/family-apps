@@ -3,7 +3,7 @@
 #
 # Needs: Raspberry Pi 4 or 5, Raspberry Pi OS (64-bit, "with desktop", Bookworm or later), a screen, the internet.
 # Run once, in a terminal on the Pi:
-#     curl -fsSL https://russm1981.github.io/family-apps/downloads/raspberry-pi/setup-pi.sh | bash
+#     curl -fsSL https://houserunner.app/downloads/raspberry-pi/setup-pi.sh | bash
 # Add  --wifi-setup  (… | bash -s -- --wifi-setup) to also install a "join my Wi-Fi from your phone" hotspot for the
 # first start – for cards prepared for someone else's home.
 #
@@ -12,7 +12,7 @@
 # Nothing of the dashboard itself is stored on the card – it loads the latest version from the internet each time,
 # so a card made today still works, and is up to date, a year from now.
 set -e
-URL="https://russm1981.github.io/family-apps/screen/"
+URL="https://houserunner.app/screen/"
 WIFI_SETUP=0; [ "$1" = "--wifi-setup" ] && WIFI_SETUP=1
 
 echo "== Family Dashboard: installing (this takes a few minutes)"
@@ -30,7 +30,7 @@ mkdir -p "$HOME/.local/bin"
 cat > "$HOME/.local/bin/family-dashboard" <<SH
 #!/bin/bash
 # Wait up to two minutes for the internet, so the dashboard doesn't open on an error page.
-for i in \$(seq 60); do curl -fsI --max-time 3 https://russm1981.github.io >/dev/null 2>&1 && break; sleep 2; done
+for i in \$(seq 60); do curl -fsI --max-time 3 https://houserunner.app >/dev/null 2>&1 && break; sleep 2; done
 B=\$(command -v chromium-browser || command -v chromium)
 exec "\$B" --kiosk --noerrdialogs --disable-infobars --no-first-run --disable-session-crashed-bubble \\
   --autoplay-policy=no-user-gesture-required --use-fake-ui-for-media-stream --disable-pinch \\

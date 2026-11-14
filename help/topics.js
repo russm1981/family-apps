@@ -7,7 +7,7 @@ window.FD_HELP = [
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
     summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>The HouseRunner Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
 <p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
@@ -161,7 +161,7 @@ window.FD_HELP = [
 <h2>Updates</h2>
 <p>Nothing of the dashboard is stored on the Pi’s card – it loads the latest version from the internet every time, installs security updates by itself and restarts at 4 am. A Pi that’s been in a drawer for a year is up to date as soon as it’s switched on.</p>
 <h2>Making your own Pi</h2>
-<p>Install Raspberry Pi OS (64-bit, with desktop) with Raspberry Pi Imager, then in a terminal on the Pi run:<br><code>curl -fsSL https://russm1981.github.io/family-apps/downloads/raspberry-pi/setup-pi.sh | bash</code><br>and restart it.</p>
+<p>Install Raspberry Pi OS (64-bit, with desktop) with Raspberry Pi Imager, then in a terminal on the Pi run:<br><code>curl -fsSL https://houserunner.app/downloads/raspberry-pi/setup-pi.sh | bash</code><br>and restart it.</p>
 <h2>A tablet</h2>
 <p>Open the HouseRunner home page in the tablet’s browser → <b>Open the screen</b> (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself). It shows the same QR code to connect it.</p>`
   },

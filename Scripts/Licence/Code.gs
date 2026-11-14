@@ -20,12 +20,13 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.20';
+const LS_VERSION = '2026.11.21';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
 // Where new versions of this licence server are published (version.json "licenceServer", files in Scripts/Licence/).
-const APPS_BASE = 'https://russm1981.github.io/family-apps/';
+const APPS_BASE = 'https://houserunner.app/';
+if (LOADED) { try { LOADED.setBase(APPS_BASE); } catch (e) { /* fine */ } }   // its loader follows the website to houserunner.app
 const TABS = { lic: 'Licences', log: 'Activity', fb: 'Feedback', rep: 'Reports' };
 const FBCOLS = ['Ref', 'Received', 'Type', 'Status', 'Subject', 'Message', 'Email', 'Key', 'Install', 'Version', 'Report', 'Updated', 'Reply', 'Notes'];
 const FB_TYPES = ['Feedback', 'Feature request', 'Support request'];
@@ -58,7 +59,7 @@ const DEFAULTS = {
     'START HERE\n\n' +
     'On a computer (not a phone or tablet), click the link below. It opens setup with your licence key already in it:\n\n{setup}\n\n' +
     'STUCK?\n\nThere’s help for every step here: {help}\nOr just reply to this email.\n\nBest wishes,\n{seller}',
-  setupLink: 'https://russm1981.github.io/family-apps/setup/',
+  setupLink: 'https://houserunner.app/setup/',
 };
 // Earlier standard wording: treated as "not changed", so buyers get the current wording.
 const OLD_DEFAULTS = {
@@ -67,7 +68,7 @@ const OLD_DEFAULTS = {
     'Hello {name},\n\nThank you for buying Family Dashboard.\n\nYour licence key is:\n\n    {key}\n\n' +
     'To set up your dashboard, open {setup} on a computer and follow the steps. You will be asked for this key.\n\n' +
     'Keep this email: you need the key again if you ever set the dashboard up from scratch.\n\nBest wishes,\n{seller}'],
-  setupLink: ['https://russm1981.github.io/family-apps/', 'https://russm1981.github.io/family-apps'],
+  setupLink: ['https://russm1981.github.io/family-apps/', 'https://russm1981.github.io/family-apps', 'https://russm1981.github.io/family-apps/setup/', 'https://russm1981.github.io/family-apps/setup'],
 };
 
 /* ================================================================ menu & setup */

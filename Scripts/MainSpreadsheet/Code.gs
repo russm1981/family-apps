@@ -17,8 +17,10 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.79';      // compared with version.json on GitHub to tell families when to update
-const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
+const SCRIPT_VERSION = '2026.11.80';      // compared with version.json on GitHub to tell families when to update
+const APPS_DEFAULT = 'https://houserunner.app/';
+/** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
+function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
@@ -115,7 +117,7 @@ const INSTALL = [
   { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
-  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
+  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted. Only change this if you host your own copy.' },
   { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
   { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
@@ -1067,7 +1069,7 @@ function getAdmin_() {
     spotifyConnected: !!PropertiesService.getScriptProperties().getProperty('spotifyRefresh'),
     execUrl: PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl(),
     scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
-    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT),
+    appsAddress: appsAddr_(),
     autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '', lastCheck: PropertiesService.getScriptProperties().getProperty('lastCheck') || '',
     setupBase: appsBase_() + 'setup/',
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
@@ -1460,7 +1462,7 @@ function layout_() {
   return { pages: pages, widgets: widgets, tomtomKey: String(inst_('TomTomKey') || ''), columns: LIMITS.columns,
     version: hash_(JSON.stringify([pages, widgets])), scriptVersion: SCRIPT_VERSION,
     privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
-    appsAddress: String(inst_('AppsAddress') || APPS_DEFAULT), autoUpdate: autoUpdateOn_(), sleep: sleepSettings_() };
+    appsAddress: appsAddr_(), autoUpdate: autoUpdateOn_(), sleep: sleepSettings_() };
 }
 
 /** Everything a widget page needs: the layout plus the data for each widget on that page. */
@@ -3889,7 +3891,7 @@ function onOpen() {
   m.addToUi();
 }
 function appsBase_() {
-  const b = String(inst_('AppsAddress') || APPS_DEFAULT).replace(/\/?$/, '/');
+  const b = appsAddr_().replace(/\/?$/, '/');
   if (LOADED) { try { LOADED.setBase(b); } catch (e) { /* fine */ } }
   return b;
 }

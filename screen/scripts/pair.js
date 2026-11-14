@@ -13,7 +13,7 @@
     var el = null, timer = null, relay = '', code = '';
     function api() { return window.FDApi; }
     function esc(s) { return api() ? api().esc(s) : String(s); }
-    function base() { return /^https?:/.test(location.protocol) ? new URL('../', location.href).href : 'https://russm1981.github.io/family-apps/'; }
+    function base() { return /^https?:/.test(location.protocol) ? new URL('../', location.href).href : 'https://houserunner.app/'; }
     function newCode() {
         var a = new Uint8Array(8); crypto.getRandomValues(a);
         var c = Array.prototype.map.call(a, function (b) { return A[b % 32]; }).join('');

@@ -14,7 +14,7 @@ $profileDir = $env:FDPROFILE
 if (-not $profileDir) { $profileDir = Join-Path $env:LOCALAPPDATA 'FamilyDashboardKiosk' }
 if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir | Out-Null }
 $screen = $env:SCREEN
-if (-not $screen) { $screen = 'https://russm1981.github.io/family-apps/screen/' }
+if (-not $screen) { $screen = 'https://houserunner.app/screen/' }
 $url = $env:LINK
 if (-not $url) { $url = $screen }
 

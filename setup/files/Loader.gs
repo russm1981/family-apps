@@ -14,7 +14,7 @@
  */
 const FD_LOADER = (function () {
   const VERSION = '1.2';   // compared with version.json "loader": a higher number there asks families to paste this file again
-  const DEFAULT_BASE = 'https://russm1981.github.io/family-apps/';
+  const DEFAULT_BASE = 'https://houserunner.app/';
   const CODE = 'setup/files/Code.gs', HTML = 'setup/files/Admin.html';           // relative to the apps address
   const VKEY = 'script', VDECL = /const SCRIPT_VERSION = '([^']+)'/;  // version.json key, and how the program states its version
   const BACKUP = 'FD program (don’t edit)';

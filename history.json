@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.156",
+    "date": "2026-11-14",
+    "notes": [
+      "HouseRunner has its own web address: houserunner.app (houserunner.net goes there too). The screen, the phone apps, the Configurator, Help and the licence emails all use it now.",
+      "Nothing to do: the next time each screen, phone or computer opens the old address, it carries its connection across to houserunner.app by itself. Phones: if you’d added Family Admin or Family Calendar to your home screen, add them again from the new address so the icon opens it directly.",
+      "Your Google script follows the website to the new address by itself, and keeps updating as before."
+    ]
+  },
+  {
     "version": "2026.11.155",
     "date": "2026-11-14",
     "notes": [

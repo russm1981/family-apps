@@ -1,11 +1,13 @@
 {
-  "app": "2026.11.155",
-  "script": "2026.11.79",
+  "app": "2026.11.156",
+  "script": "2026.11.80",
   "date": "2026-11-14",
   "notes": [
-    "The HouseRunner logo in the title bars now sits level with the name – the house rests on the same line as the letters, whatever font your computer uses – with a smaller gap between them."
+    "HouseRunner has its own web address: houserunner.app (houserunner.net goes there too). The screen, the phone apps, the Configurator, Help and the licence emails all use it now.",
+    "Nothing to do: the next time each screen, phone or computer opens the old address, it carries its connection across to houserunner.app by itself. Phones: if you’d added Family Admin or Family Calendar to your home screen, add them again from the new address so the icon opens it directly.",
+    "Your Google script follows the website to the new address by itself, and keeps updating as before."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.20",
+  "licenceServer": "2026.11.21",
   "loader": "1"
 }
