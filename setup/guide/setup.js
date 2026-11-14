@@ -287,6 +287,7 @@
                 '<div class="card big" id="licCard"><div id="licStatus" class="status">Checking…</div>' +
                 '<div id="licForm"><label>Licence key</label><div class="row"><input id="licKey" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(S.licKey || '') + '" spellcheck="false" autocapitalize="characters" style="font-family:ui-monospace,Menlo,Consolas,monospace">' +
                 '<button class="btn good" id="licGo">Check and save</button></div>' +
+                '<p class="mute">By adding your key you agree to the <a href="../../licence.html" target="_blank" rel="noopener">licence agreement</a> – one short page.</p>' +
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +

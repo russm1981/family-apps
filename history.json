@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.147",
+    "date": "2026-11-14",
+    "notes": [
+      "A short, plain-English licence agreement is now on the website (licence.html), linked from the home page, the Software Licence page and the wizard’s licence step.",
+      "The licence email now comes with the licence agreement attached as a PDF, with a link to the online copy."
+    ]
+  },
+  {
     "version": "2026.11.146",
     "date": "2026-11-14",
     "notes": [

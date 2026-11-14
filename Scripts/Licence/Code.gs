@@ -20,7 +20,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.19';
+const LS_VERSION = '2026.11.20';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
@@ -331,7 +331,7 @@ function admin(password, op, args) {
     case 'testEmail': {      // a sample of the buyers' email, to you (the owner of this licence server)
       const me = Session.getEffectiveUser().getEmail(), m = emailFor_(settings_(), 'there', ['FD-SAMPL-EKEYS-AMPLE-KEYXX']);
       if (!me) throw new Error('Couldn’t tell which account to send it to');
-      MailApp.sendEmail({ to: me, subject: '[Sample] ' + m.subject, body: m.body, htmlBody: m.html, name: settings_().sellerName });
+      MailApp.sendEmail({ to: me, subject: '[Sample] ' + m.subject, body: m.body, htmlBody: m.html, name: settings_().sellerName, attachments: agreementPdf_(settings_()) });
       return { ok: true, to: me };
     }
     case 'log': return { ok: true, rows: logRows_(args.key, 300) };
@@ -493,12 +493,12 @@ function emailKeys_(toEmail, keys, unsentOnly) {
     (byEmail[email] = byEmail[email] || []).push({ i: i, key: r[C.Key], name: String(r[C.Name] || '') });
   });
   let sent = 0;
-  const emails = Object.keys(byEmail);
+  const emails = Object.keys(byEmail), pdf = emails.length ? agreementPdf_(S) : [];
   if (emails.length > MailApp.getRemainingDailyQuota()) throw new Error('Google lets this account send ' + MailApp.getRemainingDailyQuota() + ' more emails today – try fewer, or tomorrow');
   emails.forEach(email => {
     const list = byEmail[email], name = (list[0].name || '').split(' ')[0] || 'there';
     const m = emailFor_(S, name, list.map(x => x.key));
-    MailApp.sendEmail({ to: email, subject: m.subject, body: m.body, htmlBody: m.html, name: S.sellerName });
+    MailApp.sendEmail({ to: email, subject: m.subject, body: m.body, htmlBody: m.html, name: S.sellerName, attachments: pdf });
     const now = new Date();
     list.forEach(x => { sh.getRange(x.i + 2, C.Emailed + 1).setValue(now); log_(String(x.key), 'Emailed', '', email); });
     sent += list.length;
@@ -526,8 +526,23 @@ function emailFor_(S, name, keys) {
     if (/^[A-Z’' ?]+$/.test(p) && p.length < 40) return '<h3 style="margin:22px 0 6px;font-size:15px;letter-spacing:.5px;color:#1f6f5c">' + e(p) + '</h3>';
     return '<p style="margin:8px 0">' + linkify(p).replace(/\n/g, '<br>') + '</p>';
   }).join('');
-  return { subject: fill(S.subject), body: body,
-    html: '<div style="font:16px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d2329;max-width:560px">' + html + '</div>' };
+  const agree = 'Your licence agreement is attached. It’s also online at ' + APPS_BASE + 'licence.html';
+  return { subject: fill(S.subject), body: body + '\n\n' + agree,
+    html: '<div style="font:16px/1.5 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d2329;max-width:560px">' + html +
+      '<p style="margin:22px 0 0;color:#5d6873;font-size:14px">Your licence agreement is attached. It’s also <a href="' + APPS_BASE + 'licence.html" style="color:#1f6f5c">online</a>.</p></div>' };
+}
+
+/** The licence agreement as a PDF to attach to the licence email (the text is the public page licence.html, with the seller's name added). */
+function agreementPdf_(S) {
+  try {
+    const page = UrlFetchApp.fetch(APPS_BASE + 'licence.html?t=' + Date.now(), { muteHttpExceptions: true });
+    const m = page.getResponseCode() === 200 && /<!--terms-->([\s\S]*?)<!--\/terms-->/.exec(page.getContentText());
+    if (!m) return [];
+    const e = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const html = '<html><body style="font:12pt/1.5 Arial,sans-serif;color:#1d2329;margin:40px">' +
+      m[1].replace('<p class="mute">', '<p style="color:#5d6873">Seller: ' + e(S.sellerName) + ' · ') + '</body></html>';
+    return [Utilities.newBlob(html, 'text/html', 'agreement.html').getAs('application/pdf').setName('Family Dashboard licence agreement.pdf')];
+  } catch (err) { console.warn('Licence agreement PDF: ' + err.message); return []; }   // the email still goes, with the link
 }
 
 function settings_() {

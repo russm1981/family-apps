@@ -2220,7 +2220,8 @@
                   ['Last checked', Lc.lastOk ? day(Lc.lastOk) + ' <span class="mute small">(checked automatically once a day)</span>' : '']
                 ] : Lc.state === 'trial' ? [['Screens', '1 screen during the trial'], ['Trial ends', day(Date.now() + (Lc.daysLeft || 0) * 864e5)], ['Your key', keyHtml]] : [['Your key', keyHtml]]);
         $('body').innerHTML = '<p class="mute small help">A licence is your permission to use the Family Dashboard software. You buy it once and get a <b>licence key</b> (FD- then four groups of five letters and numbers) in your order email. ' +
-                'The key is linked to this dashboard – your family’s Google Sheet – and says how many screens can show it. Your family’s information never goes to the seller: only the key and a random installation number are checked.</p>' +
+                'The key is linked to this dashboard – your family’s Google Sheet – and says how many screens can show it. Your family’s information never goes to the seller: only the key and a random installation number are checked. ' +
+                'The <a href="' + appsRoot() + 'licence.html" target="_blank" rel="noopener">licence agreement</a> is one short page.</p>' +
             card('Your licence', details) +
             card(Lc.key || DATA.licenceKey ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
                 '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(DATA.licenceKey || '') + '" autocomplete="off" autocapitalize="characters" spellcheck="false">' +

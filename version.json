@@ -1,13 +1,12 @@
 {
-  "app": "2026.11.146",
+  "app": "2026.11.147",
   "script": "2026.11.78",
   "date": "2026-11-14",
   "notes": [
-    "Your country now fills in how dates work: the day weeks start on (Monday or Sunday) and how dates are written (14 Nov or Nov 14), as well as the currency and time zone. You can change any of them in Advanced → Locations & home, or in the wizard’s family step.",
-    "The calendars on the screen and in the Family Calendar app start their weeks on your chosen day, and dates everywhere follow your chosen order.",
-    "News: a new “My country’s news” choice (the default) picks a national feed for your country, and there are international feeds to choose from – Guardian World, Al Jazeera, NPR, CBC, ABC Australia, RTÉ and DW."
+    "A short, plain-English licence agreement is now on the website (licence.html), linked from the home page, the Software Licence page and the wizard’s licence step.",
+    "The licence email now comes with the licence agreement attached as a PDF, with a link to the online copy."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.19",
+  "licenceServer": "2026.11.20",
   "loader": "1"
 }
