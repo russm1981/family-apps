@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.72';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.73';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -797,6 +797,7 @@ function dispatch_(b) {
     case 'forgetScreen': { const r = screensReg_(); delete r[String(b.id)]; screensSave_(r); return { ok: true, screens: screenList_(), allowed: screensAllowed_() }; }
     case 'renameScreen': { const r = screensReg_(); if (r[b.id]) r[b.id].name = String(b.name || '').trim().slice(0, 30) || r[b.id].name; screensSave_(r); return { ok: true, screens: screenList_(), allowed: screensAllowed_() }; }
     case 'saveTask': return saveTask_(b.task);
+    case 'saveTasks': return saveTasks_(b.tasks);
     case 'deleteTask': return deleteRowById_('tasks', b.id);
     case 'saveList': return saveList_(b.list, b.rows);
     case 'saveBoys': return saveList_('boys', b.rows);
@@ -1052,6 +1053,22 @@ function saveTask_(t) {
   } else {
     sh.appendRow(row);
   }
+  return getAdmin_();
+}
+
+/** The whole task list at once, in order (the Configurator's task editor). Rows keep their IDs; rows left out are deleted. */
+function saveTasks_(list) {
+  if (!Array.isArray(list)) throw new Error('No tasks');
+  const rows = list.filter(t => String(t.Task || '').trim()).map((t, i) => {
+    const name = checkLen_('Task', t.Task, LIMITS.task);
+    const pts = checkPoints_('Points for “' + name + '”', Number(t.Points), LIMITS.maxPoints);
+    if (!(pts > 0)) throw new Error('“' + name + '” needs some points (above 0)');
+    return [t.ID || newId_(), t.Boy || 'All', name, pts, ['once', 'daily', 'always'].indexOf(t.Repeat) >= 0 ? t.Repeat : 'once', i + 1, t.Active !== false];
+  });
+  const sh = sheet_('tasks');
+  if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(7, sh.getLastColumn())).clearContent();
+  if (rows.length) sh.getRange(2, 1, rows.length, 7).setValues(rows);
+  if (sh.getLastRow() > rows.length + 1) sh.deleteRows(rows.length + 2, sh.getLastRow() - rows.length - 1);
   return getAdmin_();
 }
 

@@ -1,12 +1,11 @@
 {
-  "app": "2026.11.137",
-  "script": "2026.11.72",
+  "app": "2026.11.138",
+  "script": "2026.11.73",
   "date": "2026-11-14",
   "notes": [
-    "“Screen & sleep” is now “Screen Sleep”, laid out like the Family page: how it works, Go to sleep after (minutes), What the sleeping screen shows (a small clock or nothing), Night hours (on/off, from and to), the Windows note, then Save and Undo",
-    "My data: “How your data is kept” at the top, and Reconfigure your existing setup is a menu like “Do one step from the Setup wizard again” (now with Your family and Your calendar)",
-    "Devices and Phones: tidied into the Family page style – how it works, Your screens, Connect a display, Add a phone (choose the app, scan, then install on iPhone or Android), This computer. Also fixes the screen and start-file addresses shown on the computer",
-    "Family Calendar Year view: taller days that show the entries’ names, so you can read them"
+    "Tasks: edited right on the page like the Family page – a row a task (order, task, points, for who, repeats, on/paused, ✕), + Add a task, then Save tasks and Undo changes",
+    "Notes: square post-its like the screen’s, up to six in a row on a computer, with bigger writing and slightly overlapping, as if stuck on top of each other. The screen’s Notes widget has bigger writing and overlaps a little too",
+    "Shopping and to-do lists: the list’s name as the big heading, a roomier add row and bigger rows"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

@@ -711,12 +711,16 @@ button.ag-more { font-size: 0.85rem; }
 .mm-head { display: flex; align-items: center; gap: 0.5rem; }
 .mm-page { margin-left: auto; color: var(--mute); font-size: 0.8rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 0.5rem; background: var(--panel-2); }
 .mm-page + .ls-btn { margin-left: 0.4rem; }
-.mm-notes { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 0.55rem; padding: 0.15rem; }
+.mm-notes { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: 0; padding: 0.35rem; }
 .wg-memo.full .mm-notes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .mm-notes.all { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 8rem; margin-bottom: 0.6rem; }
-.mm-note { background: var(--nc); color: #2a2410; border-radius: 0.3rem; padding: 0.45rem 0.6rem; text-align: left; display: flex; flex-direction: column; justify-content: space-between;
-    transform: rotate(var(--rot)); box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, .45); min-height: 0; overflow: hidden; font-family: "Segoe Print", "Comic Sans MS", "Bradley Hand", cursive; }
-.mm-tx { font-size: 1rem; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.mm-note { background: var(--nc); color: #2a2410; border-radius: 0.3rem; padding: 0.65rem 0.8rem; text-align: left; display: flex; flex-direction: column; justify-content: space-between;
+    transform: rotate(var(--rot)) translateY(var(--dy, 0)); box-shadow: 0 0.25rem 0.6rem rgba(0, 0, 0, .5); min-height: 0; overflow: hidden; font-family: "Segoe Print", "Comic Sans MS", "Bradley Hand", cursive;
+    margin: -0.2rem; position: relative; }
+/* notes overlap a little at their edges, like post-its stuck on top of each other */
+.mm-note:nth-child(2n) { --dy: 0.3rem; z-index: 1; } .mm-note:nth-child(2n+1) { z-index: 2; }
+.mm-notes.all .mm-note { margin: -0.15rem; }
+.mm-tx { font-size: 1.3rem; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 .mm-note small { font-family: "Segoe UI", system-ui, sans-serif; font-size: 0.7rem; color: #5a5130; }
 .mm-note.more { background: var(--panel-2); color: var(--acc); font-family: inherit; font-weight: 700; align-items: center; justify-content: center; box-shadow: none; transform: none; }
 .mm-big { font-size: 1.8rem; line-height: 1.3; font-family: "Segoe Print", "Comic Sans MS", cursive; margin-bottom: 0.5rem; }

@@ -448,13 +448,42 @@
                 '<li><b>Manual adjustments</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
             var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
-            html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, lowest order first; “Repeat” is how often a task comes back once it’s done.') +
-                '<div class="card" id="fTasks"><h2>Your tasks</h2>' + (tasks.length ? tasks.map(function (t) {
-                    return '<div class="trow' + (t.Active ? '' : ' paused') + '"><div class="tmain"><b>' + esc(t.Task) + '</b><span class="mute">' + esc(t.Boy || 'All') + ' · ' +
-                        esc(t.Repeat || 'once') + (t.Active ? '' : ' · paused') + '</span></div><b class="pos">+' + esc(t.Points) + '</b>' +
-                        '<button class="btn ghost sm" data-edit="' + esc(t.ID) + '">Edit</button></div>';
-                }).join('') : '<div class="empty">No tasks yet</div>') + '<div class="ladd-row"><button class="btn fp-add" id="newTask">+ Add a task</button></div></div>';
-        } else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
+            var who = ['All'].concat((DATA.boys || []).map(function (b) { return b.Name; }).filter(Boolean));
+            var trow = function (t) {
+                return '<div class="tk-row' + (t.Active === false ? ' paused' : '') + '" data-id="' + esc(t.ID || '') + '"><span class="mv"><button type="button" data-tmv="-1" title="Move up">▲</button><button type="button" data-tmv="1" title="Move down">▼</button></span>' +
+                    '<input data-tk="Task" maxlength="' + L().task + '" value="' + esc(t.Task || '') + '" placeholder="e.g. Tidy your bedroom" autocomplete="off">' +
+                    '<input data-tk="Points" type="number" min="1" value="' + esc(t.Points || '') + '" placeholder="10">' +
+                    '<select data-tk="Boy">' + who.map(function (n) { return '<option' + (n === (t.Boy || 'All') ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' +
+                    '<select data-tk="Repeat">' + [['once', 'Once'], ['daily', 'Every day'], ['always', 'Always there']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === (t.Repeat || 'once') ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>' +
+                    '<button type="button" class="ptb' + (t.Active === false ? '' : ' on') + '" data-tact title="Untick to pause it – it stays here but isn’t shown">' + (t.Active === false ? '⏸ Paused' : '✔ On') + '</button>' +
+                    '<button type="button" class="x" data-tx title="Delete this task">✕</button></div>';
+            };
+            html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, in this order. Once = gone when it’s done; Every day = back tomorrow; Always there = can be done any number of times.') +
+                '<div class="card" id="fTasks"><h2>Your tasks</h2>' +
+                '<div class="tk-row tk-head"><span></span><span>Task <small>max ' + L().task + '</small></span><span>Points</span><span>For who</span><span>Repeats</span><span></span><span></span></div>' +
+                '<div id="tkRows">' + tasks.map(trow).join('') + '</div>' +
+                '<div class="ladd-row"><button class="btn fp-add" id="tkAdd">+ Add a task</button></div>' +
+                '<div class="fp-notes"><p class="mute small">Points already earned stay when you change or delete a task.</p></div>' +
+                '<div class="sheet-actions"><button class="btn good" id="tkSave">Save tasks</button><button class="btn ghost" id="tkUndo">Undo changes</button></div></div>';
+            setTimeout(function () {
+                var rowsEl = $('tkRows'); if (!rowsEl) return;
+                $('tkAdd').onclick = function () { rowsEl.insertAdjacentHTML('beforeend', trow({ Active: true })); var ins = rowsEl.querySelectorAll('[data-tk=Task]'); ins[ins.length - 1].focus(); };
+                $('tkUndo').onclick = function () { render(); };
+                rowsEl.onclick = function (e) { var t, r = e.target.closest('.tk-row');
+                    if ((t = e.target.closest('[data-tmv]'))) { if (+t.getAttribute('data-tmv') < 0 && r.previousElementSibling) rowsEl.insertBefore(r, r.previousElementSibling); else if (+t.getAttribute('data-tmv') > 0 && r.nextElementSibling) rowsEl.insertBefore(r.nextElementSibling, r); }
+                    else if ((t = e.target.closest('[data-tact]'))) { var on = !t.classList.contains('on'); t.classList.toggle('on', on); t.textContent = on ? '✔ On' : '⏸ Paused'; r.classList.toggle('paused', !on); }
+                    else if (e.target.closest('[data-tx]')) { var nm = r.querySelector('[data-tk=Task]').value.trim(); if (!nm || confirm('Delete “' + nm + '”? Points already earned stay.')) r.remove(); }
+                };
+                $('tkSave').onclick = function () {
+                    var list = Array.prototype.map.call(rowsEl.querySelectorAll('.tk-row'), function (r) {
+                        var o = { ID: r.getAttribute('data-id') || '', Active: r.querySelector('[data-tact]').classList.contains('on') };
+                        r.querySelectorAll('[data-tk]').forEach(function (i) { o[i.getAttribute('data-tk')] = i.value.trim(); });
+                        return o;
+                    }).filter(function (o) { return o.Task; });
+                    act({ action: 'saveTasks', tasks: list }, 'Tasks saved').catch(function () {});
+                };
+            }, 0);
+        }
         else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
             '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom'; }), pp.settings || {}) : '') +
@@ -821,8 +850,8 @@
 
     var VIEWS = {
         memo: function () { return memoEditor(); },
-        list: function (w) { return card('On the list', listEditor(w)); },
-        todo: function (w) { return card('To do', listEditor(w)); },
+        list: function (w) { return card(esc(widgetName(w)), listEditor(w)); },
+        todo: function (w) { return card(esc(widgetName(w)), listEditor(w)); },
         whereabouts: function (w) { return card('Weasley Clock – where everyone is now', whereEditor(w)); },
         spotify: function () { return card('', spotifyBox()); },
         weather: function (w) {
@@ -1425,7 +1454,7 @@
 
     /* the List and To-do widgets' items, edited right here */
     function listEditor(w) {
-        return '<div class="ls-add"><input id="lsNew" maxlength="' + (L().listItem || 30) + '" placeholder="Add an item…" autocomplete="off"><button class="btn sm" id="lsAdd">Add</button></div>' +
+        return '<div class="ls-add"><input id="lsNew" maxlength="' + (L().listItem || 30) + '" placeholder="Add an item…" autocomplete="off"><button class="btn fp-add" id="lsAdd">+ Add</button></div>' +
             '<div id="lsItems">' + listItems(w) + '</div>';
     }
     function listItems(w) {
@@ -1439,7 +1468,7 @@
                 (w.type === 'todo' ? '<button class="star' + (i.star ? ' on' : '') + '" data-lstar="' + esc(i.id) + '" aria-label="Priority">' + (i.star ? '★' : '☆') + '</button>' : '') +
                 '<button class="x" data-lrm="' + esc(i.id) + '">✕</button></div>';
         }).join('') : '<div class="mute small">Nothing on the list</div>') +
-            (done ? '<button class="btn ghost sm" id="lsClear">Clear ' + done + ' ticked</button>' : '');
+            (done ? '<div class="ladd-row"><button class="btn ghost fp-add" id="lsClear">Clear ' + done + ' ticked</button></div>' : '');
     }
     function wireList(w) {
         function op(body) {
@@ -1466,7 +1495,7 @@
         return '<div id="mmItems">' + memoItems() + '</div>' +
             card('Add a note', n >= max ? '<p class="mute small">There are ' + max + ' notes – the most that fit (3 pages on the screen). Remove one to add another.</p>' :
                 '<div class="ls-add"><input id="mmNew" maxlength="' + (L().memo || 80) + '" placeholder="Write a note…" autocomplete="off"></div>' +
-                '<div class="ls-add"><input id="mmFrom" maxlength="12" placeholder="From (optional)" value="' + esc(localStorage.getItem('fdadmin.from') || '') + '" autocomplete="off"><button class="btn sm" id="mmAdd">Add</button></div>' +
+                '<div class="ls-add"><input id="mmFrom" maxlength="12" placeholder="From (optional)" value="' + esc(localStorage.getItem('fdadmin.from') || '') + '" autocomplete="off"><button class="btn fp-add" id="mmAdd">+ Add the note</button></div>' +
                 '<p class="mute small">' + n + ' of ' + max + ' notes. The screen shows two at a time and turns the page by itself.</p>');
     }
     function memoItems() {

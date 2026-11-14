@@ -212,3 +212,8 @@ body.desk .rem-from { margin-top: 26px; padding-top: 18px; border-top: 1px solid
 .ss-opt { flex: 1; min-width: 200px; text-align: left; background: var(--panel-2, #1c2028); border: 2px solid var(--line, #2a2f38); border-radius: 14px; padding: 14px 16px; color: var(--text, #f2f4f7); cursor: pointer; font: inherit; }
 .ss-opt b { display: block; font-size: 16.5px; } .ss-opt small { color: var(--mute, #8b95a5); font-size: 14px; }
 .ss-opt.on { border-color: var(--acc, #3fa9f5); background: rgba(63,169,245,.12); }
+
+/* Shopping and to-do lists in the house style: a big heading (the list's name), a roomy add row, larger rows */
+body.desk .ls-add { margin: 4px 0 16px; } body.desk .ls-add input { height: 46px; font-size: 16px; } body.desk .ls-add .btn { margin: 0; height: 46px; }
+body.desk .ls-row { padding: 6px 0; } body.desk .ls-row .ls-t { font-size: 16.5px; }
+body.desk .ls-row .x { font-size: 17px; width: 32px; height: 32px; }
