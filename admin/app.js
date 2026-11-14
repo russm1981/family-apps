@@ -943,6 +943,8 @@
             return '<div class="rows">' + (d.upcoming || []).map(function (u) { return row(nice(u.date), u.daysAway > 1 ? 'in ' + u.daysAway + ' days' : u.daysAway === 1 ? 'tomorrow' : 'today', esc(u.bins.map(function (b) { return b.bin; }).join(', '))); }).join('') + '</div>';
         }
         function step1() {
+            var ctry = ((DATA.install || []).filter(function (f) { return f.k === 'Country'; })[0] || {}).value || 'GB';
+            if (ctry !== 'GB') { manual(); return; }      // finding bin days from the council works in the UK only
             sheet('<h2>🗑️ Set up bin days</h2><p class="mute small">We’ll find your council from your postcode and read your collection days from it if we can. If not, you can type your bins in – it takes a minute.</p>' +
                 '<label>Postcode</label><input id="bwPc" value="' + esc(S.postcode) + '" autocapitalize="characters" autocomplete="postal-code" maxlength="10">' +
                 '<button class="btn wide" id="bwFind">Find my council</button><div id="bwOut"></div>' +
@@ -2050,6 +2052,11 @@
         var list = (DATA.install || []).filter(function (f) { return keys ? keys.indexOf(f.k) >= 0 : f.group === group; });
         return list.map(function (f) {
             var need = keyNeeded(f.k);
+            // Country and time zone: chosen from lists (the computer's own time zone is suggested)
+            if (f.k === 'Country' && window.FD_countrySelect) return '<label>Country</label>' + FD_countrySelect('setCountry', f.value || 'GB').replace('<select ', '<select data-set="Country" ') +
+                '<div class="mute small hint">' + esc(f.help || '') + '</div>';
+            if (f.k === 'TimeZone' && window.FD_tzSelect) return '<label>Time zone</label>' + FD_tzSelect('setTz', f.value || 'Europe/London').replace('<select ', '<select data-set="TimeZone" ') +
+                '<div class="mute small hint">Your computer’s time zone is ' + esc((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '?') + '.</div>';
             return '<label>' + esc(f.label) + (need && !f.value ? ' <span class="need">needed</span>' : '') + '</label><input data-set="' + esc(f.k) + '" value="' + esc(f.value) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
                 '<div class="mute small hint">' + (f.uses ? '<b>Used by:</b> ' + esc(f.uses) + '. ' : '') + esc(f.help || '') + '</div>';
         }).join('');
@@ -2073,11 +2080,11 @@
           steps: ['Go to <a href="https://developer.tomtom.com/" target="_blank" rel="noopener">developer.tomtom.com</a> and click <b>Register</b> (free).',
                   'Confirm your email, then sign in and open your <b>Dashboard</b>.',
                   'Under <b>Keys</b> you’ll see “My first API key” – click it, copy the key and paste it above.'] },
-        { keys: ['RailDataKey'], name: 'National Rail', ico: '🚆', need: 'The live train departure board', free: 'Free.',
+        { keys: ['RailDataKey'], name: 'National Rail (UK only)', ico: '🚆', need: 'The live train departure board', free: 'Free.',
           steps: ['Go to <a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration" target="_blank" rel="noopener">realtime.nationalrail.co.uk/OpenLDBWSRegistration</a> and fill in the form (free).',
                   'National Rail emails you a <b>token</b> that looks like <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code> – paste it above.',
                   'Or a <b>Live Departure Board</b> key from <a href="https://raildata.org.uk/" target="_blank" rel="noopener">raildata.org.uk</a> works too.'] },
-        { keys: ['TransportApiId', 'TransportApiKey'], name: 'TransportAPI', ico: '🚌', need: 'Live bus times', free: 'Free: 30 updates a day (the screen spreads them over the school run).',
+        { keys: ['TransportApiId', 'TransportApiKey'], name: 'TransportAPI (UK only)', ico: '🚌', need: 'Live bus times', free: 'Free: 30 updates a day (the screen spreads them over the school run).',
           steps: ['Go to <a href="https://developer.transportapi.com/signup" target="_blank" rel="noopener">developer.transportapi.com/signup</a> and sign up for the free plan.',
                   'Sign in and open <b>Applications</b> (or the Dashboard).',
                   'Copy the <b>Application ID</b> and the <b>Key</b> into the two boxes above.'] },
@@ -2120,13 +2127,19 @@
     }
     function secPlaces() {
         var pw = placeWidgets();
-        $('body').innerHTML = card('Home', installFields('home') + saveInstallBtn('hSave', 'Save home address'), 'sx-home') +
+        $('body').innerHTML = card('Where you live', installFields('home') + saveInstallBtn('hSave', 'Save where you live'), 'sx-home') +
             (pw.length ? card('Places your widgets use', '<p class="mute small">Each of these has its own addresses or places. Left blank, they use the home address.</p>' + pw.map(function (w) {
                 var pg = pageOf(w.page), vals = typeOf(w.type).settings.filter(function (f) { return PLACE_KEYS.indexOf(f.k) >= 0; }).map(function (f) { return lines(w.settings[f.k]).join(', '); }).filter(Boolean).join(' · ');
                 return '<button class="mrow" data-go="w/' + esc(w.id) + '"><span class="m-ico">' + esc(typeOf(w.type).icon) + '</span><span class="m-tx"><b>' + esc(widgetName(w)) + (pg ? ' <span class="mute small">(' + esc(pg.title) + ')</span>' : '') + '</b><small>' +
                     esc(vals || 'Uses the home address') + (w.show ? '' : ' · hidden') + '</small></span><i>›</i></button>';
             }).join('')) : '');
         wireSaveInstall('hSave', document.querySelector('.sx-home'));
+        // Choosing a country suggests its currency and time zone
+        if ($('setCountry')) $('setCountry').onchange = function () {
+            var c = (window.FD_COUNTRIES || []).filter(function (x) { return x[0] === this.value; }, this)[0]; if (!c) return;
+            var cur = document.querySelector('[data-set=Currency]'); if (cur) cur.value = c[2].trim();
+            if ($('setTz')) $('setTz').value = c[3];
+        };
     }
     function secSystem() {
         $('body').innerHTML = card('Screen Sleep', installFields('screen') + saveInstallBtn('scSave', 'Save') +

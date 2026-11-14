@@ -15,8 +15,9 @@
  * It creates any missing tabs and moves settings from the old "Settings" tab into the new ones.
  */
 
-const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.75';      // compared with version.json on GitHub to tell families when to update
+// The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
+const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
+const SCRIPT_VERSION = '2026.11.76';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -115,6 +116,9 @@ const INSTALL = [
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted (GitHub Pages). Only change this if you host your own copy.' },
+  { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
+  { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
+  { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
   { k: 'HomeAddress', group: 'home', label: 'Home address', def: '',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
   { k: 'TomTomKey', group: 'keys', uses: 'Traffic, the flights and traffic maps', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
@@ -187,7 +191,7 @@ const WIDGET_TYPES = {
       { k: 'From', label: 'Start from', type: 'text', def: '', max: 150, help: 'An address or postcode. Leave blank for home.' },
     ],
     data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations) },
-  trains: { name: 'Trains', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
+  trains: { name: 'Trains (UK)', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
     settings: [
       { k: 'From', label: 'From station (code)', type: 'crs', def: 'VIC', help: 'Three-letter code, e.g. VIC for London Victoria. Find codes at nationalrail.co.uk.' },
       { k: 'To', label: 'To station (code)', type: 'crs', def: 'GTW', help: 'e.g. GTW for Gatwick Airport.' },
@@ -297,7 +301,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'Radius', label: 'How close counts as being there (metres)', type: 'number', def: 300, min: 50, max: 5000, advanced: true },
     ],
     data: (s) => whereabouts_(s), nocache: true },
-  bus: { name: 'Bus stop', icon: '\uD83D\uDE8C', sizes: ['half', 'full'], ttl: 60, about: 'Live departures from a bus stop (TransportAPI, as used by the MagicMirror UK bus module). Uses the stop nearest home unless you pick one.',
+  bus: { name: 'Bus stop (UK)', icon: '\uD83D\uDE8C', sizes: ['half', 'full'], ttl: 60, about: 'Live departures from a bus stop (TransportAPI, as used by the MagicMirror UK bus module). Uses the stop nearest home unless you pick one.',
     settings: [
       { k: 'Source', label: 'Bus times from', type: 'select', def: 'TransportAPI', options: ['TransportAPI', 'bustimes.org'],
         help: 'TransportAPI is the official live feed (free key, 30 updates a day). bustimes.org needs no key but reads its web pages.' },
@@ -928,7 +932,7 @@ function getState_() {
   });
   return {
     boys: out, today, dow, tomorrow,
-    cashIn: { points: threshold, value },
+    cashIn: { points: threshold, value, currency: currency_() },
     remindersFrom: /^\d{1,2}:\d{2}$/.test(String(ps.TomorrowFrom || '')) ? String(ps.TomorrowFrom) : '17:00',
     penalties: String(ps.PenaltyOptions || '10,20,50').split(',').map(n => Math.abs(Number(n))).filter(Boolean),
     serverTime: now.toISOString(),
@@ -952,7 +956,7 @@ function cashIn_(boy) {
   const value = Number(ps.CashInValue) || 5;
   const bal = balance_(rows_('ledger').filter(l => l.Boy === boy));
   if (bal < threshold) throw new Error(boy + ' has ' + bal + ' points – needs ' + threshold);
-  return addEntry_(boy, 'cashin', '', 'Cashed in for £' + value, -threshold);
+  return addEntry_(boy, 'cashin', '', 'Cashed in for ' + currency_() + value, -threshold);
 }
 
 /** Points balance, worked through the statement in order and never allowed below 0. */
@@ -1833,6 +1837,12 @@ function saveInstall_(values) {
     if (!f || f.hidden) return;
     const v = String(values[k] == null ? '' : values[k]).trim();
     if (k === 'HomeAddress' && !v) throw new Error('The home address can\u2019t be blank');
+    if (k === 'Country' && !/^[A-Z]{2}$/.test(v.toUpperCase())) throw new Error('Country: use its two-letter code, e.g. GB');
+    if (k === 'TimeZone') {
+      try { Utilities.formatDate(new Date(), v, 'HH'); } catch (e) { throw new Error('Time zone “' + v + '” isn’t one I know – e.g. Europe/London'); }
+      PropertiesService.getScriptProperties().setProperty('tz', v);
+      try { SpreadsheetApp.getActive().setSpreadsheetTimeZone(v); } catch (e) { /* not bound */ }
+    }
     if (v.length > 200) throw new Error(f.label + ' is too long');
     if (v !== String(inst_(k))) setInst_(k, v);
   });
@@ -1927,6 +1937,13 @@ function cached_(cache, key, ttl, force, fn) {
 }
 
 /** "51.62,-2.47" or any address/postcode → {lat,lng}. Cached for 6 hours. */
+/** The family's country (two letters, e.g. GB) and what follows from it. */
+function country_() { return String(inst_('Country') || 'GB').trim().toUpperCase() || 'GB'; }
+function isUK_() { return country_() === 'GB'; }
+function currency_() { return String(inst_('Currency') || '£').trim() || '£'; }
+/** Units: the USA uses °F and mph; the UK °C and mph; everywhere else °C and km/h. */
+function units_() { const c = country_(); return { temp: c === 'US' ? 'F' : 'C', wind: c === 'US' || c === 'GB' ? 'mph' : 'km/h' }; }
+
 function geocode_(place) {
   if (!String(place || '').trim()) throw new Error('Add your home address in Family Admin → Settings → Home & calendar');
   const m = String(place).match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
@@ -1935,7 +1952,7 @@ function geocode_(place) {
   const key = 'geo:' + String(place).slice(0, 200);
   const hit = cache.get(key);
   if (hit) return JSON.parse(hit);
-  const res = Maps.newGeocoder().setRegion('uk').geocode(place);
+  const res = Maps.newGeocoder().setRegion(isUK_() ? 'uk' : country_().toLowerCase()).geocode(place);
   if (!res.results || !res.results.length) throw new Error('Could not find "' + place + '" on the map');
   const loc = res.results[0].geometry.location;
   const out = { lat: loc.lat, lng: loc.lng };
@@ -1949,7 +1966,7 @@ function weather_(place) {
     '&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day' +
     '&hourly=temperature_2m,precipitation_probability,weather_code,is_day' +
     '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset' +
-    '&timezone=Europe%2FLondon&forecast_days=5&wind_speed_unit=mph';
+    '&timezone=' + encodeURIComponent(TZ) + '&forecast_days=5&wind_speed_unit=' + (units_().wind === 'mph' ? 'mph' : 'kmh') + (units_().temp === 'F' ? '&temperature_unit=fahrenheit' : '');
   const d = JSON.parse(uf_(url).getContentText());
   const nowHour = fmt_(new Date(), "yyyy-MM-dd'T'HH:00");
   let i0 = d.hourly.time.indexOf(nowHour);
@@ -1961,7 +1978,7 @@ function weather_(place) {
   }
   return {
     now: { temp: Math.round(d.current.temperature_2m), feels: Math.round(d.current.apparent_temperature),
-      code: d.current.weather_code, wind: Math.round(d.current.wind_speed_10m), isDay: d.current.is_day === 1,
+      code: d.current.weather_code, wind: Math.round(d.current.wind_speed_10m), windUnit: units_().wind, isDay: d.current.is_day === 1,
       rain: d.hourly.precipitation_probability[i0] },
     hours: hours,
     days: d.daily.time.map((t, i) => ({ date: t, code: d.daily.weather_code[i],
@@ -2276,6 +2293,7 @@ function bins_(s, id) {
   if (src === 'Calendar link') days = binsIcs_(s.CalendarLink);
   else if (src === 'Repeating schedule') days = binsRepeat_(binSchedule_(s.Schedule));
   else {
+    if (!isUK_()) throw new Error('Finding bin days from your council works in the UK only – choose “Calendar link” or “Repeating schedule” in the Bins widget’s settings');
     let code = String(s.Council || '').trim(), c = null;
     if (!code) { if (!String(s.Postcode || '').trim()) throw new Error('Set up your bin days in the Family Admin app (the Bins widget)'); c = councilFor_(s.Postcode); code = c.code; }
     const C = BIN_COUNCILS[code];
@@ -3188,8 +3206,21 @@ function tidyBirthday_(text, cat) {
   return lead && words[1] ? words[0] + ' ' + words[1] : words[0];
 }
 
-/** English (England & Wales) bank holidays from GOV.UK, as { 'yyyy-MM-dd': 'Christmas Day' }. Checked daily. */
+/** Public holidays as { 'yyyy-MM-dd': 'Christmas Day' }: in the UK, England & Wales bank holidays from GOV.UK;
+ * elsewhere the country's public holidays from Nager.Date (free, no key). Checked a few times a day. */
 function bankHolidays_() {
+  if (!isUK_()) {
+    const cc = country_();
+    const w = cached_(CacheService.getScriptCache(), 'pubhols:' + cc, 6 * 3600, false, () => {
+      const out = {}, y = Number(fmt_(new Date(), 'yyyy'));
+      [y - 1, y, y + 1].forEach(yr => {
+        const res = uf_('https://date.nager.at/api/v3/PublicHolidays/' + yr + '/' + cc, { muteHttpExceptions: true });
+        if (res.getResponseCode() === 200) (JSON.parse(res.getContentText()) || []).forEach(e => { if (e.global !== false) out[e.date] = e.name || e.localName; });
+      });
+      return out;
+    });
+    return w && !w.error ? w : {};
+  }
   const v = cached_(CacheService.getScriptCache(), 'bankhols', 6 * 3600, false, () => {
     const res = uf_('https://www.gov.uk/bank-holidays.json', { muteHttpExceptions: true });
     if (res.getResponseCode() !== 200) throw new Error('GOV.UK said ' + res.getResponseCode());

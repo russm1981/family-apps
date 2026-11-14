@@ -91,7 +91,7 @@
                 q('.wx-now').innerHTML = '<span class="wx-icon">' + n.icon + '</span>' +
                     '<div><div class="wx-temp">' + d.now.temp + '\u00b0</div><div class="wx-label">' + esc(n.label) + '</div></div>' +
                     '<div class="wx-meta"><span>High ' + today.max + '\u00b0 \u00b7 Low ' + today.min + '\u00b0</span>' +
-                    '<span>Feels ' + d.now.feels + '\u00b0 \u00b7 Wind ' + d.now.wind + ' mph</span>' +
+                    '<span>Feels ' + d.now.feels + '\u00b0 \u00b7 Wind ' + d.now.wind + ' ' + (d.now.windUnit || 'mph') + '</span>' +
                     '<span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') + ' \u00b7 Sunset ' + esc(today.sunset || '') + '</span></div>';
                 q('.wx-hours').innerHTML = d.hours.slice(0, s.Hours || 8).map(function (h) {
                     var x = wx(h.code, h.isDay);
@@ -125,7 +125,7 @@
                 last = d;
                 if (!d || d.error) { q('.wx-top').innerHTML = errBox(d ? d.error : 'No weather'); q('.wx-hours').innerHTML = ''; q('.wx-dayrow').innerHTML = ''; return; }
                 var n = wx(d.now.code, d.now.isDay), today = d.days[0] || {};
-                var meta = '<span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') + ' \u00b7 ' + d.now.wind + ' mph</span>';
+                var meta = '<span><b>' + today.max + '\u00b0</b> / ' + today.min + '\u00b0</span><span>Rain ' + (today.rain == null ? '\u2013' : today.rain + '%') + ' \u00b7 ' + d.now.wind + ' ' + (d.now.windUnit || 'mph') + '</span>';
                 // With the clock: the time leads (biggest), then the weather in words, then the symbol and temperature on the right.
                 q('.wx-top').className = 'wx-top' + (s.ShowClock ? ' with-clock' : '');
                 q('.wx-top').innerHTML = s.ShowClock

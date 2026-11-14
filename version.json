@@ -1,10 +1,11 @@
 {
-  "app": "2026.11.143",
-  "script": "2026.11.75",
+  "app": "2026.11.144",
+  "script": "2026.11.76",
   "date": "2026-11-14",
   "notes": [
-    "Generic examples everywhere instead of our own family: the Smith family, with Adam & Eve and the children Oliver, Amelia and Noah; home London, SW1A 0AA; traffic to Heathrow and Gatwick airports; trains London Victoria → Gatwick Airport; BBC London instead of Bristol and Gloucestershire",
-    "The children’s screen and the Sheet’s tab are called “Children” (an existing “Boys” tab is renamed automatically)"
+    "Works outside the UK: choose your Country and Time zone (in the setup wizard’s Your family step, and Configurator → Advanced → Locations & home). They set the time zone for everything, public holidays for your country, map searches, °F and mph in the USA (km/h outside the UK and USA), and the cash-in currency",
+    "Bins: outside the UK, bin days are set up by hand (or from a council calendar link) – finding them from your council is UK-only",
+    "Trains and Bus stop are labelled “UK”; outside the UK the wizard skips their keys and hides those widgets"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

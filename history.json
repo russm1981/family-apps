@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.144",
+    "date": "2026-11-14",
+    "notes": [
+      "Works outside the UK: choose your Country and Time zone (in the setup wizard’s Your family step, and Configurator → Advanced → Locations & home). They set the time zone for everything, public holidays for your country, map searches, °F and mph in the USA (km/h outside the UK and USA), and the cash-in currency",
+      "Bins: outside the UK, bin days are set up by hand (or from a council calendar link) – finding them from your council is UK-only",
+      "Trains and Bus stop are labelled “UK”; outside the UK the wizard skips their keys and hides those widgets"
+    ]
+  },
+  {
     "version": "2026.11.143",
     "date": "2026-11-14",
     "notes": [

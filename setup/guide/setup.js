@@ -44,6 +44,7 @@
     }
     // The family and the calendar set-up, read from the Sheet (not kept in the browser: the Sheet is the record).
     var ADM = null, FAM = null, admBusy = false;
+    function instV(k) { return ((ADM && ADM.install || []).filter(function (f) { return f.k === k; })[0] || {}).value || ''; }
     function loadAdm() {
         if (admBusy) return; admBusy = true;
         setTimeout(function () {
@@ -103,11 +104,11 @@
           steps: ['Go to <a href="https://developer.tomtom.com/" target="_blank" rel="noopener">developer.tomtom.com</a> and click <b>Register</b> (free).',
                   'Confirm your email, then sign in and open your <b>Dashboard</b>.',
                   'Under <b>Keys</b> you’ll see "My first API key" – click it and copy the key.'] },
-        { k: 'RailDataKey', name: 'National Rail', need: 'The live train departure board', widgets: ['trains'], free: 'Free.',
+        { k: 'RailDataKey', name: 'National Rail', uk: true, need: 'The live train departure board (UK only)', widgets: ['trains'], free: 'Free.',
           steps: ['Easiest: go to <a href="https://realtime.nationalrail.co.uk/OpenLDBWSRegistration" target="_blank" rel="noopener">realtime.nationalrail.co.uk/OpenLDBWSRegistration</a> and fill in the form (free).',
                   'National Rail emails you a <b>token</b> that looks like <code>xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code> – paste that here. (It’s the same token the Raspberry Pi departure boards use.)',
                   'Or, if you already have one: a <b>Live Departure Board</b> consumer key from <a href="https://raildata.org.uk/" target="_blank" rel="noopener">raildata.org.uk</a> works too.'] },
-        { k: 'TransportApiId', k2: 'TransportApiKey', name: 'TransportAPI', need: 'Live bus times', widgets: ['bus'], free: 'Free: 30 updates a day (the screen spreads them over school-run times).',
+        { k: 'TransportApiId', k2: 'TransportApiKey', name: 'TransportAPI', uk: true, need: 'UK only – live bus times', widgets: ['bus'], free: 'Free: 30 updates a day (the screen spreads them over school-run times).',
           steps: ['Go to <a href="https://developer.transportapi.com/signup" target="_blank" rel="noopener">developer.transportapi.com/signup</a> and sign up for the free plan.',
                   'Sign in and open <b>Applications</b> (or Dashboard).',
                   'Copy the <b>Application ID</b> and the <b>Key</b>.'] },
@@ -322,7 +323,10 @@
                     'You can change all of this later in the Configurator → Family. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p>' +
                     '<input id="fwName" maxlength="30" placeholder="e.g. Smith" value="' + esc(FAM.name) + '"></div>' +
-                '<div class="card big"><h3>Your home address or postcode</h3><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
+                '<div class="card big"><h3>Where you live</h3><p class="mute">Your country sets the public holidays, map searches and units, and which widgets work there – a few (bin days from your council, trains, buses) are UK-only.</p>' +
+                    '<div class="grid2"><div><label>Country</label>' + FD_countrySelect('fwCountry', S.country || instV('Country') || FD_guessCountry()) + '</div>' +
+                    '<div><label>Time zone</label>' + FD_tzSelect('fwTz', S.tz || (instV('TimeZone') !== 'Europe/London' && instV('TimeZone')) || (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || 'Europe/London') + '</div></div>' +
+                    '<label>Home address or postcode</label><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
                     '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. London, SW1A 0AA"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
                     (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
@@ -339,6 +343,7 @@
             if (!connected() || !ADM || !FAM) return;
             var PAL = ['#3fa9f5', '#f5a623', '#7ed321', '#a855f7', '#f472b6', '#22d3ee', '#facc15', '#fb7185', '#34d399', '#c084fc'];
             $('fwName').oninput = function () { FAM.name = this.value; };
+            $('fwCountry').onchange = function () { var c = FD_COUNTRIES.filter(function (x) { return x[0] === $('fwCountry').value; })[0]; if (c) $('fwTz').value = c[3]; };
             $('fwRows').oninput = function (e) { var t = e.target, k;
                 if ((k = t.getAttribute('data-fn')) !== null) FAM.people[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) FAM.people[+k].colour = t.value; };
             $('fwRows').onclick = function (e) { var t;
@@ -357,12 +362,14 @@
                 if (!home) { $('famStatus').innerHTML = okLine(false, 'Add your home address or postcode'); return; }
                 var b = this; b.disabled = true; S.home = home; save();
                 $('famStatus').innerHTML = '<div class="status">Saving…</div>';
-                post({ action: 'saveInstall', values: { HomeAddress: home } }).then(function () {
+                var ctry = $('fwCountry').value, cinfo = FD_COUNTRIES.filter(function (x) { return x[0] === ctry; })[0];
+                S.country = ctry; S.tz = $('fwTz').value; save();
+                post({ action: 'saveInstall', values: { HomeAddress: home, Country: ctry, TimeZone: S.tz, Currency: cinfo ? cinfo[2].trim() : '£' } }).then(function () {
                     return post({ action: 'saveFamilyPeople', people: list, familyName: $('fwName').value.trim() });
                 }).then(function (d) {
                     ADM = d; FAM = null; S.familyDone = true; save(); render();
                     $('famStatus').innerHTML = okLine(true, 'Saved. Press Next to set up the calendar.');
-                    var pc = /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
+                    var pc = ctry === 'GB' && /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
                     if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
                         $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
                             : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Family Admin → the Bins widget.</div>');
@@ -464,6 +471,8 @@
         { id: 'keys', title: 'Free API keys', render: function () {
             if (!connected()) return '<h1>8. Free keys for live data</h1>' + needConnect();
             S.keys = S.keys || {}; S.skip = S.skip || {};
+            // Outside the UK, the UK-only services (trains, buses) are skipped – their widgets wouldn't work
+            if (S.country && S.country !== 'GB') KEYS.forEach(function (x) { if (x.uk && !S.keys[x.k] && !S.skip[x.k]) { S.skip[x.k] = 1; showWidgets(x.widgets, false).catch(function () {}); } });
             return '<h1>8. Free keys for live data</h1><p class="lead">Some widgets show live information from other services – train times, bus times, traffic. They fetch it through an <b>API</b>: ' +
                 'a way for one computer system to ask another for information. Each service wants to know who’s asking, so you make a free account with it and it gives you a <b>key</b> ' +
                 '(a bit like a licence) to paste in here. They’re all free. Skip any you don’t want – that widget is just hidden.</p>' +
