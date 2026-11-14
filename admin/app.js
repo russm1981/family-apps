@@ -80,10 +80,12 @@
     }
     // quiet: a refresh nobody asked for (coming back to the window, a retry) – if it fails, the dot goes red but no
     // message pops up; the Google script can take a while to wake up, so it has a minute to answer.
+    var loadErr = '';
     function load(quiet) {
+        loadErr = '';
         sync('busy');
         return FD.post({ action: 'admin' }, 60000).then(function (d) { sync('ok'); setData(d); })
-            .catch(function (e) { sync('err', e.message); if (quiet !== true) FD.toast(e.message, true); if (!hasEdits()) render(); });
+            .catch(function (e) { loadErr = e.message; sync('err', e.message); if (quiet !== true) FD.toast(e.message, true); if (!hasEdits()) render(); });
     }
 
     /* ---- Unsaved changes and saving.
@@ -226,7 +228,7 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="../shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             (DESK ? '<a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
@@ -260,7 +262,15 @@
         $('back').style.display = r.w || r.s || r.pts ? '' : 'none';
         $('body').onclick = null;
         if (r.tab !== 'famcfg') { famEdit = null; famName = null; }      // unsaved changes on the Family page go when you leave it
-        if (!DATA) { $('title').textContent = 'Family Admin'; $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
+        if (!DATA) {
+            $('title').innerHTML = DESK ? DESK_TITLE : 'HouseRunner';
+            // Never just "Loading…" for ever: if the family's Sheet can't be reached, say so and offer the ways out.
+            $('body').innerHTML = !loadErr ? '<div class="empty">Loading…</div>' :
+                '<div class="card" style="max-width:640px;margin:30px auto"><h2>Can’t reach your family’s Google Sheet</h2><p class="small">' + esc(loadErr) + '</p>' +
+                '<div class="ladd-row"><button class="btn fp-add" id="ldRetry">Try again</button><button class="btn ghost fp-add" id="ldOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button></div></div>';
+            if ($('ldRetry')) { $('ldRetry').onclick = function () { loadErr = ''; render(); load(); }; $('ldOut').onclick = disconnectHere; }
+            return;
+        }
         if (!DATA.widgets) { $('body').innerHTML = '<div class="empty">Update the Google Apps Script to the latest version.</div>'; return; }
         if (!DESK && ((r.s && !PHONE_S[r.s]) || (!r.s && !r.w && !r.pts && r.tab === 'layout'))) renderOnComputer(r.s ? SECTIONS[r.s][1] : 'Screen layout');
         else if (r.w) renderWidget(r.w);
@@ -2048,7 +2058,8 @@
     function disconnectHere(e) {
         if (e && e.preventDefault) e.preventDefault();
         if (!confirm('Disconnect this ' + (DESK ? 'computer' : 'phone') + ' from the dashboard? It goes back to the start, where you connect it – to this family or another one – with a code or link from a family phone.')) return;
-        FD.clearConfig(); try { localStorage.removeItem('fdadmin.data'); } catch (x) { /* ignore */ }
+        // Forget the family everywhere on this device – including the setup wizard's copy, or it would connect again by itself.
+        FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (x) { /* ignore */ } });
         location.hash = ''; location.reload();
     }
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#hmOut, [data-out]')) disconnectHere(e); });
@@ -2669,5 +2680,5 @@
     if (FD.configured()) start();
     else if (DESK && !/[?&]connect\b/.test(location.search) && document.getElementById('landing')) {
         document.getElementById('landing').hidden = false; $('app').hidden = true;      // the welcome page, in the same address
-    } else FD.setupScreen($('app'), DESK ? 'HouseRunner Configurator' : 'Family Admin', start);
+    } else FD.setupScreen($('app'), 'HouseRunner', start);
 })();

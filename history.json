@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.160",
+    "date": "2026-11-15",
+    "notes": [
+      "Disconnect now really disconnects: it forgets the family everywhere on that device (including the setup wizard’s copy, which used to connect it straight back), and shows the welcome page.",
+      "If the family’s Google Sheet can’t be reached, houserunner.app says so – with Try again and Disconnect – instead of showing “Loading…” for ever.",
+      "The “Family Admin” label no longer appears in the title bar: it’s HouseRunner everywhere."
+    ]
+  },
+  {
     "version": "2026.11.159",
     "date": "2026-11-14",
     "notes": [
