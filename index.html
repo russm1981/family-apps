@@ -8,10 +8,15 @@
 <style>
  body { min-height: 100vh; }
  .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
- .hero { display: flex; align-items: center; gap: 16px; }
- .hero .logo { width: 64px; height: 64px; display: block; flex: none; }
- h1 { font-size: 30px; margin: 0; }
- .ver { color: var(--mute); font-size: 13px; margin-top: 2px; }
+ /* the same title bar as the Configurator */
+ .site-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
+ .site-top .hr-title { color: var(--text); font-size: 21px; font-weight: 800; text-decoration: none; }
+ .site-top .tag { color: var(--mute); font-size: 14px; font-weight: 600; margin-left: 10px; }
+ .site-help { color: var(--text); text-decoration: none; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; white-space: nowrap; }
+ .site-help:hover { border-color: var(--acc); }
+ h1 { font-size: 28px; margin: 0; }
+ .ver { color: var(--mute); opacity: .6; font-size: 12px; }
+ @media (max-width: 560px) { .site-top { padding: 0 16px; } .site-top .tag { display: none; } }
  .lead { color: #cdd5e1; font-size: 17px; margin: 14px 0 6px; }
  h2 { font-size: 20px; margin: 34px 0 4px; display: flex; align-items: center; gap: 10px; }
  h2 small { color: var(--mute); font-weight: 400; font-size: 14px; }
@@ -57,8 +62,9 @@
  .tiles.help .btn { align-self: flex-start; padding: 7px 14px; }
 </style>
 </head>
-<body><div class="wrap">
- <div class="hero"><img class="logo" src="shared/brand/mark.svg" alt=""><div><h1 class="hr-name">House<span>Runner</span></h1><div class="hr-tag">a family dashboard</div><div class="ver" id="ver"></div></div></div>
+<body><header class="site-top"><a class="hr-title" href="./"><img src="shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span><span class="tag">a family dashboard</span></span></a><a class="site-help" href="help/">❓ Help</a></header>
+<div class="wrap">
+ <h1>Welcome to HouseRunner</h1>
  <p class="lead">Everything in one place: set up, install the apps, and manage your dashboard.</p>
 
  <!-- Shown on a device that is already connected to a family's Google Sheet -->
@@ -133,7 +139,7 @@
   <div class="tiles help" id="helpTiles"></div>
  </section>
 
- <p class="foot"><a href="privacy.html">Privacy notice</a> · <a href="licence.html">Licence agreement</a> · Your family’s information stays in your own Google account – these pages hold no family data.</p>
+ <p class="foot"><a href="privacy.html">Privacy notice</a> · <a href="licence.html">Licence agreement</a> · Your family’s information stays in your own Google account – these pages hold no family data. <span class="ver" id="ver"></span></p>
 </div>
 <script src="setup/config.js"></script>
 <script src="help/topics.js"></script>
@@ -160,8 +166,8 @@
 
    // Version and what's new.
    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
-     $('ver').textContent = 'Version ' + v.app + (v.date ? ' · ' + v.date : '');
-     $('news').innerHTML = '<b>Version ' + esc(v.app) + '</b><ul>' + (v.notes || []).slice(0, 4).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><span class="more">See every change ›</span>';
+     $('ver').textContent = 'Version ' + v.app;
+     $('news').innerHTML = '<ul style="margin-top:0">' + (v.notes || []).slice(0, 4).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><span class="more">See every change ›</span>';
    }).catch(function () { $('news').textContent = ''; });
 
    // Is this device already connected? (The phone apps, setup and the screen keep their link on the device.)

@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.157",
+    "date": "2026-11-14",
+    "notes": [
+      "The houserunner.app home page now has the same title bar as the Configurator – the HouseRunner logo and name on the left, Help on the right – and a “Welcome to HouseRunner” heading.",
+      "Version numbers are much quieter on the home page: a small grey note at the bottom, and What’s new just lists the changes."
+    ]
+  },
+  {
     "version": "2026.11.156",
     "date": "2026-11-14",
     "notes": [
