@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.147",
+  "app": "2026.11.148",
   "script": "2026.11.78",
   "date": "2026-11-14",
   "notes": [
-    "A short, plain-English licence agreement is now on the website (licence.html), linked from the home page, the Software Licence page and the wizard’s licence step.",
-    "The licence email now comes with the licence agreement attached as a PDF, with a link to the online copy."
+    "If a browser is set to block websites from saving anything (“Block all cookies”, a private window, or clearing site data every time), the Configurator, the wizard and the phone apps now say so in a red bar at the top, with how to fix it. Before, they just quietly forgot the connection to your dashboard every time the page was reloaded."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.20",

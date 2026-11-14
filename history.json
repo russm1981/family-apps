@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.148",
+    "date": "2026-11-14",
+    "notes": [
+      "If a browser is set to block websites from saving anything (“Block all cookies”, a private window, or clearing site data every time), the Configurator, the wizard and the phone apps now say so in a red bar at the top, with how to fix it. Before, they just quietly forgot the connection to your dashboard every time the page was reloaded."
+    ]
+  },
+  {
     "version": "2026.11.147",
     "date": "2026-11-14",
     "notes": [
