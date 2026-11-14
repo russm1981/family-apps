@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.73';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.74';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -749,6 +749,28 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+/** A backup of the family's private links, emailed to the Google account the dashboard belongs to – so if a computer or phone
+ * forgets its connection, the email has a link that connects it again. Only ever sent to the owner's own address. */
+function emailLinks_() {
+  const to = String(Session.getEffectiveUser().getEmail() || '');
+  if (!to) throw new Error('Couldn’t find your Google account’s email address');
+  const url = PropertiesService.getScriptProperties().getProperty('execUrl') || ScriptApp.getService().getUrl() || '';
+  if (!/\/exec$/.test(url)) throw new Error('Open the dashboard once first, then try again');
+  const tail = '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(String(inst_('AccessCode') || ''));
+  const base = appsBase_(), fam = String(inst_('FamilyName') || '').trim();
+  const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + '.\n\n' +
+    'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
+    'The Configurator (on a computer):\n' + base + 'setup/' + tail + '\n\n' +
+    'Family Admin (adults’ phones):\n' + base + 'admin/' + tail + '\n\n' +
+    'Family Calendar (everyone’s phones):\n' + base + 'calendar/' + tail + '\n\n' +
+    'The screen (the XENEON EDGE, a tablet or a browser):\n' + base + 'screen/' + tail + '\n\n' +
+    'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
+    'If you change your access code (Configurator → Advanced → My data), you’ll be sent new links.\n';
+  GmailApp.sendEmail(to, 'Your Family Dashboard links – keep this email', body);
+  PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
+  return { ok: true, to: to };
+}
+
 /** The web app's own /exec address, noted on the first visit so the Sheet menu can build the setup link. */
 function rememberUrl_() {
   try {
@@ -789,6 +811,7 @@ function dispatch_(b) {
     case 'resetForSetup': return withLock_(() => resetForSetup_());
     case 'moveDone': return moveDone_(b);
     case 'packForAccount': return packForAccount_(b.email);
+    case 'emailLinks': return emailLinks_();
     case 'importPack': return importPack_(b.pack);
     case 'setLicence': return setLicence_(b.key);
     case 'releaseLicence': return releaseLicence_();
@@ -1186,6 +1209,7 @@ function changeCode_(b) {
   const why = codeProblem_(c);
   if (why) throw new Error('The access code ' + why);
   setInst_('AccessCode', c);
+  try { emailLinks_(); } catch (e) { /* the old email just stops working */ }
   return { ok: true, code: c };
 }
 function acceptPrivacy_(b) {

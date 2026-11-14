@@ -123,7 +123,7 @@
 
     var P = window.FD_PRIVACY || { version: '0', summary: [], full: '' };
     var STEPS = [
-        { id: 'welcome', title: 'Welcome & privacy', render: function () {
+        { id: 'welcome', title: 'Welcome', render: function () {
             // Run on a dashboard that's already set up: first, change what's there, or clear it and start again?
             if (connected() && !S.mode) return '<h1>This dashboard is already set up</h1>' +
                 '<p class="lead">What would you like to do?</p>' +
@@ -142,8 +142,10 @@
                 (connected() ? '' : '<p class="mute">Already have a Family Dashboard, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
                 '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
                 'You can stop at any point – this page remembers where you got to. Each step explains what it does when you get to it.</p>' +
-                '<div class="note warn"><h3>What you need before you start</h3><p>Just a <b>Google (Gmail) account</b> – ideally the one your family calendar is in – and this page open on a <b>computer</b>. ' +
-                    'No Google account yet? <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Create one free</a>, then come back here.</p>' +
+                '<div class="note warn"><h3>What you need before you start</h3><ul class="need">' +
+                    '<li><b>A Google (Gmail) account</b> – ideally the one your family calendar is in. No Google account yet? <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Create one free</a>, then come back here.</li>' +
+                    '<li><b>This page open on a computer.</b></li>' +
+                    '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No screen yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
                 '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
@@ -154,10 +156,7 @@
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
                 '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (adults).</li></ul></div>' +
-                '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>' +
-                '<div class="card privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
-                '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details>' +
-                '<label class="tick"><input type="checkbox" id="pvOk"' + (S.privacy === P.version ? ' checked' : '') + '> I have read and accept the privacy notice (version ' + esc(P.version) + ', ' + esc(P.updated || '') + ')</label></div>';
+                '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>';
         }, wire: function () {
             if ($('suAmend')) $('suAmend').onclick = function () { S.mode = 'amend'; save(); render(); };
             if ($('suWipe')) $('suWipe').onclick = function () {
@@ -178,12 +177,20 @@
                 try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) { /* fine */ }
                 location.replace(location.pathname);
             };
+        }, ready: function () { return !connected() || !!S.mode; }, blocked: 'Choose what to do first – change the existing set-up, or start again' },
+
+        { id: 'privacy', title: 'Your privacy', render: function () {
+            return '<h1>1. Your privacy</h1><p class="lead">Before you start: what the dashboard keeps about your family, and where. In short – everything stays in your own Google account.</p>' +
+                '<div class="card big privacy"><h3>Privacy notice</h3><ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+                '<details><summary>Read the full privacy notice</summary><div class="pv-full">' + P.full + '</div></details></div>' +
+                '<div class="card big"><label class="tick"><input type="checkbox" id="pvOk"' + (S.privacy === P.version ? ' checked' : '') + '> I have read and accept the privacy notice (version ' + esc(P.version) + ', ' + esc(P.updated || '') + ')</label></div>';
+        }, wire: function () {
             if ($('pvOk')) $('pvOk').onchange = function () {
                 S.privacy = $('pvOk').checked ? P.version : ''; save(); render();
-                if (S.privacy) toast('Thanks – press Start at the bottom');
+                if (S.privacy) toast('Thanks – press Next at the bottom');
                 if (S.privacy && connected()) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
             };
-        }, ready: function () { return S.privacy === P.version && (!connected() || !!S.mode); }, blocked: 'Choose what to do first – change the existing set-up, or start again – then tick the box to accept the privacy notice' },
+        }, ready: function () { return S.privacy === P.version; }, blocked: 'Tick the box to accept the privacy notice first' },
 
         { id: 'sheet', title: 'Make your Google Sheet', render: function () {
             var tpl = CFG.templateId;
@@ -433,6 +440,8 @@
                 ? { ico: '⚙', name: 'Family Admin', who: 'for the adults', what: 'The grown-ups’ app: give and take away the children’s points and tick off their tasks, add notes and shopping-list items, change the widgets’ everyday settings, and look after the screen and the licence. Put it on each adult’s phone.' }
                 : { ico: '📅', name: 'Family Calendar', who: 'for everyone', what: 'The family’s shared calendar: see what’s on and add events, in the same colours as the screen. Put it on everyone’s phone – the children’s too, if they have one. It can’t change points or settings.' };
             return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
+                '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If the Configurator website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
+                    'A backup of your private links has also been emailed to your Google account (“Your Family Dashboard links”).</p></div>' +
                 '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'calendar', app, '📅 Family Calendar (everyone)') + '</div>' +
                 '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
                     '<ol class="howto"><li><b>Scan this code</b> with the phone’s camera and tap the link that appears. It opens ' + A.name + ', already connected to your family – the code holds your family’s private link.' +
@@ -568,13 +577,13 @@
             var nKeys = KEYS.filter(function (x) { return S.keys && S.keys[x.k]; }).length, nSkip = KEYS.filter(function (x) { return S.skip && S.skip[x.k]; }).length;
             // [step, ok, what it says]. ok: true = fine, 'note' = fine but worth knowing, false = needs doing.
             var rows = [
-                ['welcome', isDone('welcome'), 'Privacy notice accepted'],
+                ['privacy', isDone('privacy'), isDone('privacy') ? 'Privacy notice accepted' : 'The privacy notice hasn’t been accepted'],
                 ['publish', connected(), connected() ? 'Your Google Sheet is made, published and connected' : 'Your Google Sheet isn’t connected yet'],
                 ['licence', S.licOk || S.licensed ? true : 'note', S.licOk || S.licensed ? 'Licence key added' : 'No licence key yet – the dashboard runs as a 14-day free trial. Add your key before it ends.'],
                 ['family', isDone('family'), isDone('family') ? 'Family saved' : 'The family hasn’t been saved'],
                 ['calendar', isDone('calendar') ? true : 'note', isDone('calendar') ? 'Calendar colour coding saved' : 'Calendar colour coding not saved in this setup – fine if it was already set up'],
                 ['devices', isDone('devices'), isDone('devices') ? 'Display step done' : 'Your display isn’t connected yet'],
-                ['phones', isDone('phones'), isDone('phones') ? 'Phone apps step done' : 'The phone apps aren’t set up yet'],
+                ['phones', isDone('phones'), isDone('phones') ? 'Phone apps step done – keep Family Admin on your phone: it reconnects this website if it ever forgets your family' : 'The phone apps aren’t set up yet – Family Admin on your phone is how you reconnect this website if it forgets your family'],
                 ['keys', isDone('keys') ? true : false, isDone('keys') ? nKeys + ' live-data service' + (nKeys === 1 ? '' : 's') + ' added' + (nSkip ? ', ' + nSkip + ' skipped' : '') : 'Some live-data services haven’t been added or skipped'],
                 ['check', S.checkedOk ? (behind ? 'note' : true) : false, (S.checkedOk ? 'All the widgets work' : 'The widget check hasn’t passed yet') + (behind ? ' · an update to the Google script is available' : '')]
             ];
@@ -618,7 +627,8 @@
             if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
             save();
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
-            if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Family Admin app (Install tab).' : ''));
+            if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Configurator → Advanced → My data.' : ''));
+            if (!S.linksEmailed) post({ action: 'emailLinks' }).then(function (d) { S.linksEmailed = d.to || true; save(); toast('A backup of your private links has been emailed to ' + (d.to || 'you')); }, function () { /* older Google script – fine */ });
             renderSteps();
             return true;
         }).catch(function (e) {
@@ -709,7 +719,7 @@
     /* ------------------------------------------------------------ frame */
 
     function isDone(id) {
-        return { welcome: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
+        return { welcome: S.step > 0 || S.privacy === P.version, privacy: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
             keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, finish: false }[id];
     }
     function renderSteps() {
@@ -731,7 +741,7 @@
         var ok = !st.ready || st.ready();
         $('next').classList.toggle('off', !ok);
         $('next').title = ok ? '' : st.blocked || '';
-        $('where').textContent = st.id === 'finish' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
+        $('where').textContent = st.id === 'finish' || st.id === 'welcome' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
         if (SOLO) { $('back').style.visibility = 'hidden'; $('next').style.visibility = 'visible'; $('next').classList.remove('off'); $('next').textContent = 'Done – back to Setup'; }
         renderSteps();
         window.scrollTo(0, 0);
@@ -779,9 +789,9 @@
         render();
         var after = function () {
             var ids = STEPS.map(function (x) { return x.id; });
-            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family' || goTo === 'calendar') { ADM = null; FAM = null; } S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : 0; if (goTo === 'check') S.autoCheck = true; }
+            if (goTo && ids.indexOf(goTo) >= 0 && connected()) { if (goTo === 'family' || goTo === 'calendar') { ADM = null; FAM = null; } S.step = S.privacy === P.version || SOLO ? ids.indexOf(goTo) : ids.indexOf('privacy'); if (goTo === 'check') S.autoCheck = true; }
             else if (wantUpdate) S.step = ids.indexOf('check');
-            else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : 0;
+            else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : ids.indexOf('privacy');
             render();
             if (p.from === 'sheet' && connected()) toast('Connected to your Family Dashboard Sheet \u2705');
         };

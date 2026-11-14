@@ -158,3 +158,26 @@ body.solo .solo-bar { display: flex; }
 .fin-r.bad .fin-i { background: rgba(250,204,21,.18); color: #facc15; }
 .fin-t { flex: 1; } .fin-t b { display: block; } .fin-t small { color: var(--mute); font-size: 14px; }
 .fin-r.bad .fin-t small { color: #facc15; }
+
+/* The Configurator's menu bar above the wizard, so you can always get back to the rest of the website */
+.cfg-top { display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
+.cfg-title { color: var(--text); font-size: 21px; font-weight: 800; text-decoration: none; }
+.cfg-help { color: var(--text); text-decoration: none; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; }
+.cfg-tabs { display: flex; justify-content: center; align-items: stretch; flex-wrap: wrap; background: var(--bg); border-bottom: 1px solid var(--line); position: sticky; top: 60px; z-index: 29; padding: 0 12px; }
+.cfg-tabs a { display: flex; align-items: center; gap: 8px; padding: 12px 14px; color: var(--mute); text-decoration: none; font-weight: 600; font-size: 14px; white-space: nowrap; }
+.cfg-tabs a:hover { color: var(--text); } .cfg-tabs a.on { color: var(--acc); } .cfg-tabs a i { font-style: normal; font-size: 17px; }
+.cfg-tabs .tab-grp { align-self: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--mute); padding: 0 4px 0 6px; }
+.cfg-tabs .tab-sep { align-self: stretch; width: 1px; margin: 8px 8px; background: var(--line); }
+.side { top: 106px; height: calc(100vh - 106px); }
+@media (max-width: 900px) { .cfg-tabs { display: none; } .side { top: 60px; height: auto; } }
+
+/* House style (the Configurator's Family page): a big page title, each box with a big clear heading, everything nicely spaced */
+h1 { font-size: 32px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 12px; }
+.card h3, .note h3 { font-size: 20px; font-weight: 750; margin: 0 0 12px; }
+.card { padding: 22px 24px; margin: 18px 0; } .card.big { padding: 24px 28px; }
+.card p, .card li { line-height: 1.6; }
+.lead { font-size: 17px; line-height: 1.6; margin-bottom: 20px; }
+.note { padding: 16px 20px; margin: 18px 0; }
+.note.warn h3 { font-size: 20px; }
+ul.need { margin: 6px 0 4px; } ul.need li { margin: 8px 0; }
+h2 { font-size: 22px; font-weight: 750; margin: 30px 0 12px; }

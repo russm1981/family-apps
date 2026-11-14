@@ -8,7 +8,8 @@
     var KEY = 'fdapp.cfg.v1';
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; } catch (e) { return {}; } }
-    function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) { /* ignore */ } }
+    // Ask the browser to keep this site's storage (so it doesn't forget the family when space is short).
+    function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* ignore */ } }
 
     /** Accepts a setup link (…#api=…&code=…), "url|code", or separate values. */
     function parseSetup(text) {
@@ -184,7 +185,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.138',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.139',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -252,6 +253,7 @@
                     '<p class="su-code" style="font:800 30px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-align:center;margin:8px 0">' + FD.esc(waiter.code) + '</p>' +
                     (qr ? '<p class="mute small" style="text-align:center">or scan this with the phone’s camera:</p><div style="background:#fff;border-radius:12px;padding:8px;width:180px;margin:6px auto">' + qr + '</div>' : '') +
                     '<p class="mute small" id="suState" style="text-align:center">Waiting for your phone…</p>' : '') +
+                '<p class="mute small" style="margin-top:14px">No phone with Family Admin to hand? Look in your Google account’s email for <b>“Your Family Dashboard links”</b> and open the link in it on this device – or paste it below.</p>' +
                 '<details' + (waiter ? '' : ' open') + '><summary>Or paste a setup link</summary>' +
                 '<label>Setup link</label><input id="suLink" placeholder="Paste setup link" autocomplete="off">' +
                 '<div class="or">or</div>' +

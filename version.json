@@ -1,11 +1,13 @@
 {
-  "app": "2026.11.138",
-  "script": "2026.11.73",
+  "app": "2026.11.139",
+  "script": "2026.11.74",
   "date": "2026-11-14",
   "notes": [
-    "Tasks: edited right on the page like the Family page – a row a task (order, task, points, for who, repeats, on/paused, ✕), + Add a task, then Save tasks and Undo changes",
-    "Notes: square post-its like the screen’s, up to six in a row on a computer, with bigger writing and slightly overlapping, as if stuck on top of each other. The screen’s Notes widget has bigger writing and overlaps a little too",
-    "Shopping and to-do lists: the list’s name as the big heading, a roomier add row and bigger rows"
+    "A backup of your private links: the setup wizard emails them to your Google account (“Your Family Dashboard links – keep this email”) as soon as it connects, and again whenever the access code changes. Devices and Phones has an “Email me my links” button. If a computer or phone forgets your family, open the link in that email",
+    "The connect screen now points to that email if there’s no phone with Family Admin to hand, and the website asks the browser to keep its storage so it’s less likely to forget your family",
+    "Setup wizard: “What you need before you start” now includes your phone (for the Family Admin app – it’s how you reconnect the website), and the phones step says so too",
+    "Setup wizard: the privacy notice is its own step after Welcome",
+    "Setup wizard: the Configurator’s menu bar is shown across the top, and the pages are in the Family page house style (big title and headings, more space)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

@@ -1,5 +1,16 @@
 [
   {
+    "version": "2026.11.139",
+    "date": "2026-11-14",
+    "notes": [
+      "A backup of your private links: the setup wizard emails them to your Google account (“Your Family Dashboard links – keep this email”) as soon as it connects, and again whenever the access code changes. Devices and Phones has an “Email me my links” button. If a computer or phone forgets your family, open the link in that email",
+      "The connect screen now points to that email if there’s no phone with Family Admin to hand, and the website asks the browser to keep its storage so it’s less likely to forget your family",
+      "Setup wizard: “What you need before you start” now includes your phone (for the Family Admin app – it’s how you reconnect the website), and the phones step says so too",
+      "Setup wizard: the privacy notice is its own step after Welcome",
+      "Setup wizard: the Configurator’s menu bar is shown across the top, and the pages are in the Family page house style (big title and headings, more space)"
+    ]
+  },
+  {
     "version": "2026.11.138",
     "date": "2026-11-14",
     "notes": [
