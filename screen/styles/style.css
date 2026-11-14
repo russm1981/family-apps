@@ -1213,3 +1213,12 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 .boy.compact::before { content: '⌃\A⌃'; top: var(--bodyTop, 3.3rem); padding: 0.45rem 0.9rem 0.3rem; }
 .boy.compact::after { content: '⌄\A⌄'; bottom: 0.3rem; }
 .boy.compact.more-up::before, .boy.compact.more-down::after { opacity: 1; }
+
+/* Today & tomorrow: a little more breathing room between entries, with slightly smaller text */
+.wg-agenda .ag-col { gap: 0.5rem; }
+.wg-agenda .ag-list { gap: 0.42rem; }
+.wg-agenda .ag-ev { font-size: 0.95rem; line-height: 1.3; padding-top: 0.14rem; padding-bottom: 0.14rem; }
+.wg-agenda .ag-time { font-size: 0.84rem; }
+.wg-agenda .ag-col h3, .wg-agenda .ag-wk h3 { margin-bottom: 0.15rem; }
+.wg-agenda .ag-cols { column-gap: 1.4rem; }
+.wg-agenda .ag-wk { padding-left: 1.4rem; }

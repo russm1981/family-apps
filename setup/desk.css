@@ -173,7 +173,7 @@ body.desk .lrow .dp-say { display: none; }
 body.desk .lrow .opick, body.desk .lrow .rpick { flex-wrap: nowrap; gap: 10px; }
 body.desk .lrow .opick select, body.desk .lrow .rpick select { flex: none; width: auto; min-width: 150px; }
 body.desk .lrow .dpick { flex-wrap: nowrap; }
-body.desk .lrow { padding-top: 12px !important; padding-bottom: 12px !important; margin-bottom: 12px; min-height: 64px; }
+/* (row spacing: see the house style block at the end) */
 body.desk .card li { margin-bottom: 14px; } body.desk .card ul, body.desk .card ol { margin-top: 10px; }
 .hm-h { margin-top: 30px; }
 
@@ -217,3 +217,21 @@ body.desk .rem-from { margin-top: 26px; padding-top: 18px; border-top: 1px solid
 body.desk .ls-add { margin: 4px 0 16px; } body.desk .ls-add input { height: 46px; font-size: 16px; } body.desk .ls-add .btn { margin: 0; height: 46px; }
 body.desk .ls-row { padding: 6px 0; } body.desk .ls-row .ls-t { font-size: 16.5px; }
 body.desk .ls-row .x { font-size: 17px; width: 32px; height: 32px; }
+
+/* ===================== House style, everywhere on the Configurator (from the Family page) =====================
+ * Page title 28px · box heading 20px · body text 16px · notes 14.5px grey · every box, input and button the same size
+ * Lists you add rows to (tasks, daily to-dos, reminders…) all look alike: plain rows 46px high, 10px apart, ✕ at the end */
+body.desk input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]):not([type=hidden]), body.desk select { height: 46px; font-size: 16px; }
+body.desk .btn { min-height: 46px; font-size: 16px; }
+body.desk .btn.sm { min-height: 38px; font-size: 14px; }
+body.desk .card p.small, body.desk .card li.small, body.desk .card ul.small li { font-size: 16px; }
+body.desk .card h3:not(.sec), body.desk .kc h3 { font-size: 20px; font-weight: 750; }
+body.desk .lrow, body.desk .tk-row { padding: 0 44px 0 0 !important; margin: 0 0 10px !important; min-height: 0; background: none; border: 0; position: relative; align-items: center; }
+body.desk .lrow input, body.desk .lrow select, body.desk .tk-row input, body.desk .tk-row select { height: 46px; font-size: 16px; padding: 8px 12px; margin: 0; }
+body.desk .lrow .x, body.desk .tk-row .x { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; font-size: 17px; color: var(--mute, #8b95a5); background: none; border: 0; }
+body.desk .lhead, body.desk .tk-head { padding: 0 44px 6px 0 !important; margin: 0 0 4px !important; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--mute, #8b95a5); }
+body.desk .tk-row { grid-template-columns: 34px minmax(0, 2.2fr) 90px minmax(0, 1fr) minmax(0, 1fr) 110px; }
+body.desk .tk-row .ptb { height: 46px; }
+body.desk .lrow .dp-day { height: 34px; min-width: 34px; }
+body.desk .ladd-row { margin-top: 14px; }
+body.desk .sheet-actions { margin-top: 22px; }

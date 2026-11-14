@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.140",
+    "date": "2026-11-14",
+    "notes": [
+      "Fixes Rewards → Daily to-dos, which showed Manual adjustments instead (since 2026.11.138)",
+      "Configurator house style everywhere: every input and button the same size, the same text sizes and spacing on every page, and Tasks, Daily to-dos and Reminders now look exactly alike – plain rows the same height, the same gaps, the same column headings and ✕",
+      "Today & tomorrow on the screen: a little more space between entries, with slightly smaller text"
+    ]
+  },
+  {
     "version": "2026.11.139",
     "date": "2026-11-14",
     "notes": [

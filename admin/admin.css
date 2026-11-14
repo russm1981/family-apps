@@ -363,7 +363,7 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .tk-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 10px; }
 .tk-row input, .tk-row select { margin: 0; height: 44px; }
 .tk-row [data-tk=Task] { flex: 1 1 calc(100% - 50px); } .tk-row [data-tk=Points] { width: 64px; } .tk-row select { flex: 1; min-width: 0; padding-left: 8px; padding-right: 4px; }
-body:not(.desk) .tk-row { padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+body:not(.desk) .tk-row { position: relative; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
 .tk-row .x { width: 32px; height: 32px; color: var(--mute); font-size: 17px; background: none; border: 0; cursor: pointer; }
 .tk-row.paused input, .tk-row.paused select { opacity: .5; }
 .tk-row .mv { display: inline-flex; flex-direction: column; gap: 2px; }
