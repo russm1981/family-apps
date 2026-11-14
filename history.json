@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.150",
+    "date": "2026-11-14",
+    "notes": [
+      "Setup wizard: making your Google Sheet and switching it on are now one continuous set of steps, all done in the new tab. You no longer come back to the wizard in between – “Carry on with setup” in your Sheet picks up straight after, already connected.",
+      "Your new Sheet renames itself from “Copy of Family Dashboard” to “Family Dashboard” the first time it’s set up."
+    ]
+  },
+  {
     "version": "2026.11.149",
     "date": "2026-11-14",
     "notes": [

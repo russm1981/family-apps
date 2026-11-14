@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.78';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.79';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -417,7 +417,8 @@ const PAGE_ICONS = ['\u2302', '\u25C8', '\u2726', '\u2600', '\u266B', '\u2708', 
 function setup() {
   freshCopy_();
   const ss = SpreadsheetApp.getActive();
-  ss.setSpreadsheetTimeZone(TZ); // so dates typed in the sheet mean UK dates
+  try { if (/^Copy of /i.test(ss.getName())) ss.rename(ss.getName().replace(/^Copy of /i, '')); } catch (e) { /* fine */ }   // "Copy of Family Dashboard" → "Family Dashboard"
+  ss.setSpreadsheetTimeZone(TZ); // so dates typed in the sheet mean the family's own time zone
   ensureTabs_();
   const def = ss.getSheetByName('Sheet1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
@@ -3919,13 +3920,15 @@ function autoPublish_() {
 function menuConnect() {
   setup();
   let url = myUrl_(), apiErr = '';
-  // Publishing by itself needs Google's Apps Script API; with the loader we don't ask for that, so it's the Deploy screen.
-  if (!url && !LOADED) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; } }
-  if (!url && /Apps Script API/.test(apiErr)) {
-    dialog_('One switch, then try again', '<p>To publish your dashboard by itself, Google needs one switch turned on (once for your Google account):</p><ol>' +
-      '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a></li>' +
-      '<li>Turn <b>Google Apps Script API</b> on</li><li>Come back here and choose <b>🏠 Family Dashboard → Connect my screen and phones</b> again</li></ol>' +
-      '<p style="color:#888;font-size:13px">The same switch lets your dashboard keep itself up to date.</p>', 300);
+  // Publish by itself through Google's Apps Script API (needs one switch per Google account); otherwise the Deploy screen by hand.
+  if (!url) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; console.warn('Publish by itself: ' + apiErr); } }
+  if (!url && /Apps Script API/.test(apiErr) && !/Cloud project/.test(apiErr)) {
+    let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
+    dialog_('One switch, then it publishes itself', '<p>Google needs one switch turned on (once for your Google account' + (who ? ', <b>' + clean_(who) + '</b>' : '') + ') so the dashboard can publish itself:</p><ol>' +
+      '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank"><b>this Google settings page</b></a> (it opens in a new tab)</li>' +
+      '<li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li>' +
+      '<li>Come back to this tab and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again</li></ol>' +
+      '<p style="color:#888;font-size:13px">If it already says On, wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>', 340);
     return;
   }
   if (!url) {

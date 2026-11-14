@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.149",
-  "script": "2026.11.78",
+  "app": "2026.11.150",
+  "script": "2026.11.79",
   "date": "2026-11-14",
   "notes": [
-    "The website has a new name and logo: HouseRunner – a family dashboard. It is on the home page, the Configurator, the setup wizard, Help, What’s new and the other pages, with a new icon in the browser tab.",
-    "On the screen, the status panel (tap the version number) now shows the HouseRunner name and logo. Nothing else on the screen has changed.",
-    "Some names stay as they were for now, because they live in your Google Sheet and emails: the Sheet’s “Family Dashboard” menu, the “Your Family Dashboard links” email, the “Start Family Dashboard” file, and the Family Admin and Family Calendar apps."
+    "Setup wizard: making your Google Sheet and switching it on are now one continuous set of steps, all done in the new tab. You no longer come back to the wizard in between – “Carry on with setup” in your Sheet picks up straight after, already connected.",
+    "Your new Sheet renames itself from “Copy of Family Dashboard” to “Family Dashboard” the first time it’s set up."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.20",

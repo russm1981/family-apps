@@ -10,6 +10,11 @@
     var S = load();
     var $ = function (id) { return document.getElementById(id); };
     function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
+    function whyPerms() { return '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
+        '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
+        '<li><b>Run when you’re not there, and connect to external services</b> – the 5-minute timer, and fetching its own newest program from these apps.</li>' +
+        '<li><b>Apps Script projects and deployments</b> – so it can publish itself, without the Deploy screens.</li>' +
+        '<li>It all runs as you, inside your own Google account.</li></ul></details>'; }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function toast(t, bad) { var el = $('toast'); el.textContent = t; el.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(function () { el.className = 'toast'; }, 3500); }
@@ -193,16 +198,22 @@
             };
         }, ready: function () { return S.privacy === P.version; }, blocked: 'Tick the box to accept the privacy notice first' },
 
-        { id: 'sheet', title: 'Make your Google Sheet', render: function () {
+        { id: 'sheet', title: 'Make your Sheet & switch it on', render: function () {
             var tpl = CFG.templateId;
-            return '<h1>1. Make your own Google Sheet</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account. It’s where everything your dashboard shows is kept – only you can see it. <span class="mute">(About 2 minutes.)</span></p>' +
+            if (connected()) return '<h1>Make your Google Sheet and switch it on</h1><div class="card big">' + okLine(true, 'Done – your Sheet is made and this page is connected to it.') + '<p>Press <b>Next</b>.</p></div>';
+            return '<h1>Make your Google Sheet and switch it on</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account, and switches on the small program inside it so your screen and phones can reach it. ' +
+                'Only you can see it. <span class="mute">(About 3 minutes – you do it all in the new tab.)</span></p>' +
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
-                    '<span class="mute">(it opens in a new tab)</span></li>' +
-                    '<li>If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
+                    '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
-                    '<li>Your new Sheet opens, called <b>“Copy of Family Dashboard”</b>. Leave that tab open, come back to this tab, and press <b>Next</b>.</li></ol></div>' +
-                    helpLink('setup') + '<details class="card"><summary>“Make my copy” not working? Do it by hand</summary>' + manual() + '</details>'
-                  : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes).</div><div class="card big">' + manual() + '</div>');
+                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 Family Dashboard</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                    '<li>Google asks for permission: click <b>Continue</b> and choose your account. <b>“Google hasn’t verified this app”</b> is normal, because it’s your own private copy: ' +
+                        'click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + whyPerms() + '</li>' +
+                    '<li>Choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
+                    '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, and you can close this one.</li></ol>' +
+                    helpLink('setup') + '</div>' +
+                    '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: press <b>Next</b> for the by-hand way to publish.</p>' + manual() + '</details>'
+                  : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes). Then press <b>Next</b>.</div><div class="card big">' + manual() + '</div>');
             function manual() {
                 return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>Family Dashboard</b>.</li>' +
                     '<li><b>Extensions → Apps Script</b>. Replace everything in <b>Code.gs</b> with the <b>loader</b> – a small file that fetches the latest program each time, so it keeps itself up to date:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
@@ -213,23 +224,26 @@
         } },
 
         { id: 'publish', title: 'Publish & connect', render: function () {
-            var perms = '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
-                '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
-                '<li><b>Run when you’re not there, and connect to external services</b> – the 5-minute timer, and fetching its own newest program from these apps.</li>' +
-                '<li>It all runs as you, inside your own Google account.</li></ul></details>';
-            if (connected()) return '<h1>2. Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your Family Dashboard Sheet.') + '<p>Press <b>Next</b>.</p>' +
+            var perms = whyPerms();
+            if (connected()) return '<h1>Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your Family Dashboard Sheet.') + '<p>Press <b>Next</b>.</p>' +
                 '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
-            return '<h1>2. Publish it and connect</h1><p class="lead">Your Sheet comes with a small program inside it. “Publishing” switches that program on, so your screen and phones can talk to your Sheet – ' +
-                'using the private access code, and nothing else. You do it once. Follow each line in order – it’s mostly clicking.</p>' +
+            return '<h1>Publish it and connect</h1><p class="lead">Already clicked <b>Carry on with setup</b> in your Sheet? Setup carries on in that new tab – you can close this one. Otherwise: your Sheet comes with a small program inside it. “Publishing” switches it on, so your screen and phones can talk to your Sheet – ' +
+                'using the private access code, and nothing else. You do it once, from a menu in your Sheet.</p>' +
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
+                '<li>Wait a few seconds for the <b>🏠 Family Dashboard</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                '<li>Google asks for permission: click <b>Continue</b> (or <b>Authorize access</b>) and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
+                    'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
+                '<li>Choose the menu again: <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>. ' +
+                    '<span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
+                '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – this page opens again, already connected. Nothing to copy or paste.</li></ol>' +
+                helpLink('setup') + '<div id="connStatus"></div></div>' +
+                '<details class="card"><summary>No menu, or it didn’t work? Publish it by hand instead</summary><ol class="howto">' +
                 '<li>In the menu along the top of the Sheet, click <b>Extensions</b> → <b>Apps Script</b>. A new tab opens with some code in it. <span class="mute">You don’t need to change anything.</span></li>' +
                 '<li>Top right, click the blue <b>Deploy</b> button → <b>New deployment</b>.</li>' +
                 '<li>Next to <b>“Select type”</b>, click the ⚙ cog → <b>Web app</b>.</li>' +
-                '<li>Under <b>Who has access</b>, choose <b>Anyone</b> <span class="mute">(not “Anyone with Google account”)</span>. Leave <b>Execute as</b> on <b>Me</b>. Click <b>Deploy</b>.</li>' +
-                '<li>Google asks for permission. Click <b>Authorize access</b> and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
-                    'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
+                '<li>Under <b>Who has access</b>, choose <b>Anyone</b> <span class="mute">(not “Anyone with Google account”)</span>. Leave <b>Execute as</b> on <b>Me</b>. Click <b>Deploy</b> (and allow access, as above).</li>' +
                 '<li>Google shows <b>“New deployment”</b> with a <b>Web app URL</b>. Click <b>Copy</b> under the URL.</li>' +
-                '<li>Come back to this tab, paste it in the box below (Ctrl+V, or ⌘V on a Mac) and click <b>Connect</b>. ' +
+                '<li>Paste it in the box below (Ctrl+V, or ⌘V on a Mac) and click <b>Connect</b>. ' +
                     '<span class="mute">Then go back to Apps Script and click <b>Done</b>.</span></li></ol>' +
                 '<div class="row" style="margin-top:10px"><input id="url" placeholder="Paste the Web app URL here – https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
                 '<p class="mute">Don’t deploy again if it says “Deployment successfully updated” – that means it worked; just copy that URL.</p>' +
@@ -239,8 +253,7 @@
                 '<li>Use <b>Chrome</b> or <b>Edge</b>, and allow pop-ups if the browser asks – Google’s permission window is a pop-up.</li>' +
                 '<li>In Apps Script, press <b>Save</b> (the 💾 icon) once before <b>Deploy</b>.</li>' +
                 '<li>Still spinning? Make a fresh copy (step 1) and try again in the private window – a new copy usually deploys straight away.</li></ol></details>' +
-                helpLink('setup') +
-                '<div id="connStatus"></div></div>' + otherWay();
+                '</details>' + otherWay();
             function packAndPair() {
                 return (S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
                     '<p>The screen showing <b>' + esc(S.pairCode) + '</b> is waiting. Connect it to this family now?</p><button class="btn" id="pairSend">Connect the screen</button><div id="pairStatus" class="mute"></div></div>' : '') +
