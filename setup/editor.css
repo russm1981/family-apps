@@ -330,3 +330,7 @@
 .ed-page .pm button.pm-x:hover { color: #ef4444; }
 .ed-head .ed-delpg { background: #ef4444; border-color: #ef4444; color: #fff; margin-left: 8px; }
 .ed-head .ed-delpg:hover { background: #dc2626; }
+/* Add a widget: a bigger heading, the how-to, the child's reward widget on its own row, a line, then the rest */
+.ed-palette .ed-addh { font-size: 1.35rem; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 12px; }
+.ed-palette .ed-how { margin: 0 0 16px; }
+.ed-div { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }

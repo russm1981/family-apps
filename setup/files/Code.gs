@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.71';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.72';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -326,7 +326,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
-  child: { name: 'Child (rewards)', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards card – their points, tasks, daily to-dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
+  child: { name: 'Reward Widget for Child', icon: '\u2B50', sizes: ['full'], about: 'One child’s Reward Widget – their points, tasks, daily to-dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },

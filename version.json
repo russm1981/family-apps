@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.133",
-  "script": "2026.11.71",
+  "app": "2026.11.134",
+  "script": "2026.11.72",
   "date": "2026-11-14",
   "notes": [
-    "Screens: a calendar screen can be deleted like a widget screen (✕ in the list, or the red Delete this screen button) – even the only one. The Family Calendar app and the calendar widgets carry on"
+    "Screens (widget screens): simpler – the screen’s title, the picture of the screen, then a bigger ADD A WIDGET heading, the ✋ how-to, the Reward Widget for Child on its own row, a line, then all the other widgets",
+    "The child’s rewards card is now called the Reward Widget for Child, everywhere"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

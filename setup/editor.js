@@ -30,7 +30,7 @@
     }
     var MAX_SCREENS = 6;
     var INFO_HTML = '<h2>ℹ️ How your dashboard is put together</h2>' +
-        '<p>Your dashboard is made of <b>widgets</b> – the weather, trains, notes, each child’s rewards card and so on – arranged on <b>screens</b> you flick between down the side. ' +
+        '<p>Your dashboard is made of <b>widgets</b> – the weather, trains, notes, each child’s Reward Widget and so on – arranged on <b>screens</b> you flick between down the side. ' +
         'Use this page to choose which widgets you want and which screen each goes on. There are two kinds of screen: <b>widget screens</b>, and <b>calendar screens</b> (each can show different Google calendars).</p>' +
         '<h3>One layout, three shapes of screen</h3><p>The same layout works on the long, thin <b>Corsair</b> (four widgets across), a <b>tablet</b> held landscape (two across – a screen is split over two if it needs to be) and a <b>computer</b>. ' +
         'Use the buttons at the top to see how yours will look on each.</p>' +
@@ -222,14 +222,13 @@
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button>' + (canDelete(p) ? '<button class="btn sm ed-delpg" data-pdel="' + esc(p.id) + '">Delete this screen</button>' : '') + '</div>' +
-            (p.type === 'widgets' ? '<p class="ed-how">✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
-                'Drag one up from the list underneath to add it. Click a widget for its height, When to show and its settings.</p>' : '') +
             screenView(p) +
             (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it – its settings are kept</div>' +
-                '<div class="ed-palette ed-below"><h3>Add a widget</h3><p class="mute small">Drag one up onto the screen.</p>' +
-                '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div>' +
-                '<h3 class="ed-h2">⭐ Add a child’s rewards card</h3><p class="mute small">One for each child who takes part in rewards. The rewards themselves are set up on the Rewards tab.</p>' +
-                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div></div>' : '') +
+                '<div class="ed-palette ed-below"><h3 class="ed-addh">Add a widget</h3>' +
+                '<p class="ed-how">✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
+                'Drag one up from the list underneath to add it. Click a widget for its height, When to show and its settings.</p>' +
+                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div><hr class="ed-div">' +
+                '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div></div>' : '') +
             '</section></div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();

@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.134",
+    "date": "2026-11-14",
+    "notes": [
+      "Screens (widget screens): simpler – the screen’s title, the picture of the screen, then a bigger ADD A WIDGET heading, the ✋ how-to, the Reward Widget for Child on its own row, a line, then all the other widgets",
+      "The child’s rewards card is now called the Reward Widget for Child, everywhere"
+    ]
+  },
+  {
     "version": "2026.11.133",
     "date": "2026-11-14",
     "notes": [
