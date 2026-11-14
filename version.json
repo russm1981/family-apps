@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.160",
+  "app": "2026.11.161",
   "script": "2026.11.81",
   "date": "2026-11-15",
   "notes": [
-    "Disconnect now really disconnects: it forgets the family everywhere on that device (including the setup wizard’s copy, which used to connect it straight back), and shows the welcome page.",
-    "If the family’s Google Sheet can’t be reached, houserunner.app says so – with Try again and Disconnect – instead of showing “Loading…” for ever.",
-    "The “Family Admin” label no longer appears in the title bar: it’s HouseRunner everywhere."
+    "Welcome page: two clear buttons – Start new setup, and Already have HouseRunner – Connect this device. The second opens a pop-up with the 8-character code and a QR code to scan with a phone that’s already connected; it closes by itself and opens HouseRunner as soon as the phone connects it.",
+    "Starting a new setup leaves any earlier setups in your Google account untouched – the page now says so. The “start again” and “move account” options have gone from the welcome page: connect this device first, then do those from Setup."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
