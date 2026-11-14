@@ -701,14 +701,14 @@
         var T = typeOf(w.type);
         if (w.type === 'list') return w.settings.ListName || 'List';
         if (w.type === 'memo') return 'Notes';
-        if (w.type === 'whereabouts') return 'Where is everyone?';
+        if (w.type === 'whereabouts') return 'Weasley Clock';
         if (w.type === 'countdown') return w.settings.Title || 'Countdown';
         return T.name.replace(/ \(.*\)$/, '');
     }
     function renderFamily() {
         var pp = pointsPage(), h = new Date().getHours();
         title(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
-        // Calendar (the calendar app – a new tab on the computer), today & tomorrow, where is everyone, and reconfiguring the family.
+        // Calendar (the calendar app – a new tab on the computer), today & tomorrow, the Weasley Clock, and reconfiguring the family.
         var cal = appsRoot() + 'calendar/';
         var fam = distinct(function (w) { return FAMILY_W[w.type]; });
         var nTasks = (DATA.tasks || []).length, nTodos = (DATA.todos || []).length, nRem = (DATA.timetable || []).length, S = DATA.state;
@@ -821,7 +821,7 @@
         memo: function () { return memoEditor(); },
         list: function (w) { return card('On the list', listEditor(w)); },
         todo: function (w) { return card('To do', listEditor(w)); },
-        whereabouts: function (w) { return card('Where is everyone now?', whereEditor(w)); },
+        whereabouts: function (w) { return card('Weasley Clock – where everyone is now', whereEditor(w)); },
         spotify: function () { return card('', spotifyBox()); },
         weather: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
@@ -1484,7 +1484,7 @@
         $('mmItems').onclick = function (e) { var b = e.target.closest('[data-mrm]'); if (b) act({ action: 'memo', op: 'remove', id: b.getAttribute('data-mrm') }, 'Removed').then(after, function () {}); };
     }
 
-    /* Weasley clock: move people by hand, and the links for phone automations */
+    /* Weasley Clock: move people by hand, and the links for phone automations */
     function whereEditor(w) {
         var d = ((DATA.whereabouts || []).filter(function (x) { return x.id === w.id; })[0] || {}).data;
         if (!d) return '<div class="mute small">Refresh to see everyone.</div>';
@@ -2047,7 +2047,7 @@
           steps: ['Go to <a href="https://developer.transportapi.com/signup" target="_blank" rel="noopener">developer.transportapi.com/signup</a> and sign up for the free plan.',
                   'Sign in and open <b>Applications</b> (or the Dashboard).',
                   'Copy the <b>Application ID</b> and the <b>Key</b> into the two boxes above.'] },
-        { keys: ['NasaKey'], name: 'NASA', ico: '🔭', need: 'The NASA picture of the day', free: 'Free. It works for a while without one, but that runs out.',
+        { keys: ['NasaKey'], name: 'NASA', ico: '🔭', need: 'The NASA Daily Picture', free: 'Free. It works for a while without one, but that runs out.',
           steps: ['Go to <a href="https://api.nasa.gov/" target="_blank" rel="noopener">api.nasa.gov</a> and fill in the short form under <b>Generate API Key</b>.',
                   'The key appears straight away (and is emailed to you) – copy it above.'] },
         { keys: ['SpotifyClientId', 'SpotifyClientSecret'], name: 'Spotify', ico: '🎵', need: 'What’s playing, with play, pause and skip (needs Spotify Premium)', free: 'Free; needs a Premium account.',

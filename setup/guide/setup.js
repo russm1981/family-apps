@@ -111,7 +111,7 @@
           steps: ['Go to <a href="https://developer.transportapi.com/signup" target="_blank" rel="noopener">developer.transportapi.com/signup</a> and sign up for the free plan.',
                   'Sign in and open <b>Applications</b> (or Dashboard).',
                   'Copy the <b>Application ID</b> and the <b>Key</b>.'] },
-        { k: 'NasaKey', name: 'NASA', need: 'The NASA picture of the day', widgets: ['apod'], free: 'Free. Works without one for a while (DEMO_KEY), but that runs out.',
+        { k: 'NasaKey', name: 'NASA', need: 'The NASA Daily Picture', widgets: ['apod'], free: 'Free. Works without one for a while (DEMO_KEY), but that runs out.',
           steps: ['Go to <a href="https://api.nasa.gov/" target="_blank" rel="noopener">api.nasa.gov</a> and fill in the short form under <b>Generate API Key</b>.',
                   'The key appears straight away (and is emailed to you). Copy it.'] },
         { k: 'SpotifyClientId', k2: 'SpotifyClientSecret', name: 'Spotify', need: 'What’s playing, with play/pause/skip (needs Spotify Premium)', widgets: ['spotify'], free: 'Free for you; needs a Premium account.',
@@ -682,8 +682,8 @@
         }).catch(function (e) { out.innerHTML = okLine(false, e.message); });
     }
     var TYPE_NAMES = { weather: 'Weather', traffic: 'Traffic', trains: 'Trains', agenda: 'Today & tomorrow', bins: 'Bins', flights: 'Flights overhead',
-        news: 'News', timer: 'Kitchen timer', photos: 'Photo slideshow', clock: 'Clock', list: 'List', countdown: 'Holiday countdown', whereabouts: 'Weasley clock',
-        bus: 'Bus stop', todo: 'To-do', parcels: 'Parcels', memo: 'Notes', quote: 'Quote', apod: 'NASA picture', spotify: 'Spotify', words: 'Word of the day' };
+        news: 'News', timer: 'Kitchen timer', photos: 'Photo slideshow', clock: 'Clock', list: 'List', countdown: 'Holiday countdown', whereabouts: 'Weasley Clock',
+        bus: 'Bus stop', todo: 'To-do', parcels: 'Parcels', memo: 'Notes', quote: 'Quote', apod: 'NASA Daily Picture', spotify: 'Spotify', words: 'Word of the day' };
     function typeName(t) { return TYPE_NAMES[t] || t; }
     function summary(w, v) {
         if (v == null) return 'Works on the screen itself';

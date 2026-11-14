@@ -240,7 +240,7 @@ window.FD_HELP = [
 <tr><td><b>TomTom</b></td><td>Traffic times and the traffic map. Free at developer.tomtom.com.</td></tr>
 <tr><td><b>National Rail</b></td><td>Train departures. Free from the Rail Data Marketplace (raildata.org.uk) or National Rail’s OpenLDBWS.</td></tr>
 <tr><td><b>TransportAPI</b></td><td>Live bus times. Free at developer.transportapi.com (an app ID and an app key).</td></tr>
-<tr><td><b>NASA</b></td><td>Optional – the picture of the day works without one.</td></tr>
+<tr><td><b>NASA</b></td><td>Optional – the NASA Daily Picture works without one.</td></tr>
 <tr><td><b>Spotify</b></td><td>Only for the Spotify widget (a Client ID and secret from developer.spotify.com).</td></tr>
 </table>
 <p>Step-by-step guides with pictures are in the setup app’s <b>Free API keys</b> step – easiest on a computer.</p>`

@@ -22,8 +22,8 @@
         var w = widgets().filter(function (x) { return x.id === id; })[0]; if (!w) return id;
         var p = pages().filter(function (x) { return x.id === w.page; })[0];
         var n = { weather: 'Weather', traffic: 'Traffic', trains: 'Trains', agenda: 'Today & tomorrow', bins: 'Bins', countdown: 'Holiday countdown', news: 'News',
-            flights: 'Planes', photos: 'Photos', bus: 'Buses', parcels: 'Parcels', apod: 'NASA picture', words: 'Word of the day', quote: 'Quote', spotify: 'Spotify',
-            list: 'List', todo: 'To-do', memo: 'Notes', whereabouts: 'Where is everyone', clock: 'Clocks', timer: 'Timer' }[w.type] || w.type;
+            flights: 'Planes', photos: 'Photos', bus: 'Buses', parcels: 'Parcels', apod: 'NASA Daily Picture', words: 'Word of the day', quote: 'Quote', spotify: 'Spotify',
+            list: 'List', todo: 'To-do', memo: 'Notes', whereabouts: 'Weasley Clock', clock: 'Clocks', timer: 'Timer' }[w.type] || w.type;
         return n + (p ? ' (' + p.title + ')' : '');
     }
     /** Everything wrong except the connection itself: [{ text, help }] */

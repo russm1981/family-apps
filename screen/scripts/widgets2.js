@@ -1,5 +1,5 @@
-/* Family Dashboard – more widgets (November 2026): holiday countdown, Weasley clock, bus stop, to-do (Google Tasks),
- * parcels, memo, quote, NASA picture of the day, Spotify and word of the day.
+/* Family Dashboard – more widgets (November 2026): holiday countdown, Weasley Clock, bus stop, to-do (Google Tasks),
+ * parcels, memo, quote, NASA Daily Picture, Spotify and word of the day.
  * Same rules as widgets.js: FDW.types[type](el, widget, ctx) → { update(data), show(), destroy() }.
  */
 (function () {
@@ -361,11 +361,11 @@
         return { update: function (d) { online = d && !d.error ? d : null; render(); }, destroy: function () { clearInterval(t); } };
     };
 
-    /* ================================================= NASA PICTURE OF THE DAY */
+    /* ================================================= NASA DAILY PICTURE */
 
     T.apod = function (el, w) {
         var s = w.settings, data = null;
-        el.innerHTML = '<div class="ap-stage"><img class="ap-img" alt="" referrerpolicy="no-referrer"></div><div class="ap-tag">🔭 NASA picture of the day</div>' +
+        el.innerHTML = '<div class="ap-stage"><img class="ap-img" alt="" referrerpolicy="no-referrer"></div><div class="ap-tag">🔭 NASA Daily Picture</div>' +
             '<div class="ap-cap"></div><div class="ap-msg">' + loading() + '</div>';
         var img = el.querySelector('.ap-img'), cap = el.querySelector('.ap-cap'), msg = el.querySelector('.ap-msg');
         img.onload = function () { img.classList.add('on'); };

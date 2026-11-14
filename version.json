@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.131",
-  "script": "2026.11.69",
+  "app": "2026.11.132",
+  "script": "2026.11.70",
   "date": "2026-11-14",
   "notes": [
-    "Configurator Home: How it works is at the top; the Google script version and licence line is gone; a “Setup” heading before the two parts; the boxes are just “Setup” and “Apps”",
-    "“Setup” as one word wherever it’s a title (the menu bar, Home, the Rewards menu, Help)"
+    "Widgets renamed: “Where is everyone?” is now the Weasley Clock, and the NASA picture of the day is now NASA Daily Picture – in the widget list, the settings, the screen, the keys pages, the setup wizard, the health check and Help"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

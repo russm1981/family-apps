@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.69';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.70';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -124,7 +124,7 @@ const INSTALL = [
   { k: 'SleepMinutes', group: 'screen', label: 'Screen sleep after (minutes)', def: '30', help: 'With nobody touching the screen, it goes dark after this many minutes; a touch wakes it. 0 = never.' },
   { k: 'SleepStyle', group: 'screen', label: 'Sleep screen', def: 'Clock', help: 'Clock = black with a small, dim clock. Black = completely black.' },
   { k: 'NightHours', group: 'screen', label: 'Night hours', def: '23:30-06:30', help: 'Between these times the screen sleeps (unless someone touches it), and goes back to sleep after 2 minutes. Blank = no night hours.' },
-  { k: 'NasaKey', group: 'keys', uses: 'NASA picture of the day', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA picture of the day. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
+  { k: 'NasaKey', group: 'keys', uses: 'NASA Daily Picture', label: 'NASA API key', def: 'DEMO_KEY', help: 'For the NASA Daily Picture. DEMO_KEY works a few times a day; a free key from api.nasa.gov always works.' },
   { k: 'TransportApiId', group: 'keys', uses: 'Bus stop', label: 'TransportAPI app ID', help: 'For live bus times (free account at developer.transportapi.com \u2013 the same service the MagicMirror bus module uses).' },
   { k: 'TransportApiKey', group: 'keys', uses: 'Bus stop', label: 'TransportAPI app key', help: 'From the same TransportAPI account.' },
   { k: 'SpotifyClientId', group: 'keys', uses: 'Spotify', label: 'Spotify Client ID', help: 'From developer.spotify.com → Dashboard → your app. Then tap "Connect Spotify" on the Spotify widget.' },
@@ -287,7 +287,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'Show', label: 'How many to show', type: 'number', def: 3, min: 1, max: 6 },
     ],
     data: (s) => countdown_(s) },
-  whereabouts: { name: 'Where is everyone? (Weasley clock)', icon: '🕰️', sizes: ['full'], about: 'A clock whose hands show where each person is. Tap a name to move it, or let phones update it automatically.',
+  whereabouts: { name: 'Weasley Clock', icon: '🕰️', sizes: ['full'], about: 'A clock whose hands show where each person is. Tap a name to move it, or let phones update it automatically.',
     settings: [
       { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Russ | #a855f7\nBecky | #f472b6\nBen | #3fa9f5\nJosh | #f5a623\nAlex | #7ed321', ui: 'rows', addLabel: '+ Add a person',
         rows: [{ k: 'name', label: 'Name', type: 'text', max: 12, ph: 'Name' }, { k: 'colour', label: 'Colour', type: 'colour' }],
@@ -342,7 +342,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'Change', label: 'New quote', type: 'select', def: 'Every day', options: QUOTE_CHANGE },
     ],
     data: (s) => s.Source === 'ZenQuotes (online)' ? zenQuotes_() : null },
-  apod: { name: 'NASA picture of the day', icon: '🔭', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'NASA’s Astronomy Picture of the Day. Tap it to read about it.',
+  apod: { name: 'NASA Daily Picture', icon: '🔭', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'NASA’s Astronomy Picture of the Day. Tap it to read about it.',
     settings: [
       { k: 'ShowText', label: 'Show the title on the picture', type: 'bool', def: true },
     ],
@@ -1586,7 +1586,7 @@ function saveWidget_(w) {
   }
   renumber_('widgets');
   bumpVersions_();
-  // Only lists, to-dos and the Weasley clock show live data in the admin app; everything else just needs the layout back.
+  // Only lists, to-dos and the Weasley Clock show live data in the admin app; everything else just needs the layout back.
   return ['list', 'todo', 'whereabouts'].indexOf(type) >= 0 && Object.keys(out).length ? getAdmin_() : layoutOnly_();
 }
 /** After a change to pages or widgets: just the new layout (quick), rather than everything the admin app shows. */
@@ -3332,7 +3332,7 @@ function countdown_(s) {
   return { today: today, items: out.slice(0, 12) };
 }
 
-/* ------------------------------------------------------ Weasley clock */
+/* ------------------------------------------------------ Weasley Clock */
 
 function people_(text) {
   return String(text || '').split('\n').map(l => l.split('|')).filter(p => p[0].trim()).slice(0, 6)
@@ -3357,7 +3357,7 @@ function whereabouts_(s) {
 /** Move someone on the clock: { person, place } or { person, lat, lon } (nearest place within the radius, else Travelling). */
 function setWhere_(p) {
   const w = layout_().widgets.find(x => x.type === 'whereabouts');
-  if (!w) throw new Error('Add the Weasley clock widget first');
+  if (!w) throw new Error('Add the Weasley Clock widget first');
   const s = w.settings, people = people_(s.People), places = places_(s.Places);
   const person = people.find(x => x.name.toLowerCase() === String(p.person || '').trim().toLowerCase());
   if (!person) throw new Error('Unknown person "' + p.person + '". People on the clock: ' + people.map(x => x.name).join(', '));
