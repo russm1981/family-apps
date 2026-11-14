@@ -22,10 +22,10 @@
         window.FD_DESK = !phone;
     })();
     </script>
-    <link rel="stylesheet" href="shared/base.css?v=202611162">
-    <link rel="stylesheet" href="admin/admin.css?v=202611162">
-    <link rel="stylesheet" href="setup/desk.css?v=202611162">
-    <link rel="stylesheet" href="setup/editor.css?v=202611162">
+    <link rel="stylesheet" href="shared/base.css?v=202611163">
+    <link rel="stylesheet" href="admin/admin.css?v=202611163">
+    <link rel="stylesheet" href="setup/desk.css?v=202611163">
+    <link rel="stylesheet" href="setup/editor.css?v=202611163">
     <style>
 #landing { min-height: 100vh; }
 #landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
@@ -178,9 +178,9 @@
     <div class="ld-modal" id="codeModal" hidden><div class="ld-pop">
      <button class="ld-x" id="codeX" aria-label="Close">✕</button>
      <h2>Connect this device</h2>
-     <div class="ld-opt"><span class="ld-n">1</span><div><b>Easiest: scan this QR code</b> with the camera of a phone that’s already set up with HouseRunner.</div></div>
+     <div class="ld-opt"><span class="ld-n">1</span><div><b>Easiest: scan this QR code</b> with the camera of a phone that’s already set up with HouseRunner. <span class="ld-mute">(Best on Android.)</span></div></div>
      <div class="ld-qr" id="codeQr"></div>
-     <div class="ld-opt"><span class="ld-n">2</span><div><b>Or type this code</b> on that phone, in Family Admin → <b>More → Devices and Phones → Connect by code</b>:
+     <div class="ld-opt"><span class="ld-n">2</span><div><b>Or open the Family Admin app</b> on that phone → <b>More → Devices and Phones → Connect by code</b>, and type this code <span class="ld-mute">(always works, including on iPhone)</span>:
       <p class="ld-code" id="codeTxt">…</p></div></div>
      <p class="ld-state" id="codeState">Waiting for your phone…</p>
      <div class="ld-opt"><span class="ld-n">3</span><div><b>No phone set up yet?</b> Paste the private link from the email <b>“Your Family Dashboard links”</b> – it was sent to your Google account when you first set up, to keep.
@@ -188,17 +188,17 @@
     </div></div>
     <!-- Connected: the Configurator (computer) or Family Admin (phone) – the same app. -->
     <div id="app"></div>
-    <script src="shared/storecheck.js?v=202611162"></script>
-    <script src="shared/fd.js?v=202611162"></script>
-    <script src="shared/pair.js?v=202611162"></script>
-    <script src="shared/qrcode.js?v=202611162"></script>
-    <script src="shared/privacy.js?v=202611162"></script>
-    <script src="shared/countries.js?v=202611162"></script>
-    <script src="setup/config.js?v=202611162"></script>
-    <script src="help/topics.js?v=202611162"></script>
-    <script src="setup/editor.js?v=202611162"></script>
-    <script src="setup/calsetup.js?v=202611162"></script>
-    <script src="admin/app.js?v=202611162"></script>
+    <script src="shared/storecheck.js?v=202611163"></script>
+    <script src="shared/fd.js?v=202611163"></script>
+    <script src="shared/pair.js?v=202611163"></script>
+    <script src="shared/qrcode.js?v=202611163"></script>
+    <script src="shared/privacy.js?v=202611163"></script>
+    <script src="shared/countries.js?v=202611163"></script>
+    <script src="setup/config.js?v=202611163"></script>
+    <script src="help/topics.js?v=202611163"></script>
+    <script src="setup/editor.js?v=202611163"></script>
+    <script src="setup/calsetup.js?v=202611163"></script>
+    <script src="admin/app.js?v=202611163"></script>
 <script>
  (function () {
    'use strict';

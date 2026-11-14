@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.162",
+  "app": "2026.11.163",
   "script": "2026.11.81",
   "date": "2026-11-15",
   "notes": [
-    "The Connect this device pop-up now sets out the three ways in order: 1 – easiest – scan the QR code with a phone that’s already set up; 2 – or type the code in Family Admin → More → Devices and Phones → Connect by code; 3 – no phone set up yet? paste the private link from the “Your Family Dashboard links” email you were sent when you first set up."
+    "Connect this device pop-up: scanning the QR code is marked best on Android; typing the code in the Family Admin app is the way that always works, including on iPhone."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

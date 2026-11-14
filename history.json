@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.163",
+    "date": "2026-11-15",
+    "notes": [
+      "Connect this device pop-up: scanning the QR code is marked best on Android; typing the code in the Family Admin app is the way that always works, including on iPhone."
+    ]
+  },
+  {
     "version": "2026.11.162",
     "date": "2026-11-15",
     "notes": [
