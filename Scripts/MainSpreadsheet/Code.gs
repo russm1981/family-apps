@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.70';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.71';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -1747,7 +1747,7 @@ function deletePage_(id) {
   const row = rows_('pages').find(x => String(x.Page).trim() === id);
   if (!row) throw new Error('Page not found');
   const rType = String(row.Type).toLowerCase();
-  if (rType === 'calendar' && rows_('pages').filter(p => String(p.Type).toLowerCase() === 'calendar').length > 1) {
+  if (rType === 'calendar') {      // a calendar screen can go like any other (the Family Calendar app and the calendar widgets carry on)
     deleteWhere_('pages', r => String(r[0]).trim() === id); deleteWhere_('wset', r => String(r[0]).trim() === id);
     renumber_('pages'); bumpVersions_(); return layoutOnly_();
   }

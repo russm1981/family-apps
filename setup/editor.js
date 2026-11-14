@@ -238,7 +238,7 @@
 
     var REWARD_T = { child: 1 };
     /** A widget screen (if there's another) or a second calendar page can be deleted. */
-    function canDelete(x) { var same = pages().filter(function (y) { return y.type === x.type; }).length; return (x.type === 'widgets' || x.type === 'calendar') && same > 1; }
+    function canDelete(x) { var same = pages().filter(function (y) { return y.type === x.type; }).length; return x.type === 'calendar' || (x.type === 'widgets' && same > 1); }
     function typeTile(T) {
         return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
     }

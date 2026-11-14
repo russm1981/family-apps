@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.133",
+    "date": "2026-11-14",
+    "notes": [
+      "Screens: a calendar screen can be deleted like a widget screen (✕ in the list, or the red Delete this screen button) – even the only one. The Family Calendar app and the calendar widgets carry on"
+    ]
+  },
+  {
     "version": "2026.11.132",
     "date": "2026-11-14",
     "notes": [

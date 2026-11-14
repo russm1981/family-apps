@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.132",
-  "script": "2026.11.70",
+  "app": "2026.11.133",
+  "script": "2026.11.71",
   "date": "2026-11-14",
   "notes": [
-    "Widgets renamed: “Where is everyone?” is now the Weasley Clock, and the NASA picture of the day is now NASA Daily Picture – in the widget list, the settings, the screen, the keys pages, the setup wizard, the health check and Help"
+    "Screens: a calendar screen can be deleted like a widget screen (✕ in the list, or the red Delete this screen button) – even the only one. The Family Calendar app and the calendar widgets carry on"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",
