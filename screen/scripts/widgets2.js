@@ -8,7 +8,7 @@
     var esc = U.esc, errBox = U.errBox, loading = U.loading, pad = U.pad, ymd = U.ymd, parseYmd = U.parseYmd, ago = U.ago, visible = U.visible;
     function api() { return window.FDApi; }
     function daysTo(ds) { return Math.round((parseYmd(ds) - parseYmd(ymd(new Date()))) / 86400000); }
-    function niceDate(ds) { var d = parseYmd(ds); return U.DOW[d.getDay()] + ' ' + d.getDate() + ' ' + U.MON[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); }
+    function niceDate(ds) { var d = parseYmd(ds); return U.DOW[d.getDay()] + ' ' + FDL.dm(d.getDate(), d.getMonth()) + (d.getFullYear() !== new Date().getFullYear() ? ' ' + d.getFullYear() : ''); }
     /** Which item of a list to show now: changes every day, hour or 10 minutes, the same on every screen. */
     function pick(n, change, salt) {
         var now = new Date(), k = change === 'Every 10 minutes' ? Math.floor(now.getTime() / 600000) : change === 'Every hour' ? Math.floor(now.getTime() / 3600000)
@@ -49,7 +49,7 @@
     function since(iso) {
         var d = new Date(iso), now = new Date();
         if (ymd(d) === ymd(now)) return U.hhmm(d);
-        return now - d < 6 * 86400000 ? U.DOW[d.getDay()] : d.getDate() + ' ' + U.MON[d.getMonth()];
+        return now - d < 6 * 86400000 ? U.DOW[d.getDay()] : FDL.dm(d.getDate(), d.getMonth());
     }
     T.whereabouts = function (el, w) {
         var data = null;

@@ -35,7 +35,7 @@
         if (!el) return;
         var d = new Date();
         el.querySelector('.sl-time').textContent = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-        el.querySelector('.sl-date').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+        el.querySelector('.sl-date').textContent = d.toLocaleDateString(window.FDL ? FDL.lang() : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
         // Drift the clock slowly round the screen so nothing stays lit in one place all night.
         var m = d.getHours() * 60 + d.getMinutes(), c = el.querySelector('.sl-clock');
         c.style.left = (10 + (m * 7) % 70) + '%'; c.style.top = (18 + (m * 13) % 50) + '%';

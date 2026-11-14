@@ -345,7 +345,7 @@
         var week = (b.reminderWeek || []).map(function (d) {
             var p = d.date.split('-'), dt = new Date(+p[0], +p[1] - 1, +p[2]);
             var label = d.date === todayStr ? 'Today' : d.date === tomorrowStr ? 'Tomorrow' : PDAY[dt.getDay()];
-            return '<div class="bp-day"><b>' + label + '</b><span>' + dt.getDate() + ' ' + PMON[dt.getMonth()] + '</span><div class="bp-chips">' +
+            return '<div class="bp-day"><b>' + label + '</b><span>' + FDL.dm(dt.getDate(), dt.getMonth()) + '</span><div class="bp-chips">' +
                 d.items.map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('') + '</div></div>';
         }).join('') || '<div class="empty">No reminders this week</div>';
         var all = (b.allTasks || b.tasks);

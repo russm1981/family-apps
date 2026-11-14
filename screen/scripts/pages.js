@@ -80,6 +80,7 @@
         if (!L) return false;
         if (layout && layout.version === L.version) return false;
         layout = L;
+        if (L.locale && window.FDL) FDL.set(L.locale);
         store(LAYOUT_KEY, JSON.stringify(L));
         build();
         show(pageExists(current) ? current : firstPage(), true);

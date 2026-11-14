@@ -27,3 +27,13 @@ window.FD_guessCountry = function () {
     var m = /-([A-Z]{2})$/.exec(navigator.language || ''); var c = m && m[1];
     return c && FD_COUNTRIES.some(function (x) { return x[0] === c; }) ? c : 'GB';
 };
+/** How a country usually writes dates: the day weeks start on and the date order (the setup fills these in from the country; you can change them). */
+window.FD_SUNDAY = ['US', 'CA', 'MX', 'BR', 'JP', 'HK', 'IN', 'ZA'];
+window.FD_localeFor = function (code) {
+    return { WeekStart: FD_SUNDAY.indexOf(code) >= 0 ? 'Sunday' : 'Monday', DateOrder: code === 'US' ? 'Month first' : 'Day first' };
+};
+window.FD_pick = function (id, opts, cur, attr) {
+    return '<select id="' + id + '"' + (attr || '') + '>' + opts.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === cur ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>';
+};
+window.FD_weekSelect = function (id, cur, attr) { return FD_pick(id, [['Monday', 'Monday'], ['Sunday', 'Sunday']], cur || 'Monday', attr); };
+window.FD_orderSelect = function (id, cur, attr) { return FD_pick(id, [['Day first', 'Day first – 14 Nov'], ['Month first', 'Month first – Nov 14']], cur || 'Day first', attr); };

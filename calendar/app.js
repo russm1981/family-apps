@@ -36,10 +36,11 @@
             return FD.get('calendar', q);
         })).then(function (all) {
             var out = { days: {}, bankHolidays: {} };
-            all.forEach(function (d) { Object.assign(out.days, d.days || {}); Object.assign(out.bankHolidays, d.bankHolidays || {}); if (d.categories) { out.categories = d.categories; out.addable = d.addable; } });
+            all.forEach(function (d) { if (d.locale) out.locale = d.locale; Object.assign(out.days, d.days || {}); Object.assign(out.bankHolidays, d.bankHolidays || {}); if (d.categories) { out.categories = d.categories; out.addable = d.addable; } });
             return out;
         });
         fetch.then(function (d) {
+            if (d.locale) FD.setLocale(d.locale);
             cache[key] = { at: Date.now(), days: d.days || {}, bh: d.bankHolidays || {} };
             if (d.categories) { legend = d.categories; addable = d.addable || []; try { localStorage.setItem('fdcal.legend', JSON.stringify(legend)); localStorage.setItem('fdcal.addable', JSON.stringify(addable)); } catch (e) { /* ignore */ } }
             lastErr = ''; sync('ok');
@@ -144,15 +145,15 @@
         var first = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
         $('title').textContent = FD.MONTH[first.getMonth()] + ' ' + first.getFullYear();
         var g = FD.monday(first), dim = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
-        var weeks = Math.ceil((((first.getDay() + 6) % 7) + dim) / 7);
+        var weeks = Math.ceil((FD.col(first) + dim) / 7);
         if (selected.slice(0, 7) !== ymd(first).slice(0, 7)) selected = ymd(today.slice(0, 7) === ymd(first).slice(0, 7) ? P(today) : first);
-        var html = '<div class="mgrid"><div class="mhead">' + ['M', 'T', 'W', 'T', 'F', 'S', 'S'].map(function (d, i) { return '<b class="' + (i > 4 ? 'we' : '') + '">' + d + '</b>'; }).join('') + '</div>';
+        var html = '<div class="mgrid"><div class="mhead">' + FD.weekLetters().map(function (d, i) { return '<b class="' + (FD.isWeekend(add(g, i)) ? 'we' : '') + '">' + d + '</b>'; }).join('') + '</div>';
         for (var w = 0; w < weeks; w++) {
             html += '<div class="mrow">';
             for (var k = 0; k < 7; k++) {
                 var dt = add(g, w * 7 + k), ds = ymd(dt), p = parts(c, ds);
                 var prevBar = parts(c, ymd(add(dt, -1))).bar, nextBar = parts(c, ymd(add(dt, 1))).bar;
-                var cls = 'mcell' + (dt.getMonth() !== first.getMonth() ? ' out' : '') + (k > 4 || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + (ds === selected ? ' sel' : '');
+                var cls = 'mcell' + (dt.getMonth() !== first.getMonth() ? ' out' : '') + (FD.isWeekend(dt) || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + (ds === selected ? ' sel' : '');
                 var evs = p.evs.slice(0, 3).map(function (e) { return '<span class="mev" style="--ec:' + esc(e.c) + ';--et:' + ink(e.c) + '">' + esc(e.t) + '</span>'; }).join('');
                 if (p.evs.length > 3) evs += '<span class="mmore">+' + (p.evs.length - 3) + '</span>';
                 html += '<button class="' + cls + '" data-day="' + ds + '"><span class="mnum">' + dt.getDate() + '</span>' + evs +
@@ -162,7 +163,7 @@
         }
         html += '</div>';
         var sp = parts(c, selected);
-        html += '<section class="daylist" id="dayList"><h2>' + FD.DAY[P(selected).getDay()] + ' ' + P(selected).getDate() + ' ' + FD.MON[P(selected).getMonth()] + dayTags(sp) + '</h2>' +
+        html += '<section class="daylist" id="dayList"><h2>' + FD.DAY[P(selected).getDay()] + ' ' + FD.dm(P(selected).getDate(), P(selected).getMonth()) + dayTags(sp) + '</h2>' +
             (sp.evs.length ? sp.evs.map(function (e) { return evRow(e, true); }).join('') : '<div class="empty">Nothing on' + (loading ? '…' : '') + '</div>') +
             '<button class="btn wide" data-add="' + selected + '">+ Add on this day</button></section>';
         $('body').innerHTML = html;
@@ -181,12 +182,12 @@
             html += '<div class="yrow"><span class="ym">' + FD.MON[m] + '</span>';
             for (var d = 1; d <= 31; d++) {
                 if (d > dim) { html += '<span class="ycell none"></span>'; continue; }
-                var dt = new Date(y, m, d), ds = ymd(dt), p = parts(c, ds), wd = (dt.getDay() + 6) % 7;
+                var dt = new Date(y, m, d), ds = ymd(dt), p = parts(c, ds), wd = dt.getDay();
                 var dots = p.evs.slice(0, 4).map(function (e) { return '<i style="background:' + esc(e.c) + ';color:' + ink(e.c) + '">' + esc(e.t) + '</i>'; }).join('') +
                     (p.evs.length > 4 ? '<em>+' + (p.evs.length - 4) + '</em>' : '');
-                var tip = FD.DAY[dt.getDay()] + ' ' + d + ' ' + FD.MON[m] + (p.bh ? ' – ' + p.bh : '') + (p.bar ? ' – ' + p.bar.k : '') + p.evs.map(function (e) { return '\n• ' + e.t; }).join('');
-                html += '<button class="ycell' + (wd > 4 || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + '" data-day="' + ds + '" title="' + esc(tip) + '">' +
-                    '<span class="yd">' + ['M', 'T', 'W', 'T', 'F', 'S', 'S'][wd] + '</span><span class="yev">' + dots + '</span>' +
+                var tip = FD.DAY[dt.getDay()] + ' ' + FD.dm(d, m) + (p.bh ? ' – ' + p.bh : '') + (p.bar ? ' – ' + p.bar.k : '') + p.evs.map(function (e) { return '\n• ' + e.t; }).join('');
+                html += '<button class="ycell' + (wd === 0 || wd === 6 || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + '" data-day="' + ds + '" title="' + esc(tip) + '">' +
+                    '<span class="yd">' + ['S', 'M', 'T', 'W', 'T', 'F', 'S'][wd] + '</span><span class="yev">' + dots + '</span>' +
                     (p.bar ? '<span class="ybar" style="background:' + esc(p.bar.c) + '"></span>' : '') + '</button>';
             }
             html += '</div>';
@@ -196,12 +197,12 @@
 
     function renderWeek(c, today) {
         var m = FD.monday(anchor), s = add(m, 6);
-        $('title').textContent = m.getDate() + (m.getMonth() !== s.getMonth() ? ' ' + FD.MON[m.getMonth()] : '') + ' – ' + s.getDate() + ' ' + FD.MON[s.getMonth()];
+        $('title').textContent = FD.dm(m.getDate(), m.getMonth()) + ' – ' + FD.dm(s.getDate(), s.getMonth());
         var html = '';
         for (var k = 0; k < 7; k++) {
             var dt = add(m, k), ds = ymd(dt), p = parts(c, ds);
-            html += '<section class="wday' + (ds === today ? ' today' : '') + (k > 4 || p.bh ? ' we' : '') + (p.bar ? ' hol' : '') + '" style="' + (p.bar ? '--hc:' + esc(p.bar.c) : '') + '">' +
-                '<div class="wd-head" data-day="' + ds + '"><b>' + FD.DAY[dt.getDay()] + '</b><span>' + dt.getDate() + ' ' + FD.MON[dt.getMonth()] + '</span>' + dayTags(p) + '<i>+</i></div>' +
+            html += '<section class="wday' + (ds === today ? ' today' : '') + (FD.isWeekend(dt) || p.bh ? ' we' : '') + (p.bar ? ' hol' : '') + '" style="' + (p.bar ? '--hc:' + esc(p.bar.c) : '') + '">' +
+                '<div class="wd-head" data-day="' + ds + '"><b>' + FD.DAY[dt.getDay()] + '</b><span>' + FD.dm(dt.getDate(), dt.getMonth()) + '</span>' + dayTags(p) + '<i>+</i></div>' +
                 (p.evs.length ? p.evs.map(function (e) { return evRow(e); }).join('') : '<div class="wd-empty">Nothing on</div>') + '</section>';
         }
         $('body').innerHTML = html;
@@ -215,7 +216,7 @@
             if (!p.evs.length && !p.bh) continue;
             any = true;
             html += '<section class="lday' + (ds === today ? ' today' : '') + '"><div class="ld-head" data-day="' + ds + '"><b>' + (k === 0 ? 'Today' : k === 1 ? 'Tomorrow' : FD.DAY[dt.getDay()]) +
-                '</b><span>' + dt.getDate() + ' ' + FD.MON[dt.getMonth()] + '</span>' + dayTags(p) + '</div>' + p.evs.map(function (e) { return evRow(e); }).join('') + '</section>';
+                '</b><span>' + FD.dm(dt.getDate(), dt.getMonth()) + '</span>' + dayTags(p) + '</div>' + p.evs.map(function (e) { return evRow(e); }).join('') + '</section>';
         }
         $('body').innerHTML = any ? html : '<div class="empty">' + (loading ? 'Loading…' : 'Nothing in the next 8 weeks') + '</div>';
     }

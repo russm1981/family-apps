@@ -1,9 +1,11 @@
 {
-  "app": "2026.11.145",
-  "script": "2026.11.77",
+  "app": "2026.11.146",
+  "script": "2026.11.78",
   "date": "2026-11-14",
   "notes": [
-    "“PE kit” is now “sports kit” in the examples and the starter reminders (PE is a British term)"
+    "Your country now fills in how dates work: the day weeks start on (Monday or Sunday) and how dates are written (14 Nov or Nov 14), as well as the currency and time zone. You can change any of them in Advanced → Locations & home, or in the wizard’s family step.",
+    "The calendars on the screen and in the Family Calendar app start their weeks on your chosen day, and dates everywhere follow your chosen order.",
+    "News: a new “My country’s news” choice (the default) picks a national feed for your country, and there are international feeds to choose from – Guardian World, Al Jazeera, NPR, CBC, ABC Australia, RTÉ and DW."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

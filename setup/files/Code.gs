@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.77';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.78';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -119,6 +119,8 @@ const INSTALL = [
   { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
   { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
+  { k: 'WeekStart', group: 'home', label: 'Weeks start on', def: 'Monday', help: 'Monday or Sunday – for the calendars.' },
+  { k: 'DateOrder', group: 'home', label: 'Dates', def: 'Day first', help: 'Day first (14 Nov) or Month first (Nov 14).' },
   { k: 'HomeAddress', group: 'home', label: 'Home address', def: '',
     help: 'The default place for the weather, the start of traffic routes and the centre of the flights map. Address, postcode or "51.63,-2.46".' },
   { k: 'TomTomKey', group: 'keys', uses: 'Traffic, the flights and traffic maps', label: 'TomTom API key', help: 'From developer.tomtom.com. Traffic times and all the maps.' },
@@ -156,6 +158,7 @@ const PAGE_TYPES = {
 };
 
 const NEWS_FEEDS = {
+  'My country\u2019s news': '',
   'BBC \u2013 Top stories': 'https://feeds.bbci.co.uk/news/rss.xml',
   'BBC \u2013 UK': 'https://feeds.bbci.co.uk/news/uk/rss.xml',
   'BBC \u2013 World': 'https://feeds.bbci.co.uk/news/world/rss.xml',
@@ -165,8 +168,18 @@ const NEWS_FEEDS = {
   'BBC \u2013 Technology': 'https://feeds.bbci.co.uk/news/technology/rss.xml',
   'BBC \u2013 Science': 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
   'BBC \u2013 Sport': 'https://feeds.bbci.co.uk/sport/rss.xml',
+  'The Guardian \u2013 World': 'https://www.theguardian.com/world/rss',
+  'Al Jazeera \u2013 World': 'https://www.aljazeera.com/xml/rss/all.xml',
+  'NPR \u2013 News (US)': 'https://feeds.npr.org/1001/rss.xml',
+  'CBC \u2013 Top stories (Canada)': 'https://www.cbc.ca/webfeed/rss/rss-topstories',
+  'ABC \u2013 Top stories (Australia)': 'https://www.abc.net.au/news/feed/51120/rss.xml',
+  'RT\u00c9 \u2013 News (Ireland)': 'https://www.rte.ie/feeds/rss/?index=/news/',
+  'DW \u2013 World (Germany, in English)': 'https://rss.dw.com/rdf/rss-en-world',
   'Another feed (link below)': '',
 };
+/** "My country's news": the main English-language feed for the family's country (the BBC's world news elsewhere). */
+const COUNTRY_FEEDS = { GB: 'BBC \u2013 Top stories', US: 'NPR \u2013 News (US)', CA: 'CBC \u2013 Top stories (Canada)', AU: 'ABC \u2013 Top stories (Australia)',
+  NZ: 'ABC \u2013 Top stories (Australia)', IE: 'RT\u00c9 \u2013 News (Ireland)', DE: 'DW \u2013 World (Germany, in English)', AT: 'DW \u2013 World (Germany, in English)', CH: 'DW \u2013 World (Germany, in English)' };
 
 /**
  * Every kind of widget. sizes = allowed heights (first is the default). ttl = seconds the data is kept
@@ -235,7 +248,7 @@ const WIDGET_TYPES = {
     data: (s) => flights_(s) },
   news: { name: 'News', icon: '\uD83D\uDCF0', sizes: ['half', 'full'], ttl: 10 * 60, about: 'Headlines from the BBC or any news feed.',
     settings: [
-      { k: 'Feed', label: 'News', type: 'select', def: 'BBC \u2013 Top stories', options: Object.keys(NEWS_FEEDS) },
+      { k: 'Feed', label: 'News', type: 'select', def: 'My country\u2019s news', options: Object.keys(NEWS_FEEDS), help: 'My country’s news = the main news for the country set in Advanced → Locations & home (BBC in the UK, NPR in the USA, RTÉ in Ireland…).' },
       { k: 'FeedUrl', label: 'Feed link', type: 'url', def: '', advanced: true, help: 'Only for "Another feed": the RSS address, e.g. https://www.theguardian.com/uk/rss' },
       { k: 'Rotate', label: 'Change the main story every (seconds)', type: 'number', def: 20, min: 5, max: 600 },
       { k: 'Pictures', label: 'Show pictures', type: 'bool', def: true },
@@ -1030,6 +1043,7 @@ function getAdmin_() {
   });
   return {
     limits: LIMITS,
+    locale: locale_(),
     boys: rows_('boys'),
     tasks: rows_('tasks').map(t => Object.assign(t, { Active: !(t.Active === false || String(t.Active).toUpperCase() === 'FALSE') })),
     todos: rows_('todos'),
@@ -1417,7 +1431,8 @@ function whenAlt_(w, widgets) {
 function screenLayout_() {
   const L = layout_(), now = new Date();
   L.widgets = L.widgets.map(w => !w.show || whenShowing_(w.when, now) ? w : whenAlt_(w, L.widgets)).filter(Boolean);
-  L.version = hash_(JSON.stringify([L.pages, L.widgets]));
+  L.locale = locale_();
+  L.version = hash_(JSON.stringify([L.pages, L.widgets, L.locale]));
   return L;
 }
 
@@ -1838,6 +1853,8 @@ function saveInstall_(values) {
     const v = String(values[k] == null ? '' : values[k]).trim();
     if (k === 'HomeAddress' && !v) throw new Error('The home address can\u2019t be blank');
     if (k === 'Country' && !/^[A-Z]{2}$/.test(v.toUpperCase())) throw new Error('Country: use its two-letter code, e.g. GB');
+    if (k === 'WeekStart' && !/^(Monday|Sunday)$/.test(v)) throw new Error('Weeks start on Monday or Sunday');
+    if (k === 'DateOrder' && !/^(Day first|Month first)$/.test(v)) throw new Error('Dates: Day first or Month first');
     if (k === 'TimeZone') {
       try { Utilities.formatDate(new Date(), v, 'HH'); } catch (e) { throw new Error('Time zone “' + v + '” isn’t one I know – e.g. Europe/London'); }
       PropertiesService.getScriptProperties().setProperty('tz', v);
@@ -1942,6 +1959,8 @@ function country_() { return String(inst_('Country') || 'GB').trim().toUpperCase
 function isUK_() { return country_() === 'GB'; }
 function currency_() { return String(inst_('Currency') || '£').trim() || '£'; }
 /** Units: the USA uses °F and mph; the UK °C and mph; everywhere else °C and km/h. */
+/** How dates are shown: weeks start on Monday (1) or Sunday (0); the day before or after the month. */
+function locale_() { return { weekStart: /^sun/i.test(String(inst_('WeekStart') || '')) ? 0 : 1, monthFirst: /^month/i.test(String(inst_('DateOrder') || '')) }; }
 function units_() { const c = country_(); return { temp: c === 'US' ? 'F' : 'C', wind: c === 'US' || c === 'GB' ? 'mph' : 'km/h' }; }
 
 function geocode_(place) {
@@ -2520,7 +2539,8 @@ function titleCase_(s) { return s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpp
 /* ---------------------------------------------------------------- news */
 
 function news_(s) {
-  const url = s.Feed === 'Another feed (link below)' ? String(s.FeedUrl || '').trim() : NEWS_FEEDS[s.Feed] || NEWS_FEEDS['BBC \u2013 Top stories'];
+  const pick = s.Feed === 'My country\u2019s news' || !s.Feed ? (COUNTRY_FEEDS[country_()] || 'BBC \u2013 World') : s.Feed;
+  const url = pick === 'Another feed (link below)' ? String(s.FeedUrl || '').trim() : NEWS_FEEDS[pick] || NEWS_FEEDS['BBC \u2013 Top stories'];
   if (!url) throw new Error('Paste the feed link into the News widget settings');
   const res = uf_(url, { muteHttpExceptions: true, followRedirects: true });
   if (res.getResponseCode() !== 200) throw new Error('The news feed said ' + res.getResponseCode());
@@ -3332,7 +3352,7 @@ function getCalendar_(start, end, pageId) {
       .concat(M.groups.map(c => ({ name: c.name, colour: c.colour, kind: 'group' })), M.people.map(c => ({ name: c.name, colour: c.colour, kind: 'person' })));
     const bh = {}, all = bankHolidays_();
     Object.keys(all).forEach(d => { if (d >= start && d < end) bh[d] = all[d]; });
-    return { ok: true, start: start, end: end, days: days, categories: legend, addable: addable, bankHolidays: bh };
+    return { ok: true, start: start, end: end, days: days, categories: legend, addable: addable, bankHolidays: bh, locale: locale_() };
   });
 }
 

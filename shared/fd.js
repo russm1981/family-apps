@@ -185,7 +185,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.145',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.146',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -212,12 +212,19 @@
         ymd: function (d) { return d.getFullYear() + '-' + FD.pad(d.getMonth() + 1) + '-' + FD.pad(d.getDate()); },
         parse: function (s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); },
         addDays: function (d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); },
-        monday: function (d) { return FD.addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -((d.getDay() + 6) % 7)); },
+        // How dates are shown, from Configurator → Advanced → Locations & home: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14"
+        L: (function () { try { return JSON.parse(localStorage.getItem('fd.locale')) || { weekStart: 1, monthFirst: false }; } catch (e) { return { weekStart: 1, monthFirst: false }; } })(),
+        setLocale: function (l) { if (!l) return; FD.L = { weekStart: l.weekStart === 0 ? 0 : 1, monthFirst: !!l.monthFirst }; try { localStorage.setItem('fd.locale', JSON.stringify(FD.L)); } catch (e) { /* fine */ } },
+        dm: function (day, mon) { return FD.L.monthFirst ? FD.MON[mon] + ' ' + day : day + ' ' + FD.MON[mon]; },
+        col: function (d) { return (d.getDay() - FD.L.weekStart + 7) % 7; },                 // which column of the week a date is in
+        weekLetters: function () { var a = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; return [0, 1, 2, 3, 4, 5, 6].map(function (i) { return a[(i + FD.L.weekStart) % 7]; }); },
+        isWeekend: function (d) { return d.getDay() === 0 || d.getDay() === 6; },
+        monday: function (d) { return FD.addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -FD.col(d)); },   // the start of d's week
         DOW: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
         DAY: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         MON: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         MONTH: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-        nice: function (ds) { var d = FD.parse(ds); return FD.DOW[d.getDay()] + ' ' + d.getDate() + ' ' + FD.MON[d.getMonth()]; },
+        nice: function (ds) { var d = FD.parse(ds); return FD.DOW[d.getDay()] + ' ' + FD.dm(d.getDate(), d.getMonth()); },
 
         toast: function (text, bad, undo) {
             var t = document.getElementById('toast');

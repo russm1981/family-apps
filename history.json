@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.146",
+    "date": "2026-11-14",
+    "notes": [
+      "Your country now fills in how dates work: the day weeks start on (Monday or Sunday) and how dates are written (14 Nov or Nov 14), as well as the currency and time zone. You can change any of them in Advanced → Locations & home, or in the wizard’s family step.",
+      "The calendars on the screen and in the Family Calendar app start their weeks on your chosen day, and dates everywhere follow your chosen order.",
+      "News: a new “My country’s news” choice (the default) picks a national feed for your country, and there are international feeds to choose from – Guardian World, Al Jazeera, NPR, CBC, ABC Australia, RTÉ and DW."
+    ]
+  },
+  {
     "version": "2026.11.145",
     "date": "2026-11-14",
     "notes": [

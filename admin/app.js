@@ -72,7 +72,7 @@
         if (k === 'err') syncRetry = setTimeout(function () { if (!pending) load(true); }, 60000);
     }
     function setData(d) {
-        DATA = d;
+        DATA = d; if (d.locale) FD.setLocale(d.locale);
         try { localStorage.setItem('fdadmin.data', JSON.stringify(d)); } catch (e) { /* ignore */ }
         if (hasEdits()) { stale = true; return; }      // never redraw over changes you haven't saved yet
         render();
@@ -703,7 +703,7 @@
     function pointsOn() { var pp = pointsPage(); return (DATA.widgets || []).some(function (w) { return w.type === 'child'; }) || !!(pp && pp.show !== false); }
     function lines(v) { return String(v || '').split('\n').map(function (l) { return l.split('|')[0].trim(); }).filter(Boolean); }
     var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    function nice(ymd) { var d = FD.parse(ymd); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
+    function nice(ymd) { var d = FD.parse(ymd); return DOW[d.getDay()] + ' ' + FD.dm(d.getDate(), d.getMonth()); }
     function daysTo(ymd) { var d = FD.parse(ymd), t = new Date(); t = new Date(t.getFullYear(), t.getMonth(), t.getDate()); return Math.round((d - t) / 864e5); }
     function wx(code) {
         code = +code;
@@ -2057,6 +2057,10 @@
                 '<div class="mute small hint">' + esc(f.help || '') + '</div>';
             if (f.k === 'TimeZone' && window.FD_tzSelect) return '<label>Time zone</label>' + FD_tzSelect('setTz', f.value || 'Europe/London').replace('<select ', '<select data-set="TimeZone" ') +
                 '<div class="mute small hint">Your computer’s time zone is ' + esc((Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || '?') + '.</div>';
+            if (f.k === 'WeekStart' && window.FD_weekSelect) return '<label>Weeks start on</label>' + FD_weekSelect('setWeek', f.value, ' data-set="WeekStart"') +
+                '<div class="mute small hint">The first day of each week on the calendars.</div>';
+            if (f.k === 'DateOrder' && window.FD_orderSelect) return '<label>How dates are written</label>' + FD_orderSelect('setOrder', f.value, ' data-set="DateOrder"') +
+                '<div class="mute small hint">On the screen and in the apps.</div>';
             return '<label>' + esc(f.label) + (need && !f.value ? ' <span class="need">needed</span>' : '') + '</label><input data-set="' + esc(f.k) + '" value="' + esc(f.value) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
                 '<div class="mute small hint">' + (f.uses ? '<b>Used by:</b> ' + esc(f.uses) + '. ' : '') + esc(f.help || '') + '</div>';
         }).join('');
@@ -2134,11 +2138,14 @@
                     esc(vals || 'Uses the home address') + (w.show ? '' : ' · hidden') + '</small></span><i>›</i></button>';
             }).join('')) : '');
         wireSaveInstall('hSave', document.querySelector('.sx-home'));
-        // Choosing a country suggests its currency and time zone
+        // Choosing a country fills in its currency, time zone, week start and date order
         if ($('setCountry')) $('setCountry').onchange = function () {
             var c = (window.FD_COUNTRIES || []).filter(function (x) { return x[0] === this.value; }, this)[0]; if (!c) return;
             var cur = document.querySelector('[data-set=Currency]'); if (cur) cur.value = c[2].trim();
             if ($('setTz')) $('setTz').value = c[3];
+            var lc = window.FD_localeFor ? FD_localeFor(c[0]) : null;
+            if (lc && $('setWeek')) $('setWeek').value = lc.WeekStart;
+            if (lc && $('setOrder')) $('setOrder').value = lc.DateOrder;
         };
     }
     function secSystem() {

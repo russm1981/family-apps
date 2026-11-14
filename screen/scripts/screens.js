@@ -49,7 +49,7 @@
         var l = 0.299 * parseInt(m[1], 16) + 0.587 * parseInt(m[2], 16) + 0.114 * parseInt(m[3], 16);
         return l > 160 ? '#151515' : '#fff';
     }
-    function fmtDay(ds) { var d = parseYmd(ds); return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
+    function fmtDay(ds) { var d = parseYmd(ds); return DOW[d.getDay()] + ' ' + FDL.dm(d.getDate(), d.getMonth()); }
 
     function monthStart(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
     function addMonths(d, n) { return new Date(d.getFullYear(), d.getMonth() + n, 1); }
@@ -60,11 +60,11 @@
     var DAYNAME = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var MONTHNAME = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     function addDays(d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); }
-    function mondayOf(d) { return addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -((d.getDay() + 6) % 7)); }
+    function mondayOf(d) { return addDays(new Date(d.getFullYear(), d.getMonth(), d.getDate()), -FDL.col(d)); }   // the start of d's week (Monday or Sunday)
     function monthGrid() {               // Monday on/before the 1st, and how many weeks are needed
         var first = mondayOf(calStart);
         var dim = new Date(calStart.getFullYear(), calStart.getMonth() + 1, 0).getDate();
-        var weeks = Math.ceil((((calStart.getDay() + 6) % 7) + dim) / 7);
+        var weeks = Math.ceil((FDL.col(calStart) + dim) / 7);
         return { first: first, weeks: weeks };
     }
 
@@ -223,7 +223,7 @@
             var dim = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
             html += '<div class="cal-row"><button class="cal-month" data-month="' + ymd(ms) + '"><b>' + MON[ms.getMonth()] + '</b><span>' + ms.getFullYear() + '</span></button>';
             // Each month starts under its own weekday, so Mondays (and weekends) line up down the page: 37 columns.
-            var off = alignDays ? (ms.getDay() + 6) % 7 : 0, cols = alignDays ? 37 : 31;
+            var off = alignDays ? FDL.col(ms) : 0, cols = alignDays ? 37 : 31;
             for (var col = 0; col < cols; col++) {
                 var d = col - off + 1;
                 if (d < 1 || d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
@@ -250,7 +250,7 @@
         if (scrollFor !== key) {
             scrollFor = key;
             var t = new Date(), first = calStart.getFullYear() === t.getFullYear() && calStart.getMonth() === t.getMonth();
-            wrap.scrollLeft = first ? Math.max(0, ((alignDays ? (calStart.getDay() + 6) % 7 : 0) + t.getDate() - 3) * (cw + gap)) : 0;
+            wrap.scrollLeft = first ? Math.max(0, ((alignDays ? FDL.col(calStart) : 0) + t.getDate() - 3) * (cw + gap)) : 0;
         } else wrap.scrollLeft = oldLeft;
     }
     /** Mouse dragging for the scroll view (fingers scroll it natively). */
@@ -271,7 +271,7 @@
         $('calYear').textContent = MONTHNAME[calStart.getMonth()];
         $('calRange').textContent = calStart.getFullYear();
         var g = monthGrid();
-        var html = '<div class="mv-head"><span></span>' + [1, 2, 3, 4, 5, 6, 0].map(function (i) { return '<b class="' + (i === 0 || i === 6 ? 'we' : '') + '">' + DAYNAME[i] + '</b>'; }).join('') + '</div>';
+        var html = '<div class="mv-head"><span></span>' + FDL.order().map(function (i) { return '<b class="' + (i === 0 || i === 6 ? 'we' : '') + '">' + DAYNAME[i] + '</b>'; }).join('') + '</div>';
         html += '<div class="mv-grid" style="grid-template-rows:repeat(' + g.weeks + ',minmax(0,1fr))">';
         for (var w = 0; w < g.weeks; w++) {
             var mon = addDays(g.first, w * 7);
@@ -305,7 +305,7 @@
             var ms = addMonths(calStart, m);
             var dim = new Date(ms.getFullYear(), ms.getMonth() + 1, 0).getDate();
             html += '<div class="cal-row"><button class="cal-month" data-month="' + ymd(ms) + '"><b>' + MON[ms.getMonth()] + '</b></button>';
-            var off = alignDays ? (ms.getDay() + 6) % 7 : 0, cols = alignDays ? 37 : 31;
+            var off = alignDays ? FDL.col(ms) : 0, cols = alignDays ? 37 : 31;
             for (var col = 0; col < cols; col++) {
                 var d = col - off + 1;
                 if (d < 1 || d > dim) { html += '<div class="cal-cell none"></div>'; continue; }
@@ -327,7 +327,7 @@
 
     function renderWeek(data, today) {
         var sun = addDays(calWeek, 6);
-        $('calYear').textContent = calWeek.getDate() + (calWeek.getMonth() !== sun.getMonth() ? ' ' + MON[calWeek.getMonth()] : '') + ' – ' + sun.getDate() + ' ' + MON[sun.getMonth()];
+        $('calYear').textContent = FDL.range(calWeek, sun);
         $('calRange').textContent = sun.getFullYear() + (ymd(calWeek) <= today && today < ymd(addDays(calWeek, 7)) ? ' · this week' : '');
         var html = '';
         for (var k = 0; k < 7; k++) {
@@ -339,7 +339,7 @@
                     '<div class="wx">' + esc(e.t) + '</div>' + (e.note ? '<div class="wn">' + esc(e.note) + '</div>' : '') + '</div>';
             }).join('') : '<div class="empty">Nothing on</div>';
             html += '<button class="cal-cell wv-col' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '">' +
-                '<span class="wv-head"><b>' + DAYNAME[dt.getDay()] + '</b><i>' + dt.getDate() + ' ' + MON[dt.getMonth()] + '</i>' +
+                '<span class="wv-head"><b>' + DAYNAME[dt.getDay()] + '</b><i>' + FDL.dm(dt.getDate(), dt.getMonth()) + '</i>' +
                 (curBH[ds] ? '<em class="bhn">' + esc(curBH[ds]) + '</em>' : '') + '</span>' +
                 '<span class="wv-list">' + list + '</span>' + hb.html + '</button>';
         }
@@ -447,7 +447,7 @@
     function openDay(ds) {
         var r = calRange(), data = ((cover(r) || {}).days || {})[ds] || [];
         var dt = parseYmd(ds);
-        $('calDayTitle').textContent = dt.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        $('calDayTitle').textContent = dt.toLocaleDateString(FDL.lang(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
         var bars = data.filter(function (e) { return e.bar; });
         data = data.filter(function (e) { return !e.bar; });
         var bhName = ((cover(r) || {}).bh || {})[ds];

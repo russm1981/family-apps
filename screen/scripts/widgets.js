@@ -11,6 +11,18 @@
     function errBox(text) { return '<div class="err">' + esc(text) + '</div>'; }
     function loading() { return '<div class="empty">Loading\u2026</div>'; }
     var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    /* How dates are shown (Configurator → Advanced → Locations & home), sent with the layout: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14". */
+    window.FDL = window.FDL || (function () {
+        var L = { weekStart: 1, monthFirst: false }; try { L = JSON.parse(localStorage.getItem('fd.locale')) || L; } catch (e) { /* fine */ }
+        var M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return { L: L,
+            set: function (l) { if (!l) return; L.weekStart = l.weekStart === 0 ? 0 : 1; L.monthFirst = !!l.monthFirst; try { localStorage.setItem('fd.locale', JSON.stringify(L)); } catch (e) { /* fine */ } },
+            dm: function (day, mon) { return L.monthFirst ? M[mon] + ' ' + day : day + ' ' + M[mon]; },
+            col: function (d) { return (d.getDay() - L.weekStart + 7) % 7; },
+            lang: function () { return L.monthFirst ? 'en-US' : 'en-GB'; },   // long dates: "Saturday, November 14" or "Saturday 14 November"
+            range: function (a, b) { return a.getMonth() === b.getMonth() ? (L.monthFirst ? M[a.getMonth()] + ' ' + a.getDate() + '–' + b.getDate() : a.getDate() + '–' + b.getDate() + ' ' + M[a.getMonth()]) : this.dm(a.getDate(), a.getMonth()) + ' – ' + this.dm(b.getDate(), b.getMonth()); },
+            order: function () { return L.weekStart === 0 ? [0, 1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5, 6, 0]; } };
+    })();
     var DAYNAME = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -81,7 +93,7 @@
             if (!s.ShowClock) return;
             var now = new Date();
             q('.clock').textContent = hhmm(now);
-            q('.date').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+            q('.date').textContent = now.toLocaleDateString(FDL.lang(), { weekday: 'long', day: 'numeric', month: 'long' });
         }
         tick(); var timer = setInterval(tick, 10000);
         return {
@@ -117,7 +129,7 @@
         function tick() {
             var c = q('.wx-top .clock'), dt = q('.wx-top .wx-date'), now = new Date();
             if (c) c.textContent = hhmm(now);
-            if (dt) dt.textContent = DOW[now.getDay()] + ' ' + now.getDate() + ' ' + MON[now.getMonth()];
+            if (dt) dt.textContent = DOW[now.getDay()] + ' ' + FDL.dm(now.getDate(), now.getMonth());
         }
         var timer = setInterval(tick, 10000);
         return {
@@ -129,7 +141,7 @@
                 // With the clock: the time leads (biggest), then the weather in words, then the symbol and temperature on the right.
                 q('.wx-top').className = 'wx-top' + (s.ShowClock ? ' with-clock' : '');
                 q('.wx-top').innerHTML = s.ShowClock
-                    ? '<div class="wx-cl"><div class="clock">' + hhmm(new Date()) + '</div><div class="wx-date">' + DOW[new Date().getDay()] + ' ' + new Date().getDate() + ' ' + MON[new Date().getMonth()] + '</div></div>' +
+                    ? '<div class="wx-cl"><div class="clock">' + hhmm(new Date()) + '</div><div class="wx-date">' + DOW[new Date().getDay()] + ' ' + FDL.dm(new Date().getDate(), new Date().getMonth()) + '</div></div>' +
                       '<div class="wx-meta"><span class="wx-label">' + esc(n.label) + '</span>' + meta + '</div>' +
                       '<div class="wx-nowr"><span class="wx-icon">' + n.icon + '</span><span class="wx-temp">' + d.now.temp + '\u00b0</span></div>'
                     : '<span class="wx-icon">' + n.icon + '</span><div class="wx-tl"><div class="wx-temp">' + d.now.temp + '\u00b0</div>' +
@@ -327,7 +339,7 @@
             return html;
         }
         function plain(evs) { return (evs || []).filter(function (e) { return !e.bar; }).map(function (e) { return { e: e }; }); }
-        function dmy(d) { return DOW[d.getDay()] + ' ' + d.getDate() + ' ' + MON[d.getMonth()]; }
+        function dmy(d) { return DOW[d.getDay()] + ' ' + FDL.dm(d.getDate(), d.getMonth()); }
         return {
             update: function (a) {
                 if (!a || a.error) { q('.l1').innerHTML = errBox(a ? a.error : 'No calendar'); q('.l2').innerHTML = ''; if (q('.l3')) q('.l3').innerHTML = ''; return; }
@@ -339,8 +351,8 @@
                 var wHead = '', wRows = [];
                 if (hasWk) {
                     var ds = W.days.map(parseYmd), d0 = ds[0], d1 = ds[1], seen = {};
-                    wHead = (W.next ? 'Next weekend' : 'This weekend') + ' <span>' + DOW[d0.getDay()] + ' ' + d0.getDate() + (d0.getMonth() !== d1.getMonth() ? ' ' + MON[d0.getMonth()] : '') +
-                        '\u2013' + DOW[d1.getDay()] + ' ' + d1.getDate() + ' ' + MON[d1.getMonth()] + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
+                    wHead = (W.next ? 'Next weekend' : 'This weekend') + ' <span>' + DOW[d0.getDay()] + ' ' + (FDL.L.monthFirst ? MON[d0.getMonth()] + ' ' + d0.getDate() : d0.getDate() + (d0.getMonth() !== d1.getMonth() ? ' ' + MON[d0.getMonth()] : '')) +
+                        '\u2013' + DOW[d1.getDay()] + ' ' + FDL.dm(d1.getDate(), d1.getMonth()) + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
                     (W.events || []).forEach(function (evs, i) {
                         plain(evs).forEach(function (x) {
                             var id = (x.e.id || x.e.full || x.e.t) + '|' + (x.e.s || '');      // a repeating event's Saturday and Sunday are separate
@@ -381,7 +393,7 @@
             box.innerHTML = b.upcoming.slice(0, half ? 2 : 4).map(function (u, i) {
                 var dt = parseYmd(u.date), away = Math.round((dt - today) / 86400000);
                 if (away < 0) return '';
-                var label = away === 0 ? 'Today' : away === 1 ? 'Tomorrow' : DAYNAME[dt.getDay()] + ' ' + dt.getDate() + ' ' + MON[dt.getMonth()];
+                var label = away === 0 ? 'Today' : away === 1 ? 'Tomorrow' : DAYNAME[dt.getDay()] + ' ' + FDL.dm(dt.getDate(), dt.getMonth());
                 var alert = (away === 1 && hhmm(now) >= (b.reminderFrom || '15:00')) ? 'Put out tonight' : (away === 0 ? 'Collection today' : '');
                 return '<div class="bin-day' + (i === 0 ? ' first' : '') + (alert ? ' alert' : '') + '">' +
                     '<div class="bin-when">' + label + (i === 0 && !alert && away > 1 ? '<span class="bin-in">in ' + away + ' days</span>' : '') +
@@ -776,7 +788,7 @@
         function tick() {
             var now = new Date();
             q('.ck-time').innerHTML = show(now.getHours(), pad(now.getMinutes()), s.Seconds ? pad(now.getSeconds()) : null);
-            if (s.ShowDate) q('.ck-date').textContent = now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            if (s.ShowDate) q('.ck-date').textContent = now.toLocaleDateString(FDL.lang(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             var here = ymd(now);
             zones.forEach(function (z, i) {
                 var p = parts(now, z.tz);

@@ -97,7 +97,7 @@
     function widgets(type) { var L = window.FDPages && window.FDPages.layout(); return L ? L.widgets.filter(function (w) { return w.type === type && w.show; }) : []; }
     function pad(n) { return (n < 10 ? '0' : '') + n; }
     function ymd(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-    function nice(d) { return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); }
+    function nice(d) { return d.toLocaleDateString(window.FDL ? FDL.lang() : 'en-GB', { weekday: 'long', day: 'numeric', month: 'long' }); }
 
     /** Pull a time out: "at 12", "at 3:30", "at 3 30", "at 3pm", "half past 4", "at quarter to 6". Returns { time, rest }. */
     function takeTime(t) {

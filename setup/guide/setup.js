@@ -326,6 +326,9 @@
                 '<div class="card big"><h3>Where you live</h3><p class="mute">Your country sets the public holidays, map searches and units, and which widgets work there – a few (bin days from your council, trains, buses) are UK-only.</p>' +
                     '<div class="grid2"><div><label>Country</label>' + FD_countrySelect('fwCountry', S.country || instV('Country') || FD_guessCountry()) + '</div>' +
                     '<div><label>Time zone</label>' + FD_tzSelect('fwTz', S.tz || (instV('TimeZone') !== 'Europe/London' && instV('TimeZone')) || (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || 'Europe/London') + '</div></div>' +
+                    '<div class="grid2"><div><label>Weeks start on</label>' + FD_weekSelect('fwWeek', S.week || (instV('Country') ? instV('WeekStart') : FD_localeFor(FD_guessCountry()).WeekStart)) + '</div>' +
+                    '<div><label>How dates are written</label>' + FD_orderSelect('fwOrder', S.order || (instV('Country') ? instV('DateOrder') : FD_localeFor(FD_guessCountry()).DateOrder)) + '</div></div>' +
+                    '<p class="mute">Filled in from your country – change them if you like.</p>' +
                     '<label>Home address or postcode</label><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
                     '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. London, SW1A 0AA"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
@@ -343,7 +346,7 @@
             if (!connected() || !ADM || !FAM) return;
             var PAL = ['#3fa9f5', '#f5a623', '#7ed321', '#a855f7', '#f472b6', '#22d3ee', '#facc15', '#fb7185', '#34d399', '#c084fc'];
             $('fwName').oninput = function () { FAM.name = this.value; };
-            $('fwCountry').onchange = function () { var c = FD_COUNTRIES.filter(function (x) { return x[0] === $('fwCountry').value; })[0]; if (c) $('fwTz').value = c[3]; };
+            $('fwCountry').onchange = function () { var c = FD_COUNTRIES.filter(function (x) { return x[0] === $('fwCountry').value; })[0]; if (c) $('fwTz').value = c[3]; var lc = FD_localeFor($('fwCountry').value); $('fwWeek').value = lc.WeekStart; $('fwOrder').value = lc.DateOrder; };
             $('fwRows').oninput = function (e) { var t = e.target, k;
                 if ((k = t.getAttribute('data-fn')) !== null) FAM.people[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) FAM.people[+k].colour = t.value; };
             $('fwRows').onclick = function (e) { var t;
@@ -363,8 +366,8 @@
                 var b = this; b.disabled = true; S.home = home; save();
                 $('famStatus').innerHTML = '<div class="status">Saving…</div>';
                 var ctry = $('fwCountry').value, cinfo = FD_COUNTRIES.filter(function (x) { return x[0] === ctry; })[0];
-                S.country = ctry; S.tz = $('fwTz').value; save();
-                post({ action: 'saveInstall', values: { HomeAddress: home, Country: ctry, TimeZone: S.tz, Currency: cinfo ? cinfo[2].trim() : '£' } }).then(function () {
+                S.country = ctry; S.tz = $('fwTz').value; S.week = $('fwWeek').value; S.order = $('fwOrder').value; save();
+                post({ action: 'saveInstall', values: { HomeAddress: home, Country: ctry, TimeZone: S.tz, WeekStart: S.week, DateOrder: S.order, Currency: cinfo ? cinfo[2].trim() : '£' } }).then(function () {
                     return post({ action: 'saveFamilyPeople', people: list, familyName: $('fwName').value.trim() });
                 }).then(function (d) {
                     ADM = d; FAM = null; S.familyDone = true; save(); render();
