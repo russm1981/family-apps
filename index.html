@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Family Dashboard</title><meta name="theme-color" content="#0c0e12">
-<link rel="icon" href="admin/icons/icon-192.png">
+<title>HouseRunner – a family dashboard</title><meta name="theme-color" content="#0c0e12">
+<link rel="icon" href="shared/brand/icon-192.png"><link rel="apple-touch-icon" href="shared/brand/apple-touch-icon.png">
 <link rel="stylesheet" href="shared/base.css">
 <style>
  body { min-height: 100vh; }
  .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
  .hero { display: flex; align-items: center; gap: 16px; }
- .hero .logo { width: 56px; height: 56px; border-radius: 16px; background: var(--acc); display: flex; align-items: center; justify-content: center; font-size: 30px; color: #fff; flex: none; }
+ .hero .logo { width: 64px; height: 64px; display: block; flex: none; }
  h1 { font-size: 30px; margin: 0; }
  .ver { color: var(--mute); font-size: 13px; margin-top: 2px; }
  .lead { color: #cdd5e1; font-size: 17px; margin: 14px 0 6px; }
@@ -58,7 +58,7 @@
 </style>
 </head>
 <body><div class="wrap">
- <div class="hero"><span class="logo">▦</span><div><h1>Family Dashboard</h1><div class="ver" id="ver"></div></div></div>
+ <div class="hero"><img class="logo" src="shared/brand/mark.svg" alt=""><div><h1 class="hr-name">House<span>Runner</span></h1><div class="hr-tag">a family dashboard</div><div class="ver" id="ver"></div></div></div>
  <p class="lead">Everything in one place: set up, install the apps, and manage your dashboard.</p>
 
  <!-- Shown on a device that is already connected to a family's Google Sheet -->
@@ -84,7 +84,7 @@
   <h2>Get started</h2>
   <p class="sub">Choose the one that fits.</p>
   <div class="tiles three">
-   <a class="tile first" href="setup/guide/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used Family Dashboard before</span></span></div>
+   <a class="tile first" href="setup/guide/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used HouseRunner before</span></span></div>
     <p>Setup takes you through everything, one step at a time: it makes your family’s own private Google Sheet, connects your screen and phones, and adds your family, calendars and the free keys. About 30 minutes.</p>
     <span class="btn">Start setup</span></a>
    <div class="tile"><span class="step grey">Already set up</span><div class="thead"><span class="ico">🔗</span><span><b>Connect this device, or another</b><span class="who">Add a phone, tablet or screen to your family</span></span></div>

@@ -28,6 +28,7 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
+    var DESK_TITLE = '<img src="../shared/brand/mark.svg" alt="" class="hr-mini">House<span class="hr-acc">Runner</span> Configurator';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other widgets']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
@@ -225,7 +226,7 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             (DESK ? '<a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
@@ -269,7 +270,7 @@
             famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, reminders: function () { renderRewards('timetable', true); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
-        // On the website the title bar always says "Family Dashboard Configurator"; the page's own name is its heading.
+        // On the website the title bar always says "HouseRunner Configurator"; the page's own name is its heading.
         if (DESK && pageName && r.tab !== 'layout' && r.tab !== 'rewards' && !$('body').querySelector('.page-h')) $('body').insertAdjacentHTML('afterbegin', '<h1 class="page-h">' + esc(pageName) + '</h1>');
         privacyCheck();
     }
@@ -286,10 +287,10 @@
     var pageName = '';
     function title(t) {
         if (!DESK) { $('title').textContent = t; return; }
-        $('title').textContent = 'Family Dashboard Configurator';      // always the same; each page has its own heading
+        $('title').innerHTML = DESK_TITLE;      // always the same; each page has its own heading
         pageName = t || '';
     }
-    var HOW_IT_WORKS = '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
+    var HOW_IT_WORKS = '<p>HouseRunner is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
         'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
         '<p>The software reaches your Sheet with a <b>private access code</b> that setup created for you. The code stays on your own screen, phones and this computer, ' +
         'and isn’t sent anywhere else – so your family’s information stays private.</p>';
@@ -312,7 +313,7 @@
         title('Home');
         var btn = function (go, ico, name, what) { return '<a class="hm-btn" data-go="' + go + '" href="#"><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + esc(what) + '</small></a>'; };
         $('body').innerHTML = '<h1 class="page-h">Home</h1>' + card('How it works', HOW_IT_WORKS) + statusCard() +
-            '<div class="card hm-new"><b>🚀 New to Family Dashboard?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
+            '<div class="card hm-new"><b>🚀 New to HouseRunner?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
             '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>' +
             '<h1 class="page-h hm-h">Setup</h1>' +
             '<p class="mute help">The configurator website is in two parts – <b>Setup</b> and <b>Apps</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
@@ -570,20 +571,20 @@
             '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
             '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
             '<li><b>About &amp; diagnostics</b> – every version number, what’s new, and a report to send if something goes wrong.</li></ul>') +
-            '<p class="mute small">Family Dashboard Configurator · application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + '</p>';
+            '<p class="mute small">HouseRunner Configurator · application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderHelp() {
         title('Help');
         $('body').innerHTML = '<div class="frame-bar"><a class="link" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="desk-frame" src="' + esc(helpUrl()) + '" title="Help"></iframe>';
     }
-    /** Feedback, a feature request or a support request – sent to Family Dashboard support (through the family's own
+    /** Feedback, a feature request or a support request – sent to HouseRunner support (through the family's own
      * Google script, which adds the licence key and installation number). Below: what you've sent and where it's up to. */
     var FB_KINDS = [['Support request', '🛠', 'Something isn’t working'], ['Feature request', '💡', 'An idea for something new'], ['Feedback', '💬', 'Tell us what you think']];
     function renderFeedback(sub) {
         title('Feedback and support');
         var kind = sub === 'support' ? 'Support request' : sub === 'idea' ? 'Feature request' : sub === 'feedback' ? 'Feedback' : (renderFeedback.kind || 'Support request');
         renderFeedback.kind = kind;
-        $('body').innerHTML = '<div class="fb-wrap">' + card('Send something to Family Dashboard support',
+        $('body').innerHTML = '<div class="fb-wrap">' + card('Send something to HouseRunner support',
             '<div class="fb-kinds">' + FB_KINDS.map(function (k) { return '<button type="button" class="fb-kind' + (k[0] === kind ? ' on' : '') + '" data-kind="' + k[0] + '"><span>' + k[1] + '</span><b>' + k[0] + '</b><small>' + k[2] + '</small></button>'; }).join('') + '</div>' +
             '<label for="fbSubj">Subject</label><input id="fbSubj" maxlength="120" placeholder="' + (kind === 'Support request' ? 'e.g. The traffic widget says it can’t find my route' : kind === 'Feature request' ? 'e.g. A widget for the tide times' : 'In a few words') + '">' +
             '<label for="fbMsg">' + (kind === 'Support request' ? 'What’s happening – and what you expected' : 'Tell us more') + '</label><textarea id="fbMsg" rows="6" maxlength="8000"></textarea>' +
@@ -634,14 +635,14 @@
     /** On the phone: a page that's on the computer website instead. */
     function renderOnComputer(what) {
         title(what);
-        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>Family Dashboard Configurator</b>, the website for computers. On a computer, open:</p>' +
+        $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>HouseRunner Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
             '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
     function deskCard() {
-        return card('💻 Everything else is on the Configurator', '<p class="small">The Setup wizard, which widgets go on which screen, the family, the calendar’s categories, locations, data keys and your Google data are on the <b>Family Dashboard Configurator</b>, on a computer:</p>' +
+        return card('💻 Everything else is on the Configurator', '<p class="small">The Setup wizard, which widgets go on which screen, the family, the calendar’s categories, locations, data keys and your Google data are on the <b>HouseRunner Configurator</b>, on a computer:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>');
     }
 
@@ -2021,7 +2022,7 @@
             var x = SECTIONS[k];
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
-            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'Family Dashboard Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'HouseRunner Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     /** Disconnect this phone or computer from the family's dashboard: it goes back to "connect to a dashboard". */
     function disconnectHere(e) {
@@ -2333,7 +2334,7 @@
     function secSupport() {
         $('body').innerHTML = card('Versions', versionTable()) +
             card('Diagnostics report', '<p class="small">Makes a text file describing your dashboard – versions, settings, which widgets work and the last errors – to send to support if something’s wrong.</p>' +
-                '<p class="mute small">Your access code, API keys, addresses, names and calendar details go in a <b>locked</b> part that only Family Dashboard support can open. Nothing is sent anywhere until you send the file yourself.</p>' +
+                '<p class="mute small">Your access code, API keys, addresses, names and calendar details go in a <b>locked</b> part that only HouseRunner support can open. Nothing is sent anywhere until you send the file yourself.</p>' +
                 '<button class="btn wide" id="diag">Generate diagnostics</button><div id="diagOut"></div>');
         $('diag').onclick = function () {
             var b = this; b.disabled = true; b.textContent = '⏳ Checking everything – this can take up to a minute…';
@@ -2346,7 +2347,7 @@
                     (canShare ? '<button class="btn wide" id="dShare">Share / email it</button>' : '') +
                     '<button class="btn ghost wide" id="dSave">Download the file</button><button class="btn ghost wide" id="dCopy">Copy the text</button>' +
                     '<details class="adv"><summary>See what’s in it</summary><textarea readonly rows="14" class="mono" style="font-size:11px">' + esc(txt) + '</textarea></details>';
-                if ($('dShare')) $('dShare').onclick = function () { navigator.share({ files: [file], title: 'Family Dashboard diagnostics', text: 'Diagnostics report for Family Dashboard support' }).catch(function () {}); };
+                if ($('dShare')) $('dShare').onclick = function () { navigator.share({ files: [file], title: 'HouseRunner diagnostics', text: 'Diagnostics report for HouseRunner support' }).catch(function () {}); };
                 $('dSave').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
                 $('dCopy').onclick = function () { try { navigator.clipboard.writeText(txt).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
             }).catch(function (e) { b.disabled = false; b.textContent = 'Try again'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
@@ -2357,7 +2358,7 @@
     function buildReport(d) {
         var r = d.report, phone = { userAgent: navigator.userAgent, screen: screen.width + '×' + screen.height, online: navigator.onLine, appVersion: FD.VERSION, standalone: !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches) };
         var head = 'FAMILY DASHBOARD – DIAGNOSTICS REPORT\nMade ' + new Date().toString() + '\n\nThe readable part below has no access code, keys, addresses or names.\n' +
-            'Those are in the locked part at the end, which only Family Dashboard support can open.\n\n';
+            'Those are in the locked part at the end, which only HouseRunner support can open.\n\n';
         var body = head + JSON.stringify(Object.assign({ thisPhone: phone }, r), null, 2);
         if (!d.supportKey || !window.crypto || !crypto.subtle) return Promise.resolve(body + '\n\n(No locked part: ' + (!d.supportKey ? 'support key not available' : 'this browser can’t encrypt') + '. Nothing private is included.)\n');
         var aes, iv = crypto.getRandomValues(new Uint8Array(12));
@@ -2368,7 +2369,7 @@
         }).then(function (x) {
             return crypto.subtle.encrypt({ name: 'RSA-OAEP' }, x[2], x[1]).then(function (k) {
                 var box = btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) }));
-                return body + '\n\n----- ENCRYPTED PRIVATE PART (only Family Dashboard support can open this) -----\nFDENC1:' + box.replace(/(.{76})/g, '$1\n') + '\n----- END -----\n';
+                return body + '\n\n----- ENCRYPTED PRIVATE PART (only HouseRunner support can open this) -----\nFDENC1:' + box.replace(/(.{76})/g, '$1\n') + '\n----- END -----\n';
             });
         });
     }
@@ -2416,7 +2417,7 @@
                     '<ol class="small" start="3"><li>Follow the setup steps for the new account (make the Sheet, publish it). At “Publish &amp; connect” press <b>Bring everything across</b>.</li>' +
                     '<li>That’s it – the screen, phones and licence switch over by themselves within a few minutes; you don’t connect them again. If one is switched off at the time, reload it when it’s back on (if it asks for a code, connect it again from Devices). This Sheet is kept as a backup.</li></ol>';
                 $('mvCopy').onclick = function () { try { navigator.clipboard.writeText(d.setupLink).then(function () { FD.toast('Copied'); }); } catch (e) { $('mvLink').select(); } };
-                if ($('mvShare')) $('mvShare').onclick = function () { navigator.share({ title: 'Move Family Dashboard', text: 'Open on a computer, signed in as ' + d.email + ':', url: d.setupLink }).catch(function () {}); };
+                if ($('mvShare')) $('mvShare').onclick = function () { navigator.share({ title: 'Move HouseRunner', text: 'Open on a computer, signed in as ' + d.email + ':', url: d.setupLink }).catch(function () {}); };
             }, function (e) { b.disabled = false; b.textContent = 'Make a moving pack'; FD.toast(/Unknown action/.test(e.message) ? 'Update the Google script first' : e.message, true); });
         };
         if (!$('afresh')) return;
@@ -2647,10 +2648,10 @@
     if (DESK && !FD.configured() && window.FDPairSend) { var sv = FDPairSend.saved(); if (sv) FD.setConfig(sv.url, sv.code); }
     if (FD.configured()) start();
     else if (DESK && !/[?&]connect\b/.test(location.search)) {
-        $('app').innerHTML = '<div class="desk-welcome"><h1>Family Dashboard setup</h1>' +
-            '<div class="dw-cards"><a class="dw-card first" href="guide/"><span>🚀</span><b>First-time setup</b><small>New to Family Dashboard? Set up your family’s dashboard, one step at a time (about 30 minutes).</small><i class="btn">Start</i></a>' +
+        $('app').innerHTML = '<div class="desk-welcome"><h1>HouseRunner setup</h1>' +
+            '<div class="dw-cards"><a class="dw-card first" href="guide/"><span>🚀</span><b>First-time setup</b><small>New to HouseRunner? Set up your family’s dashboard, one step at a time (about 30 minutes).</small><i class="btn">Start</i></a>' +
             '<a class="dw-card" href="?connect"><span>🔗</span><b>Already set up?</b><small>Connect this computer to your family’s dashboard to change the screen layout, settings and more. You’ll need your phone with Family Admin.</small><i class="btn ghost">Connect this computer</i></a></div>' +
             '<section class="card"><h2>How it works</h2>' + HOW_IT_WORKS.replace('setup created', 'setup creates') + '</section>' +
-            '<p class="mute small center"><a href="../">Family Dashboard home page</a> · <a href="../help/">Help</a></p></div>';
-    } else FD.setupScreen($('app'), DESK ? 'Family Dashboard Configurator' : 'Family Admin', start);
+            '<p class="mute small center"><a href="../">HouseRunner home page</a> · <a href="../help/">Help</a></p></div>';
+    } else FD.setupScreen($('app'), DESK ? 'HouseRunner Configurator' : 'Family Admin', start);
 })();

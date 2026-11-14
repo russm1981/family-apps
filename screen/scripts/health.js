@@ -50,7 +50,7 @@
         var el = $('health');
         if (!el) {
             el = document.createElement('div'); el.id = 'health'; el.className = 'health';
-            el.innerHTML = '<div class="hl-card"><div class="hl-head"><h2>Status</h2><button class="n-btn ghost" data-h="close">Close</button></div><div class="hl-body"></div></div>';
+            el.innerHTML = '<div class="hl-card"><div class="hl-head"><div class="hl-brand"><img src="resources/houserunner.svg" alt=""><div><b>House<span>Runner</span></b><small>a family dashboard</small></div></div><h2>Status</h2><button class="n-btn ghost" data-h="close">Close</button></div><div class="hl-body"></div></div>';
             document.body.appendChild(el);
             el.addEventListener('click', function (e) {
                 if (e.target === el) return close();

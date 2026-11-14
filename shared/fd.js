@@ -185,7 +185,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.148',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.149',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -255,7 +255,7 @@
                 '<div class="setup"><div class="setup-card">' +
                 '<img src="' + (/\/setup\//.test(location.pathname) ? '../admin/' : '') + 'icons/icon-192.png" alt="" class="setup-icon">' +
                 '<h1>' + FD.esc(appName) + '</h1>' +
-                (other ? '<p>This browser is already connected to a Family Dashboard (another of its apps).</p><button class="btn wide" id="suSame">Use the same family</button><div class="or">or</div>' : '') +
+                (other ? '<p>This browser is already connected to a HouseRunner dashboard (another of its apps).</p><button class="btn wide" id="suSame">Use the same family</button><div class="or">or</div>' : '') +
                 (waiter ? '<p><b>Connect from your phone</b> – on a phone that already has Family Admin: <b>More → Devices and Phones → Connect by code</b>, and type</p>' +
                     '<p class="su-code" style="font:800 30px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-align:center;margin:8px 0">' + FD.esc(waiter.code) + '</p>' +
                     (qr ? '<p class="mute small" style="text-align:center">or scan this with the phone’s camera:</p><div style="background:#fff;border-radius:12px;padding:8px;width:180px;margin:6px auto">' + qr + '</div>' : '') +

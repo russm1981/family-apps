@@ -5,9 +5,9 @@
 window.FD_HELP = [
   {
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
-    summary: 'Setting things up is on the Family Dashboard Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
+    summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>The Family Dashboard Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>The HouseRunner Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
 <p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
@@ -150,7 +150,7 @@ window.FD_HELP = [
 <ol>
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
-<li><b>New to Family Dashboard?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
+<li><b>New to HouseRunner?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
 <li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → Devices and Phones → <b>Connect by code</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
@@ -161,7 +161,7 @@ window.FD_HELP = [
 <h2>Making your own Pi</h2>
 <p>Install Raspberry Pi OS (64-bit, with desktop) with Raspberry Pi Imager, then in a terminal on the Pi run:<br><code>curl -fsSL https://russm1981.github.io/family-apps/downloads/raspberry-pi/setup-pi.sh | bash</code><br>and restart it.</p>
 <h2>A tablet</h2>
-<p>Open the Family Dashboard home page in the tablet’s browser → <b>Open the screen</b> (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself). It shows the same QR code to connect it.</p>`
+<p>Open the HouseRunner home page in the tablet’s browser → <b>Open the screen</b> (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself). It shows the same QR code to connect it.</p>`
   },
   {
     id: 'screens', icon: '▭', title: 'Which screens work best',
@@ -317,13 +317,13 @@ window.FD_HELP = [
     summary: 'Send a support request from the Feedback button – tick “attach a diagnostics report” and support can see exactly what’s wrong. You can follow its progress there too.',
     body: `
 <h2>The easiest way</h2>
-<ol><li>On a computer, open the <b>Family Dashboard Configurator</b> and press <b>💬 Feedback</b> at the top, by the title. (In the Family Admin app on your phone it’s under <b>Help &amp; support</b>.)</li>
+<ol><li>On a computer, open the <b>HouseRunner Configurator</b> and press <b>💬 Feedback</b> at the top, by the title. (In the Family Admin app on your phone it’s under <b>Help &amp; support</b>.)</li>
 <li>Choose <b>Support request</b>, say what’s wrong in a sentence or two, and leave <b>Attach a diagnostics report</b> ticked.</li>
 <li>Press <b>Send</b>. You get a reference number, and the same page shows your requests and support’s replies as they come in.</li></ol>
 <h2>From the screen</h2>
 <p>Tap the version number at the bottom of the side bar → <b>Save a diagnostics report to this PC</b>. It goes in the PC’s Downloads folder, if support asks you for it.</p>
 <h2>What’s in a diagnostics report</h2>
-<p>Version numbers, which widgets work, recent errors, and your settings. Your access code, API keys, addresses, names and calendar details are <b>encrypted</b> – they look like a block of random letters and only Family Dashboard support can unlock them. Nothing is sent unless you send it.</p>`
+<p>Version numbers, which widgets work, recent errors, and your settings. Your access code, API keys, addresses, names and calendar details are <b>encrypted</b> – they look like a block of random letters and only HouseRunner support can unlock them. Nothing is sent unless you send it.</p>`
   },
   {
     id: 'privacy', icon: '🔒', title: 'Your data and privacy',

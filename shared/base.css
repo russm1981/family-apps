@@ -71,3 +71,17 @@ label { display: block; font-size: 13px; color: var(--mute); margin: 12px 0 5px;
 .chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip { --ec: var(--acc); --et: #fff; padding: 8px 12px; border-radius: 10px; border: 2px solid var(--ec); font-weight: 700; font-size: 14px; }
 .chip.on { background: var(--ec); color: var(--et); }
+
+/* HouseRunner brand: the mark, the name and "a family dashboard" */
+.hr-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
+.hr-brand img { width: 56px; height: 56px; flex: none; display: block; }
+.hr-brand > span { display: block; min-width: 0; }
+.hr-name { display: block; font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.08; color: var(--text); margin: 0; }
+.hr-name span { color: var(--acc); }
+.hr-tag { display: block; color: #cdd5e1; font-size: 13px; font-weight: 600; letter-spacing: .16em; margin-top: 3px; }
+.hr-brand.sm { gap: 10px; margin-bottom: 18px; width: fit-content; }
+.hr-brand.sm img { width: 38px; height: 38px; }
+.hr-brand.sm .hr-name { font-size: 20px; }
+.hr-brand.sm .hr-tag { font-size: 10.5px; letter-spacing: .14em; margin-top: 1px; }
+.hr-mini { width: 28px; height: 28px; vertical-align: -6px; margin-right: 10px; }
+.hr-acc { color: var(--acc); }

@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Family Dashboard – Help</title><meta name="theme-color" content="#0c0e12">
-<link rel="icon" href="../admin/icons/icon-192.png">
+<title>HouseRunner – Help</title><meta name="theme-color" content="#0c0e12">
+<link rel="icon" href="../shared/brand/icon-192.png"><link rel="apple-touch-icon" href="../shared/brand/apple-touch-icon.png">
 <link rel="stylesheet" href="../shared/base.css">
 <style>
  body { min-height: 100vh; }
@@ -48,7 +48,8 @@
 </style>
 </head>
 <body><div class="wrap">
- <div class="top"><span class="logo">?</span><h1>Help</h1><a class="home" href="../">‹ Family Dashboard home</a></div>
+ <a class="hr-brand sm" href="../" style="grid-column:1/-1;margin-bottom:0"><img src="../shared/brand/mark.svg" alt=""><span><span class="hr-name">House<span>Runner</span></span><span class="hr-tag">a family dashboard</span></span></a>
+ <div class="top"><span class="logo">?</span><h1>Help</h1><a class="home" href="../">‹ HouseRunner home</a></div>
  <nav class="side" id="side"></nav>
  <article id="art"></article>
 </div>
@@ -100,7 +101,7 @@
          '<div class="still"><b>Still stuck?</b> <a href="' + SUPPORT + '" target="_top">Send a support request</a> – with a diagnostics report, support can see exactly what’s going on.</div>';
      }
      nav($('q') ? $('q').value : ''); window.scrollTo(0, 0);
-     document.title = (t ? t.title + ' – ' : c ? c.name + ' – ' : '') + 'Family Dashboard help';
+     document.title = (t ? t.title + ' – ' : c ? c.name + ' – ' : '') + 'HouseRunner help';
    }
    window.addEventListener('hashchange', show);
    show();

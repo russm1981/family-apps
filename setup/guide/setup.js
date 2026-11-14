@@ -134,13 +134,13 @@
                     'and you go through setup from the beginning. Your licence key and access code are kept, so the screen and phones stay connected.</p>' +
                     '<button class="btn" id="suWipe" style="background:#ef4444">Back up, clear everything and start again</button><p id="suWipeSt"></p></div>';
             return (S.mode === 'fresh' && S.backup ? '<div class="note ok">🧹 Cleared, ready to set up again. Your backup is <a href="' + esc(S.backup.url) + '" target="_blank" rel="noopener">' + esc(S.backup.name) + '</a> in your Google Drive.</div>' : '') +
-                (connected() ? '<div class="card"><p>This page is connected to a Family Dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
+                (connected() ? '<div class="card"><p>This page is connected to a HouseRunner dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
                     'Setting up a <b>different</b> family? <button class="link" id="suForget">Disconnect and start a new one</button></p></div>' : '') +
                 (S.licKey ? '<div class="note ok">🔑 Your licence key <b class="mono">' + esc(S.licKey) + '</b> came with the link from your email. Setup fills it in for you – nothing to type.</div>' : '') +
                 (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done on Google’s website, which doesn’t work properly on a phone. ' +
                     'Open your licence email on your computer and click the link there, or send this page to yourself: <button class="btn sm" id="suSend">Copy this page’s link</button></div>' : '') +
-                '<h1>Let’s set up your Family Dashboard</h1>' +
-                (connected() ? '' : '<p class="mute">Already have a Family Dashboard, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
+                '<h1>Let’s set up HouseRunner</h1>' +
+                (connected() ? '' : '<p class="mute">Already have HouseRunner, and want this computer to manage it? <a href="../?connect">Connect this computer to your family</a> instead.</p>') +
                 '<p class="lead">This page walks you through it one step at a time. It takes about 30 minutes. Press <b>Next</b> at the bottom of each page. ' +
                 'You can stop at any point – this page remembers where you got to. Each step explains what it does when you get to it.</p>' +
                 '<div class="note warn"><h3>What you need before you start</h3><ul class="need">' +
@@ -149,7 +149,7 @@
                     '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No screen yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
-                '<p>Family Dashboard is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
+                '<p>HouseRunner is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
                 'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
                 '<p>The software reaches your Sheet with a <b>private access code</b> that setup creates for you. The code stays on your own screen and phones and isn’t sent ' +
                 'anywhere else, so your family’s information stays private – nobody else can see it.</p></div>' +
