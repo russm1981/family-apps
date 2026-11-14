@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.158",
+    "date": "2026-11-14",
+    "notes": [
+      "Home page: on a device that’s already connected, the big panel of links is replaced by one simple line – “You’re connected to the [your family name] family dashboard” – with Open Setup and Disconnect this browser."
+    ]
+  },
+  {
     "version": "2026.11.157",
     "date": "2026-11-14",
     "notes": [

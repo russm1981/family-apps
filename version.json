@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.157",
+  "app": "2026.11.158",
   "script": "2026.11.80",
   "date": "2026-11-14",
   "notes": [
-    "The houserunner.app home page now has the same title bar as the Configurator – the HouseRunner logo and name on the left, Help on the right – and a “Welcome to HouseRunner” heading.",
-    "Version numbers are much quieter on the home page: a small grey note at the bottom, and What’s new just lists the changes."
+    "Home page: on a device that’s already connected, the big panel of links is replaced by one simple line – “You’re connected to the [your family name] family dashboard” – with Open Setup and Disconnect this browser."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.21",

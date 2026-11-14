@@ -34,6 +34,9 @@
  .qr svg { width: 100%; height: 100%; display: block; }
  .tile .btn { text-align: center; text-decoration: none; }
  .step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; }
+ .connected { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 22px 0 0; padding: 14px 18px; border: 1px solid rgba(48,209,88,.45); background: rgba(48,209,88,.08); border-radius: 14px; font-size: 16px; }
+ .connected .tick { color: #30d158; font-weight: 800; }
+ .connected a { color: var(--acc); font-weight: 600; text-decoration: none; } .connected a.quiet { color: var(--mute); font-weight: 400; font-size: 14px; }
  .mine { background: linear-gradient(135deg, rgba(63,169,245,.16), rgba(63,169,245,.04)); border: 1px solid rgba(63,169,245,.45); border-radius: 20px; padding: 18px; }
  .mine .tiles { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
  .mine .tile { padding: 12px 14px; flex-direction: row; align-items: center; gap: 12px; }
@@ -68,11 +71,8 @@
  <p class="lead">Everything in one place: set up, install the apps, and manage your dashboard.</p>
 
  <!-- Shown on a device that is already connected to a family's Google Sheet -->
- <section id="mine" hidden>
-  <h2>Your dashboard <small>this device is connected</small></h2>
-  <div class="mine"><div class="tiles" id="mineTiles"></div>
-   <p class="note">These links contain your private access code. They only appear on devices that are already connected – don’t share them outside the family.</p></div>
- </section>
+ <div class="connected" id="mine" hidden><span class="tick">✔</span><span id="mineTxt">You’re connected to your family’s dashboard.</span>
+  <a href="setup/">Open Setup</a><a href="#" id="forget" class="quiet">Disconnect this browser</a></div>
 
  <section>
   <h2>Three places</h2>
@@ -94,7 +94,7 @@
     <p>Setup takes you through everything, one step at a time: it makes your family’s own private Google Sheet, connects your screen and phones, and adds your family, calendars and the free keys. About 30 minutes.</p>
     <span class="btn">Start setup</span></a>
    <div class="tile"><span class="step grey">Already set up</span><div class="thead"><span class="ico">🔗</span><span><b>Connect this device, or another</b><span class="who">Add a phone, tablet or screen to your family</span></span></div>
-    <p id="connWhy"><b>This browser:</b> connect it to your family with a code from your phone – then this page shows your own links and settings.</p>
+    <p id="connWhy"><b>This browser:</b> connect it to your family with a code from your phone.</p>
     <button class="btn" id="codeGo">Connect this browser</button>
     <div id="codeBox" hidden><p class="code-big" id="codeTxt"></p><p class="who">On a phone that’s already connected: <b>Family Admin → More → Devices and Phones → Connect by code</b>, type the code above – or scan this:</p><div class="qr" id="codeQr"></div><span class="who" id="codeState"></span></div>
     <p><b>Another phone, tablet or screen:</b> on a phone that’s already connected, Family Admin → More → <b>Devices</b> shows QR codes.</p>
@@ -198,7 +198,7 @@
      if (!window.FDPairRecv) return;
      var w = FDPairRecv.receive(function (cfg) {
        try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify({ url: cfg.url, code: cfg.code })); } catch (e) { /* ignore */ }
-       $('codeState').textContent = '✔ Connected. Your links are at the top of the page.'; showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
+       $('codeState').textContent = '✔ Connected.'; showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
      }, function (st) { $('codeState').textContent = st === 'waiting' ? 'Waiting for your phone…' : st === 'offline' ? 'No internet connection.' : 'Connecting by code isn’t available – paste a link instead.'; });
      if (!w) { $('codeState').textContent = 'This browser can’t do that – paste a link instead.'; return; }
      $('codeTxt').textContent = w.code; qr($('codeQr'), w.link); $('codeBox').hidden = false; $('codeGo').hidden = true;
@@ -207,29 +207,19 @@
      var c = parse($('pasteIn').value);
      if (!c || !/^https:\/\/script\.google\.com\//.test(c.url)) { $('pasteMsg').textContent = 'That doesn’t look like a setup link – it should contain #api=… and code=…'; return; }
      try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(c)); } catch (e) { /* ignore */ }
-     $('pasteIn').value = ''; $('pasteMsg').textContent = 'Connected. Your links are at the top of the page.';
+     $('pasteIn').value = ''; $('pasteMsg').textContent = 'Connected.';
      showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
    };
    function showMine() {
      var c = saved(); if (!c) return;
-     var hash = '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code);
-     var items = [
-       ['admin/' + hash, 'admin/icons/icon-192.png', 'Family Admin', 'Points, lists, widgets, settings'],
-       ['calendar/' + hash, 'calendar/icons/icon-192.png', 'Family Calendar', 'See and add entries'],
-       ['setup/guide/' + hash + '&go=family', '👪', 'Family & calendar', 'People, groups, categories, children’s page'],
-       ['setup/guide/' + hash + '&go=devices', '📱', 'Connect devices', 'QR codes, links and the PC start file'],
-       ['setup/guide/' + hash + '&go=keys', '🔑', 'Free API keys', 'Maps, trains, buses, NASA, Spotify'],
-       ['setup/guide/' + hash + '&go=check', '✅', 'Check everything', 'Tests every widget'],
-       ['setup/guide/' + hash + '&go=update', '⬆', 'Updates', 'Is your Google script up to date?'],
-       ['help/', '❓', 'Help', 'Step-by-step answers'],
-       ['screen/' + hash, '🖥', 'Open the screen', 'The dashboard, on this device'],
-     ];
-     $('mineTiles').innerHTML = items.map(function (x) {
-       var ico = /\.png$/.test(x[1]) ? '<img class="ico" src="' + x[1] + '" alt="">' : '<span class="ico">' + x[1] + '</span>';
-       return '<a class="tile" href="' + esc(x[0]) + '" target="_blank" rel="noopener">' + ico + '<span><b>' + esc(x[2]) + '</b><span class="who">' + esc(x[3]) + '</span></span></a>';
-     }).join('');
      $('mine').hidden = false;
-     $('connWhy').innerHTML = '✔ <b>This browser is connected to your family</b> – your own links are at the top of the page. <a href="#" id="forget">Disconnect this browser</a>';
+     // The family's name, from its Google Sheet (e.g. "the MacMillan family dashboard").
+     fetch(c.url + (c.url.indexOf('?') < 0 ? '?' : '&') + 'action=whose&code=' + encodeURIComponent(c.code))
+       .then(function (r) { return r.json(); }).then(function (d) {
+         var n = d && d.familyName ? String(d.familyName).trim() : '';
+         if (n) $('mineTxt').innerHTML = 'You’re connected to <b>the ' + esc(n.replace(/^the\s+/i, '').replace(/\s+family$/i, '')) + ' family</b> dashboard.';
+       }).catch(function () { /* keep the plain wording */ });
+     $('connWhy').innerHTML = '✔ <b>This browser is connected to your family</b> – see the top of the page.';
      $('codeGo').hidden = true; $('codeBox').hidden = true;
      $('forget').onclick = function (e) { e.preventDefault(); if (!confirm('Disconnect this browser from your family? (The apps and screen on this computer are disconnected too.)')) return;
        ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) { /* ignore */ } }); location.reload(); };
