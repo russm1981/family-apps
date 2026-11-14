@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.155",
+    "date": "2026-11-14",
+    "notes": [
+      "The HouseRunner logo in the title bars now sits level with the name – the house rests on the same line as the letters, whatever font your computer uses – with a smaller gap between them."
+    ]
+  },
+  {
     "version": "2026.11.154",
     "date": "2026-11-14",
     "notes": [

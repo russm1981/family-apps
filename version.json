@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.154",
+  "app": "2026.11.155",
   "script": "2026.11.79",
   "date": "2026-11-14",
   "notes": [
-    "The HouseRunner logo in the Configurator and setup wizard title bars is slightly bigger, sits closer to the name, and is centred on it."
+    "The HouseRunner logo in the title bars now sits level with the name – the house rests on the same line as the letters, whatever font your computer uses – with a smaller gap between them."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.20",
