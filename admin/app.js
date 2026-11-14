@@ -294,12 +294,12 @@
         '<p>The software reaches your Sheet with a <b>private access code</b> that setup created for you. The code stays on your own screen, phones and this computer, ' +
         'and isn’t sent anywhere else – so your family’s information stays private.</p>';
     /** Setup website, first tab: where you are, how it works, and what each tab is for. */
-    /** The family's name (e.g. "The MacMillan family"), and who's in it, from the Family page. */
+    /** The family's name (e.g. "The Smith family"), and who's in it, from the Family page. */
     function familyLine() {
         var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }), fn = String(DATA.familyName || '').trim();
         return '<b>' + esc(fn ? 'The ' + fn + ' family' : 'your family') + '</b>' + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
     }
-    /** "the MacMillan family dashboard (Ben, Josh, Alex, Russ, Becky)" – the same words on every device. */
+    /** "the Smith family dashboard (Oliver, Amelia, Noah, Adam, Eve)" – the same words on every device. */
     function familyDash() {
         var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }), fn = String(DATA.familyName || '').trim();
         return (fn ? 'the <b>' + esc(fn) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
@@ -398,8 +398,8 @@
         $('body').innerHTML = explain('How the family works',
                 '<p>Add up to <b>10 people</b>. Each has a colour of their own – it’s used for them on the calendar when they have their own place on its key – and you can change it.</p>' +
                 '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for tasks, daily to-dos and reminders, and a Reward Widget of their own to put on a screen. That’s the only thing it changes.</p>' +
-                '<p>Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
-            card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “MacMillan” for “The MacMillan family”.</p><input id="fpName" maxlength="30" placeholder="e.g. MacMillan" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
+                '<p>Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
+            card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p><input id="fpName" maxlength="30" placeholder="e.g. Smith" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
             card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
                 (famEdit.length < 10 ? '<button class="btn fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
                 '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, tasks, daily to-dos and reminders, with a Reward Widget of their own.</p>' +
@@ -1530,7 +1530,7 @@
         '<details class="adv"><summary>Move the hands automatically from phones</summary>' +
         '<p class="mute small">iPhone: Shortcuts app → Automation → “When I arrive at / leave” a place → Get contents of URL, with the link below. ' +
         'Android: the same with an automation app (e.g. MacroDroid → HTTP request). Change the name and place in each link.</p>' +
-        '<label>Set a place</label><textarea readonly rows="3">' + esc(base + '&person=' + encodeURIComponent(d.people[0] ? d.people[0].name : 'Ben') + '&place=' + encodeURIComponent(d.places[1] || 'School')) + '</textarea>' +
+        '<label>Set a place</label><textarea readonly rows="3">' + esc(base + '&person=' + encodeURIComponent(d.people[0] ? d.people[0].name : 'Oliver') + '&place=' + encodeURIComponent(d.places[1] || 'School')) + '</textarea>' +
         '<label>Or send the phone’s position (it picks the nearest place, otherwise Travelling)</label><textarea readonly rows="3">' + esc(base + '&person=NAME&lat=LATITUDE&lon=LONGITUDE') + '</textarea>' +
         '<label>OwnTracks app (HTTP mode) URL</label><textarea readonly rows="3">' + esc(c.url + '?owntracks=1&code=' + encodeURIComponent(c.code) + '&person=NAME') + '</textarea>' +
         '<p class="mute small">These links contain your access code – only put them on family phones.</p></details>';
@@ -2548,7 +2548,7 @@
         $('body').innerHTML = '<div id="famForm">' +
             card('Everyone in the family', '<p class="mute small">Up to ' + LM.people + ' people. Tap ⭐ Rewards for anyone who takes part in the reward system (up to ' + LM.children + '); taking someone off keeps their points.</p>' +
                 '<div id="ppl">' + F.people.map(person).join('') + '</div><button class="btn wide" id="addP">+ Add a person</button>') +
-            card('Groups on the calendar', '<p class="mute small">Each person shows in their group’s colour on the calendar key, with their name in brackets, e.g. “Drums (Ben)”.</p>' +
+            card('Groups on the calendar', '<p class="mute small">Each person shows in their group’s colour on the calendar key, with their name in brackets, e.g. “Drums (Oliver)”.</p>' +
                 group('children', 'Children’s group', F.children) + group('adults', 'Adults’ group', F.adults) +
                 '<label>Name of the rewards screen <span class="cnt">max 14</span></label><input id="ptsTitle" maxlength="14" value="' + esc(pp ? pp.title : (F.pointsTitle || '')) + '" placeholder="Same as the children’s group">') +
             card('Categories everyone shares', '<div class="fixed-c"><span>🔒 <b>Family</b> <span class="mute small">things you all do together</span></span><input type="color" id="famC" value="' + esc(F.family.colour) + '"></div>' +
@@ -2556,7 +2556,7 @@
                 '<h3 class="sh">Special categories (up to ' + LM.specials + ')</h3><div id="sps">' + F.specials.map(special).join('') + '</div>' +
                 '<div class="chips" id="spAdd"><button class="chip" data-sug="School holiday">+ School holidays</button><button class="chip" data-sug="Birthday">+ Birthdays</button><button class="chip" data-sug="">+ Other</button></div>') +
             '<label class="tog"><input type="checkbox" id="showMatch"><span>Show matching words (advanced)</span></label>' +
-            '<p class="mute small">Events go in a category by the name at the start of their title – “Ben – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Josh.</p>' +
+            '<p class="mute small">Events go in a category by the name at the start of their title – “Oliver – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Amelia.</p>' +
             '<p class="mute small" id="famNote"></p><button class="btn good wide" id="famSave">Save family</button></div>' +
             '<p class="mute small">Which Google calendars are shown, and each calendar page’s settings, are in <b>Screen layout</b> – pick the calendar page.</p>';
         var form = $('famForm');

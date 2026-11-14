@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.143",
+    "date": "2026-11-14",
+    "notes": [
+      "Generic examples everywhere instead of our own family: the Smith family, with Adam & Eve and the children Oliver, Amelia and Noah; home London, SW1A 0AA; traffic to Heathrow and Gatwick airports; trains London Victoria → Gatwick Airport; BBC London instead of Bristol and Gloucestershire",
+      "The children’s screen and the Sheet’s tab are called “Children” (an existing “Boys” tab is renamed automatically)"
+    ]
+  },
+  {
     "version": "2026.11.142",
     "date": "2026-11-14",
     "notes": [
@@ -161,7 +169,7 @@
     "version": "2026.11.123",
     "date": "2026-11-13",
     "notes": [
-      "Setup wizard page: the second button is blue too, and says “Rerun the wizard to reconfigure the current MacMillan family data” (with your family name)"
+      "Setup wizard page: the second button is blue too, and says “Rerun the wizard to reconfigure the current Smith family data” (with your family name)"
     ]
   },
   {
@@ -288,7 +296,7 @@
     "date": "2026-11-13",
     "notes": [
       "Tidy up your Google calendar: dates read “14-11-2026 @ 12:00”",
-      "It now lists only what the calendar can’t show properly – no category, or a title too long. Events like “Ben – Drums” are fine (they show as “Drums (Ben)” in Ben’s colour) and aren’t listed, unless you ask to list them too, to give them their colour in Google Calendar as well"
+      "It now lists only what the calendar can’t show properly – no category, or a title too long. Events like “Oliver – Drums” are fine (they show as “Drums (Oliver)” in Oliver’s colour) and aren’t listed, unless you ask to list them too, to give them their colour in Google Calendar as well"
     ]
   },
   {
@@ -312,7 +320,7 @@
     "version": "2026.11.103",
     "date": "2026-11-13",
     "notes": [
-      "Connecting a new device from a phone (scanning its QR code): it now asks “Connect this new device to the MacMillan family dashboard?” – with your family’s name – and Yes or No",
+      "Connecting a new device from a phone (scanning its QR code): it now asks “Connect this new device to the Smith family dashboard?” – with your family’s name – and Yes or No",
       "Every “Family Admin → Settings → …” in the help and messages now points to where it is now (More, or the Configurator’s Advanced)"
     ]
   },
@@ -405,7 +413,7 @@
       "Adding to the calendar on the screen: + Add, tap the day, and a box opens – what it is, all day (until another day) or at a time, the category and notes",
       "The dot by the title is always round; hover or tap it to see why it’s red, and it tries again by itself",
       "Every device can be disconnected – the screen (tap the version), the phone (More → Disconnect this phone), the calendar app and the Configurator (Home) – and goes back to “connect to a dashboard”",
-      "Everywhere says which family: “the MacMillan family dashboard (Ben, Josh…)”"
+      "Everywhere says which family: “the Smith family dashboard (Oliver, Amelia…)”"
     ]
   },
   {
@@ -486,7 +494,7 @@
       "Fixed: setting up a brand-new family’s Google Sheet could fail at the calendar categories",
       "The Setup website is now the Family Dashboard configurator: Home and Help, then Set up (Setup wizard, Screens, Family, Rewards, Advanced), then the Apps. The title stays the same; each page has its own heading",
       "Home: your dashboard’s status, the three parts explained with buttons, and a pointer to the Setup wizard",
-      "Family: a family name (e.g. MacMillan) – “The MacMillan family (Ben, Josh, Alex, Russ, Becky)”",
+      "Family: a family name (e.g. Smith) – “The Smith family (Oliver, Amelia, Noah, Adam, Eve)”",
       "Daily to-dos (was morning to-dos): daily on the days you pick, or weekly – stays ticked until it resets on the day you choose (e.g. TTRS, Numbots, drums, resetting on Saturday)",
       "Rewards: clearer menu – Tasks, Daily to-dos, Reminders, Reward rules, Manual edits; a child’s widget points you to the Rewards tab",
       "Advanced → Software updates: whether each part is up to date (the application held within Google, the dashboard screen, the website and apps), what’s new in the latest version, and the full version history",
@@ -522,9 +530,9 @@
     "date": "2026-11-13",
     "notes": [
       "Calendar categories now use Google Calendar’s own event colours (on your main calendar): pick the colour on an event in Google Calendar or Gmail and it lands in that category. Up to 10 categories – family groups and general ones",
-      "Events for one person: Graphite, with their name in brackets at the end – “Drums (Ben)”. They show in that person’s colour, their group’s, or Family’s",
+      "Events for one person: Graphite, with their name in brackets at the end – “Drums (Oliver)”. They show in that person’s colour, their group’s, or Family’s",
       "Setup → Screens → a calendar page: the categories (drag people into groups), and that page’s own key – up to 9 plus Other, up to two shown as lines under each day, or hidden",
-      "“Tidy up your Google calendar”: lists events in the old “Ben – Drums” form, with no category or with titles too long, and fixes the ones you tick",
+      "“Tidy up your Google calendar”: lists events in the old “Oliver – Drums” form, with no category or with titles too long, and fixes the ones you tick",
       "Adding an event: pick General, a group or one person",
       "Picking the Google calendar for a page from a list",
       "Family: just the people, their colours and ⭐ Rewards"

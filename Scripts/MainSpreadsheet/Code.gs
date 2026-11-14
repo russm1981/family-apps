@@ -16,7 +16,7 @@
  */
 
 const TZ = 'Europe/London';
-const SCRIPT_VERSION = '2026.11.74';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.75';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -38,14 +38,14 @@ const SHEETS = {
   memos: ['ID', 'Text', 'From', 'Added'],
 };
 const TAB = {
-  boys: 'Boys', tasks: 'Tasks', ledger: 'Ledger', todos: 'Todos',
+  boys: 'Children', tasks: 'Tasks', ledger: 'Ledger', todos: 'Todos',
   todoLog: 'TodoLog', timetable: 'Timetable', categories: 'Categories',
   install: 'Installation', pages: 'Pages', widgets: 'Widgets', wset: 'Widget settings', lists: 'Lists',
   where: 'Whereabouts', memos: 'Memos',
 };
-// Calendar categories. An event's category is the word(s) before the dash in its title, e.g. "Ben – Drums".
-// Match = extra words that put an un-prefixed event into the category (e.g. "Football practice" → Josh).
-// Group = shown in that group's colour and key entry, with the person's name in brackets: "Drums (Ben)".
+// Calendar categories. An event's category is the word(s) before the dash in its title, e.g. "Oliver – Drums".
+// Match = extra words that put an un-prefixed event into the category (e.g. "Football practice" → Amelia).
+// Group = shown in that group's colour and key entry, with the person's name in brackets: "Drums (Oliver)".
 // Show  = "bar" draws a strip along the bottom of the days instead of an entry (school holidays).
 // Kind  = child / adult (a person), children / adults (the two groups), family, holiday, special. Set by the setup app.
 // A new Sheet starts with just the fixed categories; the setup app adds the family.
@@ -60,7 +60,7 @@ const DEFAULT_CATEGORIES = [
 /**
  * Calendar categories live on Google Calendar's own event colours (on the family's main calendar), so an event made in
  * Google Calendar or Gmail lands in the right category. Google has 11 colours: Graphite is kept for events that belong to
- * one person – their name goes in brackets at the end of the title, "Drums (Ben)" – which leaves 10 for categories
+ * one person – their name goes in brackets at the end of the title, "Drums (Oliver)" – which leaves 10 for categories
  * (the family groups and the general ones). An event with no colour is "Other".
  */
 const GCOLOURS = { '1': ['Lavender', '#7986cb'], '2': ['Sage', '#33b679'], '3': ['Grape', '#8e24aa'], '4': ['Flamingo', '#e67c73'], '5': ['Banana', '#f6bf26'],
@@ -110,7 +110,7 @@ const INSTALL = [
   { k: 'AccessCode', label: 'Access code', help: 'Made for you when the Sheet is set up. Change it from the Family Admin app (Install tab) so the rules are checked.', hidden: true },
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
-  { k: 'FamilyName', label: 'Family name', help: 'e.g. MacMillan – set on the Family page.', hidden: true },
+  { k: 'FamilyName', label: 'Family name', help: 'e.g. Smith – set on the Family page.', hidden: true },
   { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
@@ -156,8 +156,7 @@ const NEWS_FEEDS = {
   'BBC \u2013 UK': 'https://feeds.bbci.co.uk/news/uk/rss.xml',
   'BBC \u2013 World': 'https://feeds.bbci.co.uk/news/world/rss.xml',
   'BBC \u2013 England': 'https://feeds.bbci.co.uk/news/england/rss.xml',
-  'BBC \u2013 Bristol': 'https://feeds.bbci.co.uk/news/england/bristol/rss.xml',
-  'BBC \u2013 Gloucestershire': 'https://feeds.bbci.co.uk/news/england/gloucestershire/rss.xml',
+  'BBC \u2013 London': 'https://feeds.bbci.co.uk/news/england/london/rss.xml',
   'BBC \u2013 Business': 'https://feeds.bbci.co.uk/news/business/rss.xml',
   'BBC \u2013 Technology': 'https://feeds.bbci.co.uk/news/technology/rss.xml',
   'BBC \u2013 Science': 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
@@ -181,7 +180,7 @@ const WIDGET_TYPES = {
     data: (s) => weather_(s.Location || inst_('HomeAddress')) },
   traffic: { name: 'Traffic', icon: '\uD83D\uDE97', sizes: ['full', 'half'], ttl: 10 * 60, about: 'Live map and journey times compared with the usual time.',
     settings: [
-      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: '', ui: 'rows', addLabel: '+ Add a destination', timed: true,
+      { k: 'Destinations', label: 'Destinations', type: 'lines', maxLines: 3, def: 'Heathrow Airport\nGatwick Airport', ui: 'rows', addLabel: '+ Add a destination', timed: true,
         rows: [{ k: 'name', label: 'Name', type: 'text', max: LIMITS.destination, ph: 'e.g. School' }, { k: 'address', label: 'Address or postcode', type: 'text', max: 150, ph: 'e.g. BS1 4DJ' },
           { k: 'days', label: 'Days', type: 'days' }, { k: 'times', label: 'Times', type: 'span' }],
         help: 'Up to 3. Each can show all the time, or only on some days and between two times – e.g. school on Monday and Wednesday, 8am to 12 noon.' },
@@ -190,8 +189,8 @@ const WIDGET_TYPES = {
     data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations) },
   trains: { name: 'Trains', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
     settings: [
-      { k: 'From', label: 'From station (code)', type: 'crs', def: 'BPW', help: 'Three-letter code, e.g. BPW for Bristol Parkway. Find codes at nationalrail.co.uk.' },
-      { k: 'To', label: 'To station (code)', type: 'crs', def: 'PAD', help: 'e.g. PAD for London Paddington.' },
+      { k: 'From', label: 'From station (code)', type: 'crs', def: 'VIC', help: 'Three-letter code, e.g. VIC for London Victoria. Find codes at nationalrail.co.uk.' },
+      { k: 'To', label: 'To station (code)', type: 'crs', def: 'GTW', help: 'e.g. GTW for Gatwick Airport.' },
       { k: 'Rows', label: 'Trains to show', type: 'number', def: 3, min: 1, max: 7, help: 'A half-height widget fits 3; full height fits 7.' },
       { k: 'Disruption', label: 'Disruption messages', type: 'select', def: 'Only about this route', options: ['Only about this route', 'Everything at the station', 'Off'],
         help: '“Only about this route” shows a message only if it mentions one of the stations your trains call at.' },
@@ -289,7 +288,7 @@ Object.assign(WIDGET_TYPES, {
     data: (s) => countdown_(s) },
   whereabouts: { name: 'Weasley Clock', icon: '🕰️', sizes: ['full'], about: 'A clock whose hands show where each person is. Tap a name to move it, or let phones update it automatically.',
     settings: [
-      { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Russ | #a855f7\nBecky | #f472b6\nBen | #3fa9f5\nJosh | #f5a623\nAlex | #7ed321', ui: 'rows', addLabel: '+ Add a person',
+      { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Adam | #a855f7\nEve | #f472b6\nOliver | #3fa9f5\nAmelia | #f5a623\nNoah | #7ed321', ui: 'rows', addLabel: '+ Add a person',
         rows: [{ k: 'name', label: 'Name', type: 'text', max: 12, ph: 'Name' }, { k: 'colour', label: 'Colour', type: 'colour' }],
         help: 'Up to 6.' },
       { k: 'Places', label: 'Places on the clock', type: 'lines', maxLines: 10, def: 'Home | home\nSchool\nWork\nShops\nSport\nFriends\nHoliday\nTravelling', ui: 'rows', addLabel: '+ Add a place',
@@ -363,7 +362,7 @@ const LAYOUT_VER = '9';   // 9: calendar categories on Google colours (the Googl
 
 const DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
-  ['boys', 'Boys', 'boys', '\u2605', 2, 'No'],     // holds the points settings; the children themselves are widgets
+  ['boys', 'Children', 'boys', '\u2605', 2, 'No'],     // holds the points settings; the children themselves are widgets
   ['calendar', 'Calendar', 'calendar', '\u25A6', 3, 'Yes'],
   ['other', 'Other', 'widgets', '\u25C8', 4, 'Yes'],
   ['family', 'Family', 'widgets', '\u2726', 5, 'Yes'],
@@ -455,8 +454,8 @@ function claim_() {
 function ensureTabs_() {
   const ss = SpreadsheetApp.getActive();
   Object.keys(TAB).forEach(k => {
-    let sh = ss.getSheetByName(TAB[k]);
-    if (!sh) sh = ss.insertSheet(TAB[k]);
+    let sh = ss.getSheetByName(tabName_(k));
+    if (!sh) sh = ss.insertSheet(tabName_(k));
     if (sh.getLastRow() === 0) {
       sh.appendRow(SHEETS[k]);
       sh.getRange(1, 1, 1, SHEETS[k].length).setFontWeight('bold');
@@ -661,7 +660,7 @@ function freshCopy_() {
 function wipeFamily_() {
   const ss = SpreadsheetApp.getActive();
   ['boys', 'tasks', 'ledger', 'todos', 'todoLog', 'timetable', 'lists', 'where', 'memos', 'wset'].forEach(k => {
-    const sh = ss.getSheetByName(TAB[k]);
+    const sh = ss.getSheetByName(tabName_(k));
     if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(1, sh.getLastColumn())).clearContent();
   });
   const cat = ss.getSheetByName(TAB.categories);
@@ -683,7 +682,7 @@ function resetForSetup_() {
   const backup = ss.copy(ss.getName().replace(/\s*[–-]\s*backup.*$/i, '') + ' – backup ' + fmt_(new Date(), 'yyyy-MM-dd HH:mm'));
   const keep = { AccessCode: inst_('AccessCode'), LicenceKey: inst_('LicenceKey') };
   ['boys', 'tasks', 'ledger', 'todos', 'todoLog', 'timetable', 'lists', 'where', 'memos', 'wset'].forEach(k => {
-    const sh = ss.getSheetByName(TAB[k]);
+    const sh = ss.getSheetByName(tabName_(k));
     if (sh && sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, Math.max(1, sh.getLastColumn())).clearContent();
   });
   const cat = ss.getSheetByName(TAB.categories);
@@ -733,13 +732,13 @@ function doGet(e) {
       movedCheck_();
       if (['state', 'widget', 'calendar', 'where'].indexOf(p.action) >= 0) requireLicence_();
       if (p.action === 'state') return getState_();
-      if (p.action === 'whose') return { ok: true, people: family_().people.map(x => x.name), familyName: String(inst_('FamilyName') || '') };   // the pair page: "the dashboard of Russ, Becky…"
+      if (p.action === 'whose') return { ok: true, people: family_().people.map(x => x.name), familyName: String(inst_('FamilyName') || '') };   // the pair page: "the dashboard of Adam, Eve…"
       if (p.action === 'page') return getPage_(p.page, p.refresh === '1', p.v, p);
       if (p.action === 'diagnostics') return diagnostics_(p.app);
       if (p.action === 'widget') return getWidget_(p.id, p.refresh === '1');
       if (p.action === 'layout') { const blocked = screenCheck_(p); return Object.assign({ ok: true }, screenLayout_(), { licence: Object.assign({}, licencePublic_(), blocked ? { screenBlocked: blocked } : {}) }); }
       if (p.action === 'calendar') return getCalendar_(p.start, p.end, p.page);
-      // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Ben&place=School  or  &lat=..&lon=..
+      // For phone automations (iPhone Shortcuts, Android): ...&action=where&person=Oliver&place=School  or  &lat=..&lon=..
       if (p.action === 'where') return withLock_(() => setWhere_(p));
       throw new Error('Unknown action');
     });
@@ -1141,8 +1140,18 @@ function deleteRowById_(key, id) {
 
 /* -------------------------------------------------------------- helpers */
 
+/** A tab's name. The children's tab used to be called "Boys" – renamed to "Children" the first time it's needed. */
+let tabRenamed_ = false;
+function tabName_(k) {
+  if (!tabRenamed_) {
+    tabRenamed_ = true;
+    try { const ss = SpreadsheetApp.getActive(), old = ss.getSheetByName('Boys'); if (old && !ss.getSheetByName('Children')) old.setName('Children'); } catch (e) { /* not bound to a sheet */ }
+  }
+  return TAB[k];
+}
+
 function sheet_(key) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(TAB[key]);
+  const sh = SpreadsheetApp.getActive().getSheetByName(tabName_(key));
   if (!sh) throw new Error('Missing tab "' + TAB[key] + '" – run setup()');
   return sh;
 }
@@ -2072,7 +2081,7 @@ function trains_(fromCrs, toCrs, disruption) {
   route[d.locationName || ''] = 1; route[d.filterLocationName || ''] = 1;
   return { from: d.locationName || from, to: d.filterLocationName || to, services: services, messages: trainMessages_(messages, Object.keys(route), disruption) };
 }
-/** Disruption messages: all, none, or only those that name a station on the route (or, for longer names, its last word – "Paddington"). */
+/** Disruption messages: all, none, or only those that name a station on the route (or, for longer names, its last word – "Victoria"). */
 function trainMessages_(messages, names, mode) {
   if (mode === 'Off') return [];
   if (mode === 'Everything at the station') return messages;
@@ -2749,7 +2758,7 @@ function calKey_(pageId, M) {
   const hide = (Array.isArray(k.hide) ? k.hide : []).filter(n => has(n) && slots.indexOf(n) < 0);
   return { page: pg ? String(pg.Page).trim() : '', slots: slots, lines: lines, hide: hide, other: k.other !== false, saved: Array.isArray(k.slots) };
 }
-/** Which category an event is in: "(Name)" at the end → that person; otherwise its Google colour; otherwise the old way ("Ben – Drums", matching words). */
+/** Which category an event is in: "(Name)" at the end → that person; otherwise its Google colour; otherwise the old way ("Oliver – Drums", matching words). */
 function evCat_(ev, title, M, legacy) {
   const raw = String(title || '').trim();
   const m = raw.match(/^(.*\S)\s*\(([^()]{1,24})\)\s*$/);
@@ -2869,7 +2878,7 @@ function saveFamily_(b) {
   const colour = (what, c) => { c = String(c || '').trim(); if (!hex.test(c)) throw new Error('Colour for ' + what + ' must look like #3fa9f5'); return c; };
   const match = (m, was, name) => {
     const words = String(m || '').split(',').map(x => x.trim()).filter(Boolean);
-    // Renamed? Keep events that use the old name ("Boys – Swimming") in the same category.
+    // Renamed? Keep events that use the old name ("Children – Swimming") in the same category.
     if (was && norm_(was) !== norm_(name) && words.map(norm_).indexOf(norm_(was)) < 0) words.push(String(was).trim());
     const out = words.join(', ');
     if (out.length > L.match) throw new Error('Too many matching words for ' + name);
@@ -3069,7 +3078,7 @@ function saveCalKey_(b) {
 }
 /**
  * Tidying up the family's Google calendar so every event is in a category the dashboard understands: each event of the
- * next year (and the last three months) that isn't in the new form yet – a category with no colour, an old "Ben – " title,
+ * next year (and the last three months) that isn't in the new form yet – a category with no colour, an old "Oliver – " title,
  * no category at all, or a title too long for the screen – with what it would become.
  */
 function calScan_(b) {
@@ -3088,7 +3097,7 @@ function calScan_(b) {
       const want = r.person ? r.text + ' (' + r.person.name + ')' : r.text, wantG = r.person ? PERSON_G : r.cat ? r.cat.g : '';
       const problem = !r.name ? 'No category' : want.length > LIMITS.eventTitle ? 'Title too long' : '';
       if (!problem && want === title && (wantG || '') === g) return;
-      // Already understood by the calendar (e.g. "Ben – Drums" shows as "Drums (Ben)" in Ben's colour): only listed if asked for.
+      // Already understood by the calendar (e.g. "Oliver – Drums" shows as "Drums (Oliver)" in Oliver's colour): only listed if asked for.
       if (!problem && !b.all) return;
       const allDay = ev.isAllDayEvent(), st = allDay ? ev.getAllDayStartDate() : ev.getStartTime();
       out.push({ id: id, cal: cal.getId(), date: Utilities.formatDate(st, allDay ? tz : TZ, 'yyyy-MM-dd'), time: allDay ? '' : fmt_(st, 'HH:mm'),
@@ -3139,7 +3148,7 @@ function calSetup_() {
 function renameChild_(was, name) {
   setColumn_('wset', 'Value', r => String(r[1]).trim() === 'Child' && String(r[2]).trim() === was ? name : undefined);
   [['tasks', 'Boy'], ['ledger', 'Boy'], ['todos', 'Boy'], ['todoLog', 'Boy'], ['timetable', 'Boy']].forEach(t => {
-    const sh = SpreadsheetApp.getActive().getSheetByName(TAB[t[0]]); if (!sh) return;
+    const sh = SpreadsheetApp.getActive().getSheetByName(tabName_(t[0])); if (!sh) return;
     const data = sh.getDataRange().getValues(), c = data[0].map(String).indexOf(t[1]);
     if (c < 0 || data.length < 2) return;
     const vals = data.slice(1).map(r => [String(r[c]).trim() === was ? name : r[c]]);
@@ -3151,7 +3160,7 @@ function norm_(x) { return String(x || '').toLowerCase().replace(/&/g, ' and ').
 
 /**
  * Work out an event's category and the text to show.
- * "Ben – Drums" → Ben, "Drums". "Tom Widmann's birthday" → Birthday, "Tom". Otherwise match words, else Other.
+ * "Oliver – Drums" → Oliver, "Drums". "Sam Jones's birthday" → Birthday, "Sam". Otherwise match words, else Other.
  */
 function classify_(title, cats) {
   const raw = String(title || '').trim();
@@ -3323,7 +3332,7 @@ function addEvent_(b) {
     const title = /birthday/i.test(text) ? text : text + '’s birthday';
     ev = cal.createAllDayEventSeries(person ? full(title) : title, startDate, CalendarApp.newRecurrence().addYearlyRule(), opts);
   } else if (time) {
-    // A timed entry (from the voice assistant: "Ben drums at 12 on Saturday"). One hour unless told otherwise.
+    // A timed entry (from the voice assistant: "Oliver drums at 12 on Saturday"). One hour unless told otherwise.
     const st = Utilities.parseDate(a + ' ' + time, tz, 'yyyy-MM-dd HH:mm');
     const mins = Math.max(5, Math.min(24 * 60, Number(b.mins) || 60));
     ev = cal.createEvent(full(text), st, new Date(st.getTime() + mins * 60000), opts);
@@ -3431,7 +3440,7 @@ function placeAt_(s, lat, lon) {
   const t = places.find(p => /travel/i.test(p.name));
   return t ? t.name : 'Travelling';
 }
-/** OwnTracks app in HTTP mode, posting to …/exec?owntracks=1&code=ACCESS&person=Ben */
+/** OwnTracks app in HTTP mode, posting to …/exec?owntracks=1&code=ACCESS&person=Oliver */
 function ownTracks_(e) {
   const q = e.parameter || {};
   try {

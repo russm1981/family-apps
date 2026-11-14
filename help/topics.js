@@ -85,7 +85,7 @@ window.FD_HELP = [
 <h2>Common messages</h2>
 <dl>
 <dt>Traffic or maps: “needs a TomTom key”</dt><dd>Add a free TomTom key: <b>the Configurator → Advanced → Data keys</b>. See <a href="#keys">Free API keys</a> for how to get one.</dd>
-<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>Settings → API keys</b>. Check the station codes in the Trains widget settings (three letters, e.g. BPW for Bristol Parkway – find yours at nationalrail.co.uk).</dd>
+<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>Settings → API keys</b>. Check the station codes in the Trains widget settings (three letters, e.g. VIC for London Victoria – find yours at nationalrail.co.uk).</dd>
 <dt>Photos: “Paste a Google Drive folder link”</dt><dd>See <a href="#photos">Photos</a>.</dd>
 <dt>Buses: no departures</dt><dd>Needs the TransportAPI app ID and key in <b>Settings → API keys</b>, and the right bus stop in the widget’s settings.</dd>
 <dt>Spotify: “Not connected”</dt><dd>In the Family Admin app open the Spotify widget and press <b>Connect Spotify</b>. Play/pause needs Spotify Premium.</dd>
@@ -260,12 +260,12 @@ window.FD_HELP = [
   },
   {
     id: 'voice', icon: '🎙', title: 'Voice commands',
-    summary: 'Tap the microphone at the bottom of the side bar, wait for the beep, and say things like “Ben add 15 points” or “add milk to the shopping list”.',
+    summary: 'Tap the microphone at the bottom of the side bar, wait for the beep, and say things like “Oliver add 15 points” or “add milk to the shopping list”.',
     body: `
 <p>Tap the microphone, wait for the beep, then speak. The screen shows what it heard and does it after 4 seconds unless you tap Cancel.</p>
 <table class="t">
-<tr><td>Points</td><td>“Ben add 15 points” · “take 10 points off Josh” · “Alex has done make your bed”</td></tr>
-<tr><td>Calendar</td><td>“calendar add Ben drums at 12 on Saturday” · “calendar add family zoo tomorrow”</td></tr>
+<tr><td>Points</td><td>“Oliver add 15 points” · “take 10 points off Amelia” · “Noah has done make your bed”</td></tr>
+<tr><td>Calendar</td><td>“calendar add Oliver drums at 12 on Saturday” · “calendar add family zoo tomorrow”</td></tr>
 <tr><td>Notes &amp; lists</td><td>“memo dentist moved to Thursday” · “add milk to the shopping list”</td></tr>
 <tr><td>Timer</td><td>“timer 10 minutes” · “stop the timer”</td></tr>
 <tr><td>Pages</td><td>“go to calendar” · say “help” for more</td></tr>
@@ -291,13 +291,13 @@ window.FD_HELP = [
   },
   {
     id: 'calendar', icon: '📅', title: 'Calendar colours and categories',
-    summary: 'Each category is one of Google Calendar’s event colours. For one person, put their name in brackets at the end: “Drums (Ben)”.',
+    summary: 'Each category is one of Google Calendar’s event colours. For one person, put their name in brackets at the end: “Drums (Oliver)”.',
     body: `
-<p>The dashboard reads your family’s Google Calendar. Each <b>category</b> – a family group like “Boys” or “Russ &amp; Becky”, Family (everyone), or a general one like Holiday or School holiday – is one of <b>Google Calendar’s event colours</b>. When you make an event in Google Calendar or Gmail, pick its colour and it lands in that category on the dashboard.</p>
-<ul><li>An event for <b>one person</b>: colour it <b>Graphite</b> and put their name in brackets at the end – “Drums <b>(Ben)</b>”. The dashboard shows it in Ben’s colour, or his group’s.</li>
+<p>The dashboard reads your family’s Google Calendar. Each <b>category</b> – a family group like “Children” or “Adam &amp; Eve”, Family (everyone), or a general one like Holiday or School holiday – is one of <b>Google Calendar’s event colours</b>. When you make an event in Google Calendar or Gmail, pick its colour and it lands in that category on the dashboard.</p>
+<ul><li>An event for <b>one person</b>: colour it <b>Graphite</b> and put their name in brackets at the end – “Drums <b>(Oliver)</b>”. The dashboard shows it in Oliver’s colour, or his group’s.</li>
 <li>An event with <b>no colour</b> goes in <b>Other</b>.</li>
 <li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
-<p>Older events written as “Ben – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Setup → Screens &amp; widgets → your calendar page → Tidy up your Google calendar</b>.</p>
+<p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Setup → Screens &amp; widgets → your calendar page → Tidy up your Google calendar</b>.</p>
 <p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>Setup → Screens &amp; widgets</b>.</p>`
   },
   {

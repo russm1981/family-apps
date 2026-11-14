@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.142",
-  "script": "2026.11.74",
+  "app": "2026.11.143",
+  "script": "2026.11.75",
   "date": "2026-11-14",
   "notes": [
-    "Notes: the handwriting on tablets, phones, Macs and the Raspberry Pi now matches the Corsair – Windows keeps Segoe Print, and other devices use a similar hand-drawn font that comes with the dashboard (instead of whatever “cursive” font the device had)"
+    "Generic examples everywhere instead of our own family: the Smith family, with Adam & Eve and the children Oliver, Amelia and Noah; home London, SW1A 0AA; traffic to Heathrow and Gatwick airports; trains London Victoria → Gatwick Airport; BBC London instead of Bristol and Gloucestershire",
+    "The children’s screen and the Sheet’s tab are called “Children” (an existing “Boys” tab is renamed automatically)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

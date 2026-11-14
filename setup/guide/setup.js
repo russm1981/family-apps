@@ -320,14 +320,14 @@
             return '<h1>4. Your family</h1>' +
                 '<p class="lead">Who’s in the family. Each person has a colour of their own, and you tick <b>⭐ Rewards</b> for anyone who takes part in the reward system (usually the children). ' +
                     'You can change all of this later in the Configurator → Family. <span class="mute">(About 5 minutes.)</span></p>' +
-                '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “MacMillan” for “The MacMillan family”.</p>' +
-                    '<input id="fwName" maxlength="30" placeholder="e.g. MacMillan" value="' + esc(FAM.name) + '"></div>' +
+                '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p>' +
+                    '<input id="fwName" maxlength="30" placeholder="e.g. Smith" value="' + esc(FAM.name) + '"></div>' +
                 '<div class="card big"><h3>Your home address or postcode</h3><p class="mute">Used for the weather, traffic, the nearest bus stop, bin days and the flights map.</p>' +
-                    '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. 12 High Street, Bristol, BS1 4DJ"></div>' +
+                    '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. London, SW1A 0AA"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
                     (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
                     '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for tasks, daily to-dos and reminders, and a Reward Widget of their own to put on a screen. ' +
-                    'Grouping people for the calendar – “the boys”, “Russ &amp; Becky” – is the next step.</p>' +
+                    'Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is the next step.</p>' +
                     '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
             function famRow(p, i) {
                 return '<div class="fw-row"><input type="color" data-fc="' + i + '" value="' + esc(p.colour || '#3fa9f5') + '" title="Their colour">' +

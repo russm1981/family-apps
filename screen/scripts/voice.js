@@ -1,7 +1,7 @@
 /* Family Dashboard – voice assistant.
  * Tap the microphone in the side bar, wait for the beep, then speak. Examples:
- *   "Ben add 15 points"   "take 10 points off Josh"   "Alex has done make your bed"   "Ben cash in"
- *   "calendar add Ben drums at 12 on Saturday"   "add to calendar family zoo tomorrow"
+ *   "Oliver add 15 points"   "take 10 points off Amelia"   "Noah has done make your bed"   "Oliver cash in"
+ *   "calendar add Oliver drums at 12 on Saturday"   "add to calendar family zoo tomorrow"
  *   "memo dentist moved to Thursday"   "add milk to the shopping list"
  *   "timer 10 minutes"   "stop the timer"   "go to calendar"   "help"
  * What it understood is shown first, and it goes ahead after a few seconds unless you tap Cancel.
@@ -15,7 +15,7 @@
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     var DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-    var EXAMPLES = ['“Ben add 15 points”', '“Take 10 points off Josh”', '“Alex has done make your bed”', '“Calendar add Ben drums at 12 on Saturday”',
+    var EXAMPLES = ['“Oliver add 15 points”', '“Take 10 points off Amelia”', '“Noah has done make your bed”', '“Calendar add Oliver drums at 12 on Saturday”',
         '“Memo dentist moved to Thursday”', '“Add milk to the shopping list”', '“Timer 10 minutes”', '“Go to calendar”'];
     var rec = null, listening = false, panel = null, countdown = null, closeT = null, stopListening = function () { if (rec) try { rec.stop(); } catch (e) { /* ignore */ } };
 
@@ -62,7 +62,7 @@
     }
     function cap(s) {
         s = String(s || '').trim();
-        // Names keep their capital letters ("speak to Ben"): the children and the calendar's people and groups.
+        // Names keep their capital letters ("speak to Oliver"): the children and the calendar's people and groups.
         var names = children().map(function (b) { return b.name; }).concat(categories().map(function (c) { return c && (c.name || c.k || c); }))
             .filter(function (n) { return typeof n === 'string' && n.length > 1; });
         names.forEach(function (n) { s = s.replace(new RegExp('\\b' + n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi'), n); });
@@ -178,17 +178,17 @@
                 var hm = tm.time.split(':'), w0 = new Date(); w0.setHours(+hm[0], +hm[1], 0, 0);
                 if (w0 < new Date()) dy.date = new Date(dy.date.getTime() + 7 * 864e5);
             }
-            // The most specific category mentioned: a person ("Ben") wins over their group ("Boys").
+            // The most specific category mentioned: a person ("Oliver") wins over their group ("Children").
             var people = cats.map(function (c) { return c.name; });
             var hits = [], txt = rest, h;
             while ((h = findName(txt, people))) { hits.push(h.name); txt = without(txt, h); }
-            if (!hits.length) return { fail: 'Say who it’s for, e.g. “calendar add Ben drums at 12”. Categories: ' + people.join(', ') + '.' };
-            // If both a group ("Boys") and someone in it ("Ben") were said, the person wins.
+            if (!hits.length) return { fail: 'Say who it’s for, e.g. “calendar add Oliver drums at 12”. Categories: ' + people.join(', ') + '.' };
+            // If both a group ("Children") and someone in it ("Oliver") were said, the person wins.
             var groups = []; try { groups = JSON.parse(localStorage.getItem('familyDashboard.cats.v2') || '[]').map(function (c) { return c.name; }); } catch (e) { groups = []; }
             var specific = hits.filter(function (n) { return groups.indexOf(n) < 0; });
             var cat = (specific.length ? specific : hits)[0];
             var title = txt.replace(/^(?:at|for|is|has|to|-|–)\s+/, '').replace(/\s+(?:at|on|for)$/, '').replace(/^(?:at|for|is|has|to)\s+/, '').trim();
-            if (!title) return { fail: 'Say what it is, e.g. “calendar add Ben drums at 12”.' };
+            if (!title) return { fail: 'Say what it is, e.g. “calendar add Oliver drums at 12”.' };
             var d = dy.date || new Date();
             if (!dy.date && tm.time) {          // "at 12" with no day: today, or tomorrow if that time has gone
                 var p = tm.time.split(':'), when = new Date(); when.setHours(+p[0], +p[1], 0, 0);
@@ -361,7 +361,7 @@
         if (listening) { stopListening(); return; }
         clearInterval(countdown);
         rec = new SR();
-        // Keep listening through short pauses ("memo … speak to Ben"): finish 2.5 seconds after the last word,
+        // Keep listening through short pauses ("memo … speak to Oliver"): finish 2.5 seconds after the last word,
         // after 8 seconds if nothing is said, after 25 seconds at most, or when Done (or the microphone) is tapped.
         rec.lang = 'en-GB'; rec.interimResults = true; rec.maxAlternatives = 4; rec.continuous = true;
         var finals = [], lastAlts = null, interim = '', quiet = null, cap = null;

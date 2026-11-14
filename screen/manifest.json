@@ -1,8 +1,8 @@
 {
-    "author": "Russ",
+    "author": "Family Dashboard",
     "id": "uk.macmillan.familydashboard",
     "name": "Family Dashboard",
-    "description": "Full-screen family dashboard: Home (weather, traffic, trains, bins), Boys rewards and a 3-month calendar.",
+    "description": "Full-screen family dashboard: Home (weather, traffic, trains, bins), children’s rewards and a 3-month calendar.",
     "version": "0.2.0",
     "preview_icon": "resources/icon.svg",
     "min_app_version": "5.47",
