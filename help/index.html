@@ -67,7 +67,7 @@
      { id: 'trouble', icon: '🔧', name: 'Troubleshooting', what: 'The coloured dot, “can’t reach the Sheet”, widget problems and updates', topics: ['dot', 'sheet', 'updates', 'report'] },
      { id: 'data', icon: '🔐', name: 'Your data and account', what: 'Privacy, moving to another Google account, and starting again', topics: ['privacy', 'account', 'afresh'] },
    ];
-   var SUPPORT = '../setup/#/feedback/support';
+   var SUPPORT = '../#/feedback/support';
    T.forEach(function (t) { if (!CATS.some(function (c) { return c.topics.indexOf(t.id) >= 0; })) CATS[1].topics.push(t.id); });   // a new topic not sorted yet
    function topic(id) { return T.filter(function (x) { return x.id === id; })[0]; }
    function catOf(id) { return CATS.filter(function (c) { return c.id === id || c.topics.indexOf(id) >= 0; })[0]; }

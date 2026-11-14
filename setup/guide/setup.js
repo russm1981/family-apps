@@ -94,7 +94,7 @@
             '<input type="color" data-c value="' + esc(x.colour || '#14b8a6') + '"><button type="button" class="x" data-del title="Remove">✕</button>' +
             '<input class="match" data-m placeholder="Matching words, e.g. half term, inset" value="' + esc(x.match || '') + '"></div>';
     }
-    function linkFor(app) { return appsBase + app + '/#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
+    function linkFor(app) { return appsBase + (app === 'admin' ? '' : app + '/') + '#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
     function screenUrl() { return appsBase + 'screen/#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
     function qr(text) {
         if (!window.qrcode) return '';
@@ -783,7 +783,7 @@
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
     $('back').onclick = function () { S.step--; render(); };
-    $('next').onclick = function () { if (SOLO) { location.href = '../#/tools'; return; } go(S.step + 1); };
+    $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1); };
     document.addEventListener('click', function (e) {
         var c = e.target.closest('[data-copy]');
         if (c) { var t = $(c.getAttribute('data-copy')); navigator.clipboard.writeText(t.value).then(function () { toast('Copied'); }, function () { t.select(); toast('Press Ctrl+C to copy'); }); }

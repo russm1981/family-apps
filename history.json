@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.159",
+    "date": "2026-11-14",
+    "notes": [
+      "houserunner.app is now the app itself. On a computer it’s the Configurator; on a phone it’s Family Admin; on a device that isn’t connected yet it’s a welcome page for new families – what HouseRunner does, how it works, what you need, and Start setup.",
+      "The addresses are now: houserunner.app, houserunner.app/calendar (Family Calendar), houserunner.app/screen (the dashboard), houserunner.app/windows (the Windows start file) and houserunner.app/licencing. Old links – …/setup, …/admin and the old GitHub address – still work and forward to the right place.",
+      "Configurator Home: two new sections at the bottom – Connect a new display (Corsair XENEON EDGE, Raspberry Pi, tablet, any computer) and Connect a new phone (QR codes for Family Admin and Family Calendar).",
+      "The links email now has one link for the Configurator and Family Admin. Phones with the old Family Admin icon: it still works – or add houserunner.app to the home screen instead."
+    ]
+  },
+  {
     "version": "2026.11.158",
     "date": "2026-11-14",
     "notes": [

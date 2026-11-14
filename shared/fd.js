@@ -6,6 +6,7 @@
 (function () {
     'use strict';
     var KEY = 'fdapp.cfg.v1';
+    var ROOT = (function () { try { return new URL('../', document.currentScript.src).href; } catch (e) { return '../'; } })();   // the apps' address (this file is in shared/)
 
     function read() { try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; } catch (e) { return {}; } }
     // Ask the browser to keep this site's storage (so it doesn't forget the family when space is short).
@@ -185,7 +186,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.158',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.159',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -253,7 +254,7 @@
             if (waiter && window.qrcode) { try { var q = qrcode(0, 'M'); q.addData(waiter.link); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { qr = ''; } }
             el.innerHTML =
                 '<div class="setup"><div class="setup-card">' +
-                '<img src="' + (/\/setup\//.test(location.pathname) ? '../admin/' : '') + 'icons/icon-192.png" alt="" class="setup-icon">' +
+                '<img src="' + ROOT + 'admin/icons/icon-192.png" alt="" class="setup-icon">' +
                 '<h1>' + FD.esc(appName) + '</h1>' +
                 (/HouseRunner/.test(appName) ? '' : '<p class="mute small" style="margin:-2px 0 10px">HouseRunner – a family dashboard</p>') +
                 (other ? '<p>This browser is already connected to a HouseRunner dashboard (another of its apps).</p><button class="btn wide" id="suSame">Use the same family</button><div class="or">or</div>' : '') +

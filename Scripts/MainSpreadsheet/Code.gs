@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.80';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.81';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -779,8 +779,7 @@ function emailLinks_() {
   const base = appsBase_(), fam = String(inst_('FamilyName') || '').trim();
   const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + '.\n\n' +
     'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
-    'The Configurator (on a computer):\n' + base + 'setup/' + tail + '\n\n' +
-    'Family Admin (adults’ phones):\n' + base + 'admin/' + tail + '\n\n' +
+    'HouseRunner – the Configurator on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
     'Family Calendar (everyone’s phones):\n' + base + 'calendar/' + tail + '\n\n' +
     'The screen (the XENEON EDGE, a tablet or a browser):\n' + base + 'screen/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
@@ -1071,7 +1070,7 @@ function getAdmin_() {
     scriptVersion: SCRIPT_VERSION, loader: LOADED ? LOADED.info() : null, licenceKey: String(inst_('LicenceKey') || ''), privacyAccepted: String(inst_('PrivacyAccepted') || ''), codeWeak: !!codeProblem_(inst_('AccessCode')),
     appsAddress: appsAddr_(),
     autoUpdate: autoUpdateOn_(), lastUpdate: PropertiesService.getScriptProperties().getProperty('lastUpdate') || '', lastCheck: PropertiesService.getScriptProperties().getProperty('lastCheck') || '',
-    setupBase: appsBase_() + 'setup/',
+    setupBase: appsBase_(),
     types: Object.keys(WIDGET_TYPES).map(k => schemaOut_(k, WIDGET_TYPES[k])),
     pageTypes: Object.keys(PAGE_TYPES).map(k => schemaOut_(k, PAGE_TYPES[k])),
   };
@@ -3942,7 +3941,7 @@ function menuConnect() {
       '<p>Then come back here and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
     return;
   }
-  const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
+  const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
   dialog_('Published ✅', '<p>✅ Your Family Dashboard is published.</p>' +
     '<p>Click the button to carry on with setup. It opens the setup page already connected to this Sheet – nothing to type:</p>' +
     '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Carry on with setup</a></p>' +
@@ -3952,7 +3951,7 @@ function menuConnect() {
 function menuFamily() {
   const url = myUrl_();
   if (!url) { menuConnect(); return; }
-  const link = appsBase_() + 'setup/#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&go=family';
+  const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&go=family';
   dialog_('Change family & calendar', '<p>Add or rename people, change who is an adult or a child, rename the groups and the children’s page, and change the calendar categories and colours.</p>' +
     '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Open Family &amp; calendar</a></p>' +
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 280);
@@ -3967,7 +3966,7 @@ function menuUpdate() {
     return;
   }
   const url = myUrl_();
-  const link = appsBase_() + 'setup/#update' + (url ? '&api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) : '');
+  const link = appsBase_() + '#update' + (url ? '&api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) : '');
   dialog_('Couldn’t update automatically', '<p>' + clean_(r.message || 'Something went wrong.') + '</p>' +
     (r.apiOff ? '<p>Open <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a>, switch <b>Google Apps Script API</b> on, then choose this menu item again.</p>' : '') +
     '<p>Or update by hand: <a href="' + link + '" target="_blank">show me how</a>.</p>', 320);
@@ -4353,7 +4352,7 @@ function packForAccount_(email) {
   cs.getRange(2, 1).setValue(JSON.stringify({ props: props, install: install, token: token, from: from, autoUpdate: autoUpdateOn_(), at: new Date().toISOString() }));
   pack.addEditor(email);
   P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, sheetUrl: pack.getUrl(), packId: pack.getId(), token: token, install: install, at: new Date().toISOString() }));
-  const setupLink = appsBase_() + 'setup/#go=import&pack=' + encodeURIComponent(pack.getId());
+  const setupLink = appsBase_() + '#go=import&pack=' + encodeURIComponent(pack.getId());
   let emailed = false;
   try { GmailApp.sendEmail(email, 'Moving your Family Dashboard to this Google account', moveEmail_(email, setupLink, me)); emailed = true; } catch (e) { /* the app shows the same steps */ }
   return { ok: true, packId: pack.getId(), email: email, setupLink: setupLink, emailed: emailed };

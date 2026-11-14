@@ -152,7 +152,7 @@
         var base = appsBase(), c = api() && api().config ? api().config() : {};
         if (!base) return '';
         var hash = c.url && c.code ? '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) : '';
-        var items = [['Family Calendar', 'phone app – everyone', base + 'calendar/' + hash], ['Family Admin', 'phone app – parents', base + 'admin/' + hash],
+        var items = [['Family Calendar', 'phone app – everyone', base + 'calendar/' + hash], ['Family Admin', 'phone app – parents', base + hash],
             ['Tablet or Pi screen', 'opens this dashboard', base + 'screen/' + hash], ['Family Dashboard home', 'setup, help, what’s new', base]];
         return '<div class="hl-qr"><h3>Scan with a phone</h3><div class="hl-qrs">' + items.map(function (x) {
             return '<div class="hl-q"><div class="hl-qi">' + qrSvg(x[2]) + '</div><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') +

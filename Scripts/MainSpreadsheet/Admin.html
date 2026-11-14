@@ -182,7 +182,7 @@ function login() {
 }
 function openSetup(step) {
   if (!DATA || !DATA.execUrl) return;
-  const base = DATA.setupBase || ((DATA.appsAddress || '').replace(/\/?$/, '/') + 'setup/');
+  const base = DATA.setupBase || ((DATA.appsAddress || '').replace(/\/?$/, '/') + '');
   window.open(base + '#api=' + encodeURIComponent(DATA.execUrl) + '&code=' + encodeURIComponent(CODE) + '&go=' + step, '_blank');
 }
 function logout() { store('brCode', null); CODE = ''; $('app').style.display = 'none'; $('login').style.display = 'block'; }

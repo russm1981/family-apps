@@ -1,150 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><script src="shared/move.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>HouseRunner – a family dashboard</title><meta name="theme-color" content="#0c0e12">
-<link rel="icon" href="shared/brand/icon-192.png"><link rel="apple-touch-icon" href="shared/brand/apple-touch-icon.png">
-<link rel="stylesheet" href="shared/base.css">
-<style>
- body { min-height: 100vh; }
- .wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
- /* the same title bar as the Configurator */
- .site-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
- .site-top .hr-title { color: var(--text); font-size: 21px; font-weight: 800; text-decoration: none; }
- .site-top .tag { color: var(--mute); font-size: 14px; font-weight: 600; margin-left: 10px; }
- .site-help { color: var(--text); text-decoration: none; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; white-space: nowrap; }
- .site-help:hover { border-color: var(--acc); }
- h1 { font-size: 28px; margin: 0; }
- .ver { color: var(--mute); opacity: .6; font-size: 12px; }
- @media (max-width: 560px) { .site-top { padding: 0 16px; } .site-top .tag { display: none; } }
- .lead { color: #cdd5e1; font-size: 17px; margin: 14px 0 6px; }
- h2 { font-size: 20px; margin: 34px 0 4px; display: flex; align-items: center; gap: 10px; }
- h2 small { color: var(--mute); font-weight: 400; font-size: 14px; }
- .sub { color: var(--mute); font-size: 14px; margin: 0 0 14px; }
- .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
- .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; color: inherit; text-decoration: none; }
- a.tile:hover { border-color: var(--acc); }
- .tile.first { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc) inset; }
- .tile .thead { display: flex; align-items: center; gap: 12px; }
- .tile .ico { width: 46px; height: 46px; border-radius: 13px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 23px; background: var(--panel-2); }
- .tile img.ico { padding: 0; }
- .tile b { font-size: 17px; display: block; } .tile .who { color: var(--mute); font-size: 13px; }
- .tile p { color: var(--mute); font-size: 14px; margin: 0; flex: 1; }
- .qr { background: #fff; border-radius: 12px; padding: 8px; width: 140px; height: 140px; align-self: center; }
- .qr svg { width: 100%; height: 100%; display: block; }
- .tile .btn { text-align: center; text-decoration: none; }
- .step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; }
- .connected { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 22px 0 0; padding: 14px 18px; border: 1px solid rgba(48,209,88,.45); background: rgba(48,209,88,.08); border-radius: 14px; font-size: 16px; }
- .connected .tick { color: #30d158; font-weight: 800; }
- .connected a { color: var(--acc); font-weight: 600; text-decoration: none; } .connected a.quiet { color: var(--mute); font-weight: 400; font-size: 14px; }
- .mine { background: linear-gradient(135deg, rgba(63,169,245,.16), rgba(63,169,245,.04)); border: 1px solid rgba(63,169,245,.45); border-radius: 20px; padding: 18px; }
- .mine .tiles { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
- .mine .tile { padding: 12px 14px; flex-direction: row; align-items: center; gap: 12px; }
- .mine .tile .ico { width: 40px; height: 40px; font-size: 20px; }
- .mine .tile b { font-size: 15px; } .mine .tile .who { font-size: 12px; }
- .note { color: var(--mute); font-size: 13px; margin: 12px 0 0; }
- .paste { display: flex; gap: 8px; margin-top: 10px; }
- .paste input { flex: 1; min-width: 0; background: #0b0d11; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; }
- .news { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
- .news ul { margin: 6px 0 0; padding-left: 18px; color: #cdd5e1; font-size: 14px; } .news li { margin: 4px 0; }
- details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin: 8px 0; }
- details summary { cursor: pointer; font-weight: 700; }
- details p, details li { color: #cdd5e1; font-size: 14px; }
- .foot { color: var(--mute); font-size: 13px; margin-top: 30px; }
- .foot a, .sub a, details a { color: var(--acc); }
- [hidden] { display: none !important; }
- .tiles.three { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
- .step.grey { background: var(--panel-2); color: #cdd5e1; }
- .more { color: var(--acc); font-size: 14px; text-decoration: none; }
- .two-btns { display: flex; gap: 8px; } .two-btns .btn { flex: 1; }
- a.news { display: block; color: inherit; text-decoration: none; } a.news:hover { border-color: var(--acc); }
- .tiles.help { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
- .tiles.help .tile p { font-size: 14px; }
- .tile p b { display: inline; font-size: inherit; color: #e6ebf2; }
- .code-big { font: 800 28px/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 2px; margin: 6px 0; }
- .tiles.help .btn { align-self: flex-start; padding: 7px 14px; }
-</style>
+    <meta charset="UTF-8"><script src="shared/move.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>HouseRunner – a family dashboard</title>
+    <meta name="theme-color" content="#0c0e12">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="HouseRunner">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="shared/brand/icon-192.png"><link rel="apple-touch-icon" href="shared/brand/apple-touch-icon.png">
+    <script>
+    // houserunner.app is one address for the grown-ups: the Configurator on a computer, Family Admin on a phone, and – on a
+    // device that isn't connected yet – the welcome page. Links into a step of the setup wizard (the licence email, the Sheet's
+    // menu, the pairing page) go straight to the wizard.
+    (function () {
+        var h = location.hash || '', q = location.search || '';
+        if (!/[?&]connect\b/.test(q) && /(^|[#&])(key|from|go|update|pair|pack)(=|&|$)/.test(h)) { location.replace('setup/guide/' + h); return; }
+        var phone = window.matchMedia && matchMedia('(max-width: 760px)').matches;
+        window.FD_DESK = !phone;
+    })();
+    </script>
+    <link rel="stylesheet" href="shared/base.css?v=202611159">
+    <link rel="stylesheet" href="admin/admin.css?v=202611159">
+    <link rel="stylesheet" href="setup/desk.css?v=202611159">
+    <link rel="stylesheet" href="setup/editor.css?v=202611159">
+    <style>
+#landing { min-height: 100vh; }
+#landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
+#landing /* the same title bar as the Configurator */
+ .ld-site-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
+#landing .ld-site-top .hr-title { color: var(--text); font-size: 21px; font-weight: 800; text-decoration: none; }
+#landing .ld-site-top .ld-tag { color: var(--mute); font-size: 14px; font-weight: 600; margin-left: 10px; }
+#landing .ld-site-help { color: var(--text); text-decoration: none; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; white-space: nowrap; }
+#landing .ld-site-help:hover { border-color: var(--acc); }
+#landing h1 { font-size: 28px; margin: 0; }
+#landing .ld-ver { color: var(--mute); opacity: .6; font-size: 12px; }
+@media (max-width: 560px) { #landing .ld-site-top { padding: 0 16px; } #landing .ld-site-top .ld-tag { display: none; } }
+#landing .ld-lead { color: #cdd5e1; font-size: 17px; margin: 14px 0 6px; }
+#landing h2 { font-size: 20px; margin: 34px 0 4px; display: flex; align-items: center; gap: 10px; }
+#landing h2 small { color: var(--mute); font-weight: 400; font-size: 14px; }
+#landing .ld-sub { color: var(--mute); font-size: 14px; margin: 0 0 14px; }
+#landing .ld-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+#landing .ld-tile { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 10px; color: inherit; text-decoration: none; }
+#landing a.ld-tile:hover { border-color: var(--acc); }
+#landing .ld-tile.ld-first { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc) inset; }
+#landing .ld-tile .ld-thead { display: flex; align-items: center; gap: 12px; }
+#landing .ld-tile .ld-ico { width: 46px; height: 46px; border-radius: 13px; flex: none; display: flex; align-items: center; justify-content: center; font-size: 23px; background: var(--panel-2); }
+#landing .ld-tile img.ld-ico { padding: 0; }
+#landing .ld-tile b { font-size: 17px; display: block; }
+#landing .ld-tile .ld-who { color: var(--mute); font-size: 13px; }
+#landing .ld-tile p { color: var(--mute); font-size: 14px; margin: 0; flex: 1; }
+#landing .ld-qr { background: #fff; border-radius: 12px; padding: 8px; width: 140px; height: 140px; align-self: center; }
+#landing .ld-qr svg { width: 100%; height: 100%; display: block; }
+#landing .ld-tile .btn { text-align: center; text-decoration: none; }
+#landing .ld-step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; }
+#landing .ld-land { padding: 26px 0 6px; }
+#landing .ld-land-h { font-size: 40px; line-height: 1.12; letter-spacing: -.02em; max-width: 760px; }
+#landing .ld-land .ld-lead { font-size: 19px; max-width: 760px; }
+#landing .ld-cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 8px; }
+#landing .btn.ld-big { font-size: 17px; padding: 14px 26px; border-radius: 14px; text-decoration: none; }
+#landing .ld-tiles.ld-feat { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+#landing .ld-tiles.ld-feat .ld-tile .ld-ico { width: 44px; height: 44px; font-size: 22px; border-radius: 12px; background: var(--panel-2); display: flex; align-items: center; justify-content: center; }
+#landing .ld-tiles.ld-feat .ld-tile b, #landing .ld-steps3 .ld-tile b { font-size: 17px; }
+#landing .ld-need { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 8px 22px; }
+#landing .ld-need li { margin: 10px 0; color: #cdd5e1; }
+#landing .ld-need a { color: var(--acc); }
+@media (max-width: 560px) { #landing .ld-land-h { font-size: 30px; } }
+#landing .ld-connected { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 22px 0 0; padding: 14px 18px; border: 1px solid rgba(48,209,88,.45); background: rgba(48,209,88,.08); border-radius: 14px; font-size: 16px; }
+#landing .ld-connected .ld-tick { color: #30d158; font-weight: 800; }
+#landing .ld-connected a { color: var(--acc); font-weight: 600; text-decoration: none; }
+#landing .ld-connected a.ld-quiet { color: var(--mute); font-weight: 400; font-size: 14px; }
+#landing .ld-mine { background: linear-gradient(135deg, rgba(63,169,245,.16), rgba(63,169,245,.04)); border: 1px solid rgba(63,169,245,.45); border-radius: 20px; padding: 18px; }
+#landing .ld-mine .ld-tiles { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+#landing .ld-mine .ld-tile { padding: 12px 14px; flex-direction: row; align-items: center; gap: 12px; }
+#landing .ld-mine .ld-tile .ld-ico { width: 40px; height: 40px; font-size: 20px; }
+#landing .ld-mine .ld-tile b { font-size: 15px; }
+#landing .ld-mine .ld-tile .ld-who { font-size: 12px; }
+#landing .ld-note { color: var(--mute); font-size: 13px; margin: 12px 0 0; }
+#landing .ld-paste { display: flex; gap: 8px; margin-top: 10px; }
+#landing .ld-paste input { flex: 1; min-width: 0; background: #0b0d11; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; }
+#landing .ld-news { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px 18px; }
+#landing .ld-news ul { margin: 6px 0 0; padding-left: 18px; color: #cdd5e1; font-size: 14px; }
+#landing .ld-news li { margin: 4px 0; }
+#landing details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; margin: 8px 0; }
+#landing details summary { cursor: pointer; font-weight: 700; }
+#landing details p, #landing details li { color: #cdd5e1; font-size: 14px; }
+#landing .ld-foot { color: var(--mute); font-size: 13px; margin-top: 30px; }
+#landing .ld-foot a, #landing .ld-sub a, #landing details a { color: var(--acc); }
+#landing [hidden] { display: none !important; }
+#landing .ld-tiles.ld-three { grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+#landing .ld-step.ld-grey { background: var(--panel-2); color: #cdd5e1; }
+#landing .ld-more { color: var(--acc); font-size: 14px; text-decoration: none; }
+#landing .ld-two-btns { display: flex; gap: 8px; }
+#landing .ld-two-btns .btn { flex: 1; }
+#landing a.ld-news { display: block; color: inherit; text-decoration: none; }
+#landing a.ld-news:hover { border-color: var(--acc); }
+#landing .ld-tiles.ld-help { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+#landing .ld-tiles.ld-help .ld-tile p { font-size: 14px; }
+#landing .ld-tile p b { display: inline; font-size: inherit; color: #e6ebf2; }
+#landing .ld-code-big { font: 800 28px/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 2px; margin: 6px 0; }
+#landing .ld-tiles.ld-help .btn { align-self: flex-start; padding: 7px 14px; }
+    </style>
 </head>
-<body><header class="site-top"><a class="hr-title" href="./"><img src="shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span><span class="tag">a family dashboard</span></span></a><a class="site-help" href="help/">❓ Help</a></header>
-<div class="wrap">
- <h1>Welcome to HouseRunner</h1>
- <p class="lead">Everything in one place: set up, install the apps, and manage your dashboard.</p>
-
- <!-- Shown on a device that is already connected to a family's Google Sheet -->
- <div class="connected" id="mine" hidden><span class="tick">✔</span><span id="mineTxt">You’re connected to your family’s dashboard.</span>
-  <a href="setup/">Open Setup</a><a href="#" id="forget" class="quiet">Disconnect this browser</a></div>
+<body>
+    <script>if (window.FD_DESK) document.body.classList.add('desk');</script>
+    <!-- Not connected yet (on a computer): the welcome page. -->
+    <div id="landing" hidden>
+<header class="ld-site-top"><a class="hr-title" href="./"><img src="shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span><span class="ld-tag">a family dashboard</span></span></a><a class="ld-site-help" href="help/">❓ Help</a></header>
+<div class="ld-wrap">
+ <section class="ld-land">
+  <h1 class="ld-land-h">Your family’s week, at a glance</h1>
+  <p class="ld-lead">HouseRunner turns a small screen – like the Corsair XENEON EDGE, a tablet or an old monitor – into your family’s dashboard: the calendar, weather, bins, the school run, reminders and the children’s reward points, all in one place. Two phone apps keep it up to date.</p>
+  <div class="ld-cta"><a class="btn ld-big" id="startBtn" href="setup/guide/">Start setup</a><a class="btn ghost ld-big" href="#have">I already have HouseRunner</a></div>
+  <p class="ld-sub">Setup takes about 30 minutes, one step at a time.</p>
+ </section>
 
  <section>
-  <h2>Three places</h2>
-  <div class="tiles three">
-   <a class="tile" href="screen/"><div class="thead"><span class="ico">▦</span><span><b>The dashboard</b><span class="who">On the Corsair XENEON EDGE, a tablet or a computer</span></span></div>
-    <p>The screen itself: weather, traffic, trains, bins, the calendar, the children’s points and more. Touch to use.</p><span class="btn ghost">Open the dashboard</span></a>
-   <a class="tile" href="admin/"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for adults</span></span></div>
-    <p>Points and tasks, notes, lists, the calendar, and simple settings such as train stations, traffic routes and screen sleep.</p><span class="btn ghost">Open Family Admin</span></a>
-   <a class="tile" href="setup/"><div class="thead"><span class="ico">💻</span><span><b>Setup</b><span class="who">On a computer – houserunner.app/setup</span></span></div>
-    <p>First-time setup and every step-by-step guide, the screen layout (drag and drop), family &amp; calendar set-up, API keys, updates and your Google data.</p><span class="btn ghost">Open Setup</span></a>
+  <h2>What it does</h2>
+  <div class="ld-tiles ld-feat">
+   <div class="ld-tile"><span class="ld-ico">📅</span><b>One family calendar</b><p>Everyone’s plans in their own colour, from your Google calendars – on the screen and on everyone’s phone.</p></div>
+   <div class="ld-tile"><span class="ld-ico">⭐</span><b>Rewards for the children</b><p>Points for jobs and good days, daily to-dos, and their own card on the screen.</p></div>
+   <div class="ld-tile"><span class="ld-ico">🌦</span><b>Before you leave</b><p>Weather, traffic to the places you go, trains and buses – at a glance.</p></div>
+   <div class="ld-tile"><span class="ld-ico">🎒</span><b>Never forget</b><p>Bin days, sports kit, library books and the other things each day needs.</p></div>
+   <div class="ld-tile"><span class="ld-ico">📌</span><b>Notes and lists</b><p>Leave a note on the screen from your phone; shopping and to-do lists everyone can add to.</p></div>
+   <div class="ld-tile"><span class="ld-ico">🔒</span><b>Private by design</b><p>Your family’s information stays in your own Google account. We never see it.</p></div>
   </div>
  </section>
 
  <section>
-  <h2>Get started</h2>
-  <p class="sub">Choose the one that fits.</p>
-  <div class="tiles three">
-   <a class="tile first" href="setup/guide/"><span class="step">New family</span><div class="thead"><span class="ico" style="background:var(--acc);color:#fff">⚙</span><span><b>First-time setup</b><span class="who">Never used HouseRunner before</span></span></div>
-    <p>Setup takes you through everything, one step at a time: it makes your family’s own private Google Sheet, connects your screen and phones, and adds your family, calendars and the free keys. About 30 minutes.</p>
-    <span class="btn">Start setup</span></a>
-   <div class="tile"><span class="step grey">Already set up</span><div class="thead"><span class="ico">🔗</span><span><b>Connect this device, or another</b><span class="who">Add a phone, tablet or screen to your family</span></span></div>
-    <p id="connWhy"><b>This browser:</b> connect it to your family with a code from your phone.</p>
-    <button class="btn" id="codeGo">Connect this browser</button>
-    <div id="codeBox" hidden><p class="code-big" id="codeTxt"></p><p class="who">On a phone that’s already connected: <b>Family Admin → More → Devices and Phones → Connect by code</b>, type the code above – or scan this:</p><div class="qr" id="codeQr"></div><span class="who" id="codeState"></span></div>
-    <p><b>Another phone, tablet or screen:</b> on a phone that’s already connected, Family Admin → More → <b>Devices</b> shows QR codes.</p>
-    <details><summary class="who">Or paste a private link</summary><div class="paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div></details>
-    <span class="who" id="pasteMsg"></span><span class="who">Phones don’t count towards your licence; screens do – a new screen can take over from an old one.</span><a class="more" href="help/#connect">How to connect devices ›</a></div>
-   <div class="tile"><span class="step grey">Start again</span><div class="thead"><span class="ico">🔄</span><span><b>Start again</b><span class="who">Same apps, a fresh Google Sheet</span></span></div>
-    <p><b>From scratch:</b> set up a new family from nothing – your old Sheet stays in Google Drive as a backup.<br><b>Another Google account:</b> move everything – people, points, lists, settings, licence – to, say, a Gmail account just for the dashboard (the Configurator → Advanced → My data).</p>
-    <div class="two-btns"><a class="btn ghost" href="setup/guide/">From scratch</a><a class="btn ghost" href="help/#account">Move account</a></div>
-    <a class="more" href="help/#afresh">Starting again ›</a><a class="more" href="help/#account">Moving to another Google account ›</a></div>
+  <h2>How it works</h2>
+  <div class="ld-tiles ld-three ld-steps3">
+   <div class="ld-tile"><span class="ld-step">1</span><b>Your own Google Sheet</b><p>Setup makes a private Google Sheet in your Google account. It holds everything – only you can see it.</p></div>
+   <div class="ld-tile"><span class="ld-step">2</span><b>Connect your screen</b><p>The Corsair XENEON EDGE on a Windows PC, a tablet, a Raspberry Pi or any computer. It shows a code – type it in and it’s connected.</p></div>
+   <div class="ld-tile"><span class="ld-step">3</span><b>Add the phone apps</b><p><b>Family Admin</b> for the grown-ups (points, lists, settings) and <b>Family Calendar</b> for everyone. Scan a QR code and add them to your home screen.</p></div>
   </div>
  </section>
 
  <section>
-  <h2>Install the apps</h2>
-  <p class="sub">Scan a code with your phone’s camera. Then add it to your home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>; Android – Chrome → ⋮ → <b>Install app</b>. The apps connect to your family’s Sheet using the private links from Setup.</p>
-  <div class="tiles">
-   <div class="tile"><div class="thead"><img class="ico" src="calendar/icons/icon-192.png" alt=""><span><b>Family Calendar</b><span class="who">Phone app – for everyone</span></span></div>
-    <p>See the family calendar and add entries.</p><div class="qr" data-qr="calendar/"></div><a class="btn" href="calendar/">Open Family Calendar</a></div>
-   <div class="tile"><div class="thead"><img class="ico" src="admin/icons/icon-192.png" alt=""><span><b>Family Admin</b><span class="who">Phone app – for adults</span></span></div>
-    <p>Points and tasks, lists, notes, and each widget’s everyday settings (stations, routes, screen sleep).</p><div class="qr" data-qr="admin/"></div><a class="btn" href="admin/">Open Family Admin</a></div>
-   <div class="tile"><div class="thead"><span class="ico">💻</span><span><b>Setup</b><span class="who">On a computer</span></span></div>
-    <p>The screen layout (which widgets go where), family &amp; calendar set-up, home &amp; places, API keys, updates, your Google data and every step-by-step guide.</p><a class="btn" href="setup/">Open Setup</a>
-    <span class="who">houserunner.app/setup</span></div>
-   <div class="tile"><div class="thead"><span class="ico">🖥</span><span><b>Screen – Windows PC</b><span class="who">Corsair XENEON EDGE or any screen</span></span></div>
-    <p>Download, unzip and double-click the start file. It runs full-screen, starts with the PC if you like, and updates itself.</p>
-    <a class="btn" href="downloads/family-dashboard-windows.zip" download>Download for Windows</a>
-    <span class="who">Tip: Setup’s “Connect your devices” step gives you a start file that’s already connected.</span></div>
-   <div class="tile"><div class="thead"><span class="ico">🍓</span><span><b>Screen – Raspberry Pi or tablet</b><span class="who">Any browser, full-screen</span></span></div>
-    <p>Open the screen in the browser (Fully Kiosk Browser on Android / Fire tablets). It shows a QR code – scan it with your phone to connect it. A ready-made Raspberry Pi does this by itself when switched on. <a class="more" href="help/#pi">Raspberry Pi and tablets ›</a></p>
-    <div class="qr" data-qr="screen/"></div><a class="btn" href="screen/">Open the screen</a></div>
+  <h2>What you need</h2>
+  <div class="ld-need">
+   <ul>
+    <li><b>A Google account</b> – ideally the one your family calendar is in. <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Make one free</a></li>
+    <li><b>A computer</b> for setup – a Windows PC or a Mac</li>
+    <li><b>A screen</b> for the dashboard – the Corsair XENEON EDGE, a tablet, a Raspberry Pi with a screen, or any computer</li>
+    <li><b>A phone</b> for the grown-ups’ app</li>
+    <li><b>Your licence key</b> – it’s in your order email (setup fills it in for you from the email’s link)</li>
+   </ul>
   </div>
  </section>
 
- <section>
-  <h2>What’s new</h2>
-  <a class="news" id="news" href="whatsnew.html"><span class="who">Loading…</span></a>
+ <section id="have">
+  <h2>Already have HouseRunner?</h2>
+  <div class="ld-tiles">
+   <div class="ld-tile"><div class="ld-thead"><span class="ld-ico">🔗</span><span><b>Connect this computer</b><span class="ld-who">To your family’s dashboard</span></span></div>
+    <p id="connWhy">Get a code here, then type it on a phone that’s already connected: <b>Family Admin → More → Devices and Phones → Connect by code</b>.</p>
+    <button class="btn" id="codeGo">Get a code</button>
+    <div id="codeBox" hidden><p class="ld-code-big" id="codeTxt"></p><div class="ld-qr" id="codeQr"></div><span class="ld-who" id="codeState"></span></div>
+    <details><summary class="ld-who">Or paste your private link</summary><div class="ld-paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div></details>
+    <span class="ld-who" id="pasteMsg"></span>
+    <span class="ld-who">Lost everything? The email “Your Family Dashboard links” in your Google account has a link that connects this computer again.</span></div>
+   <div class="ld-tile"><div class="ld-thead"><span class="ld-ico">🔄</span><span><b>Start again, or move</b><span class="ld-who">A fresh Sheet, or another Google account</span></span></div>
+    <p><b>From scratch:</b> set up again with a new Sheet – your old one stays in Google Drive as a backup.<br><b>Another Google account:</b> move everything – people, points, lists, settings and licence – from Setup → Advanced → My data.</p>
+    <div class="ld-two-btns"><a class="btn ghost" href="help/#afresh">Starting again</a><a class="btn ghost" href="help/#account">Moving account</a></div></div>
+  </div>
  </section>
 
  <section>
   <h2>Help</h2>
-  <p class="sub">Short answers here – press <b>Read more</b> for step-by-step help. <a href="help/">All help topics ›</a></p>
-  <div class="tiles help" id="helpTiles"></div>
+  <p class="ld-sub">Short answers here – press <b>Read more</b> for step-by-step help. <a href="help/">All help topics ›</a></p>
+  <div class="ld-tiles ld-help" id="helpTiles"></div>
  </section>
 
- <p class="foot"><a href="privacy.html">Privacy notice</a> · <a href="licence.html">Licence agreement</a> · Your family’s information stays in your own Google account – these pages hold no family data. <span class="ver" id="ver"></span></p>
+ <p class="ld-foot"><a href="privacy.html">Privacy notice</a> · <a href="licence.html">Licence agreement</a> · <a href="whatsnew.html">What’s new</a> · Your family’s information stays in your own Google account – these pages hold no family data. <span class="ld-ver" id="ver"></span></p>
 </div>
-<script src="setup/config.js"></script>
-<script src="help/topics.js"></script>
-<script src="shared/pair.js"></script>
-<script src="shared/qrcode.js"></script>
+
+    </div>
+    <!-- Connected: the Configurator (computer) or Family Admin (phone) – the same app. -->
+    <div id="app"></div>
+    <script src="shared/storecheck.js?v=202611159"></script>
+    <script src="shared/fd.js?v=202611159"></script>
+    <script src="shared/pair.js?v=202611159"></script>
+    <script src="shared/qrcode.js?v=202611159"></script>
+    <script src="shared/privacy.js?v=202611159"></script>
+    <script src="shared/countries.js?v=202611159"></script>
+    <script src="setup/config.js?v=202611159"></script>
+    <script src="help/topics.js?v=202611159"></script>
+    <script src="setup/editor.js?v=202611159"></script>
+    <script src="setup/calsetup.js?v=202611159"></script>
+    <script src="admin/app.js?v=202611159"></script>
 <script>
  (function () {
    'use strict';
@@ -159,16 +204,16 @@
    document.querySelectorAll('[data-qr]').forEach(function (el) { qr(el, base + el.getAttribute('data-qr')); });
 
    // Help: one or two sentences each, and a link to the full page.
-   $('helpTiles').innerHTML = (window.FD_HELP || []).map(function (t) {
-     return '<div class="tile"><div class="thead"><span class="ico">' + t.icon + '</span><span><b>' + esc(t.title) + '</b></span></div><p>' + esc(t.summary) + '</p>' +
+   $('helpTiles').innerHTML = (window.FD_HELP || []).filter(function (t) { return ['setup', 'screens', 'licence', 'privacy'].indexOf(t.id) >= 0; }).map(function (t) {
+     return '<div class="ld-tile"><div class="ld-thead"><span class="ld-ico">' + t.icon + '</span><span><b>' + esc(t.title) + '</b></span></div><p>' + esc(t.summary) + '</p>' +
        '<a class="btn ghost" href="help/#' + t.id + '">Read more</a></div>';
    }).join('');
 
    // Version and what's new.
    fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
      $('ver').textContent = 'Version ' + v.app;
-     $('news').innerHTML = '<ul style="margin-top:0">' + (v.notes || []).slice(0, 4).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><span class="more">See every change ›</span>';
-   }).catch(function () { $('news').textContent = ''; });
+     if ($('news')) $('news').innerHTML = '<ul style="margin-top:0">' + (v.notes || []).slice(0, 4).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul><span class="ld-more">See every change ›</span>';
+   }).catch(function () { /* fine */ });
 
    // Is this device already connected? (The phone apps, setup and the screen keep their link on the device.)
    function saved() {
@@ -188,17 +233,13 @@
    var km = /[#&]key=([^&#\s]+)/.exec(location.hash);
    // (Older emails link here rather than to setup: go straight on to setup.)
    if (km) { location.replace('setup/guide/#key=' + km[1]); }
-   if (km) { var key = decodeURIComponent(km[1]); document.querySelector('.tile.first').href = 'setup/guide/#key=' + encodeURIComponent(key);
-     var kn = document.createElement('p'); kn.className = 'sub'; kn.innerHTML = '🔑 Your licence key <b>' + esc(key) + '</b> is ready – Setup will fill it in for you.'; document.querySelector('.tiles.three').before(kn); }
-   // A link straight to this page (…/#api=…&code=…) connects it too.
-   var fromLink = parse(location.hash);
-   if (fromLink) { try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(fromLink)); } catch (e) { /* ignore */ } history.replaceState(null, '', location.pathname); }
+   if (km) { $('startBtn').href = 'setup/guide/#key=' + km[1]; }
    // Connect this browser by a code sent from a phone that's already connected (same as the phone apps on a computer).
    $('codeGo').onclick = function () {
      if (!window.FDPairRecv) return;
      var w = FDPairRecv.receive(function (cfg) {
        try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify({ url: cfg.url, code: cfg.code })); } catch (e) { /* ignore */ }
-       $('codeState').textContent = '✔ Connected.'; showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
+       $('codeState').textContent = '✔ Connected.'; showMine();
      }, function (st) { $('codeState').textContent = st === 'waiting' ? 'Waiting for your phone…' : st === 'offline' ? 'No internet connection.' : 'Connecting by code isn’t available – paste a link instead.'; });
      if (!w) { $('codeState').textContent = 'This browser can’t do that – paste a link instead.'; return; }
      $('codeTxt').textContent = w.code; qr($('codeQr'), w.link); $('codeBox').hidden = false; $('codeGo').hidden = true;
@@ -208,23 +249,11 @@
      if (!c || !/^https:\/\/script\.google\.com\//.test(c.url)) { $('pasteMsg').textContent = 'That doesn’t look like a setup link – it should contain #api=… and code=…'; return; }
      try { localStorage.setItem('fdapp.cfg.v1', JSON.stringify(c)); } catch (e) { /* ignore */ }
      $('pasteIn').value = ''; $('pasteMsg').textContent = 'Connected.';
-     showMine(); window.scrollTo({ top: 0, behavior: 'smooth' });
+     showMine();
    };
-   function showMine() {
-     var c = saved(); if (!c) return;
-     $('mine').hidden = false;
-     // The family's name, from its Google Sheet (e.g. "the MacMillan family dashboard").
-     fetch(c.url + (c.url.indexOf('?') < 0 ? '?' : '&') + 'action=whose&code=' + encodeURIComponent(c.code))
-       .then(function (r) { return r.json(); }).then(function (d) {
-         var n = d && d.familyName ? String(d.familyName).trim() : '';
-         if (n) $('mineTxt').innerHTML = 'You’re connected to <b>the ' + esc(n.replace(/^the\s+/i, '').replace(/\s+family$/i, '')) + ' family</b> dashboard.';
-       }).catch(function () { /* keep the plain wording */ });
-     $('connWhy').innerHTML = '✔ <b>This browser is connected to your family</b> – see the top of the page.';
-     $('codeGo').hidden = true; $('codeBox').hidden = true;
-     $('forget').onclick = function (e) { e.preventDefault(); if (!confirm('Disconnect this browser from your family? (The apps and screen on this computer are disconnected too.)')) return;
-       ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) { /* ignore */ } }); location.reload(); };
-   }
-   showMine();
+   // Connected: show the Configurator (or Family Admin on a phone) – it's the same address.
+   function showMine() { location.reload(); }
  })();
 </script>
-</body></html>
+</body>
+</html>

@@ -7,7 +7,7 @@ window.FD_HELP = [
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
     summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
 <p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
@@ -311,7 +311,7 @@ window.FD_HELP = [
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
 <ol><li>Free your licence key first: <b>Family Admin → More → Software Licence → Free up my licence key</b>. Note the key.</li>
-<li>Run the <a href="../setup/">setup app</a> from the start, and enter the key when asked.</li>
+<li>Run the <a href="../setup/guide/">setup wizard</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup app shows how).</li></ol>`
   },
   {

@@ -28,7 +28,7 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var DESK_TITLE = '<span class="hr-title"><img src="../shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
+    var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other widgets']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
@@ -36,7 +36,7 @@
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
-    function deskUrl() { return appsRoot() + 'setup/'; }
+    function deskUrl() { return appsRoot(); }   // houserunner.app itself
     function guideUrl() { return appsRoot() + 'setup/guide/'; }
     function deskShort() { return deskUrl().replace(/^https?:\/\//, ''); }
     // Which tab each kind of widget lives under.
@@ -325,7 +325,27 @@
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
-                btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
+                btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>') + homeDevices();
+    }
+    /** Home, at the bottom: connecting a new display, and a new phone. */
+    function homeDevices() {
+        var base = appsRoot(), host = base.replace(/^https?:\/\//, '');
+        var dev = function (href, ico, name, what, dl) { return '<a class="hm-btn" href="' + esc(href) + '"' + (dl ? ' download' : '') + (/^#/.test(href) ? '' : ' target="_blank" rel="noopener"') + '><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + what + '</small></a>'; };
+        var app = function (k, icon, name, who, what) {
+            return '<div class="hm-app"><div class="hm-qr">' + qrSvg(appLink(k)) + '</div><div><img src="' + appsRoot() + k + '/icons/icon-192.png" alt="" class="hm-ico"><b>' + esc(name) + '</b> <span class="mute small">' + esc(who) + '</span>' +
+                '<p class="small">' + esc(what) + '</p></div></div>';
+        };
+        return '<h1 class="page-h hm-h">Connect</h1>' +
+            card('Connect a new display', '<p class="small">A display shows the dashboard. Start it with one of these – it shows a code like <b>K7Q2-M9XD</b> – then type the code in <a href="#" data-go="s/devices">Devices and Phones</a>.</p><div class="hm-grid">' +
+                dev(base + 'windows/', '🖥', 'Corsair XENEON EDGE', 'On a Windows PC: <b>' + esc(host) + 'windows</b> – download and start it') +
+                dev(base + 'help/#pi', '🍓', 'Raspberry Pi', 'One command on the Pi, then it starts by itself') +
+                dev(base + 'help/#pi', '📱', 'Tablet', 'Open <b>' + esc(host) + 'screen</b> in its browser, full-screen') +
+                dev(base + 'screen/', '💻', 'Any computer', 'Open <b>' + esc(host) + 'screen</b> in a browser') + '</div>' +
+                '<div class="ladd-row" style="margin-top:12px"><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a></div>') +
+            card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
+                '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
+                app('calendar', '', 'Family Calendar', 'for everyone', 'See what’s on and add events.') + '</div>' +
+                '<p class="mute small">These codes contain your private access code – only scan them with your own family’s phones.</p>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
     function renderStart() {
@@ -2487,7 +2507,7 @@
     }
 
     /* ---- devices: this phone, another person's phone, another screen */
-    function appLink(app) { var c = FD.config(); return location.href.replace(/admin\/.*$/, '') + app + '/#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code); }
+    function appLink(app) { var c = FD.config(); return appsRoot() + (app === 'admin' ? '' : app + '/') + '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code); }
     function qrSvg(text) {
         if (!window.qrcode) return '';
         try { var q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { return ''; }
@@ -2504,7 +2524,7 @@
             screensCard() +
             card('Connect a display', '<p class="mute small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
                 '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="ladd-row"><button class="btn fp-add" id="prGo">Connect</button></div><div id="prOut"></div>' +
-                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download the start file from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'downloads/windows/</b>, run it, and type the code it shows here. ' +
+                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the screen link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
             card('Add a phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +
@@ -2647,11 +2667,7 @@
     // The website on a computer that's already been used for setup (or has Family Admin) connects by itself.
     if (DESK && !FD.configured() && window.FDPairSend) { var sv = FDPairSend.saved(); if (sv) FD.setConfig(sv.url, sv.code); }
     if (FD.configured()) start();
-    else if (DESK && !/[?&]connect\b/.test(location.search)) {
-        $('app').innerHTML = '<div class="desk-welcome"><h1>HouseRunner setup</h1>' +
-            '<div class="dw-cards"><a class="dw-card first" href="guide/"><span>🚀</span><b>First-time setup</b><small>New to HouseRunner? Set up your family’s dashboard, one step at a time (about 30 minutes).</small><i class="btn">Start</i></a>' +
-            '<a class="dw-card" href="?connect"><span>🔗</span><b>Already set up?</b><small>Connect this computer to your family’s dashboard to change the screen layout, settings and more. You’ll need your phone with Family Admin.</small><i class="btn ghost">Connect this computer</i></a></div>' +
-            '<section class="card"><h2>How it works</h2>' + HOW_IT_WORKS.replace('setup created', 'setup creates') + '</section>' +
-            '<p class="mute small center"><a href="../">HouseRunner home page</a> · <a href="../help/">Help</a></p></div>';
+    else if (DESK && !/[?&]connect\b/.test(location.search) && document.getElementById('landing')) {
+        document.getElementById('landing').hidden = false; $('app').hidden = true;      // the welcome page, in the same address
     } else FD.setupScreen($('app'), DESK ? 'HouseRunner Configurator' : 'Family Admin', start);
 })();
