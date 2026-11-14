@@ -22,10 +22,10 @@
         window.FD_DESK = !phone;
     })();
     </script>
-    <link rel="stylesheet" href="shared/base.css?v=202611161">
-    <link rel="stylesheet" href="admin/admin.css?v=202611161">
-    <link rel="stylesheet" href="setup/desk.css?v=202611161">
-    <link rel="stylesheet" href="setup/editor.css?v=202611161">
+    <link rel="stylesheet" href="shared/base.css?v=202611162">
+    <link rel="stylesheet" href="admin/admin.css?v=202611162">
+    <link rel="stylesheet" href="setup/desk.css?v=202611162">
+    <link rel="stylesheet" href="setup/editor.css?v=202611162">
     <style>
 #landing { min-height: 100vh; }
 #landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
@@ -61,13 +61,15 @@
 #landing .ld-land .ld-lead { font-size: 19px; max-width: 760px; }
 .ld-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .ld-modal[hidden] { display: none; }
-.ld-pop { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px 28px; max-width: 460px; width: 100%; text-align: center; font-size: 16px; }
+.ld-pop { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 20px; padding: 26px 28px; max-width: 520px; max-height: calc(100vh - 32px); overflow-y: auto; width: 100%; text-align: center; font-size: 16px; }
 .ld-pop h2 { font-size: 22px; margin: 0 0 10px; } .ld-pop p { margin: 8px 0; }
 .ld-x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--text); font-size: 18px; cursor: pointer; }
 .ld-code { font: 800 34px/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: 3px; margin: 12px 0 !important; }
 .ld-qr { background: #fff; border-radius: 12px; padding: 8px; width: 180px; height: 180px; margin: 8px auto; } .ld-qr svg { width: 100%; height: 100%; display: block; }
 .ld-mute { color: var(--mute); font-size: 14.5px; } .ld-state { color: var(--acc); font-weight: 600; }
-.ld-pop details { margin-top: 14px; text-align: left; } .ld-pop summary { cursor: pointer; color: var(--mute); font-size: 14.5px; }
+.ld-opt { display: flex; gap: 12px; text-align: left; margin: 16px 0 6px; line-height: 1.45; }
+.ld-n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--acc); color: #fff; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.ld-opt .ld-code { text-align: left; font-size: 28px; margin: 8px 0 0 !important; }
 .ld-paste { display: flex; gap: 8px; margin-top: 8px; } .ld-paste input { flex: 1; min-width: 0; background: #0b0d11; color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font: inherit; }
 #landing .ld-cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 22px 0 8px; }
 #landing .btn.ld-big { font-size: 17px; padding: 14px 26px; border-radius: 14px; text-decoration: none; }
@@ -176,27 +178,27 @@
     <div class="ld-modal" id="codeModal" hidden><div class="ld-pop">
      <button class="ld-x" id="codeX" aria-label="Close">✕</button>
      <h2>Connect this device</h2>
-     <p>On a phone that’s already connected, open <b>houserunner.app</b> → <b>More → Devices and Phones → Connect by code</b>, and type this code:</p>
-     <p class="ld-code" id="codeTxt">…</p>
-     <p class="ld-mute">or scan this with the phone’s camera:</p>
+     <div class="ld-opt"><span class="ld-n">1</span><div><b>Easiest: scan this QR code</b> with the camera of a phone that’s already set up with HouseRunner.</div></div>
      <div class="ld-qr" id="codeQr"></div>
+     <div class="ld-opt"><span class="ld-n">2</span><div><b>Or type this code</b> on that phone, in Family Admin → <b>More → Devices and Phones → Connect by code</b>:
+      <p class="ld-code" id="codeTxt">…</p></div></div>
      <p class="ld-state" id="codeState">Waiting for your phone…</p>
-     <details><summary>No phone to hand?</summary><p class="ld-mute">Open the email “Your Family Dashboard links” in your Google account and click the HouseRunner link – or paste it here:</p>
-      <div class="ld-paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div><span class="ld-mute" id="pasteMsg"></span></details>
+     <div class="ld-opt"><span class="ld-n">3</span><div><b>No phone set up yet?</b> Paste the private link from the email <b>“Your Family Dashboard links”</b> – it was sent to your Google account when you first set up, to keep.
+      <div class="ld-paste"><input id="pasteIn" placeholder="https://…#api=…&code=…" autocomplete="off"><button class="btn" id="pasteGo">Connect</button></div><span class="ld-mute" id="pasteMsg"></span></div></div>
     </div></div>
     <!-- Connected: the Configurator (computer) or Family Admin (phone) – the same app. -->
     <div id="app"></div>
-    <script src="shared/storecheck.js?v=202611161"></script>
-    <script src="shared/fd.js?v=202611161"></script>
-    <script src="shared/pair.js?v=202611161"></script>
-    <script src="shared/qrcode.js?v=202611161"></script>
-    <script src="shared/privacy.js?v=202611161"></script>
-    <script src="shared/countries.js?v=202611161"></script>
-    <script src="setup/config.js?v=202611161"></script>
-    <script src="help/topics.js?v=202611161"></script>
-    <script src="setup/editor.js?v=202611161"></script>
-    <script src="setup/calsetup.js?v=202611161"></script>
-    <script src="admin/app.js?v=202611161"></script>
+    <script src="shared/storecheck.js?v=202611162"></script>
+    <script src="shared/fd.js?v=202611162"></script>
+    <script src="shared/pair.js?v=202611162"></script>
+    <script src="shared/qrcode.js?v=202611162"></script>
+    <script src="shared/privacy.js?v=202611162"></script>
+    <script src="shared/countries.js?v=202611162"></script>
+    <script src="setup/config.js?v=202611162"></script>
+    <script src="help/topics.js?v=202611162"></script>
+    <script src="setup/editor.js?v=202611162"></script>
+    <script src="setup/calsetup.js?v=202611162"></script>
+    <script src="admin/app.js?v=202611162"></script>
 <script>
  (function () {
    'use strict';

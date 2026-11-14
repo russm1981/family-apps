@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.162",
+    "date": "2026-11-15",
+    "notes": [
+      "The Connect this device pop-up now sets out the three ways in order: 1 – easiest – scan the QR code with a phone that’s already set up; 2 – or type the code in Family Admin → More → Devices and Phones → Connect by code; 3 – no phone set up yet? paste the private link from the “Your Family Dashboard links” email you were sent when you first set up."
+    ]
+  },
+  {
     "version": "2026.11.161",
     "date": "2026-11-15",
     "notes": [
