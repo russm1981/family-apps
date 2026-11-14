@@ -226,7 +226,7 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button><h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="../shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
             (DESK ? '<a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
@@ -2022,7 +2022,7 @@
             var x = SECTIONS[k];
             return '<button class="mrow" data-go="s/' + k + '"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + esc(x[1]) + '</b><small>' + esc(sectionLine(k)) + '</small></span><i>›</i></button>';
         }).join('') + '<a class="mrow" href="' + esc(helpUrl()) + '" target="_blank" rel="noopener"><span class="m-ico">❓</span><span class="m-tx"><b>Help</b><small>Plain-English answers, step by step</small></span><i>›</i></a></div>' +
-            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'HouseRunner Configurator' : 'Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            (DESK ? '' : deskCard()) + '<p class="mute small center">' + (DESK ? 'HouseRunner Configurator' : 'HouseRunner – a family dashboard<br>Family Admin') + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     /** Disconnect this phone or computer from the family's dashboard: it goes back to "connect to a dashboard". */
     function disconnectHere(e) {
@@ -2042,7 +2042,7 @@
             row('s/support', '🩺', 'About & diagnostics', SECTIONS.support[2]) + '</div>' +
             '<h3 class="sec">Settings</h3><div class="menu">' + ['screen', 'licence', 'devices', 'updates'].map(function (k) { return row('s/' + k, SECTIONS[k][0], SECTIONS[k][1], sectionLine(k)); }).join('') + '</div>' +
             '<h3 class="sec">This phone</h3><div class="menu"><button class="mrow" data-out><span class="m-ico">⏏</span><span class="m-tx"><b>Disconnect this phone</b><small>Connected to ' + familyDash().replace(/<[^>]+>/g, '') + '</small></span><i>›</i></button></div>' +
-            '<h3 class="sec">Advanced</h3>' + deskCard() + '<p class="mute small center">Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
+            '<h3 class="sec">Advanced</h3>' + deskCard() + '<p class="mute small center">HouseRunner – a family dashboard<br>Family Admin · ' + esc(FD.VERSION) + ' · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }
     function renderSection(k) {
         title(SECTIONS[k][1]);

@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.153",
+    "date": "2026-11-14",
+    "notes": [
+      "Family Admin and Family Calendar now carry the HouseRunner brand, quietly: a small house-and-lines logo by the title at the top, and “HouseRunner – a family dashboard” in the small print (More in Family Admin, the ⚙ sheet in Family Calendar, and the screen where you first connect the app).",
+      "Nothing has changed on the dashboard screen."
+    ]
+  },
+  {
     "version": "2026.11.152",
     "date": "2026-11-14",
     "notes": [

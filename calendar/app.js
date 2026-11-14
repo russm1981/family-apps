@@ -60,7 +60,7 @@
     function frame() {
         $('app').innerHTML =
             '<header class="top">' +
-              '<div class="top-row"><button class="icon-btn" id="prev">‹</button><h1 id="title"></h1><span class="sync" id="sync"></span>' +
+              '<div class="top-row"><img class="hr-top" src="../shared/brand/symbol.svg" alt=""><button class="icon-btn" id="prev">‹</button><h1 id="title"></h1><span class="sync" id="sync"></span>' +
               '<button class="icon-btn" id="next">›</button></div>' +
               '<div class="top-row row2"><div class="seg" id="views"><button data-v="month">Month</button><button data-v="week">Week</button><button data-v="list">List</button><button data-v="year" id="vYear">Year</button></div>' +
               '<button class="btn ghost sm" id="today">Today</button><button class="icon-btn" id="who" aria-label="Which family">⚙</button></div>' +
@@ -75,7 +75,7 @@
         // Which family this app shows, and a way to disconnect it (e.g. it was connected to someone else's dashboard).
         $('who').onclick = function () {
             $('sheet').innerHTML = '<div class="grab"></div><h2>This app</h2><p id="whoTx">Connected to your family’s dashboard.</p>' +
-                '<p class="small" style="opacity:.7">Version ' + esc(FD.VERSION) + '</p>' +
+                '<p class="small" style="opacity:.7">HouseRunner – a family dashboard<br>Family Calendar · version ' + esc(FD.VERSION) + '</p>' +
                 '<button class="btn ghost wide" id="whoOut">Disconnect this app</button><p class="small" style="opacity:.7">Then connect it to the right family: a code from a phone that has Family Admin, or a setup link.</p>';
             $('sheetBg').classList.add('on');
             FD.get('whose').then(function (d) { var ppl = (d.people || []).slice(0, 8).join(', '); $('whoTx').innerHTML = 'Connected to ' + (d.familyName ? 'the <b>' + esc(d.familyName) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl ? ' (' + esc(ppl) + ')' : '') + '.'; }, function () { /* fine */ });
