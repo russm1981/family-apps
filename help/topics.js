@@ -283,7 +283,7 @@ window.FD_HELP = [
 <ul>
 <li><b>Tasks</b> earn points. Each child sees their next three on the screen; tap one when it’s done. Tasks can be once-only, daily or always available.</li>
 <li><b>Morning to-dos</b> are ticked off each morning (teeth, bag, shoes…).</li>
-<li><b>Reminders</b> show on the day, and from 5 pm the evening before (PE kit, library book…).</li>
+<li><b>Reminders</b> show on the day, and from 5 pm the evening before (sports kit, library book…).</li>
 <li><b>Cashing in</b>: when a child reaches the target (e.g. 500 points = £5) the Cash in button appears.</li>
 </ul>
 <p>Set it up in <b>Family Admin → Points</b> → “Set up points”. Choose which children have points in <b>Settings → Family &amp; children</b> (the ⭐ button). Each of them gets a <b>points widget</b> – a full-height card you can put on any screen, or two on one, in <b>Setup → Screen layout</b>.</p>

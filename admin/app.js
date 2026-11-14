@@ -323,7 +323,7 @@
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
-                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'PE kit, library books – the things to remember each day') +
+                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
                 btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
@@ -432,7 +432,7 @@
         if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
         var cur = solo ? 'timetable' : sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
             ['-', 'Setup'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
-            ['timetable', '🎒', 'Reminders', 'e.g. PE kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
+            ['timetable', '🎒', 'Reminders', 'e.g. sports kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
             ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title(solo ? 'Reminders' : 'Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
@@ -443,7 +443,7 @@
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
                 '<ul class="small"><li><b>Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
                 '<li><b>Daily to-dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
-                '<li><b>Reminders</b> – things to remember on a day, e.g. “PE kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set on the Reminders page). The <b>Reminders</b> widget shows every child’s together.</li>' +
+                '<li><b>Reminders</b> – things to remember on a day, e.g. “Sports kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set on the Reminders page). The <b>Reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
                 '<li><b>Manual adjustments</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
@@ -751,7 +751,7 @@
             (pp && pointsOn() ? '<h3 class="sec">Set up rewards – tasks, to-dos and reminders</h3><div class="tiles fam-tiles">' +
                 tile('points/tasks', '✅', 'Set up tasks', nTasks + ' task' + (nTasks === 1 ? '' : 's') + ' – what earns points') +
                 tile('points/todos', '☀️', 'Set up daily to-dos', nTodos + ' – daily or weekly checklists') +
-                tile('points/timetable', '🎒', 'Set up reminders', nRem + ' – PE kit, library books…') +
+                tile('points/timetable', '🎒', 'Set up reminders', nRem + ' – sports kit, library books…') +
                 '<button class="tile" id="ptsRules"><span class="t-ico">⚖️</span><b>Set up reward rules</b><small>' + (S ? S.cashIn.points + ' points = £' + S.cashIn.value + ' · penalties ' + esc(S.penalties.join(', ')) : 'Cash-in and penalties') + '</small></button></div>' +
                 '<h3 class="sec">Each child as they’ll show on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>' : '') +
             (DESK ? '' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, who has points, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');

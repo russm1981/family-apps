@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.76';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.77';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://russm1981.github.io/family-apps/';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating is just the loader
 // fetching the newer program – no Apps Script API, no saved versions. Otherwise this is the whole program pasted in.
@@ -325,7 +325,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
-  kidrem: { name: 'Reminders (rewards)', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – PE kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
+  kidrem: { name: 'Reminders (rewards)', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
@@ -429,7 +429,7 @@ function setup() {
   }
   const tt = sheet_('timetable');
   if (tt.getLastRow() === 1) {
-    tt.getRange(2, 1, 2, 3).setValues([['All', 'Mon', 'PE kit'], ['All', 'Fri', 'Library book']]);
+    tt.getRange(2, 1, 2, 3).setValues([['All', 'Mon', 'Sports kit'], ['All', 'Fri', 'Library book']]);
   }
   const cats = sheet_('categories');
   if (cats.getLastRow() === 1) cats.getRange(2, 1, DEFAULT_CATEGORIES.length, DEFAULT_CATEGORIES[0].length).setValues(DEFAULT_CATEGORIES);
