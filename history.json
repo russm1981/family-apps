@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.151",
+    "date": "2026-11-14",
+    "notes": [
+      "Fixed: on the Configurator, the new HouseRunner logo and name in the title bar were stacked on top of each other and cut off (only “House” showed). They are back on one line: logo, HouseRunner Configurator."
+    ]
+  },
+  {
     "version": "2026.11.150",
     "date": "2026-11-14",
     "notes": [

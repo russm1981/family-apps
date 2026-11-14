@@ -85,3 +85,5 @@ label { display: block; font-size: 13px; color: var(--mute); margin: 12px 0 5px;
 .hr-brand.sm .hr-tag { font-size: 10.5px; letter-spacing: .14em; margin-top: 1px; }
 .hr-mini { width: 28px; height: 28px; vertical-align: -6px; margin-right: 10px; }
 .hr-acc { color: var(--acc); }
+/* one box for logo + name, so a title bar that stacks its children (the Configurator's) keeps them on one line */
+.hr-title { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

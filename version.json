@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.150",
+  "app": "2026.11.151",
   "script": "2026.11.79",
   "date": "2026-11-14",
   "notes": [
-    "Setup wizard: making your Google Sheet and switching it on are now one continuous set of steps, all done in the new tab. You no longer come back to the wizard in between – “Carry on with setup” in your Sheet picks up straight after, already connected.",
-    "Your new Sheet renames itself from “Copy of Family Dashboard” to “Family Dashboard” the first time it’s set up."
+    "Fixed: on the Configurator, the new HouseRunner logo and name in the title bar were stacked on top of each other and cut off (only “House” showed). They are back on one line: logo, HouseRunner Configurator."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.20",

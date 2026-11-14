@@ -28,7 +28,7 @@
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
     var DESK = !!window.FD_DESK;
-    var DESK_TITLE = '<img src="../shared/brand/mark.svg" alt="" class="hr-mini">House<span class="hr-acc">Runner</span> Configurator';   // the website's title bar
+    var DESK_TITLE = '<span class="hr-title"><img src="../shared/brand/mark.svg" alt="" class="hr-mini">House<span class="hr-acc">Runner</span> Configurator</span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other widgets']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
