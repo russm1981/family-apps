@@ -1,12 +1,10 @@
 {
-  "app": "2026.11.130",
+  "app": "2026.11.131",
   "script": "2026.11.69",
   "date": "2026-11-14",
   "notes": [
-    "Screens: deleting a screen deletes the widgets on it too (it says how many and asks first) – no need to remove them one by one",
-    "Screens: in the list on the left, a bigger ✕ to delete, with a gap after ▲ ▼; and a red “Delete this screen” button at the top of each screen",
-    "Family Calendar on a computer (and the Configurator’s Calendar tab): a Year view – a wall planner with a row for each month; click a day to open that month",
-    "Children’s points cards: no scroll bars – they scroll by touch, with a small ⌄⌄ / ⌃⌃ tab when there’s more below or above"
+    "Configurator Home: How it works is at the top; the Google script version and licence line is gone; a “Setup” heading before the two parts; the boxes are just “Setup” and “Apps”",
+    "“Setup” as one word wherever it’s a title (the menu bar, Home, the Rewards menu, Help)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.18",

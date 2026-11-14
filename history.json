@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.131",
+    "date": "2026-11-14",
+    "notes": [
+      "Configurator Home: How it works is at the top; the Google script version and licence line is gone; a “Setup” heading before the two parts; the boxes are just “Setup” and “Apps”",
+      "“Setup” as one word wherever it’s a title (the menu bar, Home, the Rewards menu, Help)"
+    ]
+  },
+  {
     "version": "2026.11.130",
     "date": "2026-11-14",
     "notes": [

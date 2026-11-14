@@ -7,7 +7,7 @@ window.FD_HELP = [
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
     summary: 'Setting things up is on the Family Dashboard Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>The Family Dashboard Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Set up</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>The Family Dashboard Configurator (computer)</b> – <b>russm1981.github.io/family-apps/setup</b> – is in two parts. <b>Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>Apps</b>: the calendar, notes, lists and the other widgets’ everyday settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
 <p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },

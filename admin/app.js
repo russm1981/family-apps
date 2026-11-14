@@ -230,7 +230,7 @@
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">Set up</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">Apps</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">Setup</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">Apps</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -304,25 +304,24 @@
         return (fn ? 'the <b>' + esc(fn) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
     }
     function statusCard() {
-        return card('✔ Your dashboard is set up', '<p>This computer is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this computer</a></p>' +
-            '<p class="mute small">Application held within Google (Google script) ' + esc(DATA.scriptVersion || '?') + (DATA.licence ? ' · ' + esc(DATA.licence.message || '') : '') + '</p>');
+        return card('✔ Your dashboard is set up', '<p>This computer is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this computer</a></p>');
     }
     /** Home: the two ways in for someone new, how it works, then the configurator's two parts. */
     function renderHome() {
         title('Home');
         var btn = function (go, ico, name, what) { return '<a class="hm-btn" data-go="' + go + '" href="#"><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + esc(what) + '</small></a>'; };
-        $('body').innerHTML = statusCard() +
+        $('body').innerHTML = '<h1 class="page-h">Home</h1>' + card('How it works', HOW_IT_WORKS) + statusCard() +
             '<div class="card hm-new"><b>🚀 New to Family Dashboard?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
             '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>' +
-            card('How it works', HOW_IT_WORKS) +
-            '<p class="mute help">The configurator website is in two parts – <b>Set up</b> and <b>Apps</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
-            card('1 · Set up', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
+            '<h1 class="page-h hm-h">Setup</h1>' +
+            '<p class="mute help">The configurator website is in two parts – <b>Setup</b> and <b>Apps</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
+            card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again') +
                 btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages') +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
-            card('2 · Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
+            card('Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('reminders', '🎒', 'Reminders', 'PE kit, library books – the things to remember each day') +
                 btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>');
     }
@@ -431,7 +430,7 @@
         var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
         if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
         var cur = solo ? 'timetable' : sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
-            ['-', 'Set up'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
+            ['-', 'Setup'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
             ['timetable', '🎒', 'Reminders', 'e.g. PE kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
             ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title(solo ? 'Reminders' : 'Rewards');
