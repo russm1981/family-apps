@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.152",
+    "date": "2026-11-14",
+    "notes": [
+      "The title bar at the top of the Configurator and the setup wizard now just says HouseRunner, with the logo – the word “Configurator” has gone from it.",
+      "The HouseRunner logo’s three coloured lines are longer and thicker, so they show up properly at small sizes.",
+      "Family Admin and Family Calendar have new app icons: the HouseRunner house and lines, with a blue cog for Admin and an amber calendar for Calendar. A phone that already has the apps on its home screen may keep the old icon until the app is removed and added again."
+    ]
+  },
+  {
     "version": "2026.11.151",
     "date": "2026-11-14",
     "notes": [
