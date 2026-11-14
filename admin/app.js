@@ -46,11 +46,11 @@
         family: ['👪', 'Family', 'Who’s in the family, their colours, who takes part in rewards, calendar groups'],
         places: ['📍', 'Locations & home', 'Your home address, and the places your widgets use'],
         keys: ['🔑', 'External data (API) keys', 'One place for every key: maps, trains, buses, NASA, Spotify'],
-        system: ['🖥️', 'System', 'Screen & sleep, licence and updates'],
+        system: ['🖥️', 'System', 'Screen Sleep, licence and updates'],
         mydata: ['🗂️', 'My data (Google)', 'Reconfigure, start again, move to another Google account, access code'],
         devices: ['📱', 'Devices and Phones', 'This phone, another person’s phone, another screen'],
         support: ['🩺', 'About & diagnostics', 'Every version number, what’s new, and a report for support'],
-        screen: ['🌙', 'Screen & sleep', 'When the screen goes to sleep, and night hours', true],
+        screen: ['🌙', 'Screen Sleep', 'When the screen goes to sleep, and night hours', true],
         licence: ['🎫', 'Software Licence', 'Your licence key and screens', true],
         updates: ['⟳', 'Software updates', 'The application held within Google (Google script) – its version and automatic updates', true],
     };
@@ -524,7 +524,7 @@
     function renderAdvanced(sub) {
         var line = function (k) { try { return sectionLine(k); } catch (e) { return ''; } };
         var items = [['info', 'ℹ️', 'About these settings'],
-            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data keys', line('keys')], ['screen', '🌙', 'Screen & sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
+            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data keys', line('keys')], ['screen', '🌙', 'Screen Sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
             ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)'],
             ['-', 'My devices'], ['devices', '📱', 'Devices and Phones'],
             ['-', 'System'], ['support', '🩺', 'About & diagnostics']];
@@ -536,7 +536,7 @@
             '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
             '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
             '<li><b>External data (API) keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +
-            '<li><b>Screen &amp; sleep</b> – when the screen dims and sleeps at night.</li><li><b>Licence</b> – your licence key.</li><li><b>Software updates</b> – the version of the application held within Google (Google script), and automatic updates.</li>' +
+            '<li><b>Screen Sleep</b> – when the screen dims and sleeps at night.</li><li><b>Licence</b> – your licence key.</li><li><b>Software updates</b> – the version of the application held within Google (Google script), and automatic updates.</li>' +
             '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
             '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
             '<li><b>About &amp; diagnostics</b> – every version number, what’s new, and a report to send if something goes wrong.</li></ul>') +
@@ -2099,24 +2099,49 @@
         wireSaveInstall('hSave', document.querySelector('.sx-home'));
     }
     function secSystem() {
-        $('body').innerHTML = card('Screen & sleep', installFields('screen') + saveInstallBtn('scSave', 'Save') +
+        $('body').innerHTML = card('Screen Sleep', installFields('screen') + saveInstallBtn('scSave', 'Save') +
                 '<p class="mute small">On the Windows PC the start file offers to keep the screen switched on, so the dashboard’s own sleep screen is in charge and a touch always wakes it.</p>') +
             ['licence', 'updates'].map(function (k) { return '<a class="link-card" data-go="s/' + k + '" href="#"><b>' + SECTIONS[k][0] + ' ' + esc(SECTIONS[k][1]) + ' ›</b><span class="mute small">' + esc(sectionLine(k)) + '</span></a>'; }).join('') +
             '<a class="link-card" data-go="layout" href="#"><b>▦ Screen layout ›</b><span class="mute small">Pages, widgets and what goes where.</span></a>';
         wireSaveInstall('scSave');
     }
     function secScreen() {
-        $('body').innerHTML = card('Sleep', installFields('screen') + saveInstallBtn('scSave', 'Save')) +
-            '<p class="mute small help">On the Windows PC, set Settings → System → Power → “Turn off my screen” to Never, so the dashboard’s own sleep screen is in charge and a touch always wakes it.</p>' +
-            '<a class="link-card" data-go="layout" href="#"><b>Screen layout ›</b><span class="mute small">Pages, widgets and what goes where.</span></a>';
+        title('Screen Sleep');
+        var val = function (k) { var f = (DATA.install || []).filter(function (x) { return x.k === k; })[0]; return f ? String(f.value == null ? '' : f.value) : ''; };
+        var mins = val('SleepMinutes') || '30', style = /black/i.test(val('SleepStyle')) ? 'Black' : 'Clock', night = val('NightHours');
+        var nm = /^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/.exec(night.trim()), pad = function (t) { return t.length === 4 ? '0' + t : t; };
+        var from = nm ? pad(nm[1]) : '23:30', to = nm ? pad(nm[2]) : '06:30';
+        var opt = function (v, t, d) { return '<button type="button" class="ss-opt' + (style === v ? ' on' : '') + '" data-ss="' + v + '"><b>' + t + '</b><small>' + d + '</small></button>'; };
+        $('body').innerHTML =
+            explain('How screen sleep works', '<p>When nobody has touched the screen for a while it goes dark, and at night it sleeps. A touch always wakes it.</p>') +
+            card('Go to sleep after', '<p class="mute small">With nobody touching the screen, it goes dark after this many minutes. 0 = never.</p>' +
+                '<div class="ss-row"><input type="number" min="0" max="600" id="ssMin" value="' + esc(mins) + '"><span>minutes</span></div>') +
+            card('What the sleeping screen shows', '<div class="ss-opts">' + opt('Clock', '🕒 A small clock', 'Black, with a small, dim clock') + opt('Black', '⬛ Nothing', 'Completely black') + '</div>') +
+            card('Night hours', '<p class="mute small">Between these times the screen sleeps – if someone touches it, it goes back to sleep after 2 minutes.</p>' +
+                '<label class="tog"><input type="checkbox" id="ssNight"' + (nm ? ' checked' : '') + '><span>Sleep at night</span></label>' +
+                '<div class="ss-row" id="ssTimes"' + (nm ? '' : ' style="opacity:.45;pointer-events:none"') + '><span>from</span><input type="time" id="ssFrom" value="' + esc(from) + '"><span>to</span><input type="time" id="ssTo" value="' + esc(to) + '"></div>') +
+            card('On the Windows PC', '<p class="mute small">Set Windows <b>Settings → System → Power → “Turn off my screen”</b> to <b>Never</b>, so the dashboard’s own sleep screen is in charge and a touch always wakes it. (The start file offers to do this for you.)</p>') +
+            '<div class="sheet-actions"><button class="btn good" id="scSave">Save screen sleep</button><button class="btn ghost" id="scUndo">Undo changes</button></div>' +
+            '<input type="hidden" data-set="SleepMinutes" id="ssV1"><input type="hidden" data-set="SleepStyle" id="ssV2" value="' + style + '"><input type="hidden" data-set="NightHours" id="ssV3">';
+        var sync = function () {
+            $('ssV1').value = String(Math.max(0, parseInt($('ssMin').value, 10) || 0));
+            $('ssV3').value = $('ssNight').checked && $('ssFrom').value && $('ssTo').value ? $('ssFrom').value + '-' + $('ssTo').value : '';
+        };
+        document.querySelectorAll('[data-ss]').forEach(function (b) { b.onclick = function () {
+            document.querySelectorAll('[data-ss]').forEach(function (x) { x.classList.toggle('on', x === b); }); $('ssV2').value = b.getAttribute('data-ss'); }; });
+        $('ssNight').onchange = function () { var t = $('ssTimes'); t.style.opacity = this.checked ? '' : '.45'; t.style.pointerEvents = this.checked ? '' : 'none'; };
+        $('body').addEventListener('input', sync); $('body').addEventListener('change', sync); sync();
+        $('scUndo').onclick = function () { render(); };
         wireSaveInstall('scSave');
     }
     function secMyData() {
         var fresh = guideUrl();
-        $('body').innerHTML = '<p class="mute small help">Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>' +
-            card('Reconfigure your existing setup', '<p class="mute small">Opens the step-by-step setup with everything you already have filled in – change what you like, keep the rest.</p><div class="setup-links">' +
-                [['welcome', 'Go through the whole setup again', 'every step, already filled in'], ['family', 'Repeat just the family step', 'who’s in the family'], ['check', 'Test all the widgets', 'asks your Sheet to fetch every widget and reports anything that needs attention'], ['keys', 'Step-by-step guide to the external data sources', 'getting the free keys for traffic, trains, buses…']].map(function (x) {
-                    return '<a class="setup-link" href="' + setupLink(x[0]) + '" target="_blank" rel="noopener"><b>' + x[1] + '</b><span>' + x[2] + '</span><i>›</i></a>';
+        $('body').innerHTML = explain('How your data is kept', '<p>Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>') +
+            card('Reconfigure your existing setup', '<p class="mute small">Opens the Setup wizard with everything you already have filled in – change what you like, keep the rest.</p><div class="menu">' +
+                [['🚀', 'welcome', 'Go through the whole setup again', 'Every step, already filled in'], ['👪', 'family', 'Your family', 'Who’s in the family, their colours and who takes part in rewards'],
+                 ['📅', 'calendar', 'Your calendar', 'The calendar’s categories, groups and colours'], ['✅', 'check', 'Test all the widgets', 'Asks your Sheet to fetch every widget, and reports anything that needs attention'],
+                 ['🔑', 'keys', 'External data keys', 'Getting the free keys for traffic, trains, buses…']].map(function (x) {
+                    return '<a class="mrow" href="' + setupLink(x[1]) + '" target="_blank" rel="noopener"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + x[2] + '</b><small>' + x[3] + '</small></span><i>›</i></a>';
                 }).join('') + '</div>') +
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
@@ -2356,7 +2381,7 @@
     function screensCard() {
         var list = DATA.screens || [], allowed = DATA.screensAllowed;
         var ago = function (t) { var m = Math.round((Date.now() - Date.parse(t)) / 60000); return m < 2 ? 'just now' : m < 120 ? m + ' min ago' : m < 2880 ? Math.round(m / 60) + ' hours ago' : Math.round(m / 1440) + ' days ago'; };
-        return card('Screens', '<p class="mute small">' + (allowed ? 'Your licence allows <b>' + allowed + ' screen' + (allowed > 1 ? 's' : '') + '</b> (Corsair, tablet or computer). Phones don’t count. ' +
+        return card('Your screens', '<p class="mute small">' + (allowed ? 'Your licence allows <b>' + allowed + ' screen' + (allowed > 1 ? 's' : '') + '</b> (Corsair, tablet or computer). Phones don’t count. ' +
                 'A screen not used for 30 days frees its place by itself; a new screen over the limit offers to take over from another.' : 'Every screen that shows the dashboard.') + '</p>' +
             (list.length ? '<div class="rows" id="scrRows">' + list.map(function (x) {
                 return '<div class="r"><span class="r-l"><b>' + esc(x.name) + '</b><small>' + esc(x.fmt === 'standard' ? 'Tablet / computer layout' : 'Wide layout') + ' · last used ' + ago(x.last) + '</small></span>' +
@@ -2415,26 +2440,28 @@
         if (!window.qrcode) return '';
         try { var q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { return ''; }
     }
-    var devPick = 'calendar';
+    var devPick = 'admin';
     function secDevices() {
-        var c = FD.config(), base = location.href.replace(/admin\/.*$/, '');
-        var APPS = { calendar: ['📅 Family Calendar', 'for everyone – the calendar and adding events'], admin: ['⚙ Family Admin', 'for adults – this app: points, notes, lists, settings'] };
+        var c = FD.config(), base = appsRoot();
+        var APPS = { admin: ['⚙ Family Admin (adults)', 'The grown-ups’ app: give and take away points, tick off tasks, add notes and list items, change everyday settings, and look after the screen and licence.'],
+            calendar: ['📅 Family Calendar (everyone)', 'The family’s shared calendar: see what’s on and add events, in the same colours as the screen. It can’t change points or settings.'] };
+        if (!APPS[devPick]) devPick = 'admin';
         $('body').innerHTML =
-            card('Add another person’s phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +
-                '<p class="mute small">' + esc(APPS[devPick][1]) + '</p>' +
-                '<div class="qr-box">' + qrSvg(appLink(devPick)) + '</div>' +
-                '<ol class="small"><li>On their phone, point the camera at this code and open the link.</li>' +
-                '<li><b>iPhone:</b> in Safari tap Share → <b>Add to Home Screen</b>. <b>Android:</b> in Chrome tap ⋮ → <b>Install app</b>.</li>' +
-                '<li>Open it from the new icon – it’s already connected.</li></ol>' +
-                (navigator.share ? '<button class="btn ghost wide" id="devShare">Send the link instead</button>' : '<button class="btn ghost wide" id="devCopy">Copy the link</button>') +
-                '<p class="mute small">The link contains your access code – only share it with family.</p>') +
-            card('Connect by code', '<p class="small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. Scan the QR code with this phone, or type the code here:</p>' +
-                '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><button class="btn wide" id="prGo">Connect the screen</button><div id="prOut"></div>' +
-                '<p class="small"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download the start file from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'downloads/windows/</b>, run it, and type the code it shows here. ' +
+            explain('How devices and phones work', '<p>There are two kinds of device. <b>Displays</b> show the dashboard – the Corsair XENEON EDGE, a tablet or a computer – and your licence says how many you can have. ' +
+                '<b>Phones</b> run the two apps, Family Admin and Family Calendar – connect as many as you like.</p><p>Every link and QR code here contains your access code, so only use them for your own family’s devices.</p>') +
+            screensCard() +
+            card('Connect a display', '<p class="mute small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
+                '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="ladd-row"><button class="btn fp-add" id="prGo">Connect</button></div><div id="prOut"></div>' +
+                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download the start file from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'downloads/windows/</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the screen link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
-            screensCard() +
-            card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to ' + familyDash() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p><button class="btn ghost wide" id="sOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button>');
+            card('Add a phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +
+                '<p class="small" style="margin-top:14px">' + esc(APPS[devPick][1]) + '</p>' +
+                '<ol class="small"><li><b>Scan this code</b> with the phone’s camera and open the link – it opens the app already connected to your family.<div class="qr-box">' + qrSvg(appLink(devPick)) + '</div></li>' +
+                '<li><b>Install it and add it to the home screen:</b><br><b>iPhone</b> – in Safari tap Share (the square with an arrow) → <b>Add to Home Screen</b> → Add.<br><b>Android</b> – in Chrome tap ⋮ → <b>Install app</b> (or Add to Home screen).</li>' +
+                '<li>From now on, open it from the new icon.</li></ol>' +
+                '<div class="ladd-row">' + (navigator.share ? '<button class="btn ghost fp-add" id="devShare">Send the link instead</button>' : '<button class="btn ghost fp-add" id="devCopy">Copy the link instead</button>') + '</div>') +
+            card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to ' + familyDash() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p><div class="ladd-row"><button class="btn ghost fp-add" id="sOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button></div>');
         $('devApp').onclick = function (e) { var b = e.target.closest('[data-app]'); if (b) { devPick = b.getAttribute('data-app'); secDevices(); } };
         if ($('devShare')) $('devShare').onclick = function () { navigator.share({ title: APPS[devPick][0].slice(2), text: 'Open this on your phone, then add it to your Home Screen:', url: appLink(devPick) }).catch(function () {}); };
         if ($('devCopy')) $('devCopy').onclick = function () { try { navigator.clipboard.writeText(appLink(devPick)).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };

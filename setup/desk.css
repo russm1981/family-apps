@@ -204,3 +204,11 @@ body.desk .lhead { padding: 0 44px 6px 0; font-size: 13px; }
 body.desk .ladd-row { display: flex; gap: 10px; margin: 8px 0 0; }
 body.desk .ladd-row .btn { flex: none; margin: 0; }
 body.desk .rem-from { margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line, #2a2f38); }
+
+/* Screen Sleep: a number with its unit, the two sleep-screen choices, from/to times */
+.ss-row { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.ss-row input { width: 140px; margin: 0; }
+.ss-opts { display: flex; gap: 12px; flex-wrap: wrap; }
+.ss-opt { flex: 1; min-width: 200px; text-align: left; background: var(--panel-2, #1c2028); border: 2px solid var(--line, #2a2f38); border-radius: 14px; padding: 14px 16px; color: var(--text, #f2f4f7); cursor: pointer; font: inherit; }
+.ss-opt b { display: block; font-size: 16.5px; } .ss-opt small { color: var(--mute, #8b95a5); font-size: 14px; }
+.ss-opt.on { border-color: var(--acc, #3fa9f5); background: rgba(63,169,245,.12); }

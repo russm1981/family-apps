@@ -213,7 +213,7 @@ window.FD_HELP = [
     body: `
 <p>This is the <b>sleep screen</b>. One touch anywhere wakes the dashboard – that touch doesn’t press anything underneath. A kitchen timer going off wakes it too.</p>
 <h2>Changing it</h2>
-<p><b>Family Admin → More → Screen &amp; sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
+<p><b>Family Admin → More → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
 <h2>The screen goes completely black and a touch doesn’t wake it</h2>
 <p>That’s Windows switching the display off, not the dashboard. The start file offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
   },

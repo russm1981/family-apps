@@ -1,12 +1,12 @@
 {
-  "app": "2026.11.136",
+  "app": "2026.11.137",
   "script": "2026.11.72",
   "date": "2026-11-14",
   "notes": [
-    "Buttons are consistent everywhere: every Save is green, and “+ Add …” buttons (add a person, task, to-do, reminder, group, bin…) and Start buttons are blue – in the Configurator, the phone apps, the setup wizard and the licence portal",
-    "Widget settings (Screens → click a widget): in the Family page style – a big title, “On the screen” and the widget’s own settings each in a box with a big heading, and more space",
-    "Lists you add rows to – daily to-dos, reminders, tasks, reward rules – now all look like the Family page: a box with a big heading, plain rows, “+ Add a …” underneath, then Save (green) and Undo changes side by side",
-    "Reminders is back inside Rewards; Reminders under Apps (and on Home) takes you to Rewards → Reminders"
+    "“Screen & sleep” is now “Screen Sleep”, laid out like the Family page: how it works, Go to sleep after (minutes), What the sleeping screen shows (a small clock or nothing), Night hours (on/off, from and to), the Windows note, then Save and Undo",
+    "My data: “How your data is kept” at the top, and Reconfigure your existing setup is a menu like “Do one step from the Setup wizard again” (now with Your family and Your calendar)",
+    "Devices and Phones: tidied into the Family page style – how it works, Your screens, Connect a display, Add a phone (choose the app, scan, then install on iPhone or Android), This computer. Also fixes the screen and start-file addresses shown on the computer",
+    "Family Calendar Year view: taller days that show the entries’ names, so you can read them"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.19",

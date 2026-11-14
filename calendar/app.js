@@ -182,7 +182,8 @@
             for (var d = 1; d <= 31; d++) {
                 if (d > dim) { html += '<span class="ycell none"></span>'; continue; }
                 var dt = new Date(y, m, d), ds = ymd(dt), p = parts(c, ds), wd = (dt.getDay() + 6) % 7;
-                var dots = p.evs.slice(0, 4).map(function (e) { return '<i style="background:' + esc(e.c) + '"></i>'; }).join('');
+                var dots = p.evs.slice(0, 4).map(function (e) { return '<i style="background:' + esc(e.c) + ';color:' + ink(e.c) + '">' + esc(e.t) + '</i>'; }).join('') +
+                    (p.evs.length > 4 ? '<em>+' + (p.evs.length - 4) + '</em>' : '');
                 var tip = FD.DAY[dt.getDay()] + ' ' + d + ' ' + FD.MON[m] + (p.bh ? ' – ' + p.bh : '') + (p.bar ? ' – ' + p.bar.k : '') + p.evs.map(function (e) { return '\n• ' + e.t; }).join('');
                 html += '<button class="ycell' + (wd > 4 || p.bh ? ' we' : '') + (ds === today ? ' today' : '') + '" data-day="' + ds + '" title="' + esc(tip) + '">' +
                     '<span class="yd">' + ['M', 'T', 'W', 'T', 'F', 'S', 'S'][wd] + '</span><span class="yev">' + dots + '</span>' +
