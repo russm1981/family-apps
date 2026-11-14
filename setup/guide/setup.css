@@ -6,7 +6,9 @@ a { color: var(--acc); }
 .side { width: 270px; flex: none; background: var(--panel); border-right: 1px solid var(--line); padding: 22px 16px; position: sticky; top: 0; height: 100vh; overflow: auto; }
 .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; }
 .brand .logo { width: 44px; height: 44px; display: block; flex: none; }
-.hr-mini { width: 28px; height: 28px; vertical-align: -6px; margin-right: 10px; }
+.hr-mini { width: 34px; height: 34px; flex: none; display: block; }
+.hr-title { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.hr-title > span { white-space: nowrap; line-height: 1.15; }
 .hr-acc { color: var(--acc); }
 .brand b { display: block; font-size: 17px; } .brand small { color: var(--mute); }
 .steps { list-style: none; margin: 0; padding: 0; }

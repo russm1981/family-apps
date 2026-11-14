@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.154",
+    "date": "2026-11-14",
+    "notes": [
+      "The HouseRunner logo in the Configurator and setup wizard title bars is slightly bigger, sits closer to the name, and is centred on it."
+    ]
+  },
+  {
     "version": "2026.11.153",
     "date": "2026-11-14",
     "notes": [
