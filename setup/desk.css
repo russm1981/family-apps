@@ -176,3 +176,8 @@ body.desk .lrow .dpick { flex-wrap: nowrap; }
 body.desk .lrow { padding-top: 12px !important; padding-bottom: 12px !important; margin-bottom: 12px; min-height: 64px; }
 body.desk .card li { margin-bottom: 14px; } body.desk .card ul, body.desk .card ol { margin-top: 10px; }
 .hm-h { margin-top: 30px; }
+
+/* House style (the Family page): section headings between boxes are big and clear, not small capitals */
+body.desk .sec { font-size: 20px; font-weight: 750; text-transform: none; letter-spacing: 0; color: var(--text, #f2f4f7); margin: 32px 2px 14px; }
+body.desk .sec:first-child, body.desk .page-h + .sec { margin-top: 8px; }
+body.desk .sec a, body.desk .sec button { font-size: 15px; font-weight: 600; }

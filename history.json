@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.135",
+    "date": "2026-11-14",
+    "notes": [
+      "Configurator: the section headings between boxes (e.g. on Other widgets and the Calendar page) are big and clear like the Family page, instead of small capitals"
+    ]
+  },
+  {
     "version": "2026.11.134",
     "date": "2026-11-14",
     "notes": [
