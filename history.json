@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.142",
+    "date": "2026-11-14",
+    "notes": [
+      "Notes: the handwriting on tablets, phones, Macs and the Raspberry Pi now matches the Corsair – Windows keeps Segoe Print, and other devices use a similar hand-drawn font that comes with the dashboard (instead of whatever “cursive” font the device had)"
+    ]
+  },
+  {
     "version": "2026.11.141",
     "date": "2026-11-14",
     "notes": [
