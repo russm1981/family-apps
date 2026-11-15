@@ -1,11 +1,11 @@
 {
-  "app": "2026.11.232",
+  "app": "2026.11.233",
   "script": "2026.11.103",
   "date": "2026-11-15",
   "notes": [
-    "Screens: adding a screen now shows it straight away (typing its name was being treated as an unsaved change, so the page didn’t redraw)",
-    "Screens: the widgets to drag on are in groups – Rewards; Lists, notes and reminders; Information; Travel; Family; Tools; Interest",
-    "Screens: while dragging a widget, moving near the top or bottom of the window scrolls the page"
+    "New General List widgets are called New List 1, New List 2… – the next number not already used – instead of copying another list’s name",
+    "Widget settings pop-up: a normal-sized icon in the title, and the description set apart from the settings",
+    "The green Save button is now always on the left, before Cancel, in every pop-up and form"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.232",
+    "date": "2026-11-15",
+    "notes": [
+      "New General List widgets are called New List 1, New List 2… – the next number not already used – instead of copying another list’s name",
+      "Widget settings pop-up: a normal-sized icon in the title, and the description set apart from the settings",
+      "The green Save button is now always on the left, before Cancel, in every pop-up and form"
+    ]
+  },
+  {
     "version": "2026.11.231",
     "date": "2026-11-15",
     "notes": [
