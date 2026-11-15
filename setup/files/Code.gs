@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.96';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.97';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -349,7 +349,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
-  kidrem: { name: 'Children’s reminders', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
+  kidrem: { name: 'Reminders', icon: '🎒', sizes: ['half', 'full'], about: 'Everyone’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Reminders page.',
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
@@ -954,8 +954,18 @@ function getState_() {
       openTaskCount: open.length, todos: myTodos, reminders, remindersTomorrow, reminderWeek: week, statement,
     };
   });
+  // Reminders for "Everyone", and for anyone in the family who isn't in Rewards (adults, and children not on the points page).
+  const remFor = (who, ds, d) => timetable.filter(t => t.Reminder && reminderOn_(t.Day, ds, d) && who(String(t.Boy || 'All').trim())).map(t => String(t.Reminder));
+  const isFam = v => v.toLowerCase() === 'family';
+  const everyone = { reminders: remFor(isFam, today, dow), remindersTomorrow: remFor(isFam, tomorrow, dowTomorrow) };
+  let fam = []; try { fam = family_().people; } catch (e) { /* no Categories tab yet */ }
+  const inRewards = boys.map(b => String(b.Name));
+  const others = fam.filter(p => inRewards.indexOf(p.name) < 0).map(p => {
+    const mine = v => v.split(',').map(s => s.trim()).indexOf(p.name) >= 0;
+    return { name: p.name, colour: p.colour, reminders: remFor(mine, today, dow), remindersTomorrow: remFor(mine, tomorrow, dowTomorrow) };
+  });
   return {
-    boys: out, today, dow, tomorrow,
+    boys: out, today, dow, tomorrow, everyone, others,
     cashIn: { points: threshold, value, currency: currency_() },
     showReminders: ps.ShowReminders !== false && String(ps.ShowReminders).toLowerCase() !== 'false',
     remindersFrom: /^\d{1,2}:\d{2}$/.test(String(ps.TomorrowFrom || '')) ? String(ps.TomorrowFrom) : '17:00',
@@ -1272,7 +1282,7 @@ function requireBoy_(boy) {
 
 function forBoy_(cell, boy) {
   const v = String(cell || 'All').trim();
-  if (!v || v.toLowerCase() === 'all') return true;
+  if (!v || v.toLowerCase() === 'all' || v.toLowerCase() === 'family') return true;      // "Everyone (in Rewards)" or "Everyone"
   return v.split(',').map(s => s.trim()).indexOf(boy) >= 0;
 }
 

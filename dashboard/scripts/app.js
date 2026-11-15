@@ -212,16 +212,22 @@
             if (!s) { el.innerHTML = '<div class="child-msg">' + (lastSyncError ? 'Can’t reach the Google Sheet.' : 'Loading…') + '</div>'; return; }
             var evening = isEvening(s);
             var day = function (label, key, cls) {
-                var rows = s.boys.map(function (b, bi) {
-                    var list = b[key] || [];
-                    return '<button class="kr-row" data-act="panel" data-sec="rem" data-boy="' + bi + '" style="--c:' + esc(b.colour) + '"><span class="kr-name"><span class="dot"></span>' + esc(b.name) + '</span>' +
-                        '<span class="kr-chips">' + (list.length ? list.map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('') : '<span class="kr-none">–</span>') + '</span></button>';
-                }).join('');
-                if (!s.boys.some(function (b) { return (b[key] || []).length; })) rows = '<div class="kr-none">Nothing to remember ' + label.toLowerCase() + '</div>';
+                var all = (s.everyone || {})[key] || [];
+                var chips = function (list) { return '<span class="kr-chips">' + (list.length ? list.map(function (r) { return '<span class="chip">' + esc(r) + '</span>'; }).join('') : '<span class="kr-none">–</span>') + '</span>'; };
+                // "Everyone" first, then each child in Rewards (without the Everyone ones again), then anyone else with something today
+                var rows = (all.length ? '<div class="kr-row" style="--c:#c08457"><span class="kr-name"><span class="dot"></span>Everyone</span>' + chips(all) + '</div>' : '') +
+                    s.boys.map(function (b, bi) {
+                        var list = (b[key] || []).filter(function (r) { return all.indexOf(r) < 0; });
+                        return '<button class="kr-row" data-act="panel" data-sec="rem" data-boy="' + bi + '" style="--c:' + esc(b.colour) + '"><span class="kr-name"><span class="dot"></span>' + esc(b.name) + '</span>' + chips(list) + '</button>';
+                    }).join('') +
+                    (s.others || []).filter(function (o) { return (o[key] || []).length; }).map(function (o) {
+                        return '<div class="kr-row" style="--c:' + esc(o.colour || '#888') + '"><span class="kr-name"><span class="dot"></span>' + esc(o.name) + '</span>' + chips(o[key]) + '</div>';
+                    }).join('');
+                if (!all.length && !s.boys.concat(s.others || []).some(function (b) { return (b[key] || []).length; })) rows = '<div class="kr-none">Nothing to remember ' + label.toLowerCase() + '</div>';
                 return '<div class="kr-day ' + cls + '"><h4>' + label + '</h4>' + rows + '</div>';
             };
             el.innerHTML = '<div class="kr-head"><h3>' + esc(el.getAttribute('data-title') || 'Reminders') + '</h3></div>' +
-                (!s.boys.length ? '<div class="empty">No children in rewards yet.</div>'
+                (!s.boys.length && !(s.others || []).length ? '<div class="empty">No one in the family yet.</div>'
                     : evening ? day('Tomorrow', 'remindersTomorrow', 'now')
                     : day('Today', 'reminders', 'now') + (full ? day('Tomorrow', 'remindersTomorrow', 'next') : ''));
         });

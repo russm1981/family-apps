@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.206",
+    "date": "2026-11-15",
+    "notes": [
+      "Calendar → Coming up: each event now reads colour, category, then what it is – with the time after it only when there is one (no more “All day”). Family Admin’s calendar matches"
+    ]
+  },
+  {
     "version": "2026.11.205",
     "date": "2026-11-15",
     "notes": [

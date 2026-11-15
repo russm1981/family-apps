@@ -501,7 +501,7 @@
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
                 '<ul class="small"><li><b>Reward Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
                 '<li><b>Daily To-Dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
-                '<li><b>Reminder Display</b> – whether each child’s reminders (set up on the <a href="#" data-go="reminders">Reminders</a> page) also show on their Child’s Rewards widget. The <b>Children’s reminders</b> widget shows every child’s together.</li>' +
+                '<li><b>Reminder Display</b> – whether each child’s reminders (set up on the <a href="#" data-go="reminders">Reminders</a> page) also show on their Child’s Rewards widget. The <b>Reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
                 '<li><b>Manual adjustments</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
@@ -545,7 +545,7 @@
         else if (cur === 'timetable') html = flat('timetable');      // its own page: the "How reminders work" box explains it
         else if (cur === 'remdisplay') html = head('Reminder Display', 'Whether each child’s reminders show on their Child’s Rewards widget, on the day and from the evening before.') +
             '<div class="card" id="remDispBox"><h2>On the Child’s Rewards widgets</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k === 'ShowReminders'; }), pp.settings || {}) : '') +
-                '<p class="mute small">To add or change reminders (PE kit, library books…), go to the <a href="#" data-go="reminders">Reminders</a> page. The <b>Children’s reminders</b> widget shows everyone’s together, whatever you choose here.</p>' +
+                '<p class="mute small">To add or change reminders (PE kit, library books…), go to the <a href="#" data-go="reminders">Reminders</a> page. The <b>Reminders</b> widget shows everyone’s together, whatever you choose here.</p>' +
                 '<div class="sheet-actions"><button class="btn good" id="remDispSave">Save reminder display</button></div></div>';
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
             '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom' && f.k !== 'ShowReminders'; }), pp.settings || {}) : '') +
@@ -557,7 +557,7 @@
                 return '<div class="adj-row"><span class="dot" style="background:' + esc(b.colour) + '"></span><b>' + esc(b.name) + '</b><span class="adj-bal">' + b.balance + ' points</span>' +
                     '<button class="btn ghost sm" data-bonus="' + bi + '">Add or take away points</button><button class="btn ghost sm" data-setbal="' + bi + '">Override the balance</button><button class="btn ghost sm" data-stmt="' + bi + '">See statement</button></div>';
             }).join('') + '</div><h3 class="sec">As on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>';
-        if (solo) html = howBox('reminders', 'How reminders work', '<p>Reminders are things a child needs on a day – PE kit, recorder, library books. Each one is every week on the days you pick, or on one date. They show on the <b>Children’s reminders</b> widget, and on each Child’s Rewards widget unless you turn that off in <a href="#" data-go="rewards/remdisplay">Rewards → Reminder Display</a>.</p>') + html;
+        if (solo) html = howBox('reminders', 'How reminders work', '<p>Reminders are things a person needs on a day – PE kit, recorder, library books. Each one is every week on the days you pick, or on one date. All reminders display in the <b>Reminders</b> widget. If they relate to a child, they also show on that child’s Child’s Rewards widget, unless you turn that off in <a href="#" data-go="rewards/remdisplay">Rewards → Reminder Display</a>.</p>') + html;
         $('body').innerHTML = html;
         $('body').onclick = function (e) {
             var el = e.target.closest('[data-setbal]');
@@ -1424,17 +1424,28 @@
         return '<div class="lrow l-' + k + '"><button class="x" data-x>✕</button>' + (LISTS[k].ordered ? '<span class="mv"><button data-mv="up" title="Move up">▲</button><button data-mv="down" title="Move down">▼</button></span>' : '') +
             LISTS[k].cols.map(function (c) {
                 var n = maxFor(k, c[0]), v = r[c[0]] == null ? '' : String(r[c[0]]), lab = '<label>' + esc(c[1]) + (n ? ' <span class="cnt">max ' + n + '</span>' : '') + '</label>';
-                if (c[0] === 'Boy') return '<div class="lc">' + lab + forWho(v) + '</div>';
+                if (c[0] === 'Boy') return '<div class="lc">' + lab + forWho(v, k === 'timetable') + '</div>';
                 if (c[0] === 'Days') return '<div class="lc">' + lab + oftenPick(v || 'Mon-Fri') + '</div>';
                 if (c[0] === 'Day') return '<div class="lc">' + lab + whenPick(v) + '</div>';
                 return '<div class="lc">' + lab + '<input data-k="' + c[0] + '" value="' + esc(v) + '"' + (n ? ' maxlength="' + n + '"' : '') + ' autocomplete="off"></div>';
             }).join('') + '</div>';
     }
-    /** For who: everyone in rewards, or one of them. */
-    function forWho(v) {
-        var kids = ((DATA.state || {}).boys || []).map(function (b) { return b.name; }), o = [['All', 'Everyone (in rewards)']].concat(kids.map(function (n) { return [n, n]; }));
-        if (v && !o.some(function (x) { return x[0].toLowerCase() === v.toLowerCase(); })) o.push([v, v]);
-        return '<select data-k="Boy">' + o.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0].toLowerCase() === (v || 'All').toLowerCase() ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    /** For who. Daily To-Dos: everyone in Rewards, or one of them. Reminders (wide): Everyone, Everyone (in Rewards), then the
+     *  children, then the adults – anyone in the family. */
+    function forWho(v, wide) {
+        var kids = ((DATA.state || {}).boys || []).map(function (b) { return b.name; });
+        var ppl = ((DATA.family || {}).people || []);
+        var kidsAll = wide ? kids.concat(ppl.filter(function (p) { return p.role === 'child' && kids.indexOf(p.name) < 0; }).map(function (p) { return p.name; })) : kids;
+        var adults = wide ? ppl.filter(function (p) { return p.role === 'adult'; }).map(function (p) { return p.name; }) : [];
+        var top = (wide ? [['Family', 'Everyone']] : []).concat([['All', 'Everyone (in Rewards)']]);
+        var all = top.concat(kidsAll.map(function (n) { return [n, n]; }), adults.map(function (n) { return [n, n]; }));
+        var sel = function (x) { return x[0].toLowerCase() === (v || 'All').toLowerCase() ? ' selected' : ''; };
+        var opt = function (x) { return '<option value="' + esc(x[0]) + '"' + sel(x) + '>' + esc(x[1]) + '</option>'; };
+        var extra = v && !all.some(function (x) { return x[0].toLowerCase() === v.toLowerCase(); }) ? opt([v, v]) : '';
+        return '<select data-k="Boy">' + top.map(opt).join('') +
+            (wide ? (kidsAll.length ? '<optgroup label="Children">' + kidsAll.map(function (n) { return opt([n, n]); }).join('') + '</optgroup>' : '') +
+                (adults.length ? '<optgroup label="Adults">' + adults.map(function (n) { return opt([n, n]); }).join('') + '</optgroup>' : '')
+                : kidsAll.map(function (n) { return opt([n, n]); }).join('')) + extra + '</select>';
     }
     var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     function parseDays(spec) {

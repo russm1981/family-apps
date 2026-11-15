@@ -387,3 +387,8 @@ body.desk .card h3.sub-h { font-size: 18px; font-weight: 750; color: #fff; margi
 /* Coming up: colour, category, what – and the time after it, only when there is one */
 .ev-cat { width: 110px; flex: none; color: var(--mute, #8b95a5); font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ev-t .ev-time { width: auto; margin-left: 1.6em; font-weight: 400; }
+/* Reminders: the switch-time block between two lines, with the same 16px gap above and below each line */
+body.desk .card .rem-from { margin-top: 16px; padding: 16px 0; border-top: 1px solid var(--line, #2a2f38); border-bottom: 1px solid var(--line, #2a2f38); }
+body.desk .card .rem-from p { margin-bottom: 0; }
+body.desk .card .rem-from + .sheet-actions { margin-top: 16px; }
+body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
