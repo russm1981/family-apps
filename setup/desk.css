@@ -314,3 +314,5 @@ body.desk .hdr-dash, body.desk .hdr-help { margin-right: 10px; }
 body.desk .hdr-dash { margin-left: auto; }
 #refresh { position: relative; }
 #refresh .sync { position: absolute; top: -3px; right: -3px; margin: 0; border: 2px solid var(--bg, #0c0e12); width: 12px; height: 12px; min-width: 12px; }
+/* The menu bar: the same height, the buttons centred in it (as much space above as below) */
+body.desk .tabbar { padding-top: 5px; padding-bottom: 5px; align-items: center; }

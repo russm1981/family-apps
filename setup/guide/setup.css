@@ -197,3 +197,4 @@ select { width: 100%; height: 46px; background: var(--panel-2); color: var(--tex
 .cfg-tabs a.on i { filter: none; opacity: 1; }
 .cfg-tabs { overflow-x: auto; scrollbar-width: thin; padding-bottom: 10px; }
 .cfg-tabs a { gap: 5px; padding: 9px 13px; margin: 3px 3px 0; }
+.cfg-tabs { padding-top: 5px; padding-bottom: 5px; align-items: center; } .cfg-tabs a { margin: 0 3px; }

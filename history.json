@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.174",
+    "date": "2026-11-15",
+    "notes": [
+      "The menu bar keeps its height, with the buttons centred in it – the same space above them as below (on the Configurator and the setup wizard)."
+    ]
+  },
+  {
     "version": "2026.11.173",
     "date": "2026-11-15",
     "notes": [

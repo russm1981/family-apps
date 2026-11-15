@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.173",
+  "app": "2026.11.174",
   "script": "2026.11.86",
   "date": "2026-11-15",
   "notes": [
-    "Top bar: ▶ Dashboard, 💬 Feedback and ❓ Help are evenly spaced, and the green “up to date” dot now sits on the corner of the ↻ refresh button."
+    "The menu bar keeps its height, with the buttons centred in it – the same space above them as below (on the Configurator and the setup wizard)."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
