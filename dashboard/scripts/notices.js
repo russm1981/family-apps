@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.187';
+    var APP_VERSION = '2026.11.190';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -155,7 +155,7 @@
             '<ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
             '<div class="pv-full" hidden>' + P.full + '</div>' +
             '<div class="pv-btns"><button class="n-btn ghost" data-p="read">Read the full notice</button><button class="n-btn" data-p="ok">I accept</button></div>' +
-            '<p class="foot">Version ' + esc(P.version) + ', ' + esc(P.updated) + '. You can also accept it in the Configurator or in Family Admin.</p></div>';
+            '<p class="foot">Version ' + esc(P.version) + ', ' + esc(P.updated) + '. You can also accept it at houserunner.app or in Family Admin.</p></div>';
         document.body.appendChild(el);
         el.onclick = function (e) {
             var x = e.target.closest('[data-p]'); if (!x) return;
@@ -212,7 +212,7 @@
                     '<p class="lic-how">Your key is in your order email: FD- then four groups of five letters and numbers. Type it here:</p>' +
                     '<div class="lic-row"><input id="licIn" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" autocomplete="off" spellcheck="false" autocapitalize="characters"><button class="n-btn" id="licSave">Check and save</button></div>' +
                     '<p class="lic-msg" id="licMsg"></p>' +
-                    '<p class="lic-how">Or on a computer: <b>houserunner.app → System → Software Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
+                    '<p class="lic-how">Or on a computer: <b>houserunner.app → System → Licence</b>. This screen carries on by itself within a few minutes.</p></div>';
                 var go = function () {
                     var inp = document.getElementById('licIn'), k = inp.value.trim(), msg = document.getElementById('licMsg'), btn = document.getElementById('licSave');
                     if (!k) { msg.textContent = 'Type your key in first.'; return; }
@@ -228,7 +228,7 @@
             el.style.display = 'flex';
         } else if (el) el.style.display = 'none';
         if (window.FDHealth) FDHealth.note('licence', lic && lic.required && (!lic.ok || /hasn’t answered/.test(lic.message || '')) ? 'Licence: ' + lic.message : '');
-        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (houserunner.app → System → Software Licence)</span>' : '');
+        banner('licTrial', lic && lic.state === 'trial' && lic.daysLeft <= 7 ? '<span>🔑 ' + esc(lic.message) + ' (houserunner.app → System → Licence)</span>' : '');
     }
     window.FDNotices = {
         version: APP_VERSION,

@@ -1,6 +1,6 @@
 :root {
     --bg: #0c0e12; --panel: #15181e; --panel-2: #1c2028; --line: #2a2f38;
-    --text: #eef1f6; --mute: #8a93a3; --good: #4cd964; --bad: #ff5b5b; --acc: #3fa9f5; --wk: #232838;
+    --text: #eef1f6; --mute: #8a93a3; --good: #4cd964; --bad: #ef4444; --acc: #3fa9f5; --wk: #232838;
     --safe-b: env(safe-area-inset-bottom, 0px); --safe-t: env(safe-area-inset-top, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -90,3 +90,11 @@ label { display: block; font-size: 13px; color: var(--mute); margin: 12px 0 5px;
 /* one box for logo + name, so a title bar that stacks its children (the Configurator's) keeps them on one line */
 .hr-title { display: flex; align-items: baseline; gap: 4px; min-width: 0; position: relative; top: -5px; }   /* the logo and the name, level with each other */
 .hr-title > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.15; }
+/* The one page header (shared/head.js) */
+header.hr-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); }
+header.hr-head .hr-title { color: var(--text); font-size: 21px; font-weight: 800; text-decoration: none; }
+header.hr-head nav { display: flex; gap: 8px; }
+header.hr-head nav a { text-decoration: none; font-weight: 700; font-size: 14px; border-radius: 999px; padding: 7px 14px; white-space: nowrap; }
+header.hr-head .hr-hbtn { color: var(--text); border: 1px solid var(--line); }
+header.hr-head .hr-hdash { color: #06210f; background: #4cd964; }
+@media (max-width: 560px) { header.hr-head { padding: 0 16px; } }

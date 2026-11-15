@@ -23,3 +23,4 @@ window.FDIco = function (T) {
     var svg = T && window.FD_ICONS['w_' + T.type]; if (svg) return svg;
     var d = document.createElement('i'); d.textContent = (T && T.icon) || ''; return d.innerHTML;
 };
+window.FD_ICONS.w_kidrem = window.FD_ICONS.reminders;

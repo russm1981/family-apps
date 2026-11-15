@@ -286,7 +286,7 @@
     window.FDCalSetup = {
         render: function (el, id, hooks) {
             H = hooks; box = el; pageId = id; CS = (H.data() || {}).calSetup;
-            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">System → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
+            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google script needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">System → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
             // Birthday and Holiday can't be taken away (widgets and the calendar's 🎂 / 🌴 buttons rely on them)
             [['Holiday', '#ef4444', true], ['Birthday', '#ffffff', false]].forEach(function (m) {

@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.94';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.95';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -114,10 +114,10 @@ const INSTALL = [
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
   { k: 'FamilyName', label: 'Family name', help: 'e.g. Smith – set on the Family page.', hidden: true },
-  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup wizard or ⚙ Setup → System → Software Licence.', hidden: true },
+  { k: 'LicenceKey', label: 'Licence key', help: 'Your HouseRunner licence key (FD-XXXXX-…). Entered in the setup wizard or System → Licence.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
-  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from ⚙ Setup → System → Software updates, the setup wizard or the Sheet menu.', hidden: true },
-  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the dashboard, the Configurator and Family Admin are hosted. Only change this if you host your own copy.' },
+  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from System → Software updates, the setup wizard or the Sheet menu.', hidden: true },
+  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the dashboard, houserunner.app and Family Admin are hosted. Only change this if you host your own copy.' },
   { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
   { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
@@ -148,7 +148,7 @@ const PAGE_TYPES = {
     { k: 'CashInPoints', label: 'Points needed to cash in', type: 'number', def: 500, min: 1, max: LIMITS.maxCashIn },
     { k: 'CashInValue', label: 'Cash-in value (\u00a3)', type: 'number', def: 5, min: 1, max: 100 },
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
-    { k: 'ShowReminders', label: 'Show each child’s reminders on their Reward Widget', type: 'bool', def: true },
+    { k: 'ShowReminders', label: 'Show each child’s reminders on their Child’s Rewards widget', type: 'bool', def: true },
     { k: 'TomorrowFrom', label: 'Switch to tomorrow’s reminders at', type: 'time', def: '17:00', help: 'Until this time the screen shows today’s reminders (with a peek at tomorrow’s); from this time, tomorrow’s – so school things can be got ready the evening before.' },
   ] },
   calendar: { name: 'Calendar', settings: [
@@ -224,7 +224,7 @@ const WIDGET_TYPES = {
       { k: 'Weekend', label: 'Show the weekend (on Fridays it takes the place of tomorrow)', type: 'bool', def: true },
     ],
     data: () => agenda_(), nocache: true },
-  bins: { name: 'Bins', tag: 'UK only', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in ⚙ Widgets → Other → Bins → Set up bin days.',
+  bins: { name: 'Bins', tag: 'UK only', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in Other → Bins → Set up bin days.',
     settings: [
       { k: 'Source', label: 'Collection days from', type: 'select', def: 'My council (automatic)', options: BIN_SOURCES,
         help: 'My council: looked up from your postcode, where your council is connected (see Help). Calendar link: many councils offer an "add to calendar" (iCal / .ics) link on their bin-day page. Repeating schedule: works everywhere.' },
@@ -353,7 +353,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
-  child: { name: 'Reward Widget for Child', icon: '\u2B50', sizes: ['full'], about: 'One child’s Reward Widget – their points, Reward Tasks, Daily To-Dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
+  child: { name: 'Child’s Rewards', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards – their points, Reward Tasks, Daily To-Dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },
@@ -644,7 +644,7 @@ function syncChildWidgets_(added) {
       let pg = homes.find(x => used(x) <= LIMITS.columns * 2 - 2);
       if (!pg) {
         const pages = rows_('pages');
-        if (screenCount_() >= MAX_SCREENS) return;      // no room for another screen: it can be added from ⚙ Setup → Screens
+        if (screenCount_() >= MAX_SCREENS) return;      // no room for another screen: it can be added from Screens
         let id = 'kids', n = '';
         while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
         const last = homes.length ? pages.find(p => String(p.Page).trim() === homes[homes.length - 1]) : bp;
@@ -773,7 +773,7 @@ function doGet(e) {
     });
   }
   return (LOADED ? HtmlService.createHtmlOutput(LOADED.html()) : HtmlService.createHtmlOutputFromFile('Admin'))
-    .setTitle('Family Dashboard – Admin')
+    .setTitle('HouseRunner – Admin')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
@@ -788,11 +788,11 @@ function emailLinks_() {
   const base = appsBase_(), fam = String(inst_('FamilyName') || '').trim();
   const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your HouseRunner family dashboard') + '.\n\n' +
     'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
-    'HouseRunner – the Configurator on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
+    'HouseRunner – houserunner.app on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
 
     'The dashboard (the Corsair XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
-    'If you change your access code (Configurator → System → My data), you’ll be sent new links.\n';
+    'If you change your access code (houserunner.app → System → My data), you’ll be sent new links.\n';
   GmailApp.sendEmail(to, 'Your HouseRunner links – keep this email', body);
   PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
   return { ok: true, to: to };
@@ -1816,7 +1816,7 @@ function addPage_(title, type) {
   }
   const t = checkLen_('Page name', title, LIMITS.pageTitle);
   if (!t) throw new Error('Give the page a name');
-  if (screenCount_() >= MAX_SCREENS) throw new Error('At most ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair');
+  if (screenCount_() >= MAX_SCREENS) throw new Error('At most ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair XENEON EDGE');
   let id = t.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'page', n = '';
   while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
   const used = pages.map(p => String(p.Icon));
@@ -1978,7 +1978,7 @@ function locale_() { return { weekStart: /^sun/i.test(String(inst_('WeekStart') 
 function units_() { const c = country_(); return { temp: c === 'US' ? 'F' : 'C', wind: c === 'US' || c === 'GB' ? 'mph' : 'km/h' }; }
 
 function geocode_(place) {
-  if (!String(place || '').trim()) throw new Error('Add your home address in ⚙ Setup → System → Locations & home');
+  if (!String(place || '').trim()) throw new Error('Add your home address in System → Locations & home');
   const m = String(place).match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
   if (m) return { lat: Number(m[1]), lng: Number(m[2]) };
   const cache = CacheService.getScriptCache();
@@ -2044,7 +2044,7 @@ function destNow_(r, now) {
  */
 function traffic_(home, destText, radius) {
   const key = String(inst_('TomTomKey') || '').trim();
-  if (!key) throw new Error('Add a TomTom API key in ⚙ Setup → System → External data keys');
+  if (!key) throw new Error('Add a TomTom API key in System → External data keys');
   const from = geocode_(home);
   const all = destinations_(destText), now = new Date();
   const routes = all.filter(r => destNow_(r, now)).map(r => {
@@ -2101,7 +2101,7 @@ function thin_(pts, max) {
  */
 function trains_(fromCrs, toCrs, disruption) {
   const key = String(inst_('RailDataKey') || '').trim();
-  if (!key) throw new Error('Add a National Rail key in ⚙ Setup → System → External data keys');
+  if (!key) throw new Error('Add a National Rail key in System → External data keys');
   const from = String(fromCrs || 'BPW').toUpperCase(), to = String(toCrs || '').toUpperCase();
   const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
   const order = guid ? [ldbSoap_, ldbRest_] : [ldbRest_, ldbSoap_];
@@ -2109,7 +2109,7 @@ function trains_(fromCrs, toCrs, disruption) {
   for (let i = 0; i < order.length && !d; i++) {
     try { d = order[i](key, from, to); } catch (err) { if (!first) first = err; if (!err.auth) throw err; }
   }
-  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it in ⚙ Setup → System → External data keys.');
+  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it in System → External data keys.');
   const route = {};      // every station the trains call at on the way, for "only about this route"
   const services = (d.trainServices || []).map(s => {
     let arrive = null, calls = [];
@@ -3552,7 +3552,7 @@ function bus_(s, id) { return s.Source === 'bustimes.org' ? busTimesOrg_(s, id) 
 const TAPI_PER_DAY = 28;   // keeps 2 spare for finding the nearest stop
 function busTapi_(s, id) {
   const appId = String(inst_('TransportApiId') || '').trim(), key = String(inst_('TransportApiKey') || '').trim();
-  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key in ⚙ Setup → System → External data keys (developer.transportapi.com), or switch this widget to bustimes.org');
+  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key in System → External data keys (developer.transportapi.com), or switch this widget to bustimes.org');
   const props = PropertiesService.getScriptProperties();
   const auth = 'app_id=' + encodeURIComponent(appId) + '&app_key=' + encodeURIComponent(key);
   let code = String(s.StopCode || '').trim(), name = String(s.StopName || '');
@@ -3739,8 +3739,8 @@ function apod_() {
     try {
       const res = uf_(tries[i], { muteHttpExceptions: true });
       const code = res.getResponseCode();
-      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it in ⚙ Setup → System → External data keys.'; break; }
-      if (code === 403) { why = 'NASA didn’t accept the key – check the NASA key in ⚙ Setup → System → External data keys.'; break; }
+      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it in System → External data keys.'; break; }
+      if (code === 403) { why = 'NASA didn’t accept the key – check the NASA key in System → External data keys.'; break; }
       if (code !== 200) { why = 'NASA said ' + code; if (code >= 500) break; continue; }   // API down: go straight to the website
       const j = JSON.parse(res.getContentText());
       if (j && (j.url || j.thumbnail_url)) d = j;
@@ -3824,7 +3824,7 @@ function duolingo_(names) {
 function spotifyRedirect_() { return ScriptApp.getService().getUrl(); }
 function page_(title, body) {
   return HtmlService.createHtmlOutput('<div style="font:16px/1.5 system-ui,sans-serif;max-width:560px;margin:40px auto;padding:0 16px">' +
-    '<h2>' + title + '</h2>' + body + '</div>').setTitle('Family Dashboard – ' + title).addMetaTag('viewport', 'width=device-width, initial-scale=1');
+    '<h2>' + title + '</h2>' + body + '</div>').setTitle('HouseRunner – ' + title).addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 /** …/exec?spotify=login&key=ACCESSCODE – one-off: connect your Spotify account. */
 function spotifyLoginPage_(key) {
@@ -3832,7 +3832,7 @@ function spotifyLoginPage_(key) {
   const id = String(inst_('SpotifyClientId') || '').trim();
   const redirect = spotifyRedirect_();
   if (!id || !String(inst_('SpotifyClientSecret') || '').trim()) {
-    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> in ⚙ Setup → System → External data keys.</p>' +
+    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> in System → External data keys.</p>' +
       '<p>In your app at developer.spotify.com, set the Redirect URI to:</p><p><code style="word-break:break-all">' + redirect + '</code></p>');
   }
   const state = 'sp_' + Utilities.getUuid().replace(/-/g, '');
@@ -3846,7 +3846,7 @@ function spotifyLoginPage_(key) {
 }
 function spotifyCallback_(p) {
   const cache = CacheService.getScriptCache();
-  if (!cache.get(p.state)) return page_('Spotify', '<p>That link has expired. Start again from ⚙ Widgets → Other → Spotify.</p>');
+  if (!cache.get(p.state)) return page_('Spotify', '<p>That link has expired. Start again from Other → Spotify.</p>');
   cache.remove(p.state);
   if (p.error) return page_('Spotify', '<p>Spotify said: ' + clean_(p.error) + '</p>');
   const tok = spotifyTokenCall_({ grant_type: 'authorization_code', code: p.code, redirect_uri: spotifyRedirect_() });
@@ -3906,11 +3906,11 @@ function spotifyControl_(op) {
 
 
 /* ============================================================ SHEET MENU */
-// A "🏠 Family Dashboard" menu in the Google Sheet: connect devices and check for updates without touching any code.
+// A "🏠 HouseRunner" menu in the Google Sheet: connect devices and check for updates without touching any code.
 
 function onOpen() {
   try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
-  const m = SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
+  const m = SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
     .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
     .addItem(LOADED ? 'Load the newest program now' : 'Update the Google script now', 'menuUpdate');
@@ -3962,7 +3962,7 @@ function menuConnect() {
     dialog_('One switch, then it publishes itself', '<p>Google needs one switch turned on (once for your Google account' + (who ? ', <b>' + clean_(who) + '</b>' : '') + ') so the dashboard can publish itself:</p><ol>' +
       '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank"><b>this Google settings page</b></a> (it opens in a new tab)</li>' +
       '<li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li>' +
-      '<li>Come back to this tab and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again</li></ol>' +
+      '<li>Come back to this tab and choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again</li></ol>' +
       '<p style="color:#888;font-size:13px">If it already says On, wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>', 340);
     return;
   }
@@ -3972,11 +3972,11 @@ function menuConnect() {
       '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
       '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>System → Go to Family Dashboard → Allow</b></li>' +
       '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
-      '<p>Then come back here and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
+      '<p>Then come back here and choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
     return;
   }
   const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
-  dialog_('Published ✅', '<p>✅ Your Family Dashboard is published.</p>' +
+  dialog_('Published ✅', '<p>✅ Your HouseRunner dashboard is published.</p>' +
     '<p>Click the button to carry on with setup. It opens the setup page already connected to this Sheet – nothing to type:</p>' +
     '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Carry on with setup</a></p>' +
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
@@ -3996,7 +3996,7 @@ function menuUpdate() {
   if (r.upToDate) { dialog_('Up to date', '<p>✅ Your Google script is up to date (version ' + SCRIPT_VERSION + ').</p><p>The screen and phone apps update themselves.</p>', 200); return; }
   if (r.updated) {
     dialog_('Updated', '<p>✅ Updated the Google script from ' + clean_(r.from) + ' to <b>' + clean_(r.to) + '</b>. The screen and phones use it straight away.</p>' +
-      (r.approve ? '<p><b>One more step:</b> this version needs a new permission. Choose 🏠 Family Dashboard → Update the Google script now once more and approve Google’s screen.</p>' : ''), 240);
+      (r.approve ? '<p><b>One more step:</b> this version needs a new permission. Choose 🏠 HouseRunner → Update the Google script now once more and approve Google’s screen.</p>' : ''), 240);
     return;
   }
   const url = myUrl_();
@@ -4070,7 +4070,7 @@ function scriptApiAt_(projectId, method, path, body) {
     }
     err.apiOff = true; err.google = String(msg).slice(0, 300);
   } else if (code === 403 && /scope|insufficient/i.test(text)) {
-    err.message = 'The script hasn’t been given permission to update itself yet: in the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve Google’s screen.';
+    err.message = 'The script hasn’t been given permission to update itself yet: in the Sheet choose 🏠 HouseRunner → Update the Google script now, and approve Google’s screen.';
   } else if (/version/i.test(text) && /limit|maximum|200/i.test(text)) {
     err.message = 'Your script has reached Google’s limit of 200 saved versions. In Apps Script open Project history and delete old versions, then try again.';
   }
@@ -4129,11 +4129,11 @@ function selfUpdate_(why) {
     // A version that needs a new kind of permission would stop the web app until someone approves it – only do that when someone is at the Sheet.
     if (newScopes.length && curMan.oauthScopes && why !== 'menu') {
       P.setProperty('lastUpdate', JSON.stringify({ at: new Date().toISOString(), result: 'needs approval', to: latest.script }));
-      const msg = 'This update needs a new permission. In the Sheet choose 🏠 Family Dashboard → Update the Google script now, and approve.';
+      const msg = 'This update needs a new permission. In the Sheet choose 🏠 HouseRunner → Update the Google script now, and approve.';
       return { ok: false, approval: true, message: msg, error: msg };
     }
     const vu = versionsUsed_(true);
-    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (⚙ Setup → System → My data), or delete old versions in Apps Script → Project history.');
+    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (System → My data), or delete old versions in Apps Script → Project history.');
     const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
     scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
     const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });
@@ -4299,12 +4299,12 @@ function startAfresh_() {
   Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
   const carry = { props: props, install: Utilities.getUuid(), from: from, to: web, fromSheet: ss.getUrl(), autoUpdate: autoUpdateOn_(), at: new Date().toISOString() };
   const cs = ns.insertSheet('_move');
-  cs.getRange(1, 1).setValue('Moving in progress – open the 🏠 Family Dashboard menu and choose “Finish moving here”. This tab disappears afterwards.');
+  cs.getRange(1, 1).setValue('Moving in progress – open the 🏠 HouseRunner menu and choose “Finish moving here”. This tab disappears afterwards.');
   cs.getRange(2, 1).setValue(JSON.stringify(carry));
   ns.setActiveSheet(cs);
   const moving = { sheetUrl: ns.getUrl(), sheetId: ns.getId(), url: web, install: carry.install, at: carry.at };
   P.setProperty('moving', JSON.stringify(moving));
-  return { ok: true, sheetUrl: ns.getUrl(), url: web, message: 'New Sheet made. Open it, wait for the 🏠 Family Dashboard menu, and choose “Finish moving here”.' };
+  return { ok: true, sheetUrl: ns.getUrl(), url: web, message: 'New Sheet made. Open it, wait for the 🏠 HouseRunner menu, and choose “Finish moving here”.' };
 }
 
 /** Step 2, in the new Sheet (from its menu, so Google can ask for permission once). */
@@ -4374,7 +4374,7 @@ function packForAccount_(email) {
   const from = myUrl_();
   if (!from) throw new Error('Open the web app address once first, so the script knows its own address');
   const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
-  const pack = SpreadsheetApp.create('Family Dashboard – moving pack (' + Utilities.formatDate(new Date(), TZ, 'd MMM yyyy') + ')');
+  const pack = SpreadsheetApp.create('HouseRunner – moving pack (' + Utilities.formatDate(new Date(), TZ, 'd MMM yyyy') + ')');
   const blank = pack.getSheets()[0];
   ss.getSheets().forEach(sh => { const c = sh.copyTo(pack); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet(); });
   pack.deleteSheet(blank);
@@ -4388,7 +4388,7 @@ function packForAccount_(email) {
   P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, sheetUrl: pack.getUrl(), packId: pack.getId(), token: token, install: install, at: new Date().toISOString() }));
   const setupLink = appsBase_() + '#go=import&pack=' + encodeURIComponent(pack.getId());
   let emailed = false;
-  try { GmailApp.sendEmail(email, 'Moving your Family Dashboard to this Google account', moveEmail_(email, setupLink, me)); emailed = true; } catch (e) { /* the app shows the same steps */ }
+  try { GmailApp.sendEmail(email, 'Moving HouseRunner to this Google account', moveEmail_(email, setupLink, me)); emailed = true; } catch (e) { /* the app shows the same steps */ }
   return { ok: true, packId: pack.getId(), email: email, setupLink: setupLink, emailed: emailed };
 }
 /** The steps for the new account, emailed to it with the moving pack. */
@@ -4400,14 +4400,14 @@ function moveEmail_(email, link, from) {
     'Nothing changes on the screen until you finish the steps below, so take your time.\n\n' +
     'WHAT TO DO (about 20 minutes, on a computer – not a phone or tablet)\n\n' +
     '1. Sign in to Google as ' + email + '. If your browser is signed in to another account too, use a private (incognito) window and sign in there, so the right account is used.\n\n' +
-    '2. Open this link. It is the Family Dashboard setup, in “moving” mode:\n\n    ' + link + '\n\n' +
-    '3. Follow the steps on screen: it makes a new copy of the dashboard’s Google Sheet in this account and asks you to publish it, so the screen and phones can reach it. Google asks you to allow this – that’s normal.\n\n' +
+    '2. Open this link. It is the HouseRunner setup, in “moving” mode:\n\n    ' + link + '\n\n' +
+    '3. Follow the steps on screen: it makes a new copy of the dashboard’s Google Sheet in this account and asks you to publish it, so the display and phones can reach it. Google asks you to allow this – that’s normal.\n\n' +
     '4. At “Publish & connect”, press “Bring everything across”. Everything in the moving pack is copied in, and the licence moves with it – you don’t need to type the key.\n\n' +
-    'YOUR SCREENS AND PHONES\n\n' +
+    'YOUR DISPLAYS AND PHONES\n\n' +
     'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
     'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → More → Connect a display, and type the code the screen shows.\n\n' +
     'AFTERWARDS\n\n' +
-    'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“Family Dashboard – moving pack”) from this account’s Google Drive.\n\n' +
+    'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“HouseRunner – moving pack”) from this account’s Google Drive.\n\n' +
     'Help with every step: ' + appsBase_() + 'help/\n';
 }
 /**
@@ -4419,7 +4419,7 @@ function importPack_(id) {
   let src;
   try { src = SpreadsheetApp.openById(id); } catch (e) { throw new Error('Can’t open the moving pack – are you signed in to the account it was shared with?'); }
   const cs = src.getSheetByName('_move');
-  if (!cs) throw new Error('That isn’t a Family Dashboard moving pack');
+  if (!cs) throw new Error('That isn’t a HouseRunner moving pack');
   const carry = JSON.parse(String(cs.getRange(2, 1).getValue()));
   const ss = SpreadsheetApp.getActive(), P = PropertiesService.getScriptProperties();
   const tmp = ss.insertSheet('_tmp' + Date.now());
@@ -4447,10 +4447,10 @@ function importPack_(id) {
 
 function menuStartAfresh() {
   const ui = SpreadsheetApp.getUi();
-  if (ui.alert('Start afresh in a new Sheet', 'This makes a brand-new Google Sheet with its own script, copies every tab and setting into it, moves your licence, and switches automatic updates back on. The screen and phones follow by themselves.\n\nThis Sheet is kept as a backup. Go ahead?', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
+  if (ui.alert('Start afresh in a new Sheet', 'This makes a brand-new Google Sheet with its own script, copies every tab and setting into it, moves your licence, and switches automatic updates back on. The display and phones follow by themselves.\n\nThis Sheet is kept as a backup. Go ahead?', ui.ButtonSet.YES_NO) !== ui.Button.YES) return;
   try {
     const r = startAfresh_();
-    dialog_('Nearly done', '<p>✅ The new Sheet is ready.</p><p><b><a href="' + r.sheetUrl + '" target="_blank">Open the new Sheet</a></b>, wait a few seconds for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b>. Google will ask you to allow the script, as it did the first time.</p>', 260);
+    dialog_('Nearly done', '<p>✅ The new Sheet is ready.</p><p><b><a href="' + r.sheetUrl + '" target="_blank">Open the new Sheet</a></b>, wait a few seconds for the <b>🏠 HouseRunner</b> menu, and choose <b>Finish moving here</b>. Google will ask you to allow the script, as it did the first time.</p>', 260);
   } catch (err) {
     dialog_('Couldn’t start afresh', '<p>' + clean_(err.message) + '</p>' + (/Apps Script API/.test(err.message) ? '<p>Switch on <b>Google Apps Script API</b> at <a href="https://script.google.com/home/usersettings" target="_blank">script.google.com/home/usersettings</a> and try again.</p>' : ''), 240);
   }
@@ -4460,7 +4460,7 @@ function menuStartAfresh() {
 /*
  * The seller's licence server says whether this dashboard's key is good. Its address is "licence" in version.json
  * on the apps address (read once a day); with no address there, licensing is off.
- * - No key yet: a 14-day trial from when licensing first applied, then the screen and apps ask for a key.
+ * - No key yet: a 14-day trial from when licensing first applied, then the display and apps ask for a key.
  * - The key is checked once a day. If the licence server can't be reached, the last good answer counts for 21 days.
  * - A key works on one dashboard at a time: each dashboard has a random installation number (nothing else is sent).
  */
@@ -4602,7 +4602,7 @@ function replaceScreen_(b) {
   if (!dev) throw new Error('No screen id');
   if (b.old) delete reg[String(b.old)];
   const allowed = screensAllowed_();
-  if (allowed && Object.keys(reg).length >= allowed) throw new Error('Choose a screen to take over from');
+  if (allowed && Object.keys(reg).length >= allowed) throw new Error('Choose a display to take over from');
   reg[dev] = { name: String(b.name || '').slice(0, 30) || 'Screen', fmt: String(b.fmt || '').slice(0, 10), first: Date.now(), last: Date.now() };
   screensSave_(reg);
   return { ok: true };
@@ -4621,10 +4621,10 @@ function newer_(a, b) {
 /** Sent on to the Family Dashboard licence server, with this dashboard's licence key and installation number. */
 function toLicenceServer_(body) {
   const server = licenceServer_();
-  if (!server) throw new Error('Can’t reach Family Dashboard support just now – try again later');
+  if (!server) throw new Error('Can’t reach HouseRunner support just now – try again later');
   const r = uf_(server, { method: 'post', contentType: 'application/json', muteHttpExceptions: true,
     payload: JSON.stringify(Object.assign({ key: String(inst_('LicenceKey') || ''), install: installId_(), version: SCRIPT_VERSION }, body)) });
-  if (r.getResponseCode() !== 200) throw new Error('Family Dashboard support said ' + r.getResponseCode() + ' – try again later');
+  if (r.getResponseCode() !== 200) throw new Error('HouseRunner support said ' + r.getResponseCode() + ' – try again later');
   const d = JSON.parse(r.getContentText());
   if (d.ok === false || d.error) throw new Error(d.error || 'Couldn’t send it');
   return d;

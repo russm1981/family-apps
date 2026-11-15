@@ -1,4 +1,4 @@
-:root { --bg: #0c0e12; --panel: #15181e; --panel-2: #1c2028; --line: #2a2f38; --text: #eef1f6; --mute: #8a93a3; --acc: #3fa9f5; --good: #4cd964; --bad: #ff5b5b; }
+:root { --bg: #0c0e12; --panel: #15181e; --panel-2: #1c2028; --line: #2a2f38; --text: #eef1f6; --mute: #8a93a3; --acc: #3fa9f5; --good: #4cd964; --bad: #ef4444; }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.55 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
 a { color: var(--acc); }
@@ -109,7 +109,7 @@ label.tick.sm { margin: 0; font-weight: 600; font-size: 14px; white-space: nowra
 /* Points on/off for each child */
 .prow { grid-template-columns: minmax(0, 1fr) auto auto 64px 40px; }
 .ptb { border: 1px solid var(--line); background: none; color: var(--mute); font: inherit; font-weight: 700; padding: 10px 12px; border-radius: 10px; cursor: pointer; opacity: .55; }
-.ptb.on { background: rgba(250, 204, 21, .16); border-color: #facc15; color: inherit; opacity: 1; }
+.ptb.on { background: rgba(250, 204, 21, .16); border-color: #f5a623; color: inherit; opacity: 1; }
 .prow.adult .ptb { visibility: hidden; }
 @media (max-width: 760px) { .prow { grid-template-columns: minmax(0, 1fr) 54px 40px; } .prow .ptb { grid-column: 1 / -1; grid-row: 2; justify-self: end; } }
 
@@ -122,7 +122,7 @@ body.solo .main { max-width: 980px; margin: 0 auto; }
 body.solo .solo-bar { display: flex; }
 .solo-bar { display: none; align-items: center; gap: 12px; padding: 14px 24px 0; }
 .solo-bar a { color: var(--acc); text-decoration: none; font-weight: 600; }
-.note.warn { background: rgba(250, 204, 21, .12); border: 2px solid rgba(250, 204, 21, .6); } .note.warn h3 { margin: 0 0 8px; color: #facc15; } .note.warn p { margin: 6px 0; }
+.note.warn { background: rgba(250, 204, 21, .12); border: 2px solid rgba(250, 204, 21, .6); } .note.warn h3 { margin: 0 0 8px; color: #f5a623; } .note.warn p { margin: 6px 0; }
 
 /* Family step: one row a person – colour, name, ⭐ Rewards, remove (as in the Configurator → Family) */
 .fw-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
@@ -130,7 +130,7 @@ body.solo .solo-bar { display: flex; }
 .fw-row input[data-fn] { max-width: 260px; }
 .fw-row .x { background: none; border: 0; color: var(--mute); font-size: 16px; cursor: pointer; }
 .ptb { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13.5px; color: var(--mute); opacity: .6; white-space: nowrap; background: none; cursor: pointer; }
-.ptb.on { background: rgba(250,204,21,.16); border-color: #facc15; color: var(--text); opacity: 1; }
+.ptb.on { background: rgba(250,204,21,.16); border-color: #f5a623; color: var(--text); opacity: 1; }
 /* Calendar step: the Configurator's colour coding */
 .btn.good { background: var(--good); color: #062b10; }
 .cs-box select { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font: inherit; font-size: 14px; }
@@ -159,9 +159,9 @@ body.solo .solo-bar { display: flex; }
 .fin-i { width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 800; flex: none; }
 .fin-r.ok .fin-i { background: rgba(76,217,100,.18); color: var(--good); }
 .fin-r.info .fin-i { background: rgba(63,169,245,.18); color: var(--acc); }
-.fin-r.bad .fin-i { background: rgba(250,204,21,.18); color: #facc15; }
+.fin-r.bad .fin-i { background: rgba(250,204,21,.18); color: #f5a623; }
 .fin-t { flex: 1; } .fin-t b { display: block; } .fin-t small { color: var(--mute); font-size: 14px; }
-.fin-r.bad .fin-t small { color: #facc15; }
+.fin-r.bad .fin-t small { color: #f5a623; }
 
 /* The Configurator's menu bar above the wizard, so you can always get back to the rest of the website */
 .cfg-top { display: flex; align-items: center; justify-content: space-between; height: 60px; padding: 0 28px; background: var(--panel); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 30; }
@@ -202,3 +202,8 @@ select { width: 100%; height: 46px; background: var(--panel-2); color: var(--tex
 .tabbar button i, .cfg-tabs a i, .tab-grp b, .hm-btn > span, .pn-i, .t-ico, .ed-tile .ico, .ed-rb span, .hr-phone b, .side .ico { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-style: normal; }
 .mi { width: 1.2em; height: 1.2em; display: inline-block; vertical-align: -0.22em; }
 .hm-btn > span .mi { width: 1em; height: 1em; }
+/* "Pick one" buttons: the same big, clear style as the Lists page */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; padding: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+.tabs button { flex: 1 1 auto; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255,255,255,.03); color: #cbd5e1; font-size: 16px; }
+.tabs button:hover { border-color: #3fa9f5; color: #fff; }
+.tabs button.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }

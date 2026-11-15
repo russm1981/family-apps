@@ -172,7 +172,7 @@ details.fold[open] { padding-bottom: 14px; }
 .fp-bot { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .fp-bot .seg { flex: 1; }
 .ptb { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; font-weight: 700; font-size: 13.5px; color: var(--mute); opacity: .6; white-space: nowrap; }
-.ptb.on { background: rgba(250,204,21,.16); border-color: #facc15; color: var(--text); opacity: 1; }
+.ptb.on { background: rgba(250,204,21,.16); border-color: #f5a623; color: var(--text); opacity: 1; }
 .fam-p.adult .ptb { visibility: hidden; }
 .fam-g { margin-bottom: 6px; }
 .match { display: none; margin-top: 8px; font-size: 14px; }
@@ -286,7 +286,7 @@ button.saving { cursor: progress; }
 .fb-row { padding: 12px 0; border-bottom: 1px solid var(--line, #2a303b); }
 .fb-rh { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
 .fb-st { font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; border: 1px solid #f59e0b; color: #f59e0b; white-space: nowrap; }
-.fb-st.done { border-color: #22c55e; color: #22c55e; }
+.fb-st.done { border-color: #4cd964; color: #4cd964; }
 .fb-reply { margin-top: 6px; padding: 8px 12px; border-radius: 10px; background: rgba(63,169,245,.1); }
 
 /* ---- The phone: the Rewards menu as a row of buttons across the top, and full-height help and calendar */
@@ -335,8 +335,8 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .kc h3 { margin: 0; font-size: 19px; } .kc header small { color: var(--mute); font-size: 14px; }
 .kc-ico { font-size: 26px; }
 .kc-pill { font-size: 12.5px; font-weight: 700; padding: 4px 12px; border-radius: 99px; border: 1px solid var(--line); color: var(--mute); white-space: nowrap; }
-.kc-pill.ok { color: #22c55e; border-color: rgba(34,197,94,.5); }
-.kc-pill.warn { color: #fbbf24; border-color: rgba(251,191,36,.6); }
+.kc-pill.ok { color: #4cd964; border-color: rgba(34,197,94,.5); }
+.kc-pill.warn { color: #f5a623; border-color: rgba(251,191,36,.6); }
 .kc label { margin-top: 12px; }
 .kc-how { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.03); }
 .kc-how summary { cursor: pointer; color: #3fa9f5; font-weight: 700; }
@@ -349,7 +349,7 @@ body.acting::after { content: '⏳ Saving to Google…'; position: fixed; top: 7
 .lic-dl dd { margin: 0; line-height: 1.5; }
 .lic-dl .row-between { display: flex; gap: 12px; align-items: center; justify-content: space-between; }
 @media (max-width: 520px) { .lic-dl { grid-template-columns: 1fr; gap: 2px; } .lic-dl dd { margin-bottom: 10px; } }
-.redbox { border: 2px solid #ef4444; background: rgba(239,68,68,.1); color: #f87171; border-radius: 12px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
+.redbox { border: 2px solid #ef4444; background: rgba(239,68,68,.1); color: #ef4444; border-radius: 12px; padding: 12px 16px; margin: 14px 0; line-height: 1.5; }
 .redbox b { color: #ef4444; }
 .setup-links { margin: 6px 0 0 22px; padding-left: 16px; border-left: 3px solid var(--line); }
 /* Day buttons speak for themselves: no "school days" line, and days + times on one row */

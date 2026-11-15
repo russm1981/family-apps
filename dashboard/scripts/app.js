@@ -114,7 +114,7 @@
     window.FDApi = {
         ready: function () { return !!(cfg.url && cfg.code); },
         config: function () { return { url: cfg.url, code: cfg.code }; },
-        /** Connect this screen with a pasted screen/setup link. */
+        /** Connect this display with a pasted screen/setup link. */
         connect: function (text) {
             var l = fromLink(text);
             if (!l.api || !l.code) return false;

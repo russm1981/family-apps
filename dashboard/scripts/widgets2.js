@@ -29,7 +29,7 @@
         function render() {
             if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No dates'); return; }
             var items = data.items.filter(function (x) { return daysTo(x.date) >= 0; });
-            if (!items.length) { body.innerHTML = '<div class="empty">Nothing to count down to yet.<br>Add a Holiday to the calendar, or a date in ⚙ Widgets → Other → Holiday countdown.</div>'; return; }
+            if (!items.length) { body.innerHTML = '<div class="empty">Nothing to count down to yet.<br>Add a Holiday to the calendar, or a date in Other → Holiday countdown.</div>'; return; }
             var a = items[0], n = daysTo(a.date);
             var big = n === 0 ? '<b class="cd-num today">Today!</b>' : '<b class="cd-num">' + n + '</b><span class="cd-lbl">' + (n === 1 ? 'sleep to go' : n < 15 ? 'sleeps to go' : 'days to go') + '</span>';
             body.innerHTML = '<div class="cd-main" style="--cc:' + esc(a.colour || '#ffd54a') + '"><div class="cd-left">' + big + '</div>' +
@@ -419,8 +419,8 @@
         function render() {
             if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No Spotify'); return; }
             if (data.needLogin) {
-                body.innerHTML = '<div class="sp-msg"><span class="sp-logo">♫</span><b>Connect Spotify</b><span>' + (data.hasClient ? 'On a computer: houserunner.app → ⚙ Widgets → Other → Spotify → Connect Spotify.'
-                    : 'Add your Spotify app keys in ⚙ Setup → System → External data keys, then connect in ⚙ Widgets → Other → Spotify.') + '</span></div>';
+                body.innerHTML = '<div class="sp-msg"><span class="sp-logo">♫</span><b>Connect Spotify</b><span>' + (data.hasClient ? 'On a computer: houserunner.app → Other → Spotify → Connect Spotify.'
+                    : 'Add your Spotify app keys in System → External data keys, then connect in Other → Spotify.') + '</span></div>';
                 return;
             }
             if (data.idle || !data.track) { body.innerHTML = '<div class="sp-msg"><span class="sp-logo">♫</span><b>Nothing playing</b><span>Start Spotify on a phone, speaker or this PC.</span></div>'; return; }

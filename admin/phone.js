@@ -20,7 +20,7 @@
     var ROOT = location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, '').replace(/index\.html$/, '');
     var HOST = ROOT.replace(/^https?:\/\//, '').replace(/\/$/, '');
     function IC(k, e) { return (window.FD_ICONS && FD_ICONS[k]) || e; }
-    var TABS = [['calendar', '📅', 'Calendar'], ['notes', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['points', '⭐', 'Points'], ['widgets', IC('other', '🧩'), 'Widgets'], ['more', '☰', 'More']];
+    var TABS = [['calendar', '📅', 'Calendar'], ['notes', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['points', '⭐', 'Rewards'], ['widgets', IC('other', '🧩'), 'Widgets'], ['more', '☰', 'More']];
     var OLD = { memos: 'notes', rewards: 'points', family: 'points', other: 'widgets', settings: 'more', s: 'more', help: 'more', feedback: 'feedback', dhome: 'calendar', home: 'calendar' };
 
     /* ------------------------------------------------------------------ data and saving */
@@ -98,7 +98,7 @@
     }
     function banner() {
         var L = DATA && DATA.licence;
-        if (L && L.required && !L.ok) return '<div class="fa-banner warn">🎫 ' + esc(L.message) + ' – add your licence key on a computer at <b>' + esc(HOST) + '</b> → System → Software Licence.</div>';
+        if (L && L.required && !L.ok) return '<div class="fa-banner warn">🎫 ' + esc(L.message) + ' – add your licence key on a computer at <b>' + esc(HOST) + '</b> → System → Licence.</div>';
         return '';
     }
 
@@ -169,11 +169,12 @@
             sheet('<h2>Add an event</h2>' +
                 '<label>What</label><input id="evT" maxlength="120" placeholder="e.g. Dentist" autocomplete="off">' +
                 '<label>Who or what for</label><select id="evC">' + (addable.length ? addable.map(function (a) { return '<option>' + esc(a.name) + '</option>'; }).join('') : '<option value="">General</option>') + '</select>' +
-                '<div class="fa-two"><div><label>Day</label><input type="date" id="evS" value="' + t0 + '"></div><div><label>Until <small>(optional)</small></label><input type="date" id="evE"></div></div>' +
+                '<div class="fa-two"><div><label>Day <b class="fa-nice" id="evSn">' + esc(nice(t0)) + '</b></label><input type="date" id="evS" value="' + t0 + '"></div><div><label>Until <small>(optional)</small> <b class="fa-nice" id="evEn"></b></label><input type="date" id="evE"></div></div>' +
                 '<label>Time <small>(leave blank for all day)</small></label><input type="time" id="evH">' +
                 '<label>Notes <small>(optional)</small></label><input id="evN" maxlength="300" autocomplete="off">' +
                 '<div class="fa-actions"><button class="btn ghost" id="evX">Cancel</button><button class="btn" id="evAdd">+ Add event</button></div>');
             $('evX').onclick = closeSheet;
+            ['evS', 'evE'].forEach(function (k) { $(k).oninput = function () { $(k + 'n').textContent = this.value ? nice(this.value) : ''; }; });
             $('evAdd').onclick = function () {
                 var b = this, t = $('evT').value.trim(); if (!t) { FD.toast('Give the event a name', true); return; }
                 var q = { action: 'addEvent', title: t, category: $('evC').value, start: $('evS').value, end: $('evE').value || $('evS').value, time: $('evH').value, note: $('evN').value.trim() };

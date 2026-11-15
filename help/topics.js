@@ -4,12 +4,12 @@
  */
 window.FD_HELP = [
   {
-    id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
-    summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – the calendar, notes, lists and points – are in the Family Admin app on your phone.',
+    id: 'where', icon: '🧭', title: 'houserunner.app and the Family Admin app',
+    summary: 'Setting things up is on houserunner.app, on a computer. Everyday things – the calendar, notes, lists and points – are in the Family Admin app on your phone.',
     body: `
-<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>⚙ Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and System. <b>⚙ Widgets</b>: the calendar, notes, lists, reminders and the other widgets’ settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
-<p><b>Family Admin (phone)</b> – six buttons along the top: <b>Calendar</b> (add an event, see what’s coming up), <b>Notes</b>, <b>Lists</b>, <b>Points</b> (give and take away points, tick off tasks), <b>Widgets</b> (each widget’s simple settings) and <b>More</b> (connect a display, add a phone, help and feedback). Everything else is set up on the Configurator.</p>
-<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Connect a display</b>. On the computer you used for setup, it connects by itself.</p>`
+<p><b>The houserunner.app (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>⚙ Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and System. <b>⚙ Widgets</b>: the calendar, notes, lists, reminders and the other widgets’ settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>Family Admin (phone)</b> – six buttons along the top: <b>Calendar</b> (add an event, see what’s coming up), <b>Notes</b>, <b>Lists</b>, <b>Points</b> (give and take away points, tick off tasks), <b>Widgets</b> (each widget’s simple settings) and <b>More</b> (connect a display, add a phone, help and feedback). Everything else is set up at houserunner.app.</p>
+<p>The first time you open houserunner.app on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Connect a display</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
@@ -20,16 +20,16 @@ window.FD_HELP = [
 <h2>Common sticking points</h2>
 <dl>
 <dt>“Make my copy” asks me to sign in, or copies into the wrong account</dt><dd>Sign in with the Google account the dashboard should live in – the one with the family calendar. If you’re signed into two accounts, Google uses the one shown at the top right; switch there and click <b>Make my copy</b> again.</dd>
-<dt>There’s no 🏠 Family Dashboard menu in my Sheet</dt><dd>It appears a few seconds after the Sheet opens, at the end of the menus along the top (after <b>Help</b>). If it doesn’t, reload the Sheet’s tab. Still nothing? Use <b>Publish it by hand instead</b> on the setup page.</dd>
-<dt>It asks me to turn on the “Google Apps Script API”</dt><dd>That’s Google’s switch that lets your copy publish itself. Open <b>script.google.com/home/usersettings</b>, turn <b>Google Apps Script API</b> on, then choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect</b> again. Check it’s the same Google account as your Sheet (top right). You only do it once.</dd>
+<dt>There’s no 🏠 HouseRunner menu in my Sheet</dt><dd>It appears a few seconds after the Sheet opens, at the end of the menus along the top (after <b>Help</b>). If it doesn’t, reload the Sheet’s tab. Still nothing? Use <b>Publish it by hand instead</b> on the setup page.</dd>
+<dt>It asks me to turn on the “Google Apps Script API”</dt><dd>That’s Google’s switch that lets your copy publish itself. Open <b>script.google.com/home/usersettings</b>, turn <b>Google Apps Script API</b> on, then choose <b>🏠 HouseRunner → ▶ Set up &amp; connect</b> again. Check it’s the same Google account as your Sheet (top right). You only do it once.</dd>
 <dt>I can’t find Deploy</dt><dd>You only need Deploy if you’re publishing by hand. It’s in the <b>Apps Script</b> tab, not the Sheet: in the Sheet click <b>Extensions → Apps Script</b>. <b>Deploy</b> is the blue button at the top right of that tab.</dd>
 <dt>Deploy just spins, or Google keeps asking for permission</dt><dd>Nearly always the browser is signed in to more than one Google account. Open a private window (Chrome: Ctrl+Shift+N), sign in with only the account the Sheet is in, open the Sheet from drive.google.com and deploy there. Use Chrome or Edge and allow pop-ups. Press Save (💾) in Apps Script before Deploy. If it still spins, make a fresh copy and deploy that in the private window.</dd>
 <dt>“Google hasn’t verified this app”</dt><dd>That’s normal: it’s your own private copy, which Google hasn’t reviewed. Click <b>Advanced</b> (small, bottom left), then <b>Go to Family Dashboard (unsafe)</b>, then <b>Allow</b>.</dd>
-<dt>The menu only says “Load the dashboard program” (no “Set up &amp; connect”)</dt><dd>A brand-new copy can’t fetch its program while the Sheet opens. Click <b>🏠 Family Dashboard → Load the dashboard program</b>, allow it if Google asks, click <b>OK</b> when it says “Loaded version …”, then reload the Sheet. The full menu appears.</dd>
-<dt>The 🏠 Family Dashboard menu doesn’t appear in the Sheet</dt><dd>Reload the Sheet’s tab (F5, or ⌘R on a Mac) and wait about 10 seconds – it appears after <b>Help</b> along the top.</dd>
+<dt>The menu only says “Load the dashboard program” (no “Set up &amp; connect”)</dt><dd>A brand-new copy can’t fetch its program while the Sheet opens. Click <b>🏠 HouseRunner → Load the dashboard program</b>, allow it if Google asks, click <b>OK</b> when it says “Loaded version …”, then reload the Sheet. The full menu appears.</dd>
+<dt>The 🏠 HouseRunner menu doesn’t appear in the Sheet</dt><dd>Reload the Sheet’s tab (F5, or ⌘R on a Mac) and wait about 10 seconds – it appears after <b>Help</b> along the top.</dd>
 <dt>The setup page says “Couldn’t reach that address” or “opened a Google page instead”</dt><dd>In Apps Script: <b>Deploy → Manage deployments → ✎ (pencil)</b>, check <b>Who has access</b> is <b>Anyone</b>, and click <b>Deploy</b>.</dd>
 <dt>The licence key isn’t accepted</dt><dd>See <a href="#licence">Licence key</a>. You can carry on without it for 14 days and add it later.</dd>
-<dt>I closed the setup page</dt><dd>Open it again from the same computer and browser – it remembers where you were. Or in your Sheet: <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>.</dd>
+<dt>I closed the setup page</dt><dd>Open it again from the same computer and browser – it remembers where you were. Or in your Sheet: <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>.</dd>
 </dl>`
   },
   {
@@ -71,8 +71,8 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → More → Connect a display</b>. For the Windows PC, make a new start file in the Configurator (<b>⚙ Setup → Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
-<dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → More → Connect a display</b>. For the Windows PC, make a new start file at houserunner.app (<b>Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
+<dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your HouseRunner Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
 <dt>“This dashboard has moved to a new Google Sheet”</dt><dd>Someone moved it (another Google account, or “Start afresh” on an older Sheet). The screen should follow automatically; if not, make a new start file as above.</dd>
@@ -86,10 +86,10 @@ window.FD_HELP = [
 <p>Each widget gets its information from a different free service. If one service is down, or the widget needs something you haven’t given it yet, just that widget shows a message and the dot turns orange. The rest keep working.</p>
 <h2>Common messages</h2>
 <dl>
-<dt>Traffic or maps: “needs a TomTom key”</dt><dd>Add a free TomTom key: <b>the Configurator → System → Data keys</b>. See <a href="#keys">Free API keys</a> for how to get one.</dd>
-<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>⚙ Setup → System → External data keys</b>. Check the station codes in the Trains widget settings (three letters, e.g. VIC for London Victoria – find yours at nationalrail.co.uk).</dd>
+<dt>Traffic or maps: “needs a TomTom key”</dt><dd>Add a free TomTom key: <b>houserunner.app → System → Data keys</b>. See <a href="#keys">Free API keys</a> for how to get one.</dd>
+<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>System → External data keys</b>. Check the station codes in the Trains widget settings (three letters, for example VIC for London Victoria – find yours at nationalrail.co.uk).</dd>
 <dt>Photos: “Paste a Google Drive folder link”</dt><dd>See <a href="#photos">Photos</a>.</dd>
-<dt>Buses: no departures</dt><dd>Needs the TransportAPI app ID and key in <b>⚙ Setup → System → External data keys</b>, and the right bus stop in the widget’s settings.</dd>
+<dt>Buses: no departures</dt><dd>Needs the TransportAPI app ID and key in <b>System → External data keys</b>, and the right bus stop in the widget’s settings.</dd>
 <dt>Spotify: “Not connected”</dt><dd>In the Family Admin app open the Spotify widget and press <b>Connect Spotify</b>. Play/pause needs Spotify Premium.</dd>
 <dt>Anything saying “unavailable”, “didn’t answer” or a number like 500</dt><dd>The outside service is having a problem. Wait an hour – it usually comes back by itself.</dd>
 </dl>
@@ -110,8 +110,8 @@ window.FD_HELP = [
 <h2>“Your Google script needs updating”</h2>
 <p>Your Sheet was set up before the loader existed. Switch to it once – the last time you’ll paste anything:</p>
 <ol>
-<li>On a computer open <b>⚙ Setup → System → Software updates</b>, or open your Sheet → <b>Extensions → Apps Script</b>.</li>
-<li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (⚙ Setup → System → Software updates has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
+<li>On a computer open <b>System → Software updates</b>, or open your Sheet → <b>Extensions → Apps Script</b>.</li>
+<li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (System → Software updates has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
 <li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>
 </ol>
 <p>The old way (the script rewriting itself) needs Google’s Apps Script API switched on in two places – your account settings and the script’s own Google Cloud project, which Google often won’t let you open. The loader avoids all of that.</p>
@@ -121,10 +121,10 @@ window.FD_HELP = [
   },
   {
     id: 'connect', icon: '📱', title: 'Connect a new phone, tablet or screen',
-    summary: 'Each phone or screen needs your family’s private link once. Get it from the Family Admin app on a phone that’s already connected, or from the Configurator on a computer.',
+    summary: 'Each phone or screen needs your family’s private link once. Get it from the Family Admin app on a phone that’s already connected, or from houserunner.app on a computer.',
     body: `
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
-<h2>The Configurator on a computer</h2>
+<h2>houserunner.app on a computer</h2>
 <p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → More → Connect a display</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
 <h2>A new phone (Family Admin or Family Dashboard)</h2>
 <ol>
@@ -140,9 +140,9 @@ window.FD_HELP = [
 <li><b>Any other computer:</b> go to <b>houserunner.app/dashboard</b> in a browser and press <b>F11</b> for full-screen.</li>
 </ul>
 <h2>How many screens?</h2>
-<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>houserunner.app → System → Devices and Phones</b> on a computer.</p>
+<p>Your licence says how many <b>displays</b> (Corsair XENEON EDGE, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>houserunner.app → System → Devices and Phones</b> on a computer.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
-<p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
+<p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 HouseRunner → Connect my screen and phones</b>.</p>`
   },
   {
     id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new screen',
@@ -185,7 +185,7 @@ window.FD_HELP = [
 <table class="t">
 <tr><td><b>Wide</b></td><td>The Corsair XENEON EDGE (2560×720) and similar very wide screens. Four columns of widgets side by side.</td></tr>
 <tr><td><b>Tablet</b></td><td>A tablet held sideways – we test on the Amazon Fire HD 10 (1920×1200). Two columns at a time: a page with more than two columns gets two buttons in the side bar (the house with a 1, the house with a 2). Tap the screen once and it goes full screen – or add it to the home screen (browser menu → Add to Home screen) and open it from there. A tablet doesn’t use the dashboard’s sleep screen: just press its power button. The children’s page shows 3 children a screen, each card stacked to fit, with more buttons if needed.</td></tr>
-<tr><td><b>Computer</b></td><td>A computer’s web browser shows the Corsair layout at its own shape, scaled to fit the window. The calendar’s <b>Year</b> view is a wall planner – a row for each month – using the whole window (on a tablet too).</td></tr>
+<tr><td><b>Computer</b></td><td>A computer’s web browser shows the Corsair XENEON EDGE layout at its own shape, scaled to fit the window. The calendar’s <b>Year</b> view is a wall planner – a row for each month – using the whole window (on a tablet too).</td></tr>
 </table>
 <p>On a different shape – a phone, a tablet held upright, or a strangely sized window – the dashboard uses the nearer layout and shows <i>“This screen is an unusual shape”</i>. It will still work, but some things may not fit. On a tablet, turn it sideways; on a computer, make the browser window full-screen (F11).</p>
 <p>The children’s page and the calendar are drawn a little smaller on tablets so everything fits.</p>`
@@ -197,13 +197,13 @@ window.FD_HELP = [
 <p>Some families prefer the dashboard’s permissions (calendar, Gmail for parcels…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
 <ol>
 <li>If you haven’t got one, make the new Google account (e.g. at gmail.com).</li>
-<li>On a computer (or in Family Admin): <b>⚙ Setup → System → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
+<li>On a computer (or in Family Admin): <b>System → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
 <li>On a <b>computer</b>, sign in to Google as the new account (a private/incognito window is easiest) and open the link. It’s the setup wizard, in “moving” mode.</li>
 <li>Follow the setup steps for the new account: make the Sheet and publish it (steps 2 and 3).</li>
 <li>At <b>Publish &amp; connect</b>, press <b>Bring everything across</b>.</li>
 </ol>
 <p>That’s it: people, points, tasks, lists, notes, settings and your licence move to the new account, and your screen and phones switch over by themselves. The old Sheet is kept as a backup – keep it for a few weeks, as it points older links to the new one, then you can delete it.</p>
-<p>Calendars: the new account needs to see your family calendar. In Google Calendar (on the old account) share the calendar with the new account, then add its ID in <b>the Configurator → System → Locations &amp; home</b>.</p>`
+<p>Calendars: the new account needs to see your family calendar. In Google Calendar (on the old account) share the calendar with the new account, then add its ID in <b>houserunner.app → System → Locations &amp; home</b>.</p>`
   },
   {
     id: 'licence', icon: '🎫', title: 'Licence key',
@@ -212,7 +212,7 @@ window.FD_HELP = [
 <h2>Entering your key</h2>
 <ol><li>Find your order email – the key looks like <code>FD-AB2CD-EF3GH-JK4LM-NP5QR</code>.</li>
 <li>When you first set up, the setup wizard has a step <b>“Your licence key”</b> – the link in your email fills it in for you.</li>
-<li>Later: on a computer, <b>houserunner.app → System → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
+<li>Later: on a computer, <b>houserunner.app → System → Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
 <h2>Messages</h2>
 <dl>
 <dt>“Free trial: N days left”</dt><dd>Everything works; add your key before the trial ends.</dd>
@@ -228,7 +228,7 @@ window.FD_HELP = [
     body: `
 <p>This is the <b>sleep screen</b>. One touch anywhere wakes the dashboard – that touch doesn’t press anything underneath. A kitchen timer going off wakes it too.</p>
 <h2>Changing it</h2>
-<p>On a computer, <b>houserunner.app → System → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
+<p>On a computer, <b>houserunner.app → System → Display Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
 <h2>The screen goes completely black and a touch doesn’t wake it</h2>
 <p>That’s Windows switching the display off, not the dashboard. The start file offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
   },
@@ -250,7 +250,7 @@ window.FD_HELP = [
     id: 'keys', icon: '🔑', title: 'Free API keys (maps, trains, buses, NASA, Spotify)',
     summary: 'Some widgets use free services that need a key – a long code that identifies you. They’re free and take a few minutes each; you only need the ones for the widgets you use.',
     body: `
-<p>An <b>API key</b> is like a free library card for an online service. You sign up on their website, they give you a long code, and you paste it into <b>the Configurator → System → Data keys</b>. That page marks the ones your widgets need.</p>
+<p>An <b>API key</b> is like a free library card for an online service. You sign up on their website, they give you a long code, and you paste it into <b>houserunner.app → System → Data keys</b>. That page marks the ones your widgets need.</p>
 <table class="t">
 <tr><td><b>TomTom</b></td><td>Traffic times and the traffic map. Free at developer.tomtom.com.</td></tr>
 <tr><td><b>National Rail</b></td><td>Train departures. Free from the Rail Data Marketplace (raildata.org.uk) or National Rail’s OpenLDBWS.</td></tr>
@@ -262,16 +262,16 @@ window.FD_HELP = [
   },
   {
     id: 'bins', icon: '🗑', title: 'Bin days',
-    summary: 'The Bins widget works anywhere in the UK. ⚙ Widgets → Other → Bins → Set up bin days: type your postcode, we find your council, and read your bin days from it if we can – otherwise you type your bins in once.',
+    summary: 'The Bins widget works anywhere in the UK. Other → Bins → Set up bin days: type your postcode, we find your council, and read your bin days from it if we can – otherwise you type your bins in once.',
     body: `
 <ol>
-<li>On a computer: <b>houserunner.app → ⚙ Widgets → Other → Bins → Set up bin days</b>.</li>
+<li>On a computer: <b>houserunner.app → Other → Bins → Set up bin days</b>.</li>
 <li>Type your postcode → <b>Find my council</b>. Check it’s the council that collects your bins (choose another from the list if not). Councils marked ✔ can be read automatically.</li>
 <li><b>Council marked ✔:</b> most need your home’s <b>property number (UPRN)</b> – find it at <a href="https://www.findmyaddress.co.uk/search" target="_blank" rel="noopener">findmyaddress.co.uk</a> (search your postcode, pick your address, copy the UPRN). Press <b>Try it</b>: if your next collections appear, press <b>Use this</b>. If not, you can enter your bins by hand.</li>
 <li><b>Any other council:</b> enter your bins by hand – for each bin, what it is, how often (every 1–4 weeks) and its next collection date. You see the next few collections before you save. Or, if your council’s bin-day page has an “add to calendar” link, use that.<br><b>Shortcut:</b> open <b>✨ Let an AI assistant look it up</b> – copy the ready-written request into ChatGPT, Claude or Gemini, then paste its answer back and your bins fill themselves in. Check the dates against the council’s calendar before saving.</li>
 </ol>
 <p>More councils are being added over time; ones you’ve set up by hand can switch over later. Bank-holiday changes aren’t known when you’ve entered your bins by hand.</p>
-<p>If it stops working, a diagnostics report (⚙ Setup → System → About &amp; diagnostics) includes what the council’s service said, so support can see why.</p>`
+<p>If it stops working, a diagnostics report (System → About &amp; diagnostics) includes what the council’s service said, so support can see why.</p>`
   },
   {
     id: 'voice', icon: '🎙', title: 'Voice commands',
@@ -292,7 +292,7 @@ window.FD_HELP = [
 <li>Voice recognition needs the internet.</li></ul>`
   },
   {
-    id: 'points', icon: '★', title: 'Points, tasks and reminders',
+    id: 'points', icon: '★', title: 'Rewards: points, Reward Tasks and reminders',
     summary: 'Children earn points for Reward Tasks, lose them for penalties and cash them in for pocket money. Parents set it up at houserunner.app → Rewards, and give points day to day in the Family Admin app → Points.',
     body: `
 <ul>
@@ -301,7 +301,7 @@ window.FD_HELP = [
 <li><b>Reminders</b> show on the day, and from 5 pm the evening before (sports kit, library book…).</li>
 <li><b>Cashing in</b>: when a child reaches the target (e.g. 500 points = £5) the Cash in button appears.</li>
 </ul>
-<p>Set it up in <b>⚙ Setup → Rewards</b>. Choose which children take part in <b>⚙ Setup → Family</b> (the ⭐ button). Each of them gets a <b>points widget</b> – a full-height card you can put on any screen, or two on one, in <b>⚙ Setup → Screens</b>.</p>
+<p>Set it up in <b>Rewards</b>. Choose which children take part in <b>Family</b> (the ⭐ button). Each of them gets a <b>points widget</b> – a full-height card you can put on any screen, or two on one, in <b>Screens</b>.</p>
 <p>Made a mistake? Each change shows an <b>Undo</b> for a few seconds, and you can remove any entry from a child’s statement.</p>`
   },
   {
@@ -312,8 +312,8 @@ window.FD_HELP = [
 <ul><li>An event for <b>one person</b>: colour it <b>Graphite</b> and put their name in brackets at the end – “Drums <b>(Oliver)</b>”. The dashboard shows it in Oliver’s colour, or his group’s.</li>
 <li>An event with <b>no colour</b> goes in <b>Other</b>.</li>
 <li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
-<p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>⚙ Setup → Screens → your calendar page → Tidy up your Google calendar</b>.</p>
-<p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>⚙ Setup → Screens</b>.</p>
+<p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Screens → your calendar page → Tidy up your Google calendar</b>.</p>
+<p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>Screens</b>.</p>
 <h2>Birthday and Holiday</h2>
 <p>These two categories are always there – the Birthdays and Holiday countdown widgets need them. You can still show them, hide them, or show them as Other. While one is showing, the calendar has a button for it: <b>🎂</b> shows only the birthdays and <b>🌴</b> only the holidays (in full, even if Holiday is normally a line under the day). Press it again to see everything.</p>`
   },
@@ -322,10 +322,10 @@ window.FD_HELP = [
     summary: 'Want a clean start? Set up a new family from scratch – your old Sheet is kept as a backup. (Moving everything to another Google account is a separate option.)',
     body: `
 <h2>Start afresh – only for older Sheets</h2>
-<p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>the Configurator → System → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
+<p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>houserunner.app → System → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
-<ol><li>Free your licence key first: <b>houserunner.app → System → Software Licence → Free up my licence key</b> (on a computer). Note the key.</li>
+<ol><li>Free your licence key first: <b>houserunner.app → System → Licence → Free up my licence key</b> (on a computer). Note the key.</li>
 <li>Run the <a href="../setup/guide/">setup wizard</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup wizard shows how).</li></ol>`
   },
@@ -334,7 +334,7 @@ window.FD_HELP = [
     summary: 'Send a support request from the Feedback button – tick “attach a diagnostics report” and support can see exactly what’s wrong. You can follow its progress there too.',
     body: `
 <h2>The easiest way</h2>
-<ol><li>On a computer, open the <b>HouseRunner Configurator</b> and press <b>💬 Feedback</b> at the top, by the title. (In the Family Admin app on your phone it’s under <b>Help &amp; support</b>.)</li>
+<ol><li>On a computer, open the <b>houserunner.app</b> and press <b>💬 Feedback</b> at the top, by the title. (In the Family Admin app on your phone it’s under <b>Help &amp; support</b>.)</li>
 <li>Choose <b>Support request</b>, say what’s wrong in a sentence or two, and leave <b>Attach a diagnostics report</b> ticked.</li>
 <li>Press <b>Send</b>. You get a reference number, and the same page shows your requests and support’s replies as they come in.</li></ol>
 <h2>From the screen</h2>

@@ -124,7 +124,7 @@
           steps: ['Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>, log in and click <b>Create app</b>.',
                   'Any name and description. For <b>Redirect URI</b> paste your web app address (copy it below). Tick <b>Web API</b>, agree, Save.',
                   'Open the app’s <b>Settings</b>: copy the <b>Client ID</b>, then <b>View client secret</b> and copy that too.',
-                  'After saving here, open ⚙ Widgets → Other → Spotify → <b>Connect Spotify</b> (one-off).'] },
+                  'After saving here, open Other → Spotify → <b>Connect Spotify</b> (one-off).'] },
     ];
 
     var P = window.FD_PRIVACY || { version: '0', summary: [], full: '' };
@@ -154,9 +154,9 @@
                     '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No screen yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
-                '<p>HouseRunner is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
+                '<p>HouseRunner is standard software that runs on your display and your phones. Everything that belongs to your family – names, the calendar, ' +
                 'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
-                '<p>The software reaches your Sheet with a <b>private access code</b> that setup creates for you. The code stays on your own screen and phones and isn’t sent ' +
+                '<p>The software reaches your Sheet with a <b>private access code</b> that setup creates for you. The code stays on your own display and phones and isn’t sent ' +
                 'anywhere else, so your family’s information stays private – nobody else can see it.</p></div>' +
                 '<div class="card big"><h3>What you’ll end up with</h3><ul>' +
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
@@ -206,16 +206,16 @@
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
-                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 Family Dashboard</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
                     '<li>Google asks for permission: click <b>Continue</b> and choose your account. <b>“Google hasn’t verified this app”</b> is normal, because it’s your own private copy: ' +
                         'click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + whyPerms() + '</li>' +
-                    '<li>Choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
+                    '<li>Choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, and you can close this one.</li></ol>' +
                     helpLink('setup') + '</div>' +
                     '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: press <b>Next</b> for the by-hand way to publish.</p>' + manual() + '</details>'
                   : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes). Then press <b>Next</b>.</div><div class="card big">' + manual() + '</div>');
             function manual() {
-                return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>Family Dashboard</b>.</li>' +
+                return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>HouseRunner</b>.</li>' +
                     '<li><b>Extensions → Apps Script</b>. Replace everything in <b>Code.gs</b> with the <b>loader</b> – a small file that fetches the latest program each time, so it keeps itself up to date:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
                     '<li><b>+</b> → <b>HTML</b>, name it <b>Admin</b>, and replace its contents with:' + filesBox('Admin.html', 'Admin.html') + '</li>' +
                     '<li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json"</b>; open it and replace it with:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
@@ -225,15 +225,15 @@
 
         { id: 'publish', title: 'Publish & connect', render: function () {
             var perms = whyPerms();
-            if (connected()) return '<h1>Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your Family Dashboard Sheet.') + '<p>Press <b>Next</b>.</p>' +
+            if (connected()) return '<h1>Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your HouseRunner Google Sheet.') + '<p>Press <b>Next</b>.</p>' +
                 '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
             return '<h1>Publish it and connect</h1><p class="lead">Already clicked <b>Carry on with setup</b> in your Sheet? Setup carries on in that new tab – you can close this one. Otherwise: your Sheet comes with a small program inside it. “Publishing” switches it on, so your screen and phones can talk to your Sheet – ' +
                 'using the private access code, and nothing else. You do it once, from a menu in your Sheet.</p>' +
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
-                '<li>Wait a few seconds for the <b>🏠 Family Dashboard</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                '<li>Wait a few seconds for the <b>🏠 HouseRunner</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
                 '<li>Google asks for permission: click <b>Continue</b> (or <b>Authorize access</b>) and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
                     'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
-                '<li>Choose the menu again: <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>. ' +
+                '<li>Choose the menu again: <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>. ' +
                     '<span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
                 '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – this page opens again, already connected. Nothing to copy or paste.</li></ol>' +
                 helpLink('setup') + '<div id="connStatus"></div></div>' +
@@ -266,7 +266,7 @@
                     '<p class="mute">The URL: in Apps Script, <b>Deploy → Manage deployments</b>, and copy the <b>Web app URL</b> (it ends in /exec)' +
                     (connected() ? '' : ' – then paste it in the box above') + '.</p>' +
                     (connected() ? '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' : '') +
-                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b>.</p>' +
+                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>.</p>' +
                     '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
                     '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
             }
@@ -304,7 +304,7 @@
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
-                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in ⚙ Setup → System → Software Licence (on a computer or in the Family Admin app).</p></details>' + helpLink('licence');
+                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in System → Licence (on a computer or in the Family Admin app).</p></details>' + helpLink('licence');
         }, wire: function () {
             if (!connected()) return;
             var show = function (L) {
@@ -334,7 +334,7 @@
             if (!FAM) FAM = { name: ADM.familyName || '', people: ((ADM.family || {}).people || []).map(function (p) { return { name: p.name, was: p.name, colour: p.colour, rewards: !!p.points }; }) };
             return '<h1>4. Your family</h1>' +
                 '<p class="lead">Who’s in the family. Each person has a colour of their own, and you tick <b>⭐ Rewards</b> for anyone who takes part in the reward system (usually the children). ' +
-                    'You can change all of this later in the Configurator → Family. <span class="mute">(About 5 minutes.)</span></p>' +
+                    'You can change all of this later at houserunner.app → Family. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p>' +
                     '<input id="fwName" maxlength="30" placeholder="e.g. Smith" value="' + esc(FAM.name) + '"></div>' +
                 '<div class="card big"><h3>Where you live</h3><p class="mute">Your country sets the public holidays, map searches and units, and which widgets work there – a few (bin days from your council, trains, buses) are UK-only.</p>' +
@@ -347,7 +347,7 @@
                     '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. London, SW1A 0AA"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
                     (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
-                    '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks, Daily To-Dos and reminders, and a Reward Widget of their own to put on a screen. ' +
+                    '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks, Daily To-Dos and reminders, and their own Child’s Rewards widget to put on a screen. ' +
                     'Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is the next step.</p>' +
                     '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
             function famRow(p, i) {
@@ -389,7 +389,7 @@
                     var pc = ctry === 'GB' && /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
                     if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
                         $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
-                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in ⚙ Widgets → Other → Bins.</div>');
+                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Other → Bins.</div>');
                     }, function () { /* older Google script – the Check step will say */ });
                 }).catch(function (e) { b.disabled = false; $('famStatus').innerHTML = okLine(false, e.message); });
             };
@@ -399,7 +399,7 @@
             if (!ADM) { loadAdm(); return '<h1>5. Your calendar</h1><div class="card" id="admLoad"><div class="status">Reading your Sheet…</div></div>'; }
             return '<h1>5. Your calendar</h1>' +
                 '<p class="lead">How the dashboard colours your Google Calendar. Every event goes in a <b>category</b> – a group of people (Family is everyone), a person, or a general one like Holiday – ' +
-                    'and each category has one of Google Calendar’s colours, so events you add in Google Calendar land in the right place. This is the same as the Configurator → Screens → your calendar page. ' +
+                    'and each category has one of Google Calendar’s colours, so events you add in Google Calendar land in the right place. This is the same as houserunner.app → Screens → your calendar page. ' +
                     '<span class="mute">(About 5 minutes.)</span></p>' +
                 '<div id="calBox" class="cs-box"></div>';
         }, wire: function () {
@@ -414,21 +414,21 @@
             var draw = function () { window.FDCalSetup.render($('calBox'), cal ? cal.id : '', hooks); renderSteps(); };
             draw();
         } },
-        { id: 'devices', title: 'Connect your display', render: function () {
-            if (!connected()) return '<h1>6. Connect your display</h1>' + needConnect();
+        { id: 'devices', title: 'Connect a display', render: function () {
+            if (!connected()) return '<h1>6. Connect a display</h1>' + needConnect();
             var dev = ({ pc: 1, pi: 1, tab: 1, here: 1 })[S.dev] ? S.dev : 'pc';
             var tab = function (k, t) { return '<button data-dev="' + k + '" class="' + (dev === k ? 'on' : '') + '">' + t + '</button>'; };
             var codeBox = function (what) {
-                return '<li>The ' + what + ' shows <b>“Connect this screen”</b> and a code like <b>K7Q2-M9XD</b>. Type that code here and click <b>Connect</b>:' +
+                return '<li>The ' + what + ' shows <b>“Connect this display”</b> and a code like <b>K7Q2-M9XD</b>. Type that code here and click <b>Connect</b>:' +
                     '<div class="row" style="margin-top:8px"><input id="tabCode" placeholder="e.g. K7Q2-M9XD" autocapitalize="characters" spellcheck="false" style="max-width:16rem"><button class="btn" id="tabGo">Connect</button></div><div id="tabStatus" class="mute"></div>' +
                     'It shows your dashboard within a few seconds and remembers it.</li>';
             };
-            var pasteLink = '<details class="card"><summary>Or use the private dashboard link instead of a code</summary><p class="mute">If the screen says “Connect this screen”, you can paste this link there instead.</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>';
-            var body = dev === 'pc' ? '<div class="card big"><h3>XENEON EDGE on a Windows PC</h3><p class="mute">The XENEON EDGE plugs into your Windows PC as a second screen. A small start file opens the dashboard full screen on it.</p>' + '<ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button>. It’s a small zip file: unzip it and put the folder somewhere permanent, such as <b>Documents</b>. Doing this on a different computer? Copy the zip file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
-                    '<li>In the folder, double-click <b>Start HouseRunner</b>. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
+            var pasteLink = '<details class="card"><summary>Or use the private dashboard link instead of a code</summary><p class="mute">If the screen says “Connect this display”, you can paste this link there instead.</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>';
+            var body = dev === 'pc' ? '<div class="card big"><h3>On a Corsair XENEON EDGE (running Windows)</h3><p class="mute">The Corsair XENEON EDGE plugs into your Windows PC as a second screen. A small start file opens the dashboard full screen on it.</p>' + '<ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button>. It’s a small zip file: unzip it and put the folder somewhere permanent, such as <b>Documents</b>. Doing this on a different computer? Copy the zip file to the PC the Corsair XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
+                    '<li>In the folder, double-click <b>Start HouseRunner</b>. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the Corsair XENEON EDGE, already connected.</li>' +
                     '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
-                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your dashboard link', screenUrl(), 3) + '</details></div>'
-                : dev === 'pi' ? '<div class="card big"><h3>XENEON EDGE on a Raspberry Pi</h3><p class="mute">The XENEON EDGE plugged into a Raspberry Pi, which runs the dashboard on its own – no PC needed.</p><ol class="howto">' +
+                    '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this display", copy this link and paste it there:</p>' + copyBox('scr2', 'Your dashboard link', screenUrl(), 3) + '</details></div>'
+                : dev === 'pi' ? '<div class="card big"><h3>On a Raspberry Pi</h3><p class="mute">The Corsair XENEON EDGE plugged into a Raspberry Pi, which runs the dashboard on its own – no PC needed.</p><ol class="howto">' +
                     '<li>A ready-made Pi: plug in the screen, the internet and the power, and skip to the next step. Making your own: install <b>Raspberry Pi OS (64-bit, with desktop)</b> with Raspberry Pi Imager, connect it to your Wi-Fi, open <b>Terminal</b> and type this, then restart the Pi:<code class="cmd">curl -fsSL ' + esc(appsBase) + 'downloads/raspberry-pi/setup-pi.sh | bash</code>It then starts the dashboard full screen by itself every time the Pi switches on.</li>' +
                     codeBox('screen') + '</ol></div>' + pasteLink
                 : dev === 'tab' ? '<div class="card big"><h3>A tablet</h3><p class="mute">An Android or Amazon Fire tablet – on the wall or the kitchen worktop.</p><ol class="howto">' +
@@ -440,10 +440,10 @@
                     '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' + pasteLink
                 : '<div class="card big"><h3>In a browser on this computer</h3><p>No screen to connect yet, or just want to try it? Open the dashboard in a new tab here – it’s what the screen will show, already connected.</p>' +
                     '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
-                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → More → Connect a display.</p></div>';
-            return '<h1>6. Connect your display</h1><p class="lead">The display is what shows the dashboard – the XENEON EDGE, a tablet, or a browser. Choose yours below. ' +
+                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the Corsair XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → More → Connect a display.</p></div>';
+            return '<h1>6. Connect a display</h1><p class="lead">The display is what shows the dashboard – the Corsair XENEON EDGE, a tablet, or a browser. Choose yours below. ' +
                     'These links are <b>private</b>: they point at your Sheet and contain your access code, so only use them on your own devices. <span class="mute">(About 5 minutes.)</span></p>' +
-                '<div class="tabs" id="devTabs">' + tab('pc', 'XENEON EDGE (Windows)') + tab('pi', 'XENEON EDGE (Raspberry Pi)') + tab('tab', 'Tablet') + tab('here', 'PC browser') + '</div>' + body + helpLink('connect');
+                '<div class="tabs" id="devTabs">' + tab('pc', 'Corsair XENEON EDGE (running Windows)') + tab('pi', 'Raspberry Pi') + tab('tab', 'Tablet') + tab('here', 'PC browser') + '</div>' + body + helpLink('connect');
         }, wire: function () {
             if (!connected()) return;
             if ($('tabGo')) $('tabGo').onclick = function () {
@@ -460,9 +460,9 @@
             var tab = function (attr, k, cur, t) { return '<button ' + attr + '="' + k + '" class="' + (cur === k ? 'on' : '') + '">' + t + '</button>'; };
             var A = app === 'admin'
                 ? { ico: '⚙', name: 'Family Admin', who: 'for the adults', what: 'The grown-ups’ app: give and take away the children’s points and tick off their tasks, add notes and shopping-list items, change the widgets’ everyday settings, and look after the screen and the licence. Put it on each adult’s phone.' }
-                : { ico: '▦', name: 'Family Dashboard', who: 'for everyone', what: 'The dashboard itself on a phone: the calendar (it opens on it – add events there), the children’s cards and every widget, one under another. Put it on everyone’s phone – the children’s too, if they have one. It can’t change settings, and phones don’t count as screens on your licence.' };
+                : { ico: '▦', name: 'Family Dashboard', who: 'for everyone', what: 'The dashboard itself on a phone: the calendar (it opens on it – add events there), the children’s cards and every widget, one under another. Put it on everyone’s phone – the children’s too, if they have one. It can’t change settings, and phones don’t count as displays on your licence.' };
             return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
-                '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If the Configurator website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
+                '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If houserunner.app website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
                     'A backup of your private links has also been emailed to your Google account (“Your HouseRunner links”).</p></div>' +
                 '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'dashboard', app, '▦ Family Dashboard (everyone)') + '</div>' +
                 '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
@@ -503,7 +503,7 @@
                     var got = KEYS.filter(function (x) { return S.keys[x.k]; }), sk = KEYS.filter(function (x) { return S.skip[x.k]; });
                     return bar + '<div class="card big"><h3>✔ That’s all the services</h3>' +
                         '<p>' + (got.length ? 'Added: <b>' + got.map(function (x) { return esc(x.name); }).join(', ') + '</b>. ' : '') + (sk.length ? 'Skipped (their widgets are hidden): ' + sk.map(function (x) { return esc(x.name); }).join(', ') + '. ' : '') +
-                        'You can add or change any of them later in the Configurator → System → External data (API) keys.</p>' +
+                        'You can add or change any of them later at houserunner.app → System → External data (API) keys.</p>' +
                         '<div class="row"><button class="btn ghost" data-kgo="' + (n - 1) + '">← Back to ' + esc(KEYS[n - 1].name) + '</button></div><p class="mute">Press <b>Next</b> at the bottom to carry on.</p></div>';
                 }
                 var x = KEYS[at], done = S.keys[x.k], skipped = S.skip[x.k];
@@ -619,9 +619,9 @@
                     return '<div class="fin-r ' + cls + '"><span class="fin-i">' + (cls === 'ok' ? '✔' : cls === 'info' ? 'ℹ' : '⚠') + '</span><span class="fin-t"><b>' + esc(STEPS[i].title) + '</b><small>' + esc(r[2]) + '</small></span>' +
                         (cls === 'ok' ? '' : '<button class="btn sm ghost" data-fin="' + i + '">Go to this step</button>') + '</div>';
                 }).join('') + '</div>' +
-                (probs.length ? '' : '<div class="card big"><h3>What next</h3><ul><li>Change anything later in the <a href="../">Configurator</a> on this computer, or the Family Admin app on your phone.</li>' +
-                    '<li>Set up the reward system – Reward Tasks, Daily To-Dos and reminders – in the Configurator → Rewards.</li><li>Arrange the widgets on each screen in the Configurator → Screens.</li></ul>' +
-                    '<a class="btn" href="../">Open the Configurator</a></div>');
+                (probs.length ? '' : '<div class="card big"><h3>What next</h3><ul><li>Change anything later in the <a href="../">houserunner.app</a> on this computer, or the Family Admin app on your phone.</li>' +
+                    '<li>Set up the reward system – Reward Tasks, Daily To-Dos and reminders – at houserunner.app → Rewards.</li><li>Arrange the widgets on each screen at houserunner.app → Screens.</li></ul>' +
+                    '<a class="btn" href="../">Open houserunner.app</a></div>');
         }, wire: function () {
             $('page').querySelectorAll('[data-fin]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-fin')); }; });
         } },
@@ -651,7 +651,7 @@
             if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
             save();
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
-            if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Configurator → System → My data.' : ''));
+            if (st) st.innerHTML = okLine(true, 'Connected to your HouseRunner Google Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it at houserunner.app → System → My data.' : ''));
             if (!S.linksEmailed) post({ action: 'emailLinks' }).then(function (d) { S.linksEmailed = d.to || true; save(); toast('A backup of your private links has been emailed to ' + (d.to || 'you')); }, function () { /* older Google script – fine */ });
             renderSteps();
             return true;
@@ -841,7 +841,7 @@
             else if (wantUpdate) S.step = ids.indexOf('check');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : ids.indexOf('privacy');
             render();
-            if (p.from === 'sheet' && connected()) toast('Connected to your Family Dashboard Sheet \u2705');
+            if (p.from === 'sheet' && connected()) toast('Connected to your HouseRunner Google Sheet \u2705');
         };
         var pending = (p.api && p.code) ? connect(true) : Promise.resolve();
         pending.then(refreshVersions).then(after, after);

@@ -13,7 +13,7 @@
     function load(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
     function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* fine */ } }
 
-    var FORMATS = [['wide', 'Corsair XENEON EDGE', '32:9 · 4 columns'], ['standard', 'Tablet', '16:10 · 2 columns a screen'], ['computer', 'Computer screen', '16:9 · the Corsair layout, centred'], ['phone', 'Phone', 'The Family Dashboard app · one column']];
+    var FORMATS = [['wide', 'Corsair XENEON EDGE', '32:9 · 4 columns'], ['standard', 'Tablet', '16:10 · 2 columns a screen'], ['computer', 'Computer screen', '16:9 · the Corsair XENEON EDGE layout, centred'], ['phone', 'Phone', 'The Family Dashboard app · one column']];
     var DAYS = { 'Every day': 'Every day', 'Monday to Friday': 'Mon–Fri', 'Monday to Thursday': 'Mon–Thu', 'Weekends': 'Sat–Sun' };
 
     function D() { return H.data(); }
@@ -30,16 +30,16 @@
     }
     var MAX_SCREENS = 6;
     var INFO_HTML = '<details class="card explain" open><summary><b>ℹ️ How screens work</b></summary>' +
-        '<p>Your dashboard is made of <b>widgets</b> – the weather, trains, notes, each child’s Reward Widget and so on – arranged on <b>screens</b> you flick between down the side. ' +
+        '<p>Your dashboard is made of <b>widgets</b> – the weather, trains, notes, each Child’s Rewards widget and so on – arranged on <b>screens</b> you flick between down the side. ' +
         'Use this page to choose which widgets you want and which screen each goes on. There are two kinds of screen: <b>widget screens</b>, and <b>calendar screens</b> (each can show different Google calendars).</p>' +
-        '<h3>One layout, three shapes of screen</h3><p>The same layout works on the long, thin <b>Corsair</b> (four widgets across), a <b>tablet</b> held landscape (two across – a screen is split over two if it needs to be) and a <b>computer</b>. ' +
+        '<h3>One layout, three shapes of screen</h3><p>The same layout works on the long, thin <b>Corsair XENEON EDGE</b> (four widgets across), a <b>tablet</b> held landscape (two across – a screen is split over two if it needs to be) and a <b>computer</b>. ' +
         'Use the buttons at the top to see how yours will look on each.</p>' +
         '<h3>Moving widgets about</h3><p>Drag a widget up from the list underneath onto a screen; drag widgets to move them, or onto another screen on the left. To remove one, drag it to the bin or use the 🗑 on it.</p>' +
         '<h3>Clicking a widget</h3><p>On the left, <b>how it appears</b>: <b>full height</b> or <b>half height</b> (two half-height widgets share a space), and <b>When to show</b>. ' +
         'On the right, <b>its own settings</b> – the stations, the routes, the album…</p>' +
         '<h3>Showing a widget only at certain times</h3><p>Any widget can show only on some days or at some times – trains on weekday mornings, say. You then pick another widget to show in the same space the rest of the time; ' +
         'the screen layout shows both, split by a diagonal line, and clicking either half opens that widget’s settings.</p>' +
-        '<h3>How many</h3><p>Up to ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair.</p></details>';
+        '<h3>How many</h3><p>Up to ' + MAX_SCREENS + ' screens – that’s what fits neatly down the side of the Corsair XENEON EDGE.</p></details>';
     function current() {
         var ps = pages(), id = load(KEY_P, '');
         return ps.filter(function (p) { return p.id === id; })[0] || ps.filter(function (p) { return p.type === 'widgets'; })[0] || ps[0];
@@ -193,7 +193,7 @@
             var all = [].concat.apply([], cols.slice(0, 4));
             out = '<div class="ed-phone"><div class="ed-frame phone"><div class="ed-pgrid">' + all.map(tile).join('') + (all.length ? '' : '<div class="ed-slot end">Drop a widget here</div>') + '</div>' +
                 '<div class="ed-pbar">' + (D().pages || []).filter(function (x) { return x.show; }).slice(0, 6).map(function (x) { return '<span class="' + (x.id === p.id ? 'on' : '') + '">' + (x.type === 'calendar' ? CAL_ICON : esc(x.icon)) + '<small>' + esc(x.title) + '</small></span>'; }).join('') + '</div></div>' +
-                '<p class="mute small">On a phone, the Family Dashboard app shows every widget full width, one under another, in the order of the Corsair’s columns (left to right, top to bottom). Change the order in the Corsair view. Click a widget for its settings.</p></div>';
+                '<p class="mute small">On a phone, the Family Dashboard app shows every widget full width, one under another, in the order of the Corsair XENEON EDGE’s columns (left to right, top to bottom). Change the order in the Corsair XENEON EDGE view. Click a widget for its settings.</p></div>';
         } else out = frame(cols, 4, '', 'wide', p);
         // What doesn't fit: shown underneath, to drag elsewhere or click to remove
         if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen. Drag ' + (over > 1 ? 'them' : 'it') +
@@ -223,9 +223,9 @@
                     '<span class="pm"><button data-pm="' + esc(x.id) + ':-1"' + (i ? '' : ' disabled') + ' title="Move up">▲</button><button data-pm="' + esc(x.id) + ':1"' + (i < ps.length - 1 ? '' : ' disabled') + ' title="Move down">▼</button>' +
                     (canDelete(x) ? '<button class="pm-x" data-pdel="' + esc(x.id) + '" title="Delete this screen">✕</button>' : '') + '</span></div>';
             }).join('') +
-            (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair. Remove one to add another.</p>' :
+            (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair XENEON EDGE. Remove one to add another.</p>' :
             '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
-            '<button class="btn sm" id="edAdd">Add</button></div>') + '</aside>' +
+            '<button class="btn sm" id="edAdd">+ Add a screen</button></div>') + '</aside>' +
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
             '<button class="btn ghost sm" data-pedit="' + esc(p.id) + '">Name, icon, show/hide…</button>' + (canDelete(p) ? '<button class="btn sm ed-delpg" data-pdel="' + esc(p.id) + '">Delete this screen</button>' : '') + '</div>' +

@@ -1,5 +1,17 @@
 [
   {
+    "version": "2026.11.187",
+    "date": "2026-11-15",
+    "notes": [
+      "Lists: the List widget is now “General List” and the Google one “To-Do List (Google)”. The Lists page is headed “Lists and To-Dos”, with To-Do (Google) first, a short explanation and new icons",
+      "General lists: the “X to get” count is gone, and ticking several things quickly on the Corsair no longer loses any of them (the same fix for To-Do (Google))",
+      "Rewards: Tasks are now “Reward Tasks” and the checklists “Daily To-Dos”",
+      "Reminders has its own page (⚙ Widgets → Reminders). Rewards keeps a simple “Reminder Display” page: show reminders on the Reward Widgets or not",
+      "Widget names without brackets: Trains, Bus stop and Bins show a small “UK only” label; the Reminders widget is now “Children’s reminders”",
+      "Family Admin: notes are sticky notes, two to a row, like on the dashboard"
+    ]
+  },
+  {
     "version": "2026.11.182",
     "date": "2026-11-15",
     "notes": [

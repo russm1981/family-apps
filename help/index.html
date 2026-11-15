@@ -47,9 +47,8 @@
  .list a b { display: block; margin-bottom: 4px; } .list a span { color: var(--mute); font-size: 14px; }
 </style>
 </head>
-<body><div class="wrap">
- <a class="hr-brand sm" href="../" style="grid-column:1/-1;margin-bottom:0"><img src="../shared/brand/mark.svg" alt=""><span><span class="hr-name">House<span>Runner</span></span><span class="hr-tag">a family dashboard</span></span></a>
- <div class="top"><span class="logo">?</span><h1>Help</h1><a class="home" href="../">‹ HouseRunner home</a></div>
+<body><header class="hr-head" data-base="../" data-help="none"></header><script src="../shared/head.js"></script><div class="wrap">
+ <div class="top"><span class="logo">?</span><h1>Help</h1></div>
  <nav class="side" id="side"></nav>
  <article id="art"></article>
 </div>
@@ -58,7 +57,7 @@
  (function () {
    'use strict';
    var T = window.FD_HELP || [], $ = function (id) { return document.getElementById(id); };
-   if (window.top !== window) document.querySelector('.top').style.display = 'none';      // inside the Configurator or the app: they have the title
+   if (window.top !== window) { document.querySelector('.top').style.display = 'none'; var hh = document.querySelector('header.hr-head'); if (hh) hh.style.display = 'none'; }      // inside houserunner.app or the app: they have the title
    // Five kinds of question, and a support request. Each topic is in one of them.
    var CATS = [
      { id: 'start', icon: '🚀', name: 'Getting started', what: 'First-time setup, your licence, and connecting the screen, phones and tablets', topics: ['where', 'setup', 'licence', 'connect', 'screens', 'pi', 'startup'] },

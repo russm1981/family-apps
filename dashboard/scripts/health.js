@@ -110,7 +110,7 @@
             '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button>' +
             '<button class="n-btn ghost" data-h="forget">Disconnect this screen</button></div>' +
             '</div></div>' + qrBlock() + '<div><div>' +
-            '<p class="hl-foot">To email a report to support, use ⚙ Setup → System → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
+            '<p class="hl-foot">To email a report to support, use System → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
             'Private details (access code, keys, addresses, names) are locked so only support can read them.</p></div></div>';
     }
     /** Updates: what's waiting, what's been put off, and buttons to do it now. */
@@ -153,7 +153,7 @@
         if (!base) return '';
         var hash = c.url && c.code ? '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) : '';
         var items = [['Family Dashboard', 'phone app – everyone', base + 'dashboard/' + hash], ['Family Admin', 'phone app – parents', base + hash],
-            ['Tablet or Pi dashboard', 'opens this dashboard', base + 'dashboard/' + hash], ['Family Dashboard home', 'setup, help, what’s new', base]];
+            ['Tablet or Pi dashboard', 'opens this dashboard', base + 'dashboard/' + hash], ['houserunner.app', 'setup, help, what’s new', base]];
         return '<div class="hl-qr"><h3>Scan with a phone</h3><div class="hl-qrs">' + items.map(function (x) {
             return '<div class="hl-q"><div class="hl-qi">' + qrSvg(x[2]) + '</div><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') +
             '</div><p class="hl-foot">The first three already know your family’s access code – only let family members scan them.</p></div>';
@@ -186,7 +186,7 @@
             return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']).then(function (k) { aes = k; return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(secrets))); })
                 .then(function (data) { return Promise.all([data, crypto.subtle.exportKey('raw', aes), crypto.subtle.importKey('jwk', d.supportKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt'])]); })
                 .then(function (x) { return crypto.subtle.encrypt({ name: 'RSA-OAEP' }, x[2], x[1]).then(function (k) {
-                    return body + '\n\n----- ENCRYPTED PRIVATE PART (only Family Dashboard support can open this) -----\nFDENC1:' + btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) })).replace(/(.{76})/g, '$1\n') + '\n----- END -----\n'; }); });
+                    return body + '\n\n----- ENCRYPTED PRIVATE PART (only HouseRunner support can open this) -----\nFDENC1:' + btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) })).replace(/(.{76})/g, '$1\n') + '\n----- END -----\n'; }); });
         }).then(function (txt) {
             var a = document.createElement('a'), name = 'family-dashboard-diagnostics-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.txt';
             a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();

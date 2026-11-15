@@ -1,7 +1,7 @@
 HOUSERUNNER FOR WINDOWS (Corsair XENEON EDGE, or any PC screen)
 
 1. Unzip this folder and put it somewhere permanent, e.g. Documents\HouseRunner.
-   (The start file from the Setup wizard's "Connect your display" step already knows your family.)
+   (The start file from the Setup wizard's "Connect a display" step already knows your family.)
 2. Double-click it. The first time it asks two Yes/No questions:
    - start automatically when the PC turns on?
    - keep the screen switched on?

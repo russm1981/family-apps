@@ -9,7 +9,7 @@ body.fa .fa-top i { font-style: normal; font-size: 21px; line-height: 1; height:
 body.fa .fa-top i .mi { width: 22px; height: 22px; }
 body.fa .fa-top button.on { background: rgba(63,169,245,.18); color: #fff; box-shadow: inset 0 0 0 1.5px #3fa9f5; }
 body.fa .fa-top button.on i { filter: none; opacity: 1; }
-body.fa .fa-dot { position: absolute; top: 5px; right: calc(50% - 17px); width: 8px; height: 8px; border-radius: 50%; background: #4ade80; border: 2px solid var(--panel); }
+body.fa .fa-dot { position: absolute; top: 5px; right: calc(50% - 17px); width: 8px; height: 8px; border-radius: 50%; background: #4cd964; border: 2px solid var(--panel); }
 body.fa .fa-dot.busy { background: #3fa9f5; } body.fa .fa-dot.err { background: #ef4444; }
 body.fa .fa-main { padding: 12px 14px calc(env(safe-area-inset-bottom, 0px) + 40px); max-width: 640px; margin: 0 auto; }
 body.fa .fa-banner { margin: 10px 14px 0; padding: 10px 12px; border-radius: 12px; background: rgba(63,169,245,.12); border: 1px solid rgba(63,169,245,.4); font-size: 14px; }
@@ -27,7 +27,7 @@ body.fa .fa-foot { color: var(--mute); font-size: 14px; margin: 20px 2px; }
 body.fa .fa-foot a, body.fa .fa-note a { color: #3fa9f5; font-weight: 650; text-decoration: none; }
 body.fa .fa-empty { color: var(--mute); padding: 14px 4px; font-size: 15px; }
 body.fa .fa-err { color: #fca5a5; }
-body.fa .pos { color: #4ade80; } body.fa .neg { color: #fca5a5; }
+body.fa .pos { color: #4cd964; } body.fa .neg { color: #fca5a5; }
 body.fa label small, body.fa .fa-help { color: var(--mute); font-size: 12.5px; }
 body.fa .fa-help { display: block; margin-top: 4px; }
 
@@ -38,7 +38,7 @@ body.fa .fa-t { flex: 1; min-width: 0; display: flex; flex-direction: column; ga
 body.fa .fa-t b { font-weight: 600; font-size: 16px; overflow-wrap: anywhere; }
 body.fa .fa-t small { color: var(--mute); font-size: 13px; }
 body.fa .fa-row > i { font-style: normal; color: var(--mute); font-size: 22px; }
-body.fa .fa-row em { font-style: normal; font-weight: 800; color: #4ade80; }
+body.fa .fa-row em { font-style: normal; font-weight: 800; color: #4cd964; }
 body.fa .fa-row em.neg { color: #fca5a5; }
 body.fa .fa-row.gone { opacity: .3; }
 body.fa .fa-x { flex: none; width: 36px; height: 36px; border-radius: 10px; background: var(--panel-2); border: 1px solid var(--line); color: var(--mute); font-size: 15px; }
@@ -48,10 +48,10 @@ body.fa .fa-ico { flex: none; width: 34px; height: 34px; border-radius: 10px; ba
     font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
 body.fa .fa-ico.big { width: 52px; height: 52px; font-size: 28px; border-radius: 14px; }
 body.fa .fa-tick { flex: none; width: 26px; height: 26px; border-radius: 8px; border: 2px solid #64748b; background: none; padding: 0; }
-body.fa .fa-row.done .fa-tick { background: #4ade80; border-color: #4ade80; }
+body.fa .fa-row.done .fa-tick { background: #4cd964; border-color: #4cd964; }
 body.fa .fa-row.done .fa-t b { text-decoration: line-through; color: var(--mute); }
 body.fa .fa-star { flex: none; background: none; border: 0; font-size: 22px; color: #64748b; padding: 0 4px; }
-body.fa .fa-star.on { color: #facc15; }
+body.fa .fa-star.on { color: #f5a623; }
 body.fa .fa-day h3 { font-size: 15px; margin: 18px 2px 2px; color: #fff; }
 
 /* Adding things */
@@ -116,3 +116,5 @@ body.fa .fa-stickies .sticky span { font-size: 17px; }
 body.fa .fa-stickies .sticky .x { width: 30px; height: 30px; font-size: 13px; border: 0; }
 body.fa .sticky.gone { opacity: .3; }
 body.fa .fa-stickies .sticky span { padding-right: 22px; }
+body.fa .fa-x:active { background: #ef4444; border-color: #ef4444; color: #fff; }
+body.fa .fa-nice { color: #3fa9f5; font-weight: 700; margin-left: 4px; }

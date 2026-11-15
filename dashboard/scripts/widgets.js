@@ -220,7 +220,7 @@
         });
         function draw(t, keepView) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return; }
-            if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key in ⚙ Setup → System → External data keys to see the traffic map</div>'; return; }
+            if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key in System → External data keys to see the traffic map</div>'; return; }
             if (!map) {
                 map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0 }));   // fractional zoom so the routes fill the map
                 map.attributionControl.setPrefix('');
