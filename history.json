@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.236",
+    "date": "2026-11-15",
+    "notes": [
+      "When a save doesn’t work: the red message stays up for 15 seconds (or until you press ✕), the form comes back with what you typed, and the box that needs fixing is outlined in red"
+    ]
+  },
+  {
     "version": "2026.11.235",
     "date": "2026-11-15",
     "notes": [

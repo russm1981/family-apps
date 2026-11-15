@@ -3,12 +3,13 @@
  *
  *   📅 Calendar   add an event; what's coming up (each one can be deleted)
  *   📌 Notes      the notes on the dashboard – add one, take one off
- *   📝 Lists      shopping and to-do lists
- *   ⭐ Points     each child: points, penalties, bonus, cash in, tasks, this morning's to-dos, statement
- *   🧩 Widgets    each widget's own settings, one at a time (the simple ones – the rest are on a computer)
+ *   📝 Lists      the General Lists and To-Do (Google)
+ *   🎒 Reminders  PE kit, library books… – add, change, clear expired, when tomorrow's show
+ *   ⭐ Rewards    View: each child, fully open. Configure: Reward Tasks, Daily To-Dos, Reminder Display, rules, adjustments
+ *   🧩 Other      each other widget's own settings, one at a time (the simple ones – the rest are on a computer)
  *   ☰ More       connect a display, add a phone, help, feedback – and everything else is on the computer website
  *
- * Routes: #/calendar #/notes #/lists #/points #/widgets #/w/<widget id> #/more #/connect #/phones #/feedback
+ * Routes: #/calendar #/notes #/lists #/reminders #/points[/tasks|todos|remdisplay|rules|adjust] #/other #/w/<widget id> #/more #/connect #/phones #/feedback
  */
 (function () {
     'use strict';
@@ -20,8 +21,9 @@
     var ROOT = location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, '').replace(/index\.html$/, '');
     var HOST = ROOT.replace(/^https?:\/\//, '').replace(/\/$/, '');
     function IC(k, e) { return (window.FD_ICONS && FD_ICONS[k]) || e; }
-    var TABS = [['calendar', '📅', 'Calendar'], ['notes', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['points', '⭐', 'Rewards'], ['widgets', IC('other', '🧩'), 'Widgets'], ['more', '☰', 'More']];
-    var OLD = { memos: 'notes', rewards: 'points', family: 'points', other: 'widgets', settings: 'more', s: 'more', help: 'more', feedback: 'feedback', dhome: 'calendar', home: 'calendar' };
+    var TABS = [['calendar', '📅', 'Calendar'], ['notes', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['reminders', IC('reminders', '🎒'), 'Reminders'], ['points', '⭐', 'Rewards'], ['other', IC('other', '🧩'), 'Other'], ['more', '☰', 'More']];
+    var OLD = { memos: 'notes', rewards: 'points', family: 'points', widgets: 'other', timetable: 'reminders', settings: 'more', s: 'more', help: 'more', feedback: 'feedback', dhome: 'calendar', home: 'calendar' };
+    document.title = 'HouseRunner – Family Admin App';
 
     /* ------------------------------------------------------------------ data and saving */
 
@@ -42,7 +44,9 @@
         dot('busy');
         var run = function () {
             return FD.post(body, 60000).then(function (d) {
-                if (d && d.state && !d.tasks) DATA.state = d.state;
+                if (d && d.saved && d.rows) DATA[d.saved] = d.rows;
+                else if (d && d.layoutOnly) { DATA.pages = d.pages; DATA.widgets = d.widgets; }
+                else if (d && d.state && !d.tasks) DATA.state = d.state;
                 else if (d && d.tasks) setData(d);
                 if (d && d.data && body.widget && DATA.lists) DATA.lists[body.widget] = d.data;
                 setData(DATA); dot('ok');
@@ -60,7 +64,9 @@
 
     function route() {
         var h = location.hash.replace(/^#\/?/, '').split('/'), t = h[0] || 'calendar';
-        if (t === 'w' && h[1]) return { tab: 'widgets', w: decodeURIComponent(h[1]) };
+        if (t === 'w' && h[1]) return { tab: 'other', w: decodeURIComponent(h[1]) };
+        if (t === 'rewards' && h[1] === 'timetable') return { tab: 'reminders' };
+        if ((t === 'points' || t === 'rewards') && h[1]) return { tab: 'points', sub: h[1] };
         if (t === 's' && /devices|access/.test(h[1] || '')) return { tab: 'more', page: 'connect' };
         if (t === 'connect' || t === 'phones' || t === 'feedback') return { tab: 'more', page: t };
         if (OLD[t]) t = OLD[t];
@@ -77,7 +83,7 @@
         $('faTop').onclick = function (e) {
             var b = e.target.closest('[data-t]'); if (!b) return;
             var t = b.getAttribute('data-t');
-            if (route().tab === t && !route().w && !route().page) { load(); if (t === 'calendar') CAL.at = 0; FD.toast('Refreshing…'); }     // tap again = refresh
+            if (route().tab === t && !route().w && !route().page && !route().sub) { load(); if (t === 'calendar') CAL.at = 0; FD.toast('Refreshing…'); }     // tap again = refresh
             go(t);
         };
         document.addEventListener('click', function (e) { var g = e.target.closest && e.target.closest('[data-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-go')); } });
@@ -93,8 +99,9 @@
         Array.prototype.forEach.call(document.querySelectorAll('#faTop [data-t]'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
         $('faBanner').innerHTML = banner();
         if (!DATA) { $('faMain').innerHTML = err ? box('<b>Can’t reach your family’s Google Sheet</b><p class="mute">' + esc(err) + '</p><button class="btn wide" id="faRetry">Try again</button>') : '<div class="fa-empty">Loading…</div>'; if ($('faRetry')) $('faRetry').onclick = function () { load(); }; return; }
+        $('faMain').onchange = null;
         var page = r.w ? widgetPage : r.page === 'connect' ? connectPage : r.page === 'phones' ? phonesPage : r.page === 'feedback' ? feedbackPage : PAGES[r.tab];
-        page(r.w);
+        page(r.w || r.sub);
     }
     function banner() {
         var L = DATA && DATA.licence;
@@ -154,7 +161,7 @@
             h('Coming up', '<small>the next five weeks</small>') +
             (!D ? empty('Loading…') : !days.length ? empty('Nothing in the next five weeks') : days.map(function (k) {
                 return '<div class="fa-day"><h3>' + (k === t0 ? 'Today' : k === t1 ? 'Tomorrow' : esc(nice(k))) + '</h3>' + D.days[k].map(function (e, n) {
-                    return '<div class="fa-row ev"><span class="fa-swatch" style="background:' + esc(e.c || '#888') + '"></span><span class="fa-t">' + (e.cat ? '<small>' + esc(e.cat) + '</small>' : '') + '<b>' + esc(e.t) + (e.time ? '<span class="fa-time">' + esc(e.time) + '</span>' : '') + '</b></span>' +
+                    return '<div class="fa-row ev"><span class="fa-swatch" style="background:' + esc(e.c || '#888') + '"></span><span class="fa-cat">' + esc(e.cat || '') + '</span><span class="fa-t"><b>' + esc(e.t) + (e.time ? '<span class="fa-time">' + esc(e.time) + '</span>' : '') + '</b></span>' +
                         '<button class="fa-x" data-del="' + esc(k) + '|' + n + '" aria-label="Delete">✕</button></div>';
                 }).join('') + '</div>';
             }).join('')) +
@@ -232,7 +239,7 @@
         var open = ''; try { open = sessionStorage.getItem('fdadmin.openList') || ''; } catch (e) { /* fine */ }
         var w = ws.filter(function (x) { return x.id === open; })[0] || ws[0];
         var d = (DATA.lists || {})[w.id], items = d && d.items || [], done = items.filter(function (i) { return i.done; }).length;
-        $('faMain').innerHTML = (ws.length > 1 ? '<div class="fa-seg big" id="lsPick">' + ws.map(function (x) { return '<button data-l="' + esc(x.id) + '"' + (x === w ? ' class="on"' : '') + '>' + FDIco(typeOf(x.type)) + ' ' + esc(nameOf(x)) + '</button>'; }).join('') + '</div>' : h(esc(typeOf(w.type).icon + ' ' + nameOf(w)))) +
+        $('faMain').innerHTML = (ws.length > 1 ? '<div class="fa-seg big' + (ws.length > 2 ? ' grid2' : '') + '" id="lsPick">' + ws.map(function (x) { return '<button data-l="' + esc(x.id) + '"' + (x === w ? ' class="on"' : '') + '>' + FDIco(typeOf(x.type)) + ' ' + esc(nameOf(x)) + '</button>'; }).join('') + '</div>' : h(esc(typeOf(w.type).icon + ' ' + nameOf(w)))) +
             box('<div class="fa-inline"><input id="lsNew" maxlength="' + (L().listItem || 30) + '" placeholder="Add an item…" autocomplete="off"><button class="btn" id="lsAdd">+ Add</button></div>', 'fa-addbox') +
             (!d ? empty('Loading…') : d.error ? '<p class="fa-err">' + esc(d.error) + '</p>' : items.length ? items.map(function (i) {
                 return '<div class="fa-row li' + (i.done ? ' done' : '') + '"><button class="fa-tick" data-ltog="' + esc(i.id) + '" aria-label="Tick"></button><span class="fa-t" data-ltog="' + esc(i.id) + '"><b>' + esc(i.text) + '</b>' + (i.due ? '<small>' + esc(nice(i.due)) + '</small>' : '') + '</span>' +
@@ -255,13 +262,29 @@
 
     /* ------------------------------------------------------------------ ⭐ Points */
 
-    var openKid = {};
-    function pointsPage() {
-        var s = DATA.state;
+    /* Rewards: two buttons at the top – View (each child, fully open) and Configure (everything the computer website has). */
+    function rwMode() { var m = 'view'; try { m = localStorage.getItem('fdadmin.rwMode') || 'view'; } catch (e) { /* fine */ } return m; }
+    function rwSeg(sub) {
+        var m = sub ? 'configure' : rwMode();
+        return '<div class="fa-seg big" id="rwSeg"><button data-rw="configure"' + (m === 'configure' ? ' class="on"' : '') + '>⚙ Configure</button><button data-rw="view"' + (m === 'view' ? ' class="on"' : '') + '>👀 View</button></div>';
+    }
+    function wireRwSeg() {
+        $('rwSeg').onclick = function (e) {
+            var b = e.target.closest('[data-rw]'); if (!b) return;
+            try { localStorage.setItem('fdadmin.rwMode', b.getAttribute('data-rw')); } catch (x) { /* fine */ }
+            if (route().sub) go('points'); else draw();
+        };
+    }
+    function pointsPage(sub) {
         $('faMain').onclick = null;
-        if (!s || !s.boys || !s.boys.length) { $('faMain').innerHTML = empty('Nobody takes part in rewards yet') + computer('Choose who takes part in <b>Family</b>'); return; }
+        if (sub || rwMode() === 'configure') { configurePage(sub); return; }
+        kidsView();
+    }
+    function kidsView() {
+        var s = DATA.state;
+        if (!s || !s.boys || !s.boys.length) { $('faMain').innerHTML = rwSeg() + empty('Nobody takes part in rewards yet') + '<p class="fa-pc">Tick ⭐ Rewards for the children in <b>Family</b> on a computer at <b>' + esc(HOST) + '</b>.</p>'; wireRwSeg(); return; }
         var target = s.cashIn.points;
-        $('faMain').innerHTML = s.boys.map(function (b, i) {
+        $('faMain').innerHTML = rwSeg() + s.boys.map(function (b, i) {
             var pct = Math.min(100, b.balance / target * 100), can = b.balance >= target, tasks = b.allTasks || b.tasks || [];
             var rem = (b.reminders || []).length ? '<p class="fa-rem">🎒 ' + b.reminders.map(esc).join(' · ') + '</p>' : '';
             return '<section class="fa-kid" style="--c:' + esc(b.colour) + '">' +
@@ -269,13 +292,13 @@
                 '<div class="fa-bar"><i style="width:' + pct + '%"></i></div><p class="fa-to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' more to £' + s.cashIn.value) + '</p>' + rem +
                 '<div class="fa-kbtns">' + s.penalties.map(function (p) { return '<button class="fa-pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
                     '<button class="fa-plus" data-bonus="' + i + '">+ Points</button>' + (can ? '<button class="btn good" data-cash="' + i + '">Cash in £' + s.cashIn.value + '</button>' : '') + '</div>' +
-                '<details class="fa-more"' + (openKid[b.name] ? ' open' : '') + ' data-kid="' + esc(b.name) + '"><summary>Reward Tasks ' + tasks.length + (b.todos.length ? ' · Daily To-Dos ' + b.todos.filter(function (t) { return t.done; }).length + ' of ' + b.todos.length : '') + ' · statement</summary>' +
+                '<div class="fa-more open">' +
                     '<h3>Reward Tasks</h3>' + (tasks.length ? tasks.map(function (t) { return '<button class="fa-row task" data-task="' + i + ':' + esc(t.id) + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.text) + '</b></span><em>+' + t.points + '</em></button>'; }).join('') : empty('No tasks waiting')) +
                     '<h3>Daily To-Dos</h3>' + (b.todos.length ? b.todos.map(function (t, j) { return '<button class="fa-row li' + (t.done ? ' done' : '') + '" data-todo="' + i + ':' + j + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.item) + '</b></span></button>'; }).join('') : empty('Nothing today')) +
                     '<h3>Statement</h3>' + (b.statement || []).slice(0, 5).map(function (l) { return '<div class="fa-row st"><span class="fa-t"><b>' + esc(l.text) + '</b></span><em class="' + (l.points < 0 ? 'neg' : 'pos') + '">' + (l.points > 0 ? '+' : '') + l.points + '</em></div>'; }).join('') +
-                    '<button class="btn ghost wide" data-stmt="' + i + '">The whole statement</button></details></section>';
-        }).join('') + computer('Reward Tasks, Daily To-Dos, reminders and the reward rules are set up');
-        Array.prototype.forEach.call(document.querySelectorAll('.fa-more'), function (d) { d.ontoggle = function () { openKid[d.getAttribute('data-kid')] = d.open; }; });
+                    '<button class="btn ghost wide" data-stmt="' + i + '">The whole statement</button></div></section>';
+        }).join('');
+        wireRwSeg();
         $('faMain').onclick = function (e) {
             var el;
             if ((el = e.target.closest('[data-pen]'))) {
@@ -296,6 +319,257 @@
             else if ((el = e.target.closest('[data-stmt]'))) { var who = s.boys[+el.getAttribute('data-stmt')].name; load(true).then(function () { statement(DATA.state.boys.filter(function (x) { return x.name === who; })[0]); }); }
         };
     }
+
+    /* ------------------------------------------------------------------ ⭐ Rewards → Configure (the same as the computer website) */
+
+    var CFG = [['tasks', '✅', 'Reward Tasks', 'Jobs that earn points'], ['todos', '☀️', 'Daily To-Dos', 'Daily or weekly checklists'],
+        ['remdisplay', IC('reminders', '🎒'), 'Reminder Display', 'On Child’s Rewards or not'], ['rules', '⚖️', 'Reward rules', 'Cash-in and penalty buttons'],
+        ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']];
+    function bpage() { return (DATA.pages || []).filter(function (p) { return p.type === 'boys'; })[0]; }
+    function bfields() { return ((DATA.pageTypes || []).filter(function (x) { return x.type === 'boys'; })[0] || { settings: [] }).settings || []; }
+    function configurePage(sub) {
+        var item = CFG.filter(function (c) { return c[0] === sub; })[0];
+        if (!item) {
+            $('faMain').innerHTML = rwSeg() +
+                box('<p class="fa-how">The children earn points for <b>Reward Tasks</b> and cash them in. <b>Daily To-Dos</b> are checklists with no points. Who takes part is ticked in Family (on a computer).</p>') +
+                CFG.map(function (c) { return '<a class="fa-row go" href="#/points/' + c[0] + '"><span class="fa-ico">' + c[1] + '</span><span class="fa-t"><b>' + c[2] + '</b><small>' + c[3] + '</small></span><i>›</i></a>'; }).join('');
+            wireRwSeg(); return;
+        }
+        var top = rwSeg(sub) + '<a class="fa-back" href="#/points">‹ Configure</a>' + h(item[2]);
+        ({ tasks: tasksEd, todos: todosEd, remdisplay: remDisplayEd, rules: rulesEd, adjust: adjustEd })[sub](top);
+        wireRwSeg();
+    }
+
+    /* A list edited on the phone: one box per row, fields one under another; ▲ ▼ to order, ✕ to delete; Save at the bottom. */
+    var DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    function parseDays(spec) {
+        var s = String(spec || '').trim().toLowerCase(), on = [false, false, false, false, false, false, false];
+        if (!s || s === 'all' || s === 'daily' || s === 'every day') return on.map(function () { return true; });
+        if (s === 'weekdays') return on.map(function (x, i) { return i < 5; });
+        if (s === 'weekends') return on.map(function (x, i) { return i > 4; });
+        var idx = function (x) { return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].indexOf(x.trim().slice(0, 3)); };
+        s.split(',').forEach(function (part) {
+            if (part.indexOf('-') > 0) { var a = idx(part.split('-')[0]), b = idx(part.split('-')[1]); if (a < 0 || b < 0) return; for (var i = a; ; i = (i + 1) % 7) { on[i] = true; if (i === b) break; } }
+            else if (idx(part) >= 0) on[idx(part)] = true;
+        });
+        return on;
+    }
+    function formatDays(on) {
+        var n = on.filter(Boolean).length;
+        if (n === 7 || !n) return 'Daily';
+        if (n === 2 && on[5] && on[6]) return 'Weekends';
+        var first = on.indexOf(true), last = on.lastIndexOf(true);
+        if (n > 2 && last - first + 1 === n) return DAYS[first] + '-' + DAYS[last];
+        return DAYS.filter(function (d, i) { return on[i]; }).join(',');
+    }
+    function dayChips(v, hidden) {
+        var on = parseDays(v);
+        return '<div class="fa-days"' + (hidden ? ' hidden' : '') + '>' + DAYS.map(function (d, i) { return '<button type="button" class="' + (on[i] ? 'on' : '') + '" data-day="' + i + '">' + d.slice(0, 2) + '</button>'; }).join('') + '</div>';
+    }
+    function isoOf(v) {
+        var s = String(v || '').trim(), m;
+        if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[1] + '-' + m[2] + '-' + m[3];
+        if ((m = s.match(/^(\d{1,2})[\/.](\d{1,2})(?:[\/.](\d{2,4}))?$/))) { var y = m[3] ? (m[3].length === 2 ? '20' + m[3] : m[3]) : String(new Date().getFullYear()); return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2); }
+        return '';
+    }
+    function dmy(iso) { var m = String(iso || '').match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? m[3] + '/' + m[2] + '/' + m[1] : ''; }
+    /** For who: Daily To-Dos and Reward Tasks – everyone in Rewards or one child; Reminders – anyone in the family. */
+    function whoSel(k, v, wide) {
+        var kids = ((DATA.state || {}).boys || []).map(function (b) { return b.name; }), ppl = ((DATA.family || {}).people || []);
+        var kidsAll = wide ? kids.concat(ppl.filter(function (p) { return p.role === 'child' && kids.indexOf(p.name) < 0; }).map(function (p) { return p.name; })) : kids;
+        var adults = wide ? ppl.filter(function (p) { return p.role === 'adult'; }).map(function (p) { return p.name; }) : [];
+        var top = (wide ? [['Family', 'Everyone']] : []).concat([['All', 'Everyone (in Rewards)']]);
+        var opt = function (x) { return '<option value="' + esc(x[0]) + '"' + (x[0].toLowerCase() === String(v || 'All').toLowerCase() ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; };
+        var known = top.concat(kidsAll.map(function (n) { return [n, n]; }), adults.map(function (n) { return [n, n]; }));
+        var extra = v && !known.some(function (x) { return x[0].toLowerCase() === String(v).toLowerCase(); }) ? opt([v, v]) : '';
+        return '<select data-k="' + k + '">' + top.map(opt).join('') +
+            (wide ? (kidsAll.length ? '<optgroup label="Children">' + kidsAll.map(function (n) { return opt([n, n]); }).join('') + '</optgroup>' : '') +
+                (adults.length ? '<optgroup label="Adults">' + adults.map(function (n) { return opt([n, n]); }).join('') + '</optgroup>' : '')
+                : kidsAll.map(function (n) { return opt([n, n]); }).join('')) + extra + '</select>';
+    }
+    function rowBox(inner, opts) {
+        return '<section class="fa-box fa-lrow"' + (opts.id ? ' data-id="' + esc(opts.id) + '"' : '') + '><button type="button" class="fa-x" data-rx aria-label="Delete">✕</button>' +
+            (opts.order || opts.extra ? '<div class="fa-lrow-top">' + (opts.order ? '<span class="fa-mv"><button type="button" data-mv="up" aria-label="Move up">▲</button><button type="button" data-mv="down" aria-label="Move down">▼</button></span>' : '') + (opts.extra || '') + '</div>' : '') +
+            inner + '</section>';
+    }
+    /** The Save / Undo buttons and the shared clicks of a list editor (order, delete, day buttons). */
+    function editorFoot(saveText) {
+        return '<hr class="fa-sep"><div class="fa-actions"><button class="btn good" id="edSave">' + saveText + '</button><button class="btn ghost" id="edUndo">Undo changes</button></div>';
+    }
+    function wireRows(rowsId, blank, onClick) {
+        var rows = $(rowsId);
+        $('edAdd').onclick = function () { rows.insertAdjacentHTML('beforeend', blank()); var ins = rows.querySelectorAll('.fa-lrow'); var f = ins[ins.length - 1].querySelector('input'); if (f) f.focus(); };
+        $('edUndo').onclick = function () { draw(); };
+        rows.onclick = function (e) {
+            var el, r = e.target.closest('.fa-lrow');
+            if ((el = e.target.closest('[data-mv]'))) { var up = el.getAttribute('data-mv') === 'up', sib = up ? r.previousElementSibling : r.nextElementSibling; if (sib) rows.insertBefore(r, up ? sib : sib.nextSibling); }
+            else if (e.target.closest('[data-rx]')) { var nm = (r.querySelector('input[data-k]') || {}).value; if (!nm || confirm('Delete “' + nm + '”?')) r.remove(); }
+            else if ((el = e.target.closest('[data-day]'))) { el.classList.toggle('on'); }
+            else if (onClick) onClick(e, r);
+        };
+        rows.onchange = function (e) {
+            var t = e.target, r = t.closest('.fa-lrow'); if (!r) return;
+            if (t.classList.contains('fa-often')) { r.querySelector('.fa-days').hidden = t.value === 'weekly'; r.querySelector('.fa-reset').hidden = t.value !== 'weekly'; }
+            if (t.classList.contains('fa-whenmode')) { r.querySelector('.fa-days').hidden = t.value !== 'week'; r.querySelector('.fa-date').hidden = t.value !== 'date'; }
+        };
+    }
+    function daysOf(r) { return formatDays(Array.prototype.map.call(r.querySelectorAll('.fa-days [data-day]'), function (b) { return b.classList.contains('on'); })); }
+
+    /* Reward Tasks */
+    function tasksEd(top) {
+        var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
+        var who = ['All'].concat((DATA.boys || []).map(function (b) { return b.Name; }).filter(Boolean));
+        var row = function (t) {
+            var on = t.Active !== false;
+            return rowBox('<label>Task <span class="cnt">max ' + (L().task || 22) + '</span></label><input data-k="Task" maxlength="' + (L().task || 22) + '" value="' + esc(t.Task || '') + '" placeholder="e.g. Tidy your bedroom" autocomplete="off">' +
+                '<div class="fa-two"><div><label>Points</label><input data-k="Points" type="number" inputmode="numeric" min="1" value="' + esc(t.Points || '') + '" placeholder="10"></div>' +
+                '<div><label>For who</label><select data-k="Boy">' + who.map(function (n) { return '<option value="' + esc(n) + '"' + (n === (t.Boy || 'All') ? ' selected' : '') + '>' + esc(n === 'All' ? 'Everyone' : n) + '</option>'; }).join('') + '</select></div></div>' +
+                '<label>Repeats</label><select data-k="Repeat">' + [['once', 'Once – gone when it’s done'], ['daily', 'Every day – back tomorrow'], ['always', 'Always there – any number of times']].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === (t.Repeat || 'once') ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>',
+                { id: t.ID || '', order: true, extra: '<button type="button" class="fa-on' + (on ? ' on' : '') + '" data-act>' + (on ? '✔ On' : '⏸ Paused') + '</button>' });
+        };
+        $('faMain').innerHTML = top + '<p class="fa-lead">Jobs that earn points. Each child sees their next three on their card, in this order. Points already earned stay when you change or delete one.</p>' +
+            '<div id="edRows">' + tasks.map(row).join('') + '</div><button class="btn fa-add" id="edAdd">+ Add a Reward Task</button>' + editorFoot('Save Reward Tasks');
+        wireRows('edRows', function () { return row({ Active: true }); }, function (e) {
+            var b = e.target.closest('[data-act]'); if (!b) return;
+            var on = !b.classList.contains('on'); b.classList.toggle('on', on); b.textContent = on ? '✔ On' : '⏸ Paused';
+        });
+        $('edSave').onclick = function () {
+            var list = Array.prototype.map.call(document.querySelectorAll('#edRows .fa-lrow'), function (r) {
+                var o = { ID: r.getAttribute('data-id') || '', Active: r.querySelector('[data-act]').classList.contains('on') };
+                r.querySelectorAll('[data-k]').forEach(function (i) { o[i.getAttribute('data-k')] = i.value.trim(); });
+                return o;
+            }).filter(function (o) { return o.Task; });
+            saving(this, act({ action: 'saveTasks', tasks: list }, 'Reward Tasks saved'));
+        };
+    }
+    /** Daily To-Dos: daily on some days, or weekly (resets on one day). */
+    function todosEd(top) {
+        var rs = (DATA.todos || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
+        var row = function (t) {
+            var m = String(t.Days || '').match(/^weekly\s*(\w{3})/i), wk = !!m, rd = m ? m[1].slice(0, 1).toUpperCase() + m[1].slice(1, 3).toLowerCase() : 'Sat';
+            return rowBox('<label>To-Do <span class="cnt">max ' + (L().todo || 22) + '</span></label><input data-k="Item" maxlength="' + (L().todo || 22) + '" value="' + esc(t.Item || '') + '" placeholder="e.g. Teeth brushed" autocomplete="off">' +
+                '<label>For who</label>' + whoSel('Boy', t.Boy, false) +
+                '<label>How often</label><select class="fa-often"><option value="daily"' + (wk ? '' : ' selected') + '>Daily, on…</option><option value="weekly"' + (wk ? ' selected' : '') + '>Weekly – resets on…</option></select>' +
+                dayChips(wk ? 'Mon-Fri' : (t.Days || 'Mon-Fri'), wk) +
+                '<select class="fa-reset"' + (wk ? '' : ' hidden') + '>' + DAYS.map(function (d) { return '<option' + (d === rd ? ' selected' : '') + '>' + d + '</option>'; }).join('') + '</select>', { order: true });
+        };
+        $('faMain').innerHTML = top + '<p class="fa-lead">Checklists each child ticks off – no points. <b>Daily</b> ones start afresh each morning, on the days you pick; <b>weekly</b> ones stay ticked until the day they reset.</p>' +
+            '<div id="edRows">' + rs.map(row).join('') + '</div><button class="btn fa-add" id="edAdd">+ Add a To-Do</button>' + editorFoot('Save Daily To-Dos');
+        wireRows('edRows', function () { return row({}); });
+        $('edSave').onclick = function () {
+            var out = Array.prototype.map.call(document.querySelectorAll('#edRows .fa-lrow'), function (r, i) {
+                var weekly = r.querySelector('.fa-often').value === 'weekly';
+                return { Item: r.querySelector('[data-k=Item]').value.trim(), Boy: r.querySelector('[data-k=Boy]').value, Days: weekly ? 'Weekly ' + r.querySelector('.fa-reset').value : daysOf(r), Order: i + 1 };
+            }).filter(function (o) { return o.Item; });
+            saving(this, act({ action: 'saveList', list: 'todos', rows: out }, 'Daily To-Dos saved'));
+        };
+    }
+    function remDisplayEd(top) {
+        var pp = bpage(), f = bfields().filter(function (x) { return x.k === 'ShowReminders'; });
+        $('faMain').innerHTML = top + '<p class="fa-lead">Whether each child’s reminders show on their Child’s Rewards widget, on the day and from the evening before.</p>' +
+            box((pp ? f.map(function (x) { return field(x, (pp.settings || {})[x.k]); }).join('') : '') +
+                '<p class="fa-help">To add or change reminders, use the <a href="#/reminders">Reminders</a> button at the top. The Reminders widget shows everyone’s together, whatever you choose here.</p>', 'fa-form') +
+            '<div class="fa-actions"><button class="btn good" id="edSave">Save reminder display</button></div>';
+        $('edSave').onclick = function () {
+            var c = document.querySelector('#faMain [data-f=ShowReminders]'), v = !!(c && c.checked);
+            saving(this, act({ action: 'savePage', page: { id: pp.id, settings: { ShowReminders: v } } }, 'Saved – the screen updates within a minute').then(function (d) { (pp.settings = pp.settings || {}).ShowReminders = v; return d; }));
+        };
+    }
+    function rulesEd(top) {
+        var pp = bpage(), st = (pp && pp.settings) || {};
+        var fs = bfields().filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom' && f.k !== 'ShowReminders'; });
+        var pens = String(st.PenaltyOptions || '10,20,50').split(',').map(function (x) { return Math.abs(parseInt(x, 10)); }).filter(function (n) { return n > 0; });
+        var drawPens = function () {
+            $('pensEd').innerHTML = pens.map(function (n, i) { return '<span class="fa-pen-chip">−' + n + '<button type="button" data-pdel="' + i + '" aria-label="Remove">✕</button></span>'; }).join('') +
+                (pens.length < 4 ? '<div class="fa-inline"><input id="penNew" type="number" inputmode="numeric" min="1" max="500" placeholder="e.g. 30"><button type="button" class="btn" id="penAdd">+ Add</button></div>' : '');
+        };
+        $('faMain').innerHTML = top + '<p class="fa-lead">How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.</p>' +
+            box((pp ? fs.map(function (f) { return wrapWhen(f, field(f, st[f.k])); }).join('') : ''), 'fa-form') +
+            h('Penalty buttons') + '<p class="fa-lead">The buttons for taking points away – up to four.</p>' + box('<div id="pensEd" class="fa-pens"></div>') +
+            '<hr class="fa-sep"><div class="fa-actions"><button class="btn good" id="edSave">Save the rules</button><button class="btn ghost" id="edUndo">Undo changes</button></div>';
+        drawPens(); whenFields();
+        $('pensEd').onclick = function (e) {
+            var d = e.target.closest('[data-pdel]');
+            if (d) { pens.splice(+d.getAttribute('data-pdel'), 1); drawPens(); }
+            if (e.target.closest('#penAdd')) { var n = Math.abs(parseInt($('penNew').value, 10)); if (!n) return; pens.push(n); pens.sort(function (a, b) { return a - b; }); drawPens(); }
+        };
+        $('edUndo').onclick = function () { draw(); };
+        $('edSave').onclick = function () {
+            var vals = { PenaltyOptions: pens.join(',') };
+            Array.prototype.forEach.call(document.querySelectorAll('#faMain [data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
+            saving(this, act({ action: 'savePage', page: { id: pp.id, settings: vals } }, 'Saved – the screen updates within a minute').then(function (d) { return load(true).then(function () { return d; }); }));
+        };
+    }
+    function adjustEd(top) {
+        var s = DATA.state;
+        if (!s || !s.boys || !s.boys.length) { $('faMain').innerHTML = top + empty('Nobody takes part in rewards yet'); return; }
+        $('faMain').innerHTML = top + '<p class="fa-lead">Put a child’s points right by hand – it goes on their statement.</p>' + s.boys.map(function (b, i) {
+            return box('<div class="fa-kid-top"><b>' + esc(b.name) + '</b><span class="fa-pts">' + b.balance + '<small>points</small></span></div>' +
+                '<div class="fa-btncol"><button class="btn ghost" data-bonus="' + i + '">Add or take away points</button><button class="btn ghost" data-setbal="' + i + '">Override the balance</button><button class="btn ghost" data-stmt="' + i + '">See statement</button></div>', 'fa-adj" style="--c:' + esc(b.colour));
+        }).join('');
+        $('faMain').onclick = function (e) {
+            var el;
+            if ((el = e.target.closest('[data-bonus]'))) bonus(s.boys[+el.getAttribute('data-bonus')]);
+            else if ((el = e.target.closest('[data-setbal]'))) balanceSheet(s.boys[+el.getAttribute('data-setbal')]);
+            else if ((el = e.target.closest('[data-stmt]'))) { var who = s.boys[+el.getAttribute('data-stmt')].name; load(true).then(function () { statement(DATA.state.boys.filter(function (x) { return x.name === who; })[0]); }); }
+        };
+    }
+    function balanceSheet(b) {
+        sheet('<h2>Set ' + esc(b.name) + '’s balance</h2><p class="mute">Now ' + b.balance + ' points. The change goes on their statement as an adjustment.</p>' +
+            '<label>New balance</label><input id="nbPts" type="number" inputmode="numeric" value="' + b.balance + '">' +
+            '<div class="fa-actions"><button class="btn good" id="nbSave">Save the balance</button><button class="btn ghost" id="nbX">Cancel</button></div>');
+        $('nbX').onclick = closeSheet;
+        $('nbSave').onclick = function () {
+            var n = Math.round(Number($('nbPts').value)), d = n - b.balance;
+            if (isNaN(n) || n < 0) { FD.toast('Enter a balance of 0 or more', true); return; }
+            closeSheet(); if (!d) return;
+            act({ action: 'adjust', boy: b.name, points: d, reason: 'Balance set to ' + n }, b.name + ': ' + n + ' points').then(draw, draw);
+        };
+    }
+    /** A Save button while it saves: ⏳, then back as it was (the reply redraws the page). */
+    function saving(btn, p) {
+        var t = btn.textContent; btn.disabled = true; btn.textContent = '⏳ Saving…';
+        p.then(function () { draw(); }, function () { btn.disabled = false; btn.textContent = t; });
+    }
+
+    /* ------------------------------------------------------------------ 🎒 Reminders */
+
+    function remindersPage() {
+        $('faMain').onclick = null;
+        var pp = bpage(), from = String(((pp && pp.settings) || {}).TomorrowFrom || '17:00');
+        var row = function (t) {
+            var iso = isoOf(t.Day), date = !!iso;
+            return rowBox('<label>Reminder <span class="cnt">max ' + (L().reminder || 22) + '</span></label><input data-k="Reminder" maxlength="' + (L().reminder || 22) + '" value="' + esc(t.Reminder || '') + '" placeholder="e.g. PE kit" autocomplete="off">' +
+                '<label>For who</label>' + whoSel('Boy', t.Boy || 'Family', true) +
+                '<label>When</label><select class="fa-whenmode"><option value="week"' + (date ? '' : ' selected') + '>Every week on…</option><option value="date"' + (date ? ' selected' : '') + '>On a date…</option></select>' +
+                dayChips(date ? 'Fri' : (t.Day || 'Fri'), date) + '<input type="date" class="fa-date" value="' + esc(iso) + '"' + (date ? '' : ' hidden') + '>', {});
+        };
+        $('faMain').innerHTML = box('<p class="fa-how">Reminders are things a person needs on a day – PE kit, recorder, library books. They show in the <b>Reminders</b> widget, and on each child’s Child’s Rewards widget unless that’s turned off (Rewards → Configure → Reminder Display).</p>') +
+            '<div id="edRows">' + (DATA.timetable || []).map(row).join('') + '</div>' +
+            '<div class="fa-btncol"><button class="btn fa-add" id="edAdd">+ Add a reminder</button><button class="btn ghost" id="remClear">🧹 Clear expired reminders</button></div>' +
+            box('<label for="remFrom">Switch to tomorrow’s reminders at</label><input type="time" id="remFrom" value="' + esc(from) + '">' +
+                '<p class="fa-help">Until this time the screen shows today’s reminders; from this time, tomorrow’s – so things can be got ready the evening before.</p>', 'fa-form') +
+            editorFoot('Save reminders');
+        wireRows('edRows', function () { return row({}); });
+        $('remClear').onclick = function () {
+            var d0 = new Date(), today = ymd(d0);
+            var old = Array.prototype.filter.call(document.querySelectorAll('#edRows .fa-lrow'), function (r) { var d = r.querySelector('.fa-date'); return r.querySelector('.fa-whenmode').value === 'date' && d.value && d.value < today; });
+            if (!old.length) { FD.toast('No reminders have expired – nothing to clear'); return; }
+            if (!confirm('Delete ' + (old.length === 1 ? 'this reminder, whose date has passed' : 'these ' + old.length + ' reminders, whose dates have passed') + '?\n\n• ' + old.map(function (r) { return r.querySelector('[data-k=Reminder]').value || 'a reminder'; }).join('\n• '))) return;
+            old.forEach(function (r) { r.remove(); }); $('edSave').click();
+        };
+        $('edSave').onclick = function () {
+            var out = Array.prototype.map.call(document.querySelectorAll('#edRows .fa-lrow'), function (r) {
+                var byDate = r.querySelector('.fa-whenmode').value === 'date';
+                return { Reminder: r.querySelector('[data-k=Reminder]').value.trim(), Boy: r.querySelector('[data-k=Boy]').value, Day: byDate ? dmy(r.querySelector('.fa-date').value) : daysOf(r) };
+            }).filter(function (o) { return o.Reminder; });
+            var rf = $('remFrom').value, jobs = [];
+            if (pp && rf && rf !== from) { jobs.push(act({ action: 'savePage', page: { id: pp.id, settings: { TomorrowFrom: rf } } })); (pp.settings = pp.settings || {}).TomorrowFrom = rf; }
+            jobs.push(act({ action: 'saveList', list: 'timetable', rows: out }, 'Reminders saved'));
+            saving(this, Promise.all(jobs));
+        };
+    }
+
     function bonus(b) {
         sheet('<h2>Points for ' + esc(b.name) + '</h2>' +
             '<div class="fa-quick">' + [5, 10, 20, 50].map(function (n) { return '<button data-q="' + n + '">+' + n + '</button>'; }).join('') + '</div>' +
@@ -345,10 +619,10 @@
     }
     function widgetPage(id) {
         var w = widgetOf(id);
-        if (!w) { $('faMain').innerHTML = empty('That widget isn’t on the dashboard any more') + '<a class="btn ghost wide" href="#/widgets">‹ Widgets</a>'; return; }
+        if (!w) { $('faMain').innerHTML = empty('That widget isn’t on the dashboard any more') + '<a class="btn ghost wide" href="#/other">‹ Other</a>'; return; }
         var T = typeOf(w.type), defs = T.settings || [];
         var simple = defs.filter(function (f) { return !PC_ONLY(f); }), pc = defs.filter(PC_ONLY);
-        $('faMain').innerHTML = '<a class="fa-back" href="#/widgets">‹ Widgets</a>' +
+        $('faMain').innerHTML = '<a class="fa-back" href="#/other">‹ Other</a>' +
             '<div class="fa-whead"><span class="fa-ico big">' + FDIco(T) + '</span><div><h1>' + esc(nameOf(w)) + '</h1><p class="mute">' + esc(T.about || '') + '</p></div></div>' +
             (w.type === 'whereabouts' ? whereBox(w) : '') +
             (simple.length ? box(simple.map(function (f) { return wrapWhen(f, field(f, (w.settings || {})[f.k])); }).join('') +
@@ -368,7 +642,7 @@
             Array.prototype.forEach.call(document.querySelectorAll('#faMain [data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
             b.disabled = true; b.textContent = '⏳ Saving…';
             act({ action: 'saveWidget', widget: { id: w.id, settings: vals } }, 'Saved – the dashboard updates within a minute').then(function () {
-                Object.keys(vals).forEach(function (k) { (w.settings = w.settings || {})[k] = vals[k]; }); setData(DATA); go('widgets');
+                Object.keys(vals).forEach(function (k) { (w.settings = w.settings || {})[k] = vals[k]; }); setData(DATA); go('other');
             }, function () { b.disabled = false; b.textContent = 'Save'; });
         };
         Array.prototype.forEach.call(document.querySelectorAll('[data-who]'), function (sel) {
@@ -498,7 +772,7 @@
         };
     }
 
-    var PAGES = { calendar: calendarPage, notes: notesPage, lists: listsPage, points: pointsPage, widgets: widgetsPage, more: morePage };
+    var PAGES = { calendar: calendarPage, notes: notesPage, lists: listsPage, reminders: remindersPage, points: pointsPage, other: widgetsPage, more: morePage };
 
     /* ------------------------------------------------------------------ the privacy notice (accepted once, on any device) */
 

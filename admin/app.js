@@ -899,9 +899,7 @@
         // "timed": the two widgets that share one space on a screen at different times (the main one and the one shown otherwise)
         var timed = function (w) { return !!(w.when && w.when.OtherTimes) || !!backupFor(w); };
         var where = function (w) {
-            var bk = backupFor(w), t = w.when;
-            var how = bk ? 'Timed – in place of ' + bk + ' at other times' : t && t.OtherTimes ? 'Timed – ' + (t.ShowFrom || '') + '–' + (t.ShowUntil || '') + ', then ' + typeOf(t.OtherTimes).name.replace(/ \(.*\)$/, '')
-                : t ? 'Timed – ' + (t.ShowFrom || '') + '–' + (t.ShowUntil || '') : w.show ? 'Always shows' : 'Hidden';
+            var how = backupFor(w) ? 'Timed (Secondary)' : w.when ? 'Timed (Primary)' : w.show ? 'Always shows' : 'Hidden';
             return how + (w._copies > 1 ? ' · copy ' + w._copy + ' of ' + w._copies : '');
         };
         var item = function (w) { return [w.id, FDIco(typeOf(w.type)), w._label, where(w)]; };
@@ -915,7 +913,7 @@
                 '<p>Each widget can be on your screens <b>more than once</b> – on different screens, or twice on the same one. <b>Each copy has its own settings</b>, so the copies can look or behave differently: say, <i>Flights overhead 1</i> around home and <i>Flights overhead 2</i> around the school.</p>' +
                 '<p>That’s what the number after a name is for: it tells the copies apart, in the order they appear on your screens. A widget with only one copy has no number.</p>' +
                 '<p>The list is <b>grouped by the screen</b> each widget is on, in the order they appear. Under each name:</p>' +
-                '<ul class="small"><li><b>Always shows</b> – on the screen all the time.</li><li><b>Timed</b> – shown at set times, sharing its space with another widget at other times.</li>' +
+                '<ul class="small"><li><b>Always shows</b> – on the screen all the time.</li><li><b>Timed (Primary)</b> – shown at set times; <b>Timed (Secondary)</b> – the widget shown in its space the rest of the time. Open one to see its times.</li>' +
                 '<li><b>Hidden</b> – on a screen but switched off for now.</li><li><b>copy 1 of 2</b> – there’s more than one of this widget, each with its own settings.</li>' +
                 '<li><b>Not in use</b> (at the end) – widgets that aren’t on any screen. Their settings are kept, ready for when they’re added.</li></ul>' +
                 '<p class="mute small">To add another copy of a widget, move one, or take one off, use <a href="#" data-go="layout">Screens</a>. The calendar, notes, lists and reminders have their own pages under ⚙ Widgets.</p>') +
@@ -991,7 +989,7 @@
         var T = typeOf(w.type), p = pageOf(w.page);
         title(widgetName(w));
         var view = VIEWS[w.type] ? VIEWS[w.type](w) : '';
-        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + ((w.when && w.when.OtherTimes) || backupFor(w) ? ' · timed' : w.show ? '' : ' (hidden)') + '</span></div>' +
+        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + timedSay(w) + '</span></div>' +
             // Its settings first, then what it's showing now
             card('Settings', (w.type === 'timer' ? '<div class="mins-show">' + String((w.settings || {}).Presets || '').split(',').filter(Boolean).map(function (n) { n = +n; return '<span>' + (n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min') + '</span>'; }).join('') + '</div>'
                 : '') + '<p class="w-about">' + esc(T.about) + (function (sm) { sm = String(sm || '').replace(/\.+$/, ''); return w.type === 'timer' || !sm || T.about.indexOf(sm) === 0 ? '' : ' <span class="mute">Set to: ' + esc(sm) + '.</span>'; })(summary(w)) + '</p><div class="ladd-row"><button class="btn ghost" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
@@ -2164,6 +2162,17 @@
         };
     }
     /** The widgets this one stands in for at other times ("When to show"), by name – or ''. */
+    /** For a widget's page: when a timed widget shows, and what shows in its space the rest of the time. */
+    function timedSay(w) {
+        var bk = backupFor(w), nm = function (t) { return typeOf(t).name.replace(/ \(.*\)$/, ''); };
+        var span = function (t) { return (t.ShowDays || 'Every day') + ', ' + (t.ShowFrom || '00:00') + '–' + (t.ShowUntil || '24:00'); };
+        if (bk) {
+            var main = (DATA.widgets || []).filter(function (x) { return x.when && x.when.OtherTimes === w.type; })[0];
+            return ' · Timed (Secondary): shown in place of ' + esc(bk) + ' when it isn’t showing' + (main ? ' – outside ' + esc(span(main.when)) : '');
+        }
+        if (w.when) return ' · Timed (Primary): shown ' + esc(span(w.when)) + '; at other times ' + (w.when.OtherTimes ? esc(nm(w.when.OtherTimes)) + ' shows in its place' : 'the space is empty');
+        return w.show ? ' · Always shows' : ' · Hidden';
+    }
     function backupFor(w) {
         var src = (DATA.widgets || []).filter(function (x) { return x.type === w.type && !x.pending; })[0];
         if (!src || src.id !== w.id) return '';

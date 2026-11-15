@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.103';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.104';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -1709,6 +1709,8 @@ function addWidget_(pageId, type, at) {
   const p = rows_('pages').find(x => String(x.Page).trim() === pageId);
   if (!p || String(p.Type).toLowerCase() !== 'widgets') throw new Error('Pick a widget page');
   if (type === 'child' && !childNames_().length) throw new Error('Add the children first (Family tab)');
+  if (type === 'list' && rows_('widgets').filter(w => String(w.Type).trim() === 'list').length >= 5) throw new Error('You can have up to 5 General Lists (plus the To-Do List (Google)) – remove one to add another');
+  if (type === 'todo' && rows_('widgets').some(w => String(w.Type).trim() === 'todo')) throw new Error('There’s already a To-Do List (Google) – you can have one');
   // Settings: another copy of a widget you already have starts with that one's settings; the first of its kind gets back
   // the settings it had when the last one was removed, or the standard ones.
   const ids = rows_('widgets').map(w => String(w.Widget).trim()), all = wsetAll_();

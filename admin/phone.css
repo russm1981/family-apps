@@ -123,3 +123,42 @@ body.fa .fa-time { margin-left: 1.2em; font-weight: 400; color: var(--mute); fon
 body.fa .fa-mins { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0 2px; }
 body.fa .fa-mins button { padding: 10px 0; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2); color: #cbd5e1; font-weight: 700; font-size: 14px; font-family: inherit; }
 body.fa .fa-mins button.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; }
+/* Seven buttons along the top */
+body.fa .fa-top { grid-template-columns: repeat(7, 1fr); gap: 1px; padding-left: 2px; padding-right: 2px; }
+body.fa .fa-top button { font-size: 10.5px; letter-spacing: -.01em; }
+/* Calendar rows as on the website: colour line, category, description, then the time if there is one */
+body.fa .fa-row.ev { align-items: center; }
+body.fa .fa-cat { flex: none; width: 76px; color: var(--mute); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.fa .fa-row.ev .fa-time { margin-left: 1.4em; }
+/* More than two lists: the buttons two to a row */
+body.fa .fa-seg.grid2 { display: grid; grid-template-columns: 1fr 1fr; overflow: visible; }
+body.fa .fa-seg.grid2 button { white-space: normal; overflow: hidden; text-overflow: ellipsis; }
+/* Rewards → Configure and Reminders: one box per row */
+body.fa .fa-how { margin: 0; color: #cbd5e1; font-size: 14.5px; line-height: 1.5; }
+body.fa .fa-lrow { padding: 10px 12px 14px; }
+body.fa .fa-lrow-top { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+body.fa .fa-lrow-top > span:first-child { flex: 1; }
+body.fa .fa-mv { display: flex; gap: 6px; }
+body.fa .fa-mv button { width: 38px; height: 32px; border-radius: 9px; background: var(--panel-2); border: 1px solid var(--line); color: var(--mute); font-size: 13px; }
+body.fa .fa-on { height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel-2); color: var(--mute); font-weight: 700; font-family: inherit; }
+body.fa .fa-on.on { background: rgba(34,197,94,.15); border-color: #22c55e; color: #86efac; }
+body.fa .fa-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-top: 8px; }
+body.fa .fa-days[hidden], body.fa .fa-lrow [hidden] { display: none !important; }
+body.fa .fa-days button { height: 38px; border-radius: 9px; border: 1px solid var(--line); background: none; color: var(--mute); font-weight: 700; font-size: 13px; font-family: inherit; }
+body.fa .fa-days button.on { background: rgba(63,169,245,.2); border-color: #3fa9f5; color: #fff; }
+body.fa .fa-lrow .fa-reset, body.fa .fa-lrow .fa-date { margin-top: 8px; }
+body.fa .fa-lrow .cnt { color: var(--mute); font-size: 12px; font-weight: 400; margin-left: 4px; }
+body.fa hr.fa-sep { border: 0; border-top: 1px solid var(--line); margin: 20px 0 0; }
+body.fa .fa-btncol { display: flex; flex-direction: column; gap: 10px; margin: 10px 0; }
+body.fa .fa-btncol .btn { width: 100%; margin: 0; }
+body.fa .fa-pens { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+body.fa .fa-pens .fa-inline { flex: 1 1 100%; }
+body.fa .fa-pen-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 6px 6px 12px; border-radius: 10px; border: 1px solid #ef4444; color: #fca5a5; font-weight: 800; font-size: 16px; }
+body.fa .fa-pen-chip button { width: 28px; height: 28px; border-radius: 8px; border: 0; background: rgba(239,68,68,.2); color: #fca5a5; }
+body.fa .fa-adj { border-left: 5px solid var(--c); }
+body.fa .fa-adj .fa-btncol { margin-bottom: 0; }
+body.fa .fa-more.open { display: block; margin-top: 10px; }
+body.fa .fa-lrow { position: relative; }
+body.fa .fa-lrow > .fa-x { position: absolute; top: 10px; right: 10px; }
+body.fa .fa-lrow-top { padding-right: 48px; margin-bottom: 4px; }
+body.fa .fa-lrow > label:first-of-type { margin-top: 2px; padding-right: 48px; }
