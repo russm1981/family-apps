@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.219",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard buttons: ‘Set up a new family (first use)’ and ‘Rerun wizard for the … family’",
+      "Raspberry Pi: the Wi-Fi network it makes for setting up is now called Pi-HouseRunner (for Pis set up from now on)"
+    ]
+  },
+  {
     "version": "2026.11.218",
     "date": "2026-11-15",
     "notes": [

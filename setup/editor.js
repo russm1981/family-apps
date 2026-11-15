@@ -164,9 +164,9 @@
             out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : fmt === 'phone' ? '<div class="ed-phone"><div class="ed-frame phone mock"><div class="mk-in">' + calInner('phone', true, 'Week') + '</div></div><p class="mute small">On a phone the calendar has Month and Week. It opens on the week – a day under a day, like a list (turn the phone for the week across).</p></div>' : mockFrame(p, fmt);
             // The picture first, then this page's own settings, then the colour coding (the same on every calendar page).
             return out + '<p class="mute small">The calendar fills the screen; on a tablet or computer it also has a whole-year wall planner.</p>' +
-                (H.pageForm ? '<section class="cs-card ed-pset ed-pset-cal" data-pset="' + esc(p.id) + '"><h3 class="cs-h1">Calendar page settings</h3>' +
-                    '<p class="cs-sub">Specific to this calendar page – different pages can point to different Google Calendars.</p>' + H.pageForm(p.id) +
-                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save this page’s settings</button></section>' : '') +
+                (H.pageForm ? '<section class="cs-card ed-pset ed-pset-cal" data-pset="' + esc(p.id) + '"><h3 class="cs-h1">Calendar screen settings</h3>' +
+                    '<p class="cs-sub">Specific to this calendar screen – different screens can point to different Google Calendars.</p>' + H.pageForm(p.id) +
+                    '<button class="btn good" data-psave="' + esc(p.id) + '">Save calendar screen settings</button></section>' : '') +
                 (H.calSetup ? '<div class="cs-box" data-cs="' + esc(p.id) + '"></div>' : '');
         }
         var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
