@@ -1,12 +1,11 @@
 {
-  "app": "2026.11.217",
+  "app": "2026.11.218",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Quote widget: choose “Another source” to use your own quotes link (an RSS feed or a JSON list), shown only when you pick it",
-    "Widget pages: one clear line under Settings – what the widget does and how it’s set – instead of two bits of grey text; ‘timed’ shows in the header for shared slots",
-    "Today & tomorrow page: entries now look like the Calendar page – colour line, category, description, and the time only if there is one",
-    "Weasley Clock page: simpler step-by-step for moving the hands from phones, with a Copy the link button, and the clock itself drawn at the bottom"
+    "Other widgets are now grouped: Information (Weather, Clock, Bins, Parcels, News), Travel, Family (Weasley Clock last), Tools and Interest, with Not in use at the end",
+    "Word of the day is now called Duolingo Words everywhere",
+    "Setup wizard: two short buttons – Set up a new family, and Rerun for your family – with more space between them"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
