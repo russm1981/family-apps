@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.230",
+  "app": "2026.11.231",
   "script": "2026.11.102",
   "date": "2026-11-15",
   "notes": [
-    "Locations & home: Home address first, then a line, then country, time zone, currency, week start and dates"
+    "My data (Google): How your data is kept, then moving your data, the access code, starting again from scratch, and the same ‘Do one step from the Setup wizard again’ list as the Setup wizard page"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

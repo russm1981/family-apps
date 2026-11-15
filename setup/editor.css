@@ -379,3 +379,5 @@
 .cs-notes p { margin: 0 0 8px; line-height: 1.5; }
 .cs-notes + .cs-addc { margin: 10px 0 6px; }
 .cs-card .cs-row:not(.cs-rhead) { min-height: 58px; }
+.ed-below h4.ed-grp { margin: 20px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mute, #8b95a5); }
+.ed-below h4.ed-grp:first-child { margin-top: 4px; }

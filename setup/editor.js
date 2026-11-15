@@ -224,7 +224,7 @@
                     (canDelete(x) ? '<button class="pm-x" data-pdel="' + esc(x.id) + '" title="Delete this screen">✕</button>' : '') + '</span></div>';
             }).join('') +
             (full ? '<p class="mute small ed-full">That’s the most screens (' + MAX_SCREENS + ') – they fit neatly down the side of the Corsair XENEON EDGE. Remove one to add another.</p>' :
-            '<div class="ed-add"><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
+            '<div class="ed-add" data-noedit><h4>Add a screen</h4><input id="edName" maxlength="10" placeholder="Name, e.g. Kitchen"><select id="edType"><option value="widgets">Widgets</option><option value="calendar">Calendar</option></select>' +
             '<button class="btn sm" id="edAdd">+ Add a screen</button></div>') + '</aside>' +
             (info ? '<section class="ed-canvas ed-info">' + INFO_HTML + '</section></div></div>' : '') +
             (info ? '' : '<section class="ed-canvas"><div class="ed-head"><h2>' + esc(p.icon) + ' ' + esc(p.title) + '</h2>' + (p.show ? '' : '<span class="mute small">hidden</span>') +
@@ -234,15 +234,27 @@
                 '<h2 class="ed-recon">Reconfigure Widgets</h2>' +
                 '<p class="ed-how"><b>👆 Click a widget for its settings.</b> ✋ Drag it to move it, or onto another screen in the left menu. Drag one up from below to add it.</p>' +
                 '<div class="ed-palette ed-below">' +
-                '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div><hr class="ed-div">' +
-                '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div></div>' : '') +
+                typeGroups() + '</div>' : '') +
             '</section></div></div>');
         wire(p);
         if (H.afterForm) H.afterForm();
         var csb = el.querySelector('.cs-box'); if (csb && H.calSetup) H.calSetup(csb, csb.getAttribute('data-cs'));
     }
 
-    var REWARD_T = { child: 1 };
+    /* The widgets to drag on, in the same groups as Widgets → Other (plus the rewards and lists ones first). */
+    var TYPE_GROUPS = [['Rewards', ['child']], ['Lists, notes and reminders', ['list', 'todo', 'memo', 'kidrem']],
+        ['Information', ['weather', 'clock', 'bins', 'parcels', 'news']], ['Travel', ['traffic', 'trains', 'bus']],
+        ['Family', ['agenda', 'birthdays', 'countdown', 'photos', 'whereabouts']], ['Tools', ['timer', 'spotify']],
+        ['Interest', ['apod', 'flights', 'quote', 'words']]];
+    function typeGroups() {
+        var all = D().types || [], known = [].concat.apply([], TYPE_GROUPS.map(function (g) { return g[1]; }));
+        var odd = all.filter(function (T) { return known.indexOf(T.type) < 0; });
+        return TYPE_GROUPS.map(function (g, i) {
+            var list = g[1].map(function (t) { return all.filter(function (T) { return T.type === t; })[0]; }).filter(Boolean);
+            if (i === TYPE_GROUPS.length - 1) list = list.concat(odd);
+            return list.length ? '<h4 class="ed-grp">' + esc(g[0]) + '</h4><div class="ed-types">' + list.map(typeTile).join('') + '</div>' : '';
+        }).join('');
+    }
     /** A widget screen (if there's another) or a second calendar page can be deleted. */
     function canDelete(x) { var same = pages().filter(function (y) { return y.type === x.type; }).length; return x.type === 'calendar' || (x.type === 'widgets' && same > 1); }
     function typeTile(T) {
@@ -337,6 +349,18 @@
             });
             d.addEventListener('dragend', function () { d.classList.remove('dragging'); dragging = null; clearOver(); });
         });
+        // Dragging near the top or bottom of the window scrolls the page, so a widget from the list below can reach the top
+        if (!window.FD_dragScroll) {
+            window.FD_dragScroll = true;
+            var vy = 0, timer = null;
+            document.addEventListener('dragover', function (e) {
+                var edge = 110, h = window.innerHeight;
+                vy = e.clientY < edge ? -Math.ceil((edge - e.clientY) / 5) : e.clientY > h - edge ? Math.ceil((e.clientY - (h - edge)) / 5) : 0;
+                if (vy && !timer) timer = setInterval(function () { if (vy) window.scrollBy(0, vy); }, 16);
+            });
+            var stop = function () { vy = 0; clearInterval(timer); timer = null; };
+            document.addEventListener('dragend', stop); document.addEventListener('drop', stop);
+        }
         function clearOver() { el.querySelectorAll('.over').forEach(function (x) { x.classList.remove('over'); }); }
         function target(e) { return e.target.closest('.ed-tile, .ed-slot, .ed-page, .ed-col.empty, .ed-trash'); }
         el.ondragover = function (e) {

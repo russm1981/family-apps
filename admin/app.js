@@ -105,6 +105,7 @@
     function hasEdits() { edits = edits.filter(function (n) { return n.isConnected; }); return edits.length > 0; }
     function markEdit(e) {
         var b = $('body'); if (!b || !b.contains(e.target)) return;
+        if (e.target.closest('[data-noedit], .ls-add, .wh-make, [data-who]')) return;      // boxes that act straight away (Add a screen): nothing left unsaved
         if (e.type === 'click' && !e.target.closest('[data-x],[data-mv],[data-ladd],.dp-day,.cd-add,.cd-x')) return;
         var part = partOf(e.target);
         if (part && edits.indexOf(part) < 0) edits.push(part);
