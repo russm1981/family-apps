@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.223",
+    "date": "2026-11-15",
+    "notes": [
+      "Calendar colour coding: Family has a 🔒 like Holiday and Birthday – it can’t be removed"
+    ]
+  },
+  {
     "version": "2026.11.222",
     "date": "2026-11-15",
     "notes": [
