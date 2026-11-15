@@ -68,7 +68,7 @@
         if (t === 'rewards' && h[1] === 'timetable') return { tab: 'reminders' };
         if ((t === 'points' || t === 'rewards') && h[1]) return { tab: 'points', sub: h[1] };
         if (t === 's' && /devices|access/.test(h[1] || '')) return { tab: 'more', page: 'connect' };
-        if (t === 'connect' || t === 'phones' || t === 'feedback') return { tab: 'more', page: t };
+        if (t === 'connect' || t === 'phones' || t === 'feedback' || t === 'diag') return { tab: 'more', page: t };
         if (OLD[t]) t = OLD[t];
         if (t === 'feedback') return { tab: 'more', page: 'feedback' };
         return { tab: TABS.some(function (x) { return x[0] === t; }) ? t : 'calendar' };
@@ -100,7 +100,7 @@
         $('faBanner').innerHTML = banner();
         if (!DATA) { $('faMain').innerHTML = err ? box('<b>Can’t reach your family’s Google Sheet</b><p class="mute">' + esc(err) + '</p><button class="btn wide" id="faRetry">Try again</button>') : '<div class="fa-empty">Loading…</div>'; if ($('faRetry')) $('faRetry').onclick = function () { load(); }; return; }
         $('faMain').onchange = null;
-        var page = r.w ? widgetPage : r.page === 'connect' ? connectPage : r.page === 'phones' ? phonesPage : r.page === 'feedback' ? feedbackPage : PAGES[r.tab];
+        var page = r.w ? widgetPage : r.page === 'connect' ? connectPage : r.page === 'phones' ? phonesPage : r.page === 'feedback' ? feedbackPage : r.page === 'diag' ? diagPage : PAGES[r.tab];
         page(r.w || r.sub);
     }
     function banner() {
@@ -696,7 +696,7 @@
         $('faMain').innerHTML =
             '<a class="btn good fa-dash" href="' + esc(ROOT) + 'dashboard/">▶ Open the dashboard</a>' +
             h('Devices') + row('#/connect', '🖥', 'Connect a display', 'Type the code a new screen shows') + row('#/phones', '📱', 'Add a phone', 'The QR codes for both phone apps') +
-            h('Help') + row(esc(ROOT) + 'help/', '❓', 'Help', 'Short answers, step by step', true) + row('#/feedback', '💬', 'Feedback and support', 'Something not working, or an idea') +
+            h('Help') + row(esc(ROOT) + 'help/', '❓', 'Help', 'Short answers, step by step', true) + row('#/feedback', '💬', 'Feedback and support', 'Something not working, or an idea') + row('#/diag', '🩺', 'About and diagnostics', 'Versions, this phone, and a report for support') +
             h('Everything else') + box('<p>💻 Setting up – which widgets go on which screen, the family, rewards, the calendar’s colours, locations, data keys, the licence and your Google data – is on a computer at:</p>' +
                 '<div class="fa-addr">' + esc(HOST) + '</div><button class="btn ghost wide" id="mCopy">Copy the address</button>', 'fa-pcbox') +
             h('This phone') + '<p class="fa-note">Connected to ' + (fam ? 'the <b>' + esc(fam) + '</b> family dashboard' : 'your family dashboard') + '. Family Admin version ' + esc(FD.VERSION) + '.</p>' +
@@ -706,6 +706,30 @@
             if (!confirm('Disconnect this phone from the dashboard? You can connect it again with a QR code or code from another family phone.')) return;
             FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) { /* fine */ } });
             location.hash = ''; location.reload();
+        };
+    }
+    /** About and diagnostics: the versions, what this phone is, and a report to send to support. */
+    function diagPage() {
+        $('faMain').onclick = null;
+        var tr = function (a, b) { return '<div class="fa-row st"><span class="fa-t"><small>' + esc(a) + '</small><b>' + esc(b) + '</b></span></div>'; };
+        $('faMain').innerHTML = '<a class="fa-back" href="#/more">‹ More</a>' + h('Versions') +
+            box(tr('Family Admin (this phone)', FD.VERSION) + tr('Google script', DATA.scriptVersion || '?') + tr('Licence', (DATA.licence && DATA.licence.required) ? DATA.licence.message : 'Not needed')) +
+            h('This phone') + box('<div id="devRows"><div class="fa-empty">Finding out…</div></div>') +
+            h('Diagnostics report') + '<p class="fa-lead">A text file describing your dashboard – versions, settings, which widgets work and the last errors – to send to support. Your access code, keys, addresses and names are <b>locked</b> so only HouseRunner support can read them.</p>' +
+            '<button class="btn wide" id="dGo">Make a diagnostics report</button><div id="dOut"></div>';
+        if (window.FDPlatform) FDPlatform().then(function (p) { if ($('devRows')) $('devRows').innerHTML = FDPlatformRows(p).map(function (r) { return tr(r[0], r[1]); }).join(''); });
+        $('dGo').onclick = function () {
+            var b = this; b.disabled = true; b.textContent = '⏳ Checking everything – up to a minute…';
+            FD.get('diagnostics', { app: FD.VERSION }, 240000).then(function (d) { return FD.diagReport(d, 'Family Admin phone app'); }).then(function (txt) {
+                b.disabled = false; b.textContent = 'Make it again';
+                var name = 'houserunner-diagnostics-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.txt', file = new File([txt], name, { type: 'text/plain' });
+                var canShare = navigator.canShare && navigator.canShare({ files: [file] });
+                $('dOut').innerHTML = '<p class="fa-note">✔ Ready (' + Math.round(txt.length / 1024) + ' KB).</p><div class="fa-btncol">' + (canShare ? '<button class="btn good" id="dShare">Share or email it</button>' : '') +
+                    '<button class="btn ghost" id="dSave">Download the file</button><button class="btn ghost" id="dCopy">Copy the text</button></div>';
+                if ($('dShare')) $('dShare').onclick = function () { navigator.share({ files: [file], title: 'HouseRunner diagnostics', text: 'Diagnostics report for HouseRunner support' }).catch(function () {}); };
+                $('dSave').onclick = function () { var a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
+                $('dCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { FD.toast('Couldn’t copy', true); }); };
+            }, function (e) { b.disabled = false; b.textContent = 'Try again'; FD.toast(e.message, true); });
         };
     }
     function connectPage() {

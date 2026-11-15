@@ -2588,10 +2588,11 @@
             '<div class="r"><span class="r-l">Privacy notice accepted</span><b class="r-r">' + esc(DATA.privacyAccepted || '–') + '</b></div></div>';
     }
     function secSupport() {
-        $('body').innerHTML = card('Versions', versionTable()) +
+        $('body').innerHTML = card('Versions', versionTable()) + card('This device', '<div class="rows" id="devRows"><div class="mute small">Finding out…</div></div>') +
             card('Diagnostics report', '<p class="small">Makes a text file describing your dashboard – versions, settings, which widgets work and the last errors – to send to support if something’s wrong.</p>' +
                 '<p class="mute small">Your access code, API keys, addresses, names and calendar details go in a <b>locked</b> part that only HouseRunner support can open. Nothing is sent anywhere until you send the file yourself.</p>' +
                 '<button class="btn wide" id="diag">Generate diagnostics</button><div id="diagOut"></div>');
+        if (window.FDPlatform) FDPlatform().then(function (p) { if ($('devRows')) $('devRows').innerHTML = FDPlatformRows(p).map(function (r) { return '<div class="r"><span class="r-l">' + esc(r[0]) + '</span><b class="r-r">' + esc(r[1]) + '</b></div>'; }).join(''); });
         $('diag').onclick = function () {
             var b = this; b.disabled = true; b.textContent = '⏳ Checking everything – this can take up to a minute…';
             FD.get('diagnostics', { app: FD.VERSION }, 240000).then(function (d) { return buildReport(d); }).then(function (txt) {
@@ -2610,25 +2611,7 @@
         };
     }
     function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
-    /** Readable report, then the private details locked with the support key (RSA-OAEP + AES-GCM). */
-    function buildReport(d) {
-        var r = d.report, phone = { userAgent: navigator.userAgent, screen: screen.width + '×' + screen.height, online: navigator.onLine, appVersion: FD.VERSION, standalone: !!(window.matchMedia && matchMedia('(display-mode: standalone)').matches) };
-        var head = 'FAMILY DASHBOARD – DIAGNOSTICS REPORT\nMade ' + new Date().toString() + '\n\nThe readable part below has no access code, keys, addresses or names.\n' +
-            'Those are in the locked part at the end, which only HouseRunner support can open.\n\n';
-        var body = head + JSON.stringify(Object.assign({ thisPhone: phone }, r), null, 2);
-        if (!d.supportKey || !window.crypto || !crypto.subtle) return Promise.resolve(body + '\n\n(No locked part: ' + (!d.supportKey ? 'support key not available' : 'this browser can’t encrypt') + '. Nothing private is included.)\n');
-        var aes, iv = crypto.getRandomValues(new Uint8Array(12));
-        return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']).then(function (k) {
-            aes = k; return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(d.secrets)));
-        }).then(function (data) {
-            return Promise.all([data, crypto.subtle.exportKey('raw', aes), crypto.subtle.importKey('jwk', d.supportKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt'])]);
-        }).then(function (x) {
-            return crypto.subtle.encrypt({ name: 'RSA-OAEP' }, x[2], x[1]).then(function (k) {
-                var box = btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) }));
-                return body + '\n\n----- ENCRYPTED PRIVATE PART (only HouseRunner support can open this) -----\nFDENC1:' + box.replace(/(.{76})/g, '$1\n') + '\n----- END -----\n';
-            });
-        });
-    }
+    function buildReport(d) { return FD.diagReport(d, DESK ? 'Configurator' : 'Family Admin'); }
 
     /* ---- saved versions and starting afresh */
     function versionsCard() {

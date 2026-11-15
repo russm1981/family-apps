@@ -46,7 +46,7 @@
         document.body.classList.toggle('fmt-wide', kind === 'wide' || kind === 'computer');   // a computer shows the Corsair layout
         document.body.classList.toggle('fmt-computer', kind === 'computer');
         document.body.classList.toggle('fmt-standard', kind === 'standard');
-        document.body.classList.toggle('fmt-phone', kind === 'phone'); document.documentElement.classList.toggle('fmt-phone', kind === 'phone');
+        document.body.classList.toggle('fmt-phone', kind === 'phone'); if (kind === 'phone') document.title = 'HouseRunner – Dashboard'; document.documentElement.classList.toggle('fmt-phone', kind === 'phone');
         box();
         var msg = F.supported ? '' : 'This screen is ' + w + '×' + h + (F.portrait ? ' and upright' : '') + '. The dashboard is made for the Corsair XENEON EDGE (very wide), a tablet such as the Fire HD 10 held sideways, or a computer browser – it’s showing the ' +
             (kind === 'wide' ? 'wide' : 'tablet') + ' layout, but some things may not fit.' + (F.portrait ? ' Turn the tablet sideways.' : '');

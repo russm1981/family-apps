@@ -191,7 +191,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.237',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.239',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -243,6 +243,30 @@
             // A problem stays up long enough to read (or until ✕), and the box it's about is picked out
             FD._tt = setTimeout(function () { t.className = 'toast'; }, bad ? 15000 : undo ? 8000 : 3000);
             if (bad) setTimeout(function () { FD.flagField(text); }, 80);
+        },
+
+        /** A diagnostics report: the readable part (with what this device is), then the private details locked with the
+         *  support key (RSA-OAEP + AES-GCM) so only HouseRunner support can open them. */
+        diagReport: function (d, from) {
+            var b64 = function (buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); };
+            var dev = window.FDPlatform ? window.FDPlatform() : Promise.resolve({ userAgent: navigator.userAgent });
+            return dev.then(function (p) {
+                p.appVersion = FD.VERSION; p.from = from || 'Configurator';
+                var body = 'HOUSERUNNER – DIAGNOSTICS REPORT (' + p.from + ')\nMade ' + new Date().toString() + '\n\nThe readable part below has no access code, keys, addresses or names.\n' +
+                    'Those are in the locked part at the end, which only HouseRunner support can open.\n\n' + JSON.stringify(Object.assign({ thisDevice: p }, d.report), null, 2);
+                if (!d.supportKey || !window.crypto || !crypto.subtle) return body + '\n\n(No locked part: ' + (!d.supportKey ? 'support key not available' : 'this browser can’t encrypt') + '. Nothing private is included.)\n';
+                var aes, iv = crypto.getRandomValues(new Uint8Array(12));
+                return crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt']).then(function (k) {
+                    aes = k; return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, new TextEncoder().encode(JSON.stringify(d.secrets)));
+                }).then(function (data) {
+                    return Promise.all([data, crypto.subtle.exportKey('raw', aes), crypto.subtle.importKey('jwk', d.supportKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, false, ['encrypt'])]);
+                }).then(function (x) {
+                    return crypto.subtle.encrypt({ name: 'RSA-OAEP' }, x[2], x[1]).then(function (k) {
+                        var box = btoa(JSON.stringify({ v: 1, k: b64(k), iv: b64(iv), d: b64(x[0]) }));
+                        return body + '\n\n----- ENCRYPTED PRIVATE PART (only HouseRunner support can open this) -----\nFDENC1:' + box.replace(/(.{76})/g, '$1\n') + '\n----- END -----\n';
+                    });
+                });
+            });
         },
 
         /** Pick out the box an error message is about: messages start with the box's label ("List name is 20 characters…"). */

@@ -105,9 +105,10 @@
                 vrow('Licence', lic.required ? lic.message : 'Not needed', lic.required && !lic.ok) +
                 vrow('If it gets stuck', healText()) +
                 vrow('Last answer from the Sheet', H.at ? new Date(H.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'none yet', !H.ok) +
+                (PLAT ? '<tr><td colspan="2"><h3>This device</h3></td></tr>' + window.FDPlatformRows(PLAT).map(function (r) { return vrow(r[0], r[1]); }).join('') : '') +
             '</table><div class="hl-btns"><button class="n-btn" data-h="check"' + (checking ? ' disabled' : '') + '>' + (checking ? 'Checking every widget…' : 'Check everything now') + '</button>' +
             '<button class="n-btn ghost" data-h="retry">Try the Sheet again</button>' +
-            '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button>' +
+            '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this device</button>' +
             '<button class="n-btn ghost" data-h="forget">Disconnect this screen</button></div>' +
             '</div></div>' + qrBlock() + '<div><div>' +
             '<p class="hl-foot">To email a report to support, use System → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
@@ -174,11 +175,13 @@
         }).catch(function (e) { checking = false; draw(); api().toast('The check didn’t finish: ' + e.message, true); });
     }
     function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
+    var PLAT = null;      // this device (platform.js), for the panel and the report
+    if (window.FDPlatform) window.FDPlatform().then(function (p) { PLAT = p; });
     function saveReport(btn) {
         btn.disabled = true; btn.textContent = 'Making the report…';
         var got = fullCheck.last && Date.now() - fullAt < 10 * 60000 ? Promise.resolve(fullCheck.last) : api().get('diagnostics', { app: window.FDNotices ? FDNotices.version : '' }, 240000);
         got.then(function (d) {
-            var screenInfo = { from: 'the screen', userAgent: navigator.userAgent, size: innerWidth + '×' + innerHeight, online: navigator.onLine, status: level(), problems: problems().map(function (p) { return p.kind === 'widget' ? p.text.replace(/:.*/, ': (error – see locked part)') : p.text; }) };
+            var screenInfo = { from: 'the screen', device: PLAT, size: innerWidth + '×' + innerHeight, online: navigator.onLine, status: level(), problems: problems().map(function (p) { return p.kind === 'widget' ? p.text.replace(/:.*/, ': (error – see locked part)') : p.text; }) };
             var body = 'FAMILY DASHBOARD – DIAGNOSTICS REPORT (from the screen)\nMade ' + new Date().toString() + '\n\nThe readable part has no access code, keys, addresses or names; those are in the locked part at the end.\n\n' +
                 JSON.stringify(Object.assign({ thisScreen: screenInfo }, d.report), null, 2);
             if (!d.supportKey || !window.crypto || !crypto.subtle) return body + '\n\n(No locked part: support key not available. Nothing private is included.)\n';
@@ -191,7 +194,7 @@
             var a = document.createElement('a'), name = 'family-dashboard-diagnostics-' + new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '') + '.txt';
             a.href = URL.createObjectURL(new Blob([txt], { type: 'text/plain' })); a.download = name; document.body.appendChild(a); a.click(); a.remove();
             btn.disabled = false; btn.textContent = 'Saved to Downloads ✔';
-        }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save a diagnostics report to this PC'; api().toast(e.message, true); });
+        }).catch(function (e) { btn.disabled = false; btn.textContent = 'Save a diagnostics report to this device'; api().toast(e.message, true); });
     }
 
     /* ---- Getting itself going again. When the screen hasn't had an answer from the Sheet for 10 minutes and nobody is using

@@ -1,5 +1,17 @@
 [
   {
+    "version": "2026.11.237",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Admin (phone): the browser tab says HouseRunner – Family Admin App",
+      "Family Admin: calendar entries look like the website – colour line, category, description, and the time only if there is one",
+      "Family Admin: with more than two lists, the list buttons are two to a row; you can have up to 5 General Lists plus the To-Do List (Google)",
+      "Family Admin: Rewards has Configure (Reward Tasks, Daily To-Dos, Reminder Display, reward rules, manual adjustments – as on the computer) and View (each child, fully open)",
+      "Family Admin: a new Reminders button – add and change reminders, clear expired ones, and set when tomorrow’s show; Widgets is now called Other",
+      "Configurator: timed widgets say Timed (Primary) or Timed (Secondary) in the list, with the days, times and what shows instead on the widget’s page"
+    ]
+  },
+  {
     "version": "2026.11.236",
     "date": "2026-11-15",
     "notes": [

@@ -1348,3 +1348,29 @@ body.fmt-phone .cal-views .vw-btn { padding: 0 0.5rem; font-size: 0.95rem; }
 body.fmt-phone #calToday, body.fmt-phone #calAdd { padding: 0 0.6rem; }
 @media (orientation: portrait) { body.fmt-phone .wv-head b { font-size: 0.95rem; } }
 @media (orientation: portrait) { body.fmt-phone .wv-head { padding: 0 0.15rem; } body.fmt-phone .wv-head b { font-size: 0.88rem; } }
+/* ---- Phone, November 2026: the calendar has only Month and Week; Today and the views on the left, Key and + Add on the right ---- */
+body.fmt-phone #calBday, body.fmt-phone #calHol { display: none !important; }
+body.fmt-phone .cal-views { order: 6; flex: 0 0 auto; margin-left: 0.6rem; }
+body.fmt-phone #calKeyBtn { order: 7; margin-left: auto; padding: 0 0.7rem; }
+body.fmt-phone #calAdd { order: 8; margin-left: 0.6rem; }
+.dn-s { display: none; }
+@media (orientation: portrait) { body.fmt-phone .dn-l { display: none; } body.fmt-phone .dn-s { display: inline; } }
+/* a little more room between the widgets */
+body.fmt-phone .screen.wpage.on { gap: 1.15rem; }
+/* Child's Rewards: as tall as it needs to be, so the card isn't scrolled inside itself */
+body.fmt-phone .wg.wg-child { height: auto !important; min-height: 25rem; }
+body.fmt-phone .wg-child .child-slot, body.fmt-phone .wg-child .boy { height: auto; overflow: visible; }
+body.fmt-phone .wg-child .boy-body { overflow: visible; max-height: none; }
+/* Phone: a small ⓘ at the end of the top row – opens About & diagnostics (versions, this device, a report for support) */
+body.fmt-phone #rail .rail-foot { display: flex !important; flex: none; width: 42px; margin: 0; position: relative; align-items: center; justify-content: center; }
+body.fmt-phone #rail .rail-foot > *:not(.sync):not(#appVer) { display: none !important; }
+body.fmt-phone #rail #appVer { font-size: 0; min-width: 0; width: 36px; height: 36px; padding: 0; margin: 0; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+body.fmt-phone #rail #appVer::after { content: 'i'; font-size: 17px; font-weight: 800; font-style: italic; font-family: Georgia, serif; color: var(--text); }
+body.fmt-phone #rail .rail-foot .sync { position: absolute; top: 4px; right: 2px; bottom: auto; width: 10px; height: 10px; }
+body.fmt-phone #rail .nav-btn { min-width: 0; }
+body.fmt-phone .hl-card { width: calc(100vw - 16px); max-height: calc(100vh - 16px); padding: .9rem; }
+body.fmt-phone .hl-cols { grid-template-columns: minmax(0, 1fr); gap: .6rem; }
+body.fmt-phone .hl-t td:first-child { white-space: normal; width: 42%; }
+body.fmt-phone .hl-t td { overflow-wrap: anywhere; }
+body.fmt-phone .hl-btns .n-btn { flex: 1 1 100%; }
+body.fmt-phone .hl-head h2 { font-size: 1.1rem; }

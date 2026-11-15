@@ -345,7 +345,7 @@
                     '<div class="wx">' + esc(e.t) + '</div>' + (e.note ? '<div class="wn">' + esc(e.note) + '</div>' : '') + '</div>';
             }).join('') : '<div class="empty">Nothing on</div>';
             html += '<button class="cal-cell wv-col' + cellClass(dt, ds, today, hb.cls) + '" data-day="' + ds + '">' +
-                '<span class="wv-head"><b>' + DAYNAME[dt.getDay()] + '</b><i>' + FDL.dm(dt.getDate(), dt.getMonth()) + '</i>' +
+                '<span class="wv-head"><b><span class="dn-l">' + DAYNAME[dt.getDay()] + '</span><span class="dn-s">' + DAYNAME[dt.getDay()].slice(0, 3) + '</span></b><i>' + FDL.dm(dt.getDate(), dt.getMonth()) + '</i>' +
                 (curBH[ds] ? '<em class="bhn">' + esc(curBH[ds]) + '</em>' : '') + '</span>' +
                 '<span class="wv-list">' + list + '</span>' + hb.html + '</button>';
         }
