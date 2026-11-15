@@ -225,8 +225,8 @@
             screenView(p) +
             (p.type === 'widgets' ? '<div class="ed-trash" title="Drag a widget here to remove it">🗑 Drag a widget here to remove it – its settings are kept</div>' +
                 '<div class="ed-palette ed-below"><h3 class="ed-addh">Add a widget</h3>' +
-                '<p class="ed-how">✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
-                'Drag one up from the list underneath to add it. Click a widget for its height, When to show and its settings.</p>' +
+                '<p class="ed-how"><b>👆 Click any widget to change its settings.</b> ✋ Drag a widget to move it – along this screen, or onto another screen’s button in the menu on the left. ' +
+                'Drag one up from the list underneath to add it.</p>' +
                 '<div class="ed-types">' + (D().types || []).filter(function (T) { return REWARD_T[T.type]; }).map(typeTile).join('') + '</div><hr class="ed-div">' +
                 '<div class="ed-types">' + (D().types || []).filter(function (T) { return !REWARD_T[T.type]; }).map(typeTile).join('') + '</div></div>' : '') +
             '</section></div></div>');

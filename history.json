@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.176",
+    "date": "2026-11-15",
+    "notes": [
+      "⚙ Setup → Screens: hovering over a widget now shows a “⚙️ Click for settings” label, and the instructions start with “Click any widget to change its settings”."
+    ]
+  },
+  {
     "version": "2026.11.175",
     "date": "2026-11-15",
     "notes": [

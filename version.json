@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.175",
+  "app": "2026.11.176",
   "script": "2026.11.86",
   "date": "2026-11-15",
   "notes": [
-    "Today & Tomorrow widget: “TODAY Sun 15 Nov” and “TOMORROW Mon 16 Nov” always stay on one line, and the weekend heading is simply “WEEKEND 21–22 Nov”."
+    "⚙ Setup → Screens: hovering over a widget now shows a “⚙️ Click for settings” label, and the instructions start with “Click any widget to change its settings”."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

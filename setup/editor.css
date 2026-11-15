@@ -334,3 +334,9 @@
 .ed-palette .ed-addh { font-size: 1.35rem; text-transform: uppercase; letter-spacing: .05em; margin: 0 0 12px; }
 .ed-palette .ed-how { margin: 0 0 16px; }
 .ed-div { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+/* Hovering over a widget: a clear "click for its settings" label, so it's obvious each one opens */
+.ed-tile:not(.pending) { cursor: pointer; }
+.ed-tile:not(.pending)::after { content: "⚙️ Click for settings"; position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); white-space: nowrap;
+    background: var(--acc, #3fa9f5); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 3; }
+.ed-tile:not(.pending):hover::after { opacity: 1; }
+.ed-tile.split::after { bottom: auto; top: 6px; }
