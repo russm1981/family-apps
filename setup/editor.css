@@ -351,3 +351,22 @@
 .ed-pbar span.on { background: #3fa9f5; color: #fff; } .ed-pbar small { font-size: 8px; }
 .ed-pbar svg { width: 15px; height: 15px; }
 .ed-frame.phone .mk-in { height: 520px; }
+.cs-must { font-weight: 700; padding: 0 4px; }
+.cs-lock { font-size: 14px; opacity: .8; padding: 0 8px; }
+.cs-mustnote { margin-top: 6px; }
+/* Screens: "Reconfigure Widgets" – a white subtitle, the blue how-to, then the grey box of widgets */
+.ed-recon { margin: 30px 0 10px; font-size: 22px; font-weight: 800; color: #fff; }
+.ed-recon + .ed-how { margin: 0 0 12px; }
+.ed-palette.ed-below { margin-top: 0; }
+/* A calendar page's own settings, in their own box under the picture */
+.ed-pset.ed-pset-cal { max-width: none; margin-top: 16px; }
+.ed-pset-cal .ps-grid { display: grid; grid-template-columns: minmax(260px, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.ed-pset-cal .ps-look .hint { display: none; }
+.ed-pset-cal .btn { margin-top: 14px; }
+@media (max-width: 900px) { .ed-pset-cal .ps-grid { grid-template-columns: 1fr; } }
+/* Screens: "How screens work" as the same blue box as Rewards and System */
+.ed-canvas.ed-info { padding: 0; max-width: none; }
+.ed-info .explain { margin: 0; }
+.ed-info h3 { font-size: 17px; margin: 18px 0 4px; }
+.ed-page.info { border: 1px dashed var(--line2, #3a4252); }
+.ed-page.info.on { border: 1px dashed var(--acc); }

@@ -160,7 +160,7 @@
             msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
                 '<p>On your computer, open houserunner.app \u2192 <b>System \u2192 Devices and Phones</b> \u2192 <b>Or open the dashboard link directly</b> \u2192 copy it, then paste it here (Ctrl+V).</p>' +
                 '<div class="connect-row"><input id="connectIn" placeholder="Paste your dashboard link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
-                '<p class="foot">Or download your personal start file from houserunner.app/windows \u2013 it connects by itself.</p></div>';
+                '<p class="foot">Or on a Windows PC, use the start file (a zip) from the Setup wizard\u2019s \u201cConnect your display\u201d step \u2013 it connects by itself.</p></div>';
             msg.style.display = 'flex';
             var go = function () { if (!api().connect(document.getElementById('connectIn').value)) api().toast('That isn\u2019t a Family Dashboard link', true); };
             document.getElementById('connectGo').onclick = go;
@@ -188,6 +188,8 @@
             if (!background) api().sync('ok');
             lastOk = Date.now(); stale('');
             renderMsg(d.page);
+            // Then get every other screen ready in the background (its data, pictures and all), so switching is instant
+            if (!background) setTimeout(warmAll, 2500);
         }).catch(function (e) {
             errors[id] = e.message;
             if (!background) api().sync('err', e.message);

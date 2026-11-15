@@ -424,15 +424,13 @@
                     'It shows your dashboard within a few seconds and remembers it.</li>';
             };
             var pasteLink = '<details class="card"><summary>Or use the private dashboard link instead of a code</summary><p class="mute">If the screen says “Connect this screen”, you can paste this link there instead.</p>' + copyBox('scr', 'Your screen link', screenUrl(), 3) + '</details>';
-            var body = dev === 'pc' ? '<div class="card big"><h3>XENEON EDGE on a Windows PC</h3><p class="mute">The XENEON EDGE plugs into your Windows PC as a second screen. A small start file opens the dashboard full screen on it.</p>' + '<ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button> and move the file somewhere you’ll find it, such as <b>Documents</b>. Doing this on a different computer? Copy the file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
-                    '<li>Double-click it. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
+            var body = dev === 'pc' ? '<div class="card big"><h3>XENEON EDGE on a Windows PC</h3><p class="mute">The XENEON EDGE plugs into your Windows PC as a second screen. A small start file opens the dashboard full screen on it.</p>' + '<ol class="howto"><li>Click <button class="btn" id="bat">Download my start file</button>. It’s a small zip file: unzip it and put the folder somewhere permanent, such as <b>Documents</b>. Doing this on a different computer? Copy the zip file to the PC the XENEON EDGE is plugged into (a USB stick, or email it to yourself).</li>' +
+                    '<li>In the folder, double-click <b>Start Family Dashboard</b>. It asks once whether to start automatically with the PC, then opens the dashboard full screen on the XENEON EDGE, already connected.</li>' +
                     '<li>If Windows says "Windows protected your PC": <b>More info → Run anyway</b>. Close the dashboard with <b>Alt+F4</b>.</li></ol>' +
                     '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your dashboard link', screenUrl(), 3) + '</details></div>'
                 : dev === 'pi' ? '<div class="card big"><h3>XENEON EDGE on a Raspberry Pi</h3><p class="mute">The XENEON EDGE plugged into a Raspberry Pi, which runs the dashboard on its own – no PC needed.</p><ol class="howto">' +
-                    '<li>Install <b>Raspberry Pi OS with desktop</b>, and connect it to your Wi-Fi.</li>' +
-                    '<li>Open <b>Terminal</b> and type:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'dashboard/"</code></li>' +
-                    codeBox('screen') +
-                    '<li>To start it automatically when the Pi switches on, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' + pasteLink
+                    '<li>A ready-made Pi: plug in the screen, the internet and the power, and skip to the next step. Making your own: install <b>Raspberry Pi OS (64-bit, with desktop)</b> with Raspberry Pi Imager, connect it to your Wi-Fi, open <b>Terminal</b> and type this, then restart the Pi:<code class="cmd">curl -fsSL ' + esc(appsBase) + 'downloads/raspberry-pi/setup-pi.sh | bash</code>It then starts the dashboard full screen by itself every time the Pi switches on.</li>' +
+                    codeBox('screen') + '</ol></div>' + pasteLink
                 : dev === 'tab' ? '<div class="card big"><h3>A tablet</h3><p class="mute">An Android or Amazon Fire tablet – on the wall or the kitchen worktop.</p><ol class="howto">' +
                     '<li>On the tablet, install <b>Fully Kiosk Browser</b> (Google Play, or the Amazon Appstore on a Fire tablet).</li>' +
                     '<li>Open it. Where it asks for a <b>Start URL</b> (or in its Settings → Web Content Settings → Start URL), type this short address:' +
@@ -454,7 +452,7 @@
                     function (e) { b.disabled = false; $('tabStatus').innerHTML = okLine(false, e.message); });
             };
             $('devTabs').onclick = function (e) { var b = e.target.closest('[data-dev]'); if (b) { S.dev = b.getAttribute('data-dev'); save(); render(); } };
-            if ($('bat')) $('bat').onclick = function () { download('Start Family Dashboard.bat', batFile(screenUrl())); };
+            if ($('bat')) $('bat').onclick = function () { downloadZip('HouseRunner for Windows.zip', [['HouseRunner/Start Family Dashboard.bat', batFile(screenUrl())], ['HouseRunner/READ ME.txt', readMe()]]); };
         } },
         { id: 'phones', title: 'Connect your phones', render: function () {
             if (!connected()) return '<h1>7. Connect your phones</h1>' + needConnect();
@@ -669,6 +667,30 @@
         var a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' }));
         a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    /** A zip file made here in the browser (no compression needed – the files are tiny). Browsers block or warn about
+     *  a .bat file on its own, but a zip downloads normally. */
+    function downloadZip(name, files) {
+        var crcT = []; for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; crcT[n] = c >>> 0; }
+        var crc = function (b) { var c = 0xFFFFFFFF; for (var i = 0; i < b.length; i++) c = crcT[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+        var enc = new TextEncoder(), parts = [], cen = [], off = 0;
+        var le = function (v, n) { var a = []; for (var i = 0; i < n; i++) a.push((v >>> (8 * i)) & 255); return a; };
+        files.forEach(function (f) {
+            var nm = enc.encode(f[0]), data = enc.encode(f[1]), c = crc(data);
+            var common = [].concat(le(20, 2), le(0x0800, 2), le(0, 2), le(0, 2), le(0x21, 2), le(c, 4), le(data.length, 4), le(data.length, 4), le(nm.length, 2), le(0, 2));
+            var head = new Uint8Array([].concat(le(0x04034b50, 4), common)); parts.push(head, nm, data);
+            cen.push(new Uint8Array([].concat(le(0x02014b50, 4), le(20, 2), common, le(0, 2), le(0, 2), le(0, 2), le(0, 4), le(off, 4))), nm);
+            off += head.length + nm.length + data.length;
+        });
+        var cl = cen.reduce(function (s, b) { return s + b.length; }, 0);
+        var end = new Uint8Array([].concat(le(0x06054b50, 4), le(0, 2), le(0, 2), le(files.length, 2), le(files.length, 2), le(cl, 4), le(off, 4), le(0, 2)));
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(parts.concat(cen, [end]), { type: 'application/zip' }));
+        a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    function readMe() {
+        return ['HouseRunner for Windows', '', 'Double-click "Start Family Dashboard" to open your family dashboard full screen.', 'The first time it asks whether to start with the PC, and whether to keep the screen switched on.',
+            'If Windows says "Windows protected your PC": More info -> Run anyway. Close the dashboard with Alt+F4.', '', 'PRIVATE: the start file contains your family\'s access code. Don\'t share it.', 'Help: ' + appsBase + 'help/#windows', ''].join('\r\n');
     }
     function batFile(link) {
         // A small start file: it holds only the private link; the real work is in downloads/windows/launcher.ps1,

@@ -339,7 +339,7 @@
             // Where you are and how it works – one box
             card('', connLine() + '<p class="small hm-how"><b>How it works:</b> everything that belongs to your family – names, the calendar, points, notes and settings – is kept in a Google Sheet in <b>your own Google account</b>. ' +
                 'HouseRunner reaches it with a <b>private access code</b> that stays on your own screen, phones and computer, so your family’s information stays private.</p>', 'hm-top') +
-            (PHONE ? '' : '<div class="card hm-new hm-wiz"><div><b>🚀 New to HouseRunner?</b> The <a href="#" data-go="start">Setup wizard</a> takes you through everything, step by step.</div>' +
+            (PHONE ? '' : '<div class="card hm-new hm-wiz"><a class="hm-go2" href="#" data-go="start"><b>🚀 New to HouseRunner?</b><span>The Setup wizard takes you through everything, step by step.</span><i>›</i></a>' +
                 '<a class="hm-go2" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Set up another family</b><span>A new Google Sheet – the dashboard that’s set up here stays exactly as it is.</span><i>›</i></a></div>') +
             '<h1 class="page-h hm-h">Setup</h1>' +
             '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
@@ -356,18 +356,20 @@
     /** Home, at the bottom: connecting a new display, and a new phone. */
     function homeDevices() {
         var base = appsRoot(), host = base.replace(/^https?:\/\//, '');
-        var dev = function (href, ico, name, what, dl) { return '<a class="hm-btn" href="' + esc(href) + '"' + (dl ? ' download' : '') + (/^#/.test(href) ? '' : ' target="_blank" rel="noopener"') + '><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + what + '</small></a>'; };
+        // One row per kind of display: what to do ON that device, and a link to the help article
+        var dev = function (ico, name, what, help) { return '<div class="hm-dev"><span>' + ico + '</span><div><b>' + name + '</b><p class="small">' + what + '</p></div><a class="hm-more" href="' + base + 'help/#' + help + '" target="_blank" rel="noopener">More help</a></div>'; };
         var app = function (k, icon, name, who, what) {
             return '<div class="hm-app"><div class="hm-qr">' + qrSvg(appLink(k)) + '</div><div><img src="' + appsRoot() + k + '/icons/icon-192.png" alt="" class="hm-ico"><b>' + esc(name) + '</b> <span class="mute small">' + esc(who) + '</span>' +
                 '<p class="small">' + esc(what) + '</p></div></div>';
         };
         return '<h1 class="page-h hm-h">Connect</h1>' +
-            card('Connect a new display', '<p class="small">A display shows the dashboard. Start it with one of these – it shows a code like <b>K7Q2-M9XD</b> – then type the code in <a href="#" data-go="s/devices">Devices and Phones</a>.</p><div class="hm-grid">' +
-                dev(base + 'windows/', '🖥', 'Corsair XENEON EDGE', 'On a Windows PC: <b>' + esc(host) + 'windows</b> – download and start it') +
-                dev(base + 'help/#pi', '🍓', 'Raspberry Pi', 'One command on the Pi, then it starts by itself') +
-                dev(base + 'help/#pi', '📱', 'Tablet', 'Open <b>' + esc(host) + 'dashboard</b> in its browser, full-screen') +
-                dev(base + 'dashboard/', '💻', 'Any computer', 'Open <b>' + esc(host) + 'dashboard</b> in a browser') + '</div>' +
-                '<div class="ladd-row" style="margin-top:12px"><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a></div>') +
+            card('Connect a new dashboard display device', '<p class="small">Follow the instructions below for the type of device you wish to add, then come back here and add the display code (it looks like <b>K7Q2-M9XD</b>).</p><div class="hm-devs">' +
+                dev('🖥', 'On a Corsair XENEON EDGE (running Windows)', 'Go to <b>' + esc(host) + 'windows</b> in a browser, download the zip file, unzip it and double-click <b>Start Family Dashboard</b>. Any other Windows PC screen works the same way.', 'windows') +
+                dev('🍓', 'On a Raspberry Pi', 'A ready-made Pi: plug in the screen, the internet and the power – it starts by itself. Making your own: install Raspberry Pi OS, then run the one command in the help article in its terminal.', 'pi') +
+                dev('📱', 'On a tablet', 'Go to <b>' + esc(host) + 'dashboard</b> in its browser and make it full-screen (on Android tablets the free <i>Fully Kiosk Browser</i> app does this).', 'pi') +
+                dev('💻', 'On any other computer', 'Go to <b>' + esc(host) + 'dashboard</b> in a browser and press <b>F11</b> for full-screen.', 'connect') +
+                '<div class="hm-dev hm-code"><span>🔢</span><div><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a>' +
+                '<p class="mute small">' + (PHONE ? 'Or on a computer: <b>' + esc(host) + '</b> → Home → <b>Type a display’s code</b>.' : 'Not at this computer? On a phone with <b>Family Admin</b>: <b>System → Devices and Phones → Connect by code</b> – or scan the display’s QR code with that phone’s camera.') + '</p></div></div></div>') +
             card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
                 '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
                 app('dashboard', '', 'Family Dashboard', 'for everyone', 'The dashboard itself on the phone – the calendar, the children’s cards and every widget, one under another.') + '</div>' +
@@ -591,7 +593,7 @@
         var real = items.filter(function (i) { return i[0] !== '-'; }), cur = real.some(function (i) { return i[0] === sub; }) ? sub : real[0][0];
         var outer = $('body');
         outer.innerHTML = '<div class="pane pane-' + tab + '"><nav class="pane-nav">' + items.map(function (i) {
-            return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] ? '<small>' + esc(i[3]) + '</small>' : '') + '</span></a>';
+            return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === 'info' ? ' pn-info' : '') + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] || i[0] === 'info' ? '<small>' + esc(i[3] || 'Start here') + '</small>' : '') + '</span></a>';
         }).join('') + '</nav><div class="pane-body" id="paneIn"></div></div>';
         outer.id = 'bodyOuter'; $('paneIn').id = 'body';
         if (!DESK || PHONE) { var on = outer.querySelector('.pn.on'); if (on && on.scrollIntoView) setTimeout(function () { on.scrollIntoView({ inline: 'center', block: 'nearest' }); }, 0); }      // the phone's button row
@@ -600,16 +602,19 @@
     /** Advanced: the settings that aren't screens, family or rewards – in a menu down the left. */
     function renderAdvanced(sub) {
         var line = function (k) { try { return sectionLine(k); } catch (e) { return ''; } };
-        var items = [['info', 'ℹ️', 'About these settings'],
-            ['-', 'Settings'], ['places', '📍', 'Locations & home', line('places')], ['keys', '🔑', 'External data keys', line('keys')], ['screen', '🌙', 'Screen Sleep'], ['licence', '🎫', 'Software Licence'], ['updates', '⟳', 'Software updates'],
-            ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)'],
-            ['-', 'My devices'], ['devices', '📱', 'Devices and Phones'],
-            ['-', 'System'], ['support', '🩺', 'About & diagnostics']];
+        // Each with a short grey line – a warning instead when something needs doing
+        var warn = function (k, plain) { var l = line(k); return /^⚠/.test(l) ? l : plain; };
+        var items = [['info', 'ℹ️', 'How System works'],
+            ['-', 'Settings'], ['places', '📍', 'Locations & home', warn('places', 'Home and other places')], ['keys', '🔑', 'External data keys', /^⚠/.test(line('keys')) ? '⚠ Keys needed' : 'Free keys for live data'],
+            ['screen', '🌙', 'Screen Sleep', 'Dimming and night hours'], ['licence', '🎫', 'Software Licence', /^⚠/.test(line('licence')) ? '⚠ Needs attention' : 'Your licence key'], ['updates', '⟳', 'Software updates', DATA.autoUpdate ? 'Version ' + (DATA.scriptVersion || '?') : '⚠ Automatic updates off'],
+            ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)', 'Your family’s Google Sheet'],
+            ['-', 'My devices'], ['devices', '📱', 'Devices and Phones', 'Screens and phones'],
+            ['-', 'System'], ['support', '🩺', 'About & diagnostics', 'Versions and reports']];
         if (sub === 'system') sub = 'screen';
         var cur = sidePane('advanced', items, sub);
         if (cur !== 'info') { renderSection(cur); return; }
         title('System');
-        $('body').innerHTML = explain('About these settings',
+        $('body').innerHTML = explain('How System works',
             '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
             '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
             '<li><b>External data (API) keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +

@@ -132,17 +132,30 @@ window.FD_HELP = [
 <li>On the new phone, point the camera at the right QR code and open the link.</li>
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
-<h2>A new screen (Windows PC)</h2>
-<ol>
-<li>On the same <b>Connect your devices</b> page, download the <b>start file</b> for Windows.</li>
-<li>Put it on the PC (for example in Documents) and double-click it. Answer Y to start with Windows.</li>
-</ol>
-<h2>A tablet or Raspberry Pi</h2>
-<p>Open the <b>dashboard link</b> from the same page in the device’s browser (or scan the “Tablet or Pi dashboard” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
+<h2>A new display</h2>
+<p>On the new display, start the dashboard – it shows a code like <b>K7Q2-M9XD</b>. Then on a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b> (or on a phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>).</p>
+<ul>
+<li><b>Corsair XENEON EDGE (running Windows), or any Windows PC:</b> see <a href="#windows">Corsair XENEON EDGE or a Windows PC</a>.</li>
+<li><b>Raspberry Pi or tablet:</b> see <a href="#pi">Raspberry Pi or tablet</a>.</li>
+<li><b>Any other computer:</b> go to <b>houserunner.app/dashboard</b> in a browser and press <b>F11</b> for full-screen.</li>
+</ul>
 <h2>How many screens?</h2>
 <p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → System → Devices and Phones</b>.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
+  },
+  {
+    id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new screen',
+    summary: 'On the PC, go to houserunner.app/windows, download the zip file, unzip it and double-click Start Family Dashboard. Then type the code it shows into houserunner.app.',
+    body: `
+<ol>
+<li>On the PC the Corsair XENEON EDGE is plugged into, go to <b>houserunner.app/windows</b> in a browser and press <b>Download</b>.</li>
+<li>It’s a small <b>zip file</b>. Open your Downloads folder, right-click it → <b>Extract All…</b>, and put the folder somewhere permanent, such as <b>Documents</b>.</li>
+<li>In the folder, double-click <b>Start Family Dashboard</b>. If Windows says “Windows protected your PC”: <b>More info → Run anyway</b>.</li>
+<li>The first time it asks two Yes/No questions: start when the PC turns on, and keep the screen switched on. <b>Yes</b> to both is best.</li>
+<li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b>, or on a phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>.</li>
+</ol>
+<p>Close the dashboard with <b>Alt+F4</b>. Nothing needs updating by hand – it fetches the newest version each time it starts. If it doesn’t start with the PC, see <a href="#startup">The dashboard doesn’t start when the PC turns on</a>.</p>`
   },
   {
     id: 'pi', icon: '🍓', title: 'Raspberry Pi or tablet: connecting a new screen',
@@ -163,7 +176,7 @@ window.FD_HELP = [
 <h2>Making your own Pi</h2>
 <p>Install Raspberry Pi OS (64-bit, with desktop) with Raspberry Pi Imager, then in a terminal on the Pi run:<br><code>curl -fsSL https://houserunner.app/downloads/raspberry-pi/setup-pi.sh | bash</code><br>and restart it.</p>
 <h2>A tablet</h2>
-<p>Open the HouseRunner home page in the tablet’s browser → <b>Open the screen</b> (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself). It shows the same QR code to connect it.</p>`
+<p>Go to <b>houserunner.app/dashboard</b> in the tablet’s browser (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself – set that address as its Start URL). It shows the same QR code and code to connect it.</p>`
   },
   {
     id: 'screens', icon: '▭', title: 'Which screens work best',
@@ -224,7 +237,7 @@ window.FD_HELP = [
     summary: 'The start file adds itself to Windows start-up the first time you run it. Double-click it once and it starts by itself from then on.',
     body: `
 <ol>
-<li>Find the <b>Start Family Dashboard</b> file on the PC (usually in Documents) and double-click it.</li>
+<li>Find the <b>Start Family Dashboard</b> file on the PC – in the folder you unzipped (usually in Documents) – and double-click it. Don’t have it? <a href="#windows">Download it again</a>.</li>
 <li>The first time, two Windows boxes ask: <b>start automatically when the PC is switched on?</b> and <b>keep the screen switched on?</b> Press <b>Yes</b> to both (recommended).</li>
 <li>Your answers are remembered – from then on it starts by itself.</li>
 </ol>
@@ -300,7 +313,9 @@ window.FD_HELP = [
 <li>An event with <b>no colour</b> goes in <b>Other</b>.</li>
 <li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
 <p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>⚙ Setup → Screens → your calendar page → Tidy up your Google calendar</b>.</p>
-<p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>⚙ Setup → Screens</b>.</p>`
+<p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>⚙ Setup → Screens</b>.</p>
+<h2>Birthday and Holiday</h2>
+<p>These two categories are always there – the Birthdays and Holiday countdown widgets need them. You can still show them, hide them, or show them as Other. While one is showing, the calendar has a button for it: <b>🎂</b> shows only the birthdays and <b>🌴</b> only the holidays (in full, even if Holiday is normally a line under the day). Press it again to see everything.</p>`
   },
   {
     id: 'afresh', icon: '🔄', title: 'Starting again: a fresh Sheet, or from scratch',

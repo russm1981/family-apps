@@ -1,14 +1,13 @@
-FAMILY DASHBOARD FOR WINDOWS (Corsair XENEON EDGE, or any PC screen)
+HOUSERUNNER FOR WINDOWS (Corsair XENEON EDGE, or any PC screen)
 
-1. Put "Start Family Dashboard.bat" somewhere permanent, e.g. Documents\Family Dashboard.
-   Easiest: use the personal start file from the setup app (step "Connect your devices") -
-   it already knows your Google Sheet.
+1. Unzip this folder and put it somewhere permanent, e.g. Documents\HouseRunner.
+   (The start file from the Setup wizard's "Connect your display" step already knows your family.)
 2. Double-click it. The first time it asks two Yes/No questions:
    - start automatically when the PC turns on?
    - keep the screen switched on?
    (If Windows says "Windows protected your PC": More info > Run anyway.)
 3. The dashboard opens full screen. Close it with Alt+F4.
-   If it asks you to connect, scan the QR code with your phone.
+   If it shows a code like K7Q2-M9XD, type it at houserunner.app -> Home -> Type a display's code.
 
 Nothing needs updating by hand. The start file only holds your link: each time it starts it
 fetches the latest launcher from the internet (keeping a copy for when the internet is down),

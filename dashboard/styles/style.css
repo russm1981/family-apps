@@ -1290,7 +1290,11 @@ body.fmt-phone #screen-boys { position: relative; }
 /* 🎂 birthdays only */
 .vw-bday { font-size: 1.15em; padding-left: 0.7em; padding-right: 0.7em; }
 .vw-bday.on { background: #f472b6 !important; color: #fff; }
-#screen-calendar.bday-only .cal-head h2::after, #screen-calendar.bday-only #calYear::after { content: " · birthdays"; color: #f472b6; font-size: 0.6em; font-weight: 700; }
+.vw-hol.on { background: #ef4444 !important; }
+/* 🎂 / 🌴 on: the key becomes "Showing Birthdays Only", with the symbol above it */
+.cal-key .key-only { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; text-align: center; width: 100%; color: var(--text); }
+.key-only span { font-size: 1.8em; line-height: 1; font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+.key-only b { font-size: 1rem; font-weight: 800; }
 /* Phone: the calendar has Month and Week (the 3-month grids are too small to read there) */
 body.fmt-phone .vw-btn[data-view="3m"], body.fmt-phone .vw-btn[data-view="3ms"] { display: none; }
 /* Birthdays widget */
@@ -1304,3 +1308,10 @@ body.fmt-phone .vw-btn[data-view="3m"], body.fmt-phone .vw-btn[data-view="3ms"] 
 .bd-row.soon { background: rgba(244,114,182,.14); box-shadow: inset 3px 0 0 #f472b6; }
 .bd-row.soon b { color: #f9a8d4; }
 .bd-row.today { background: #f472b6; } .bd-row.today .bd-name, .bd-row.today b, .bd-row.today em { color: #fff; }
+/* The version number at the bottom of the menu: a bigger space to tap */
+.rail-foot .app-ver { margin-top: 0.3rem; padding: 0.55rem 0.5rem 0.65rem; font-size: 0.68rem; border-radius: 0.45rem; min-width: 80%; text-align: center; }
+.rail-foot .app-ver:hover, .rail-foot .app-ver:active { background: rgba(255,255,255,.07); }
+/* Today & tomorrow: each heading sits close to its own list, with a clear gap before the next day */
+.wg-agenda .ag-cols { row-gap: 1.25rem; }
+.wg-agenda .ag-col, .wg-agenda .ag-wk { gap: 0.3rem; }
+.wg-agenda .ag-col h3, .wg-agenda .ag-wk h3 { margin: 0; }

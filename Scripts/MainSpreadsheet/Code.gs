@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.87';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.88';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -2766,6 +2766,7 @@ function calModel_() {
   if (!groups.some(x => x.fixed)) groups.push({ name: 'Family', colour: '#c08457', match: '', g: '', fixed: true, members: people.map(p => p.name) });
   const generals = raw.filter(c => c.type === 'general').map(c => ({ name: c.name, colour: c.colour, match: c.match, g: c.g, line: c.show === 'bar' }));
   if (!generals.some(c => norm_(c.name) === 'birthday')) generals.push({ name: 'Birthday', colour: '#ffffff', match: 'birthday', g: '', line: false });   // always one
+  if (!generals.some(c => norm_(c.name) === 'holiday')) generals.push({ name: 'Holiday', colour: '#ef4444', match: 'flight', g: '', line: true });           // always one
   return { people: people, groups: groups, generals: generals, cats: groups.concat(generals) };
 }
 /** The Google colour nearest to a colour (for giving an existing category its Google colour). */

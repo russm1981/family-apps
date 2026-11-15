@@ -17,6 +17,7 @@
 
     var PALETTE = ['#22d3ee', '#3fa9f5', '#6366f1', '#a855f7', '#f472b6', '#ef4444', '#f97316', '#f59e0b', '#facc15', '#84cc16', '#22c55e', '#14b8a6', '#c08457', '#94a3b8', '#ffffff'];
     function all() { return cats.groups.concat(cats.generals); }
+    function MUST(c) { return /^(birthday|holiday)$/i.test(String(c.name || '').trim()); }      // the two categories that are always there
     /** A colour swatch: click for the colours to choose from, or any colour you like. */
     function swatch(ref, colour) { return '<button type="button" class="cs-sw" data-sw="' + ref + '" style="background:' + esc(colour) + '" title="Change the colour"></button>'; }
     function chip(n, extra) {
@@ -86,7 +87,9 @@
 
             '<h3 class="cs-h2">General categories</h3>' +
             head(['Name', 'Colour', 'Line?', 'How to display', '']) +
-            cats.generals.map(function (c, i) { return catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
+            cats.generals.map(function (c, i) { return MUST(c) ? catRow(c, 'c' + i, '<span class="cs-must">' + esc(c.name) + '</span>', '<span class="cs-lock" title="Needed – it can’t be removed">🔒</span>')
+                : catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
+            '<p class="mute small cs-mustnote">🔒 <b>Birthday</b> and <b>Holiday</b> are always here: the Birthdays and Holiday countdown widgets, and the calendar’s 🎂 and 🌴 buttons, need them. You can still choose how they show.</p>' +
             (all().length < L.cats ? '<button class="btn sm cs-addc" data-sug="">+ Add another</button>' : '<p class="mute small">That’s the most categories and groups together (' + L.cats + ').</p>') +
             '<p class="mute small"><b>Show as Other</b>: on the calendar in grey, counted as Other on the key – so it doesn’t use up a colour. <b>Hide</b>: not on the calendar at all.</p>' +
 
@@ -285,6 +288,10 @@
             H = hooks; box = el; pageId = id; CS = (H.data() || {}).calSetup;
             if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">System → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
+            // Birthday and Holiday can't be taken away (widgets and the calendar's 🎂 / 🌴 buttons rely on them)
+            [['Holiday', '#ef4444', true], ['Birthday', '#ffffff', false]].forEach(function (m) {
+                if (!cats.generals.some(function (c) { return /^(birthday|holiday)$/i.test(c.name) && c.name.toLowerCase() === m[0].toLowerCase(); })) cats.generals.push({ name: m[0], colour: m[1], line: m[2], show: 'show' });
+            });
             var key = (CS.keys || []).filter(function (k) { return k.page === id; })[0] || (CS.keys || [])[0] || { slots: [], lines: [], hide: [] };
             look = { other: key.other !== false };
             // Each category and group is shown in its Google Calendar colour (the colour its events have in Google).
