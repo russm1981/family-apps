@@ -110,7 +110,7 @@
             '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button>' +
             '<button class="n-btn ghost" data-h="forget">Disconnect this screen</button></div>' +
             '</div></div>' + qrBlock() + '<div><div>' +
-            '<p class="hl-foot">To email a report to support, use Family Admin on your phone → Settings → Versions & diagnostics. ' +
+            '<p class="hl-foot">To email a report to support, use ⚙ Setup → Advanced → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
             'Private details (access code, keys, addresses, names) are locked so only support can read them.</p></div></div>';
     }
     /** Updates: what's waiting, what's been put off, and buttons to do it now. */

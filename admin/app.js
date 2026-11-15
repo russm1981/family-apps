@@ -27,12 +27,13 @@
 
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
-    var DESK = !!window.FD_DESK;
+    var DESK = !!window.FD_DESK, PHONE = !!window.FD_PHONE;      // PHONE: the Family Admin app – the same pages, narrow
     var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
     var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
         : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
+    if (PHONE) TABS = TABS.filter(function (t) { return t[0] !== 'start' && t[0] !== 'layout'; });   // they need a big screen
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
@@ -231,13 +232,14 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
-            (DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ View dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (PHONE ? '<span class="hr-phone" title="HouseRunner – settings"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="HouseRunner"><b>⚙</b></span>' : DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
+            (PHONE ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" title="Open the dashboard">▶ Dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#" aria-label="Feedback">💬</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#" aria-label="Help">❓</a>' :
+             DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ View dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Setup</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Widgets</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Setup</span>' : t[0] === 'calendar' ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Widgets</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -259,6 +261,7 @@
         if (!$('body')) return;
         var r = route();
         Array.prototype.forEach.call(document.querySelectorAll('#tabs button'), function (b) { b.classList.toggle('on', b.getAttribute('data-t') === r.tab); });
+        if (PHONE) { var onb = document.querySelector('#tabs button.on'); if (onb && onb.scrollIntoView) onb.scrollIntoView({ inline: 'center', block: 'nearest' }); }   // the phone's menu row: keep the page you're on in view
         if ($('hdrHelp')) $('hdrHelp').classList.toggle('on', r.tab === 'help');
         orient(r.tab === 'calendar' && !r.w);
         if ($('hdrFb')) $('hdrFb').classList.toggle('on', r.tab === 'feedback');
@@ -266,7 +269,7 @@
         $('body').onclick = null;
         if (r.tab !== 'famcfg') { famEdit = null; famName = null; }      // unsaved changes on the Family page go when you leave it
         if (!DATA) {
-            $('title').innerHTML = DESK ? DESK_TITLE : 'HouseRunner';
+            if (!PHONE) $('title').innerHTML = DESK ? DESK_TITLE : 'HouseRunner';
             // Never just "Loading…" for ever: if the family's Sheet can't be reached, say so and offer the ways out.
             $('body').innerHTML = !loadErr ? '<div class="empty">Loading…</div>' :
                 '<div class="card" style="max-width:640px;margin:30px auto"><h2>Can’t reach your family’s Google Sheet</h2><p class="small">' + esc(loadErr) + '</p>' +
@@ -275,7 +278,8 @@
             return;
         }
         if (!DATA.widgets) { $('body').innerHTML = '<div class="empty">Update the Google Apps Script to the latest version.</div>'; return; }
-        if (!DESK && ((r.s && !PHONE_S[r.s]) || (!r.s && !r.w && !r.pts && r.tab === 'layout'))) renderOnComputer(r.s ? SECTIONS[r.s][1] : 'Screen layout');
+        if (!DESK && ((r.s && !PHONE_S[r.s]) || (!r.s && !r.w && !r.pts && r.tab === 'layout'))) renderOnComputer(r.s ? SECTIONS[r.s][1] : 'Screens');
+        else if (PHONE && (r.tab === 'layout' || r.tab === 'start') && !r.w && !r.s) renderOnComputer(r.tab === 'layout' ? 'Screens' : 'Setup wizard');
         else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
@@ -300,7 +304,7 @@
     var pageName = '';
     function title(t) {
         if (!DESK) { $('title').textContent = t; return; }
-        $('title').innerHTML = DESK_TITLE;      // always the same; each page has its own heading
+        if (!PHONE) $('title').innerHTML = DESK_TITLE;      // always the same; each page has its own heading
         pageName = t || '';
     }
     var HOW_IT_WORKS = '<p>HouseRunner is standard software that runs on your screen and your phones. Everything that belongs to your family – names, the calendar, ' +
@@ -319,20 +323,20 @@
         return (fn ? 'the <b>' + esc(fn) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
     }
     function statusCard() {
-        return card('✔ Your dashboard is set up', '<p>This computer is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this computer</a></p>');
+        return card('✔ Your dashboard is set up', '<p>This ' + (PHONE ? 'phone' : 'computer') + ' is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this ' + (PHONE ? 'phone' : 'computer') + '</a></p>');
     }
     /** Home: the two ways in for someone new, how it works, then the configurator's two parts. */
     function renderHome() {
         title('Home');
         var btn = function (go, ico, name, what) { return '<a class="hm-btn" data-go="' + go + '" href="#"><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + esc(what) + '</small></a>'; };
         $('body').innerHTML = '<h1 class="page-h">Home</h1>' + card('How it works', HOW_IT_WORKS) + statusCard() +
-            '<div class="card hm-new"><b>🚀 New to HouseRunner?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
-            '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>' +
+            (PHONE ? '' : '<div class="card hm-new"><b>🚀 New to HouseRunner?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>') +
+            (PHONE ? '' : '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>') +
             '<h1 class="page-h hm-h">Setup</h1>' +
             '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
-                btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again') +
-                btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages') +
+                (PHONE ? '' : btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again')) +
+                (PHONE ? '' : btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
@@ -379,7 +383,7 @@
         var row = function (ico, name, what, href, go) {
             return '<a class="mrow" ' + (go ? 'data-go="' + go + '" href="#"' : 'href="' + esc(href) + '"' + (href.indexOf(base) === 0 && /&only/.test(href) ? '' : ' target="_blank" rel="noopener"')) + '><span class="m-ico">' + ico + '</span><span class="m-tx"><b>' + esc(name) + '</b><small>' + esc(what) + '</small></span><i>›</i></a>';
         };
-        $('body').innerHTML = '<p class="mute small help">Step-by-step guides. Each opens the setup app at the right step, already connected to your family.</p>' +
+        $('body').innerHTML = '<p class="mute small help">Step-by-step guides. Each opens the setup wizard at the right step, already connected to your family.</p>' +
             card('Your dashboard', '<div class="menu">' +
                 row('👪', 'Your family', 'Who’s in the family, their colours and who takes part in rewards', link('go=family')) +
                 row('📅', 'Your calendar', 'The calendar’s categories, groups and colours, and tidying up the Google calendar', link('go=calendar')) +
@@ -581,7 +585,7 @@
             return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] ? '<small>' + esc(i[3]) + '</small>' : '') + '</span></a>';
         }).join('') + '</nav><div class="pane-body" id="paneIn"></div></div>';
         outer.id = 'bodyOuter'; $('paneIn').id = 'body';
-        if (!DESK) { var on = outer.querySelector('.pn.on'); if (on && on.scrollIntoView) setTimeout(function () { on.scrollIntoView({ inline: 'center', block: 'nearest' }); }, 0); }      // the phone's button row
+        if (!DESK || PHONE) { var on = outer.querySelector('.pn.on'); if (on && on.scrollIntoView) setTimeout(function () { on.scrollIntoView({ inline: 'center', block: 'nearest' }); }, 0); }      // the phone's button row
         return cur;
     }
     /** Advanced: the settings that aren't screens, family or rewards – in a menu down the left. */
@@ -711,7 +715,7 @@
         title(what);
         $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>HouseRunner Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
-            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Advanced → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
@@ -1653,7 +1657,7 @@
         var c = FD.config(), ok = DATA.spotifyConnected;
         var hasKeys = (DATA.install || []).some(function (f) { return f.k === 'SpotifyClientId' && f.value; });
         return '<h3 class="sh">Spotify account</h3><p class="mute small">' + (ok ? '✅ Connected.' : hasKeys ? 'Not connected yet.' :
-            'First create an app at developer.spotify.com and put its Client ID and secret in Settings → API keys.') + ' Spotify needs Premium for play/pause/skip.</p>' +
+            'First create an app at developer.spotify.com and put its Client ID and secret in ⚙ Setup → Advanced → External data keys.') + ' Spotify needs Premium for play/pause/skip.</p>' +
             (hasKeys ? '<a class="btn wide" target="_blank" rel="noopener" href="' + esc(c.url + '?spotify=login&key=' + encodeURIComponent(c.code)) + '">' + (ok ? 'Reconnect Spotify' : 'Connect Spotify') + '</a>' : '<button class="btn ghost wide" data-go="s/keys">API keys</button>');
     }
 
@@ -1681,7 +1685,7 @@
         return '<div class="pv">' + html + '</div>' + (over > 0 ? '<p class="err small">' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen – make some widgets half height, move them to another page or hide them.</p>' : '');
     }
     function renderLayout() {
-        title(DESK ? 'Screens & widgets' : 'Screen layout');
+        title('Screens');
         // The Setup website has the drag-and-drop editor (setup/editor.js).
         if (DESK && window.FDEditor) {
             window.FDEditor.render($('body'), { data: function () { return DATA; }, act: act, setData: setData, esc: esc, typeOf: typeOf, pageTypeOf: pageTypeOf,
@@ -2094,7 +2098,7 @@
             '<label>Icon</label><div class="chips icons" id="pIcons">' + icons.map(function (i) { return '<button class="chip' + (i === p.icon ? ' on' : '') + '" data-i="' + i + '">' + i + '</button>'; }).join('') + '</div>' +
             '<label class="tog"><input type="checkbox" id="pShow"' + (p.show ? ' checked' : '') + '><span>Show this page</span></label>' +
             (PT.settings.length && !(DESK && p.type === 'calendar') ? '<h3 class="sh">Settings</h3>' + fields(PT.settings, p.settings || {}) : '') +
-            (DESK && p.type === 'calendar' ? '<p class="mute small">This calendar page’s settings (which calendars, what it opens on…) are under its picture on the Screen layout page.</p>' : '') +
+            (DESK && p.type === 'calendar' ? '<p class="mute small">This calendar page’s settings (which calendars, what it opens on…) are under its picture on the Screens page.</p>' : '') +
             '<div class="sheet-actions"><button class="btn ghost" id="pCancel">Cancel</button><button class="btn good" id="pSave">Save</button></div>' +
             (p.type === 'widgets' || (p.type === 'calendar' && (DATA.pages || []).filter(function (x) { return x.type === 'calendar'; }).length > 1) ? '<div class="sheet-actions"><button class="btn bad" id="pDel">Delete this page</button></div>' : ''));
         var icon = p.icon;
@@ -2255,7 +2259,7 @@
         $('body').innerHTML = card('Screen Sleep', installFields('screen') + saveInstallBtn('scSave', 'Save') +
                 '<p class="mute small">On the Windows PC the start file offers to keep the screen switched on, so the dashboard’s own sleep screen is in charge and a touch always wakes it.</p>') +
             ['licence', 'updates'].map(function (k) { return '<a class="link-card" data-go="s/' + k + '" href="#"><b>' + SECTIONS[k][0] + ' ' + esc(SECTIONS[k][1]) + ' ›</b><span class="mute small">' + esc(sectionLine(k)) + '</span></a>'; }).join('') +
-            '<a class="link-card" data-go="layout" href="#"><b>▦ Screen layout ›</b><span class="mute small">Pages, widgets and what goes where.</span></a>';
+            '<a class="link-card" data-go="layout" href="#"><b>▦ Screens ›</b><span class="mute small">Pages, widgets and what goes where.</span></a>';
         wireSaveInstall('scSave');
     }
     function secScreen() {
@@ -2299,7 +2303,7 @@
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
                 'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (Advanced → Software Licence), so the new Sheet can use it.</p>' +
-                '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup app for a new family</a>') +
+                '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup wizard for a new family</a>') +
             accessCard();
         wireAfresh(); wireAccess();
     }
@@ -2329,7 +2333,7 @@
             card(Lc.key || DATA.licenceKey ? 'Change the key' : 'Add your key', '<p class="mute small">It’s in your order email: FD- then four groups of five letters and numbers.</p>' +
                 '<input id="licKey" class="mono" placeholder="FD-XXXXX-XXXXX-XXXXX-XXXXX" value="' + esc(DATA.licenceKey || '') + '" autocomplete="off" autocapitalize="characters" spellcheck="false">' +
                 '<button class="btn good wide" id="licGo">Check and save</button>' + (Lc.key ? '<button class="btn ghost wide" id="licRe">Check my licence again now</button>' : '')) +
-            (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup app (not moving, which takes your licence by itself), free your key here first. ' +
+            (Lc.key ? card('Starting again from scratch?', '<p class="small">If you’re setting up a brand-new Sheet with the setup wizard (not moving, which takes your licence by itself), free your key here first. ' +
                 'You can then enter it in the new Sheet. This Sheet will ask for a key again.</p><button class="btn ghost wide" id="licFree">Free up my licence key</button><div id="licFreeOut"></div>') : '') +
             '<p class="mute small help">A key works on one dashboard at a time. If you move to a new Google Sheet or account, ask the seller to release it first. Once a day your Google script checks the key with the seller; if that can’t happen for 21 days, the screen asks for help.</p>';
         if ($('licCopy')) $('licCopy').onclick = function () { try { navigator.clipboard.writeText(DATA.licenceKey).then(function () { FD.toast('Copied'); }); } catch (e) { FD.toast('Couldn’t copy', true); } };
@@ -2479,7 +2483,7 @@
     /* ---- saved versions and starting afresh */
     function versionsCard() {
         var v = DATA.versions, mv = DATA.moving;
-        if (mv && mv.mode === 'account') return card('Moving to ' + esc(mv.email), '<p>The moving pack is ready. On a computer signed in as <b>' + esc(mv.email) + '</b>, open the setup app link from when you made it (or make a new pack below), set up, and press <b>Bring everything across</b>.</p>' +
+        if (mv && mv.mode === 'account') return card('Moving to ' + esc(mv.email), '<p>The moving pack is ready. On a computer signed in as <b>' + esc(mv.email) + '</b>, open the setup wizard link from when you made it (or make a new pack below), set up, and press <b>Bring everything across</b>.</p>' +
             '<p class="mute small">Until then everything carries on working from this Sheet.</p>') + card('Make a new moving pack', '<label>New Google account’s email</label><input id="mvEmail" type="email" value="' + esc(mv.email) + '"><button class="btn ghost wide" id="mvGo">Make a new moving pack</button><div id="mvOut"></div>');
         if (mv) return card('Finish moving to the new Sheet', '<p>The new Sheet is ready. Open it, wait for the <b>🏠 Family Dashboard</b> menu, and choose <b>Finish moving here</b> – Google asks you to allow the script, as it did the first time.</p>' +
             '<a class="btn wide" href="' + esc(mv.sheetUrl) + '" target="_blank" rel="noopener">Open the new Sheet</a><p class="mute small">Until then everything carries on working from this Sheet.</p>');
@@ -2514,7 +2518,7 @@
             FD.post({ action: 'packForAccount', email: email }).then(function (d) {
                 b.textContent = 'Moving pack made ✔';
                 $('mvOut').innerHTML = (d.emailed ? '<p class="pos small"><b>✔ Emailed to ' + esc(d.email) + '</b> – the email has these steps, and what happens to your screens and phones. You can also do it now:</p>' : '') + '<ol class="small"><li>On a <b>computer</b>, sign in to Google as <b>' + esc(d.email) + '</b> (or open a private window and sign in there).</li>' +
-                    '<li>Open this link – it’s the setup app, in “moving” mode:</li></ol><textarea readonly rows="3" id="mvLink">' + esc(d.setupLink) + '</textarea>' +
+                    '<li>Open this link – it’s the setup wizard, in “moving” mode:</li></ol><textarea readonly rows="3" id="mvLink">' + esc(d.setupLink) + '</textarea>' +
                     '<button class="btn ghost wide" id="mvCopy">Copy the link</button>' + (navigator.share ? '<button class="btn ghost wide" id="mvShare">Send it to yourself</button>' : '') +
                     '<ol class="small" start="3"><li>Follow the setup steps for the new account (make the Sheet, publish it). At “Publish &amp; connect” press <b>Bring everything across</b>.</li>' +
                     '<li>That’s it – the screen, phones and licence switch over by themselves within a few minutes; you don’t connect them again. If one is switched off at the time, reload it when it’s back on (if it asks for a code, connect it again from Devices). This Sheet is kept as a backup.</li></ol>';
@@ -2682,7 +2686,7 @@
             '<label class="tog"><input type="checkbox" id="showMatch"><span>Show matching words (advanced)</span></label>' +
             '<p class="mute small">Events go in a category by the name at the start of their title – “Oliver – Drums”, “Family – Zoo”. Matching words catch events without one, e.g. “football” → Amelia.</p>' +
             '<p class="mute small" id="famNote"></p><button class="btn good wide" id="famSave">Save family</button></div>' +
-            '<p class="mute small">Which Google calendars are shown, and each calendar page’s settings, are in <b>Screen layout</b> – pick the calendar page.</p>';
+            '<p class="mute small">Which Google calendars are shown, and each calendar page’s settings, are in <b>⚙ Setup → Screens</b> – pick the calendar page.</p>';
         var form = $('famForm');
         $('showMatch').onchange = function () { form.classList.toggle('show-match', this.checked); };
         $('addP').onclick = function () {

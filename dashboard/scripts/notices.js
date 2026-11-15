@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.167';
+    var APP_VERSION = '2026.11.168';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;
@@ -155,7 +155,7 @@
             '<ul>' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
             '<div class="pv-full" hidden>' + P.full + '</div>' +
             '<div class="pv-btns"><button class="n-btn ghost" data-p="read">Read the full notice</button><button class="n-btn" data-p="ok">I accept</button></div>' +
-            '<p class="foot">Version ' + esc(P.version) + ', ' + esc(P.updated) + '. You can also accept it in the setup app or the Family Admin app.</p></div>';
+            '<p class="foot">Version ' + esc(P.version) + ', ' + esc(P.updated) + '. You can also accept it in the Configurator or in Family Admin.</p></div>';
         document.body.appendChild(el);
         el.onclick = function (e) {
             var x = e.target.closest('[data-p]'); if (!x) return;
@@ -188,7 +188,7 @@
                 '<div class="scr-list">' + sb.screens.map(function (x) {
                     return '<button class="n-btn" data-old="' + esc(x.id) + '"><span>Use this screen instead of <b>' + esc(x.name) + '</b></span><span class="lic-how">last used ' + ago(x.last) + '</span></button>'; }).join('') + '</div>' +
                 '<p class="lic-how">The other screen will then show this message instead. To use more screens at once, ask the seller for a licence with more screens. ' +
-                'Setting up a completely separate dashboard (another home)? That needs its own licence – start with the setup app.</p></div>';
+                'Setting up a completely separate dashboard (another home)? That needs its own licence – start with the setup wizard at houserunner.app.</p></div>';
             el.style.display = 'flex';
             el.onclick = function (e) {
                 var b = e.target.closest('[data-old]'); if (!b) return;

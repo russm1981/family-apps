@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.83';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.84';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -114,10 +114,10 @@ const INSTALL = [
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
   { k: 'FamilyName', label: 'Family name', help: 'e.g. Smith – set on the Family page.', hidden: true },
-  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup app or the Family Admin app.', hidden: true },
+  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup wizard or ⚙ Setup → Advanced → Software Licence.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
-  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from the admin app, the setup app or the Sheet menu.', hidden: true },
-  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the screen, phone apps and setup app are hosted. Only change this if you host your own copy.' },
+  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from ⚙ Setup → Advanced → Software updates, the setup wizard or the Sheet menu.', hidden: true },
+  { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the dashboard, the Configurator and Family Admin are hosted. Only change this if you host your own copy.' },
   { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
   { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
@@ -223,7 +223,7 @@ const WIDGET_TYPES = {
       { k: 'Weekend', label: 'Show the weekend (on Fridays it takes the place of tomorrow)', type: 'bool', def: true },
     ],
     data: () => agenda_(), nocache: true },
-  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in Family Admin → Bins → Set up bin days.',
+  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in ⚙ Widgets → Other → Bins → Set up bin days.',
     settings: [
       { k: 'Source', label: 'Collection days from', type: 'select', def: 'My council (automatic)', options: BIN_SOURCES,
         help: 'My council: looked up from your postcode, where your council is connected (see Help). Calendar link: many councils offer an "add to calendar" (iCal / .ics) link on their bin-day page. Repeating schedule: works everywhere.' },
@@ -637,7 +637,7 @@ function syncChildWidgets_(added) {
       let pg = homes.find(x => used(x) <= LIMITS.columns * 2 - 2);
       if (!pg) {
         const pages = rows_('pages');
-        if (screenCount_() >= MAX_SCREENS) return;      // no room for another screen: it can be added from Setup → Screens & widgets
+        if (screenCount_() >= MAX_SCREENS) return;      // no room for another screen: it can be added from ⚙ Setup → Screens
         let id = 'kids', n = '';
         while (pages.some(p => String(p.Page).trim() === id + n)) n = (Number(n) || 1) + 1;
         const last = homes.length ? pages.find(p => String(p.Page).trim() === homes[homes.length - 1]) : bp;
@@ -724,7 +724,7 @@ function menuWipe() {
   if (ui.alert('Clear everything?', 'This empties every family tab and setting in this Sheet – people, points, lists, notes, keys, address and access code – so it can be set up from scratch. The page layout is kept. It can’t be undone (Google Sheets’ version history can still bring old data back).', ui.ButtonSet.OK_CANCEL) !== ui.Button.OK) return;
   wipeFamily_(); PropertiesService.getScriptProperties().setProperty('homeSheet', SpreadsheetApp.getActive().getId());
   setup();
-  ui.alert('Done', 'This Sheet is empty and ready to set up. Open the setup app and choose “First-time setup”.', ui.ButtonSet.OK);
+  ui.alert('Done', 'This Sheet is empty and ready to set up. Open houserunner.app and choose “Start new setup”.', ui.ButtonSet.OK);
 }
 
 function ensureMigrated_() {
@@ -1968,7 +1968,7 @@ function locale_() { return { weekStart: /^sun/i.test(String(inst_('WeekStart') 
 function units_() { const c = country_(); return { temp: c === 'US' ? 'F' : 'C', wind: c === 'US' || c === 'GB' ? 'mph' : 'km/h' }; }
 
 function geocode_(place) {
-  if (!String(place || '').trim()) throw new Error('Add your home address in Family Admin → Settings → Home & calendar');
+  if (!String(place || '').trim()) throw new Error('Add your home address in ⚙ Setup → Advanced → Locations & home');
   const m = String(place).match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
   if (m) return { lat: Number(m[1]), lng: Number(m[2]) };
   const cache = CacheService.getScriptCache();
@@ -2034,7 +2034,7 @@ function destNow_(r, now) {
  */
 function traffic_(home, destText, radius) {
   const key = String(inst_('TomTomKey') || '').trim();
-  if (!key) throw new Error('Add a TomTom API key on the Installation tab of the admin app');
+  if (!key) throw new Error('Add a TomTom API key in ⚙ Setup → Advanced → External data keys');
   const from = geocode_(home);
   const all = destinations_(destText), now = new Date();
   const routes = all.filter(r => destNow_(r, now)).map(r => {
@@ -2091,7 +2091,7 @@ function thin_(pts, max) {
  */
 function trains_(fromCrs, toCrs, disruption) {
   const key = String(inst_('RailDataKey') || '').trim();
-  if (!key) throw new Error('Add a National Rail key on the Installation tab of the admin app');
+  if (!key) throw new Error('Add a National Rail key in ⚙ Setup → Advanced → External data keys');
   const from = String(fromCrs || 'BPW').toUpperCase(), to = String(toCrs || '').toUpperCase();
   const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
   const order = guid ? [ldbSoap_, ldbRest_] : [ldbRest_, ldbSoap_];
@@ -2099,7 +2099,7 @@ function trains_(fromCrs, toCrs, disruption) {
   for (let i = 0; i < order.length && !d; i++) {
     try { d = order[i](key, from, to); } catch (err) { if (!first) first = err; if (!err.auth) throw err; }
   }
-  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it on the Installation tab.');
+  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it in ⚙ Setup → Advanced → External data keys.');
   const route = {};      // every station the trains call at on the way, for "only about this route"
   const services = (d.trainServices || []).map(s => {
     let arrive = null, calls = [];
@@ -3522,7 +3522,7 @@ function bus_(s, id) { return s.Source === 'bustimes.org' ? busTimesOrg_(s, id) 
 const TAPI_PER_DAY = 28;   // keeps 2 spare for finding the nearest stop
 function busTapi_(s, id) {
   const appId = String(inst_('TransportApiId') || '').trim(), key = String(inst_('TransportApiKey') || '').trim();
-  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key on the Installation tab (developer.transportapi.com), or switch this widget to bustimes.org');
+  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key in ⚙ Setup → Advanced → External data keys (developer.transportapi.com), or switch this widget to bustimes.org');
   const props = PropertiesService.getScriptProperties();
   const auth = 'app_id=' + encodeURIComponent(appId) + '&app_key=' + encodeURIComponent(key);
   let code = String(s.StopCode || '').trim(), name = String(s.StopName || '');
@@ -3709,8 +3709,8 @@ function apod_() {
     try {
       const res = uf_(tries[i], { muteHttpExceptions: true });
       const code = res.getResponseCode();
-      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it on the Installation tab.'; break; }
-      if (code === 403) { why = 'NASA didn’t accept the key – check NasaKey on the Installation tab.'; break; }
+      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it in ⚙ Setup → Advanced → External data keys.'; break; }
+      if (code === 403) { why = 'NASA didn’t accept the key – check the NASA key in ⚙ Setup → Advanced → External data keys.'; break; }
       if (code !== 200) { why = 'NASA said ' + code; if (code >= 500) break; continue; }   // API down: go straight to the website
       const j = JSON.parse(res.getContentText());
       if (j && (j.url || j.thumbnail_url)) d = j;
@@ -3802,7 +3802,7 @@ function spotifyLoginPage_(key) {
   const id = String(inst_('SpotifyClientId') || '').trim();
   const redirect = spotifyRedirect_();
   if (!id || !String(inst_('SpotifyClientSecret') || '').trim()) {
-    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> on the Installation tab of the admin app.</p>' +
+    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> in ⚙ Setup → Advanced → External data keys.</p>' +
       '<p>In your app at developer.spotify.com, set the Redirect URI to:</p><p><code style="word-break:break-all">' + redirect + '</code></p>');
   }
   const state = 'sp_' + Utilities.getUuid().replace(/-/g, '');
@@ -3816,7 +3816,7 @@ function spotifyLoginPage_(key) {
 }
 function spotifyCallback_(p) {
   const cache = CacheService.getScriptCache();
-  if (!cache.get(p.state)) return page_('Spotify', '<p>That link has expired. Start again from the admin app.</p>');
+  if (!cache.get(p.state)) return page_('Spotify', '<p>That link has expired. Start again from ⚙ Widgets → Other → Spotify.</p>');
   cache.remove(p.state);
   if (p.error) return page_('Spotify', '<p>Spotify said: ' + clean_(p.error) + '</p>');
   const tok = spotifyTokenCall_({ grant_type: 'authorization_code', code: p.code, redirect_uri: spotifyRedirect_() });
@@ -4103,7 +4103,7 @@ function selfUpdate_(why) {
       return { ok: false, approval: true, message: msg, error: msg };
     }
     const vu = versionsUsed_(true);
-    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (Family Admin → Settings → My data), or delete old versions in Apps Script → Project history.');
+    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (⚙ Setup → Advanced → My data), or delete old versions in Apps Script → Project history.');
     const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
     scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
     const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });
@@ -4375,7 +4375,7 @@ function moveEmail_(email, link, from) {
     '4. At “Publish & connect”, press “Bring everything across”. Everything in the moving pack is copied in, and the licence moves with it – you don’t need to type the key.\n\n' +
     'YOUR SCREENS AND PHONES\n\n' +
     'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
-    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → More → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
+    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → Advanced → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
     'AFTERWARDS\n\n' +
     'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“Family Dashboard – moving pack”) from this account’s Google Drive.\n\n' +
     'Help with every step: ' + appsBase_() + 'help/\n';

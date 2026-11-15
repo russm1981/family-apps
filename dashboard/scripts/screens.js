@@ -385,7 +385,7 @@
             (cats.length ? cats.map(function (c) {
             var on = adding.cat === c.name;
             return '<button class="ab-cat' + (on ? ' on' : '') + '" data-cat="' + esc(c.name) + '" style="--ec:' + esc(c.colour) + ';--et:' + ink(c.colour) + '">' + esc(c.name) + '</button>';
-        }).join('') : '<span class="ab-hint">No categories here yet – set them up on the Setup website</span>');
+        }).join('') : '<span class="ab-hint">No categories here yet – set them up in ⚙ Setup → Family</span>');
         var a = adding.start, z = adding.when === 'time' ? a : adding.end || adding.start;
         var n = a ? Math.round((parseYmd(z) - parseYmd(a)) / 86400000) + 1 : 0;
         $('abDates').innerHTML = !a ? '' : fmtDay(a) + (n > 1 ? ' → ' + fmtDay(z) + ' <span class="ab-hint">(' + n + ' days)</span>' : '');

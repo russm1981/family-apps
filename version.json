@@ -1,9 +1,12 @@
 {
-  "app": "2026.11.167",
-  "script": "2026.11.83",
+  "app": "2026.11.168",
+  "script": "2026.11.84",
   "date": "2026-11-15",
   "notes": [
-    "Traffic: when there are no journeys set up, or none is due at this time, the widget shows a live traffic map around home instead, filling the widget. How far it reaches is a new setting – “Area map: distance from home” – 30 miles to start with."
+    "Family Admin on a phone now has the same pages as the Configurator, laid out for a phone: Home, ⚙ Setup (Family, Rewards, Advanced) and ⚙ Widgets (Calendar, Notes, Lists, Reminders, Other), in a menu along the top. Only Screens and the setup wizard stay on the computer. Rewards works properly on the phone now.",
+    "A small HouseRunner ⚙ mark replaces the title, with ▶ Dashboard, 💬 and ❓ beside it.",
+    "Menus show clearly which page you’re on – every button is grey except the one you’re on, which is in colour with a white outline (on the computer too).",
+    "Wording tidied everywhere to match the menus – ⚙ Setup → Advanced → External data keys, Devices and Phones, and so on – in Help, the screen’s messages and the Google script’s messages."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

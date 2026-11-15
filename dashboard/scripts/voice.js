@@ -206,7 +206,7 @@
         function memo(t) {
             var m = t.match(/^(?:memo|note|sticky note|reminder note)(?: add| to say| saying| that)? (.+)$/) || t.match(/^(?:add|new|make|write) (?:a )?(?:memo|note|sticky note)(?: to say| saying| that)? (.+)$/);
             if (!m) return null;
-            if (!widgets('memo').length) return { fail: 'There’s no Memo widget on the screen – add one in the admin app.' };
+            if (!widgets('memo').length) return { fail: 'There’s no Memo widget on the screen – add one in ⚙ Setup → Screens.' };
             var text = cap(m[1]).slice(0, 80);
             return { say: 'New memo: <b>' + esc(text) + '</b>', run: function () {
                 return api().post({ action: 'memo', op: 'add', text: text, from: '' }).then(function () { if (window.FDPages) window.FDPages.refreshNow(true); });
@@ -279,7 +279,7 @@
             return { say: 'Show the ' + esc(p.title) + ' page', quick: true, run: function () { window.FDPages.show(p.id); return Promise.resolve(); } };
         },
     ];
-    function needTimer() { return window.FDW && window.FDW.hasTimer ? null : { fail: 'There’s no kitchen timer on the screen – add one in the admin app (Widgets).' }; }
+    function needTimer() { return window.FDW && window.FDW.hasTimer ? null : { fail: 'There’s no kitchen timer on the screen – add one in ⚙ Setup → Screens.' }; }
 
     function understand(alts) {
         var fail = null;

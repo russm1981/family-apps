@@ -8,9 +8,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="HouseRunner">
+    <meta name="apple-mobile-web-app-title" content="Family Admin">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" href="shared/brand/icon-192.png"><link rel="apple-touch-icon" href="shared/brand/apple-touch-icon.png">
+    <link rel="icon" href="admin/icons/icon-192.png"><link rel="apple-touch-icon" href="admin/icons/apple-touch-icon.png">
     <script>
     // houserunner.app is one address for the grown-ups: the Configurator on a computer, Family Admin on a phone, and – on a
     // device that isn't connected yet – the welcome page. Links into a step of the setup wizard (the licence email, the Sheet's
@@ -19,13 +19,15 @@
         var h = location.hash || '', q = location.search || '';
         if (!/[?&]connect\b/.test(q) && /(^|[#&])(key|from|go|update|pair|pack)(=|&|$)/.test(h)) { location.replace('setup/guide/' + h); return; }
         var phone = window.matchMedia && matchMedia('(max-width: 760px)').matches;
-        window.FD_DESK = !phone;
+        // The same pages on a phone as on a computer (the Family Admin app) – just laid out for the narrow screen,
+        // without the two things that need a big screen: the screen layout and the setup wizard.
+        window.FD_DESK = true; window.FD_PHONE = !!phone;
     })();
     </script>
-    <link rel="stylesheet" href="shared/base.css?v=202611167">
-    <link rel="stylesheet" href="admin/admin.css?v=202611167">
-    <link rel="stylesheet" href="setup/desk.css?v=202611167">
-    <link rel="stylesheet" href="setup/editor.css?v=202611167">
+    <link rel="stylesheet" href="shared/base.css?v=202611168">
+    <link rel="stylesheet" href="admin/admin.css?v=202611168">
+    <link rel="stylesheet" href="setup/desk.css?v=202611168">
+    <link rel="stylesheet" href="setup/editor.css?v=202611168">
     <style>
 #landing { min-height: 100vh; }
 #landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
@@ -117,7 +119,7 @@
     </style>
 </head>
 <body>
-    <script>if (window.FD_DESK) document.body.classList.add('desk');</script>
+    <script>document.body.classList.add('desk'); if (window.FD_PHONE) document.body.classList.add('phone');</script>
     <!-- Not connected yet (on a computer): the welcome page. -->
     <div id="landing" hidden>
 <header class="ld-site-top"><a class="hr-title" href="./"><img src="shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span><span class="ld-tag">a family dashboard</span></span></a><a class="ld-site-help" href="help/">❓ Help</a></header>
@@ -180,7 +182,7 @@
      <h2>Connect this device</h2>
      <div class="ld-opt"><span class="ld-n">1</span><div><b>Easiest: scan this QR code</b> with the camera of a phone that’s already set up with HouseRunner. <span class="ld-mute">(Best on Android.)</span></div></div>
      <div class="ld-qr" id="codeQr"></div>
-     <div class="ld-opt"><span class="ld-n">2</span><div><b>Or open the Family Admin app</b> on that phone → <b>More → Devices and Phones → Connect by code</b>, and type this code <span class="ld-mute">(always works, including on iPhone)</span>:
+     <div class="ld-opt"><span class="ld-n">2</span><div><b>Or open the Family Admin app</b> on that phone → <b>Advanced → Devices and Phones → Connect by code</b>, and type this code <span class="ld-mute">(always works, including on iPhone)</span>:
       <p class="ld-code" id="codeTxt">…</p></div></div>
      <p class="ld-state" id="codeState">Waiting for your phone…</p>
      <div class="ld-opt"><span class="ld-n">3</span><div><b>No phone set up yet?</b> Paste the private link from the email <b>“Your Family Dashboard links”</b> – it was sent to your Google account when you first set up, to keep.
@@ -188,17 +190,17 @@
     </div></div>
     <!-- Connected: the Configurator (computer) or Family Admin (phone) – the same app. -->
     <div id="app"></div>
-    <script src="shared/storecheck.js?v=202611167"></script>
-    <script src="shared/fd.js?v=202611167"></script>
-    <script src="shared/pair.js?v=202611167"></script>
-    <script src="shared/qrcode.js?v=202611167"></script>
-    <script src="shared/privacy.js?v=202611167"></script>
-    <script src="shared/countries.js?v=202611167"></script>
-    <script src="setup/config.js?v=202611167"></script>
-    <script src="help/topics.js?v=202611167"></script>
-    <script src="setup/editor.js?v=202611167"></script>
-    <script src="setup/calsetup.js?v=202611167"></script>
-    <script src="admin/app.js?v=202611167"></script>
+    <script src="shared/storecheck.js?v=202611168"></script>
+    <script src="shared/fd.js?v=202611168"></script>
+    <script src="shared/pair.js?v=202611168"></script>
+    <script src="shared/qrcode.js?v=202611168"></script>
+    <script src="shared/privacy.js?v=202611168"></script>
+    <script src="shared/countries.js?v=202611168"></script>
+    <script src="setup/config.js?v=202611168"></script>
+    <script src="help/topics.js?v=202611168"></script>
+    <script src="setup/editor.js?v=202611168"></script>
+    <script src="setup/calsetup.js?v=202611168"></script>
+    <script src="admin/app.js?v=202611168"></script>
 <script>
  (function () {
    'use strict';

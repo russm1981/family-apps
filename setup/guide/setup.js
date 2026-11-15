@@ -281,7 +281,7 @@
             if ($('pairSend')) $('pairSend').onclick = function () {
                 var b = this; b.disabled = true;
                 FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
-                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → More → Devices and Phones.)'); });
+                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Advanced → Devices and Phones.)'); });
             };
             if ($('packGo')) $('packGo').onclick = function () {
                 var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';
@@ -304,7 +304,7 @@
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
-                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in the Family Admin app → More → Software Licence, or the Configurator → Advanced → Software Licence.</p></details>' + helpLink('licence');
+                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in ⚙ Setup → Advanced → Software Licence (on a computer or in the Family Admin app).</p></details>' + helpLink('licence');
         }, wire: function () {
             if (!connected()) return;
             var show = function (L) {
@@ -389,7 +389,7 @@
                     var pc = ctry === 'GB' && /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
                     if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
                         $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
-                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Family Admin → the Bins widget.</div>');
+                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in ⚙ Widgets → Other → Bins.</div>');
                     }, function () { /* older Google script – the Check step will say */ });
                 }).catch(function (e) { b.disabled = false; $('famStatus').innerHTML = okLine(false, e.message); });
             };
@@ -442,7 +442,7 @@
                     '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' + pasteLink
                 : '<div class="card big"><h3>In a browser on this computer</h3><p>No screen to connect yet, or just want to try it? Open the dashboard in a new tab here – it’s what the screen will show, already connected.</p>' +
                     '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
-                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → More → Devices and Phones.</p></div>';
+                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → Advanced → Devices and Phones.</p></div>';
             return '<h1>6. Connect your display</h1><p class="lead">The display is what shows the dashboard – the XENEON EDGE, a tablet, or a browser. Choose yours below. ' +
                     'These links are <b>private</b>: they point at your Sheet and contain your access code, so only use them on your own devices. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="tabs" id="devTabs">' + tab('pc', 'XENEON EDGE (Windows)') + tab('pi', 'XENEON EDGE (Raspberry Pi)') + tab('tab', 'Tablet') + tab('here', 'PC browser') + '</div>' + body + helpLink('connect');

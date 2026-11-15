@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.168",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Admin on a phone now has the same pages as the Configurator, laid out for a phone: Home, ⚙ Setup (Family, Rewards, Advanced) and ⚙ Widgets (Calendar, Notes, Lists, Reminders, Other), in a menu along the top. Only Screens and the setup wizard stay on the computer. Rewards works properly on the phone now.",
+      "A small HouseRunner ⚙ mark replaces the title, with ▶ Dashboard, 💬 and ❓ beside it.",
+      "Menus show clearly which page you’re on – every button is grey except the one you’re on, which is in colour with a white outline (on the computer too).",
+      "Wording tidied everywhere to match the menus – ⚙ Setup → Advanced → External data keys, Devices and Phones, and so on – in Help, the screen’s messages and the Google script’s messages."
+    ]
+  },
+  {
     "version": "2026.11.167",
     "date": "2026-11-15",
     "notes": [

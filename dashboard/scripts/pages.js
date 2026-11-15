@@ -49,7 +49,7 @@
             }).join('');
             if (!ws.length) html = '<div class="msg on-empty">No widgets on this page yet.<br>Add some in the Family Admin app (Widgets tab).</div>';
             sec.innerHTML = html + (cols.length > COLS ? '<div class="overflow">' + (cols.length - COLS) + ' column' + (cols.length - COLS > 1 ? 's' : '') +
-                ' of widgets don’t fit – move or remove some in the admin app</div>' : '') + '<div class="msg overlay"></div>';
+                ' of widgets don’t fit – move or remove some in ⚙ Setup → Screens</div>' : '') + '<div class="msg overlay"></div>';
             $('screens').appendChild(sec);
             cols.slice(0, COLS).forEach(function (col) {
                 col.forEach(function (w) {
@@ -154,9 +154,9 @@
             msg.style.display = 'none';
         } else if (!api().ready()) {
             msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
-                '<p>On your computer, open the setup app \u2192 <b>Connect devices</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
+                '<p>On your computer, open houserunner.app \u2192 <b>Advanced \u2192 Devices and Phones</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
                 '<div class="connect-row"><input id="connectIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
-                '<p class="foot">Or download your personal start file in the setup app \u2013 it connects by itself.</p></div>';
+                '<p class="foot">Or download your personal start file from houserunner.app/windows \u2013 it connects by itself.</p></div>';
             msg.style.display = 'flex';
             var go = function () { if (!api().connect(document.getElementById('connectIn').value)) api().toast('That isn\u2019t a Family Dashboard link', true); };
             document.getElementById('connectGo').onclick = go;

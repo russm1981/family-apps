@@ -261,3 +261,45 @@ body.desk .hdr-dash:hover { filter: brightness(1.08); }
 .ev-t { flex: 1; min-width: 0; }
 .ev-x { border: 0; background: transparent; color: var(--mute, #8b95a5); font-size: 16px; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
 .ev-x:hover { color: #ff6b6b; background: rgba(255,107,107,.1); }
+
+/* ---- Which menu button you're on: every button grey, the one you're on in full colour with a white outline (website and phone) */
+body.desk .tabbar button i { filter: grayscale(1); opacity: .65; transition: filter .15s, opacity .15s; }
+body.desk .tabbar button { color: var(--mute, #8b95a5); border-radius: 12px; }
+body.desk .tabbar button:hover i { opacity: .9; }
+body.desk .tabbar button.on { color: #fff; box-shadow: inset 0 0 0 2px #fff; background: rgba(255,255,255,.06); }
+body.desk .tabbar button.on i { filter: none; opacity: 1; }
+
+/* ---- The phone (Family Admin): the website's pages, narrow.
+   A small HouseRunner ⚙ mark top left, the menu as one row you can scroll sideways, and the left-hand lists (Rewards,
+   Advanced, Other widgets) as a row of buttons across the top. */
+body.desk.phone .top-row { padding: 0 10px; gap: 6px; }
+body.desk.phone .hr-phone { display: inline-flex; align-items: center; gap: 2px; }
+body.desk.phone .hr-phone img { width: 30px; height: 30px; display: block; }
+body.desk.phone .hr-phone b { font-size: 15px; color: var(--mute, #8b95a5); margin-left: -6px; margin-top: 16px; }
+body.desk.phone .hdr-dash { margin-right: 4px; padding: 7px 12px; font-size: 14px; box-shadow: none; }
+body.desk.phone .hdr-help { margin-right: 4px; padding: 7px 9px; font-size: 15px; }
+body.desk.phone .tabbar { top: 57px; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: none; padding: 6px 8px; gap: 2px; }
+body.desk.phone .tabbar::-webkit-scrollbar { display: none; }
+body.desk.phone .tabbar button { flex: none; padding: 8px 11px; font-size: 14px; }
+body.desk.phone .tabbar .tab-sep { margin: 6px 6px; }
+body.desk.phone .main { padding: 12px 12px 90px; }
+body.desk.phone .page-h { font-size: 24px; }
+body.desk.phone .pane { display: block; }
+body.desk.phone .pane-nav { position: static; flex-direction: row; overflow-x: auto; gap: 6px; padding: 0 0 10px; margin: 0 0 6px; background: none; border: 0; scrollbar-width: none; }
+body.desk.phone .pane-nav::-webkit-scrollbar { display: none; }
+body.desk.phone .pn-h { display: none; }
+body.desk.phone .pn { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line, #2a303b); }
+body.desk.phone .pn.on { box-shadow: inset 0 0 0 2px #fff; background: rgba(255,255,255,.06); border-color: transparent; }
+body.desk.phone .pn-t small { display: none; }
+body.desk.phone .hm-grid { grid-template-columns: 1fr; }
+body.desk.phone .hm-app { flex-direction: column; align-items: flex-start; }
+body.desk.phone .sheet { max-width: none; border-radius: 18px 18px 0 0; max-height: 92vh; }
+body.desk.phone .sheet-bg { align-items: flex-end; }
+/* Phone: the list editors (tasks, to-dos, reminders, routes…) – each row's boxes wrap onto as many lines as they need */
+body.desk.phone .lhead { display: none !important; }
+body.desk.phone .lrow, body.desk.phone .tk-row { display: flex !important; flex-wrap: wrap; gap: 8px; padding: 10px 40px 10px 0 !important; border-bottom: 1px solid var(--line, #2a303b) !important; }
+body.desk.phone .lrow > *, body.desk.phone .tk-row > * { flex: 1 1 130px; min-width: 0; }
+body.desk.phone .lrow .rpick, body.desk.phone .lrow .opick { flex: 1 1 100%; flex-wrap: wrap !important; }
+body.desk.phone .lrow .x, body.desk.phone .tk-row .x { flex: none; }
+body.desk.phone .ladd-row { flex-wrap: wrap; }
+body.desk.phone .ladd-row .btn { white-space: normal; }
