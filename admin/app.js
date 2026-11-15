@@ -2433,7 +2433,7 @@
         $('body').innerHTML = explain('How your data is kept', '<p>Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>') +
             versionsCard() + accessCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
-                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
+                'To keep your people, points and lists, move them instead (above).</p><p class="small"><b>Before you start, free your licence key</b> so the new Sheet can use it: go to <a href="#" data-go="s/licence">System → Licence</a> and press <b>Free up my licence key</b>. Then type the key into the new Sheet when the setup wizard asks for it – it’s in your order email, and shown on the Licence page.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup wizard for a new family</a>') +
             stepsCard();
         wireAfresh(); wireAccess();
@@ -2626,8 +2626,8 @@
         return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
                 '<div class="bar' + (v.warn ? ' warnbar' : '') + '"><span style="width:' + pct + '%"></span></div>'
                 : '<p class="mute">Not known – switch on the Google Apps Script API (see Automatic updates above).</p>') +
-            (v && v.warn ? '<p class="neg"><b>Nearly full.</b> When it’s full the script can’t update. Start afresh below (easiest), or delete old versions in Apps Script → Project history.</p>' : '') +
-            (DATA.loader ? '' : '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Start afresh in a new Sheet</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
+            (v && v.warn ? '<p class="neg"><b>Nearly full.</b> When it’s full the script can’t update. Copy everything to a fresh Sheet below (easiest), or delete old versions in Apps Script → Project history.</p>' : '') +
+            (DATA.loader ? '' : '<details class="adv"' + (v && v.warn ? ' open' : '') + '><summary>Copy everything to a fresh Sheet (when saved versions run out)</summary><p class="small">Makes a brand-new Google Sheet with its own script (0 versions used) and copies <b>everything</b> into it: every tab and its data, the settings, your licence, and automatic updates. ' +
             'The display and phones follow by themselves. This Sheet is kept as a backup.</p><p class="small">You’ll need to open the new Sheet once and click Allow, as when you first set up.</p>' +
             '<button class="btn wide" id="afresh">Start afresh</button></details>') +
             '<details class="adv"><summary>Port my data to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
