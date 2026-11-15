@@ -426,3 +426,17 @@ body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
 .mins-pick .mp.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; }
 .mins-show { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 14px; }
 .mins-show span { padding: 7px 14px; border-radius: 10px; background: rgba(63,169,245,.15); border: 1px solid rgba(63,169,245,.5); color: #fff; font-weight: 700; font-size: 14.5px; }
+.w-set .w-about { margin: 0 0 14px; font-size: 15.5px; line-height: 1.5; }
+.wh-steps li { margin-bottom: 8px; line-height: 1.5; }
+.wh-make { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 10px; }
+.wh-make select { flex: 1; min-width: 120px; }
+.wc-face { display: flex; justify-content: center; padding: 6px 0 10px; }
+.wc-face svg { width: min(420px, 100%); height: auto; overflow: visible; }
+.wc-ring { fill: #2a2214; stroke: #c9a44c; stroke-width: 3; }
+.wc-dial { fill: #14161c; stroke: rgba(201, 164, 76, .35); stroke-width: .8; }
+.wc-tick { stroke: rgba(201, 164, 76, .5); stroke-width: .8; }
+.wc-place { fill: #e9d9a8; font-family: Georgia, "Times New Roman", serif; font-size: 7.2px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.wc-hand line { stroke: var(--hc); stroke-width: 2.6; stroke-linecap: round; }
+.wc-hand circle { fill: var(--hc); stroke: #0c0e12; stroke-width: 1.2; }
+.wc-hand text { fill: #0c0e12; font-size: 8px; font-weight: 800; }
+.wc-pin { fill: #c9a44c; stroke: #0c0e12; stroke-width: 1.5; }

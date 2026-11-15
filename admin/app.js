@@ -981,11 +981,11 @@
         if (!w) { title('Not found'); $('body').innerHTML = '<div class="empty">That widget has been removed.</div>'; return; }
         var T = typeOf(w.type), p = pageOf(w.page);
         title(widgetName(w));
-        var view = VIEWS[w.type] ? VIEWS[w.type](w) : '<p class="mute">This widget is shown on the screen. ' + esc(T.about) + '</p>';
-        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
+        var view = VIEWS[w.type] ? VIEWS[w.type](w) : '';
+        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + ((w.when && w.when.OtherTimes) || backupFor(w) ? ' · timed' : w.show ? '' : ' (hidden)') + '</span></div>' +
             // Its settings first, then what it's showing now
             card('Settings', (w.type === 'timer' ? '<div class="mins-show">' + String((w.settings || {}).Presets || '').split(',').filter(Boolean).map(function (n) { n = +n; return '<span>' + (n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min') + '</span>'; }).join('') + '</div>'
-                : '<p class="mute small">' + esc(summary(w)) + '</p>') + '<div class="ladd-row"><button class="btn ghost" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
+                : '') + '<p class="w-about">' + esc(T.about) + (function (sm) { sm = String(sm || '').replace(/\.+$/, ''); return w.type === 'timer' || !sm || T.about.indexOf(sm) === 0 ? '' : ' <span class="mute">Set to: ' + esc(sm) + '.</span>'; })(summary(w)) + '</p><div class="ladd-row"><button class="btn ghost" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
                 (DESK && !PHONE ? '<button class="btn ghost" data-go="layout">Where it goes on the screen ›</button>' : '') + '</div>' +
                 (PHONE ? '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>' : ''), 'w-set') +
             '<div id="wView">' + view + '</div>';
@@ -1001,7 +1001,7 @@
         memo: function () { return memoEditor(); },
         list: function (w) { return card(esc(widgetName(w)), listEditor(w)); },
         todo: function (w) { return card(esc(widgetName(w)), listEditor(w)); },
-        whereabouts: function (w) { return card('Weasley Clock – where everyone is now', whereEditor(w)); },
+        whereabouts: function (w) { return card('Weasley Clock – where everyone is now', whereEditor(w)) + whereFace(w); },
         spotify: function () { return card('', spotifyBox()); },
         weather: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
@@ -1031,8 +1031,9 @@
         },
         agenda: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
-            var ev = function (e) { return row('<i class="dot" style="background:' + esc(e.c) + '"></i>' + esc(e.t), e.allDay ? 'All day' : esc(e.time), esc(e.k)); };
-            return card('Today', rows(d.days.today, ev, 'Nothing today')) + card('Tomorrow', rows(d.days.tomorrow, ev, 'Nothing tomorrow')) +
+            var ev = function (e) { return '<div class="ev-row"><span class="ev-dot" style="background:' + esc(e.c || '#888') + '"></span><span class="ev-cat">' + esc(e.k || '') + '</span><span class="ev-t"><b>' + esc(e.t) + '</b>' + (!e.allDay && e.time ? '<span class="ev-time">' + esc(e.time) + '</span>' : '') + '</span></div>'; };
+            var day = function (l, none) { return l.length ? l.map(ev).join('') : '<div class="empty">' + none + '</div>'; };
+            return card('Today', day(d.days.today, 'Nothing today')) + card('Tomorrow', day(d.days.tomorrow, 'Nothing tomorrow')) +
                 '<a class="btn wide" href="' + esc(appsRoot() + 'dashboard/') + '">Open the dashboard</a>';
         },
         bins: function (w) {
@@ -1087,7 +1088,7 @@
             var d = GL[w.id]; if (!d) return card('', waiting(w));
             return card('Duolingo streaks', rows((d && d.users) || [], function (u) { return row(esc(u.name), '🔥 ' + u.streak, (u.xp || 0).toLocaleString() + ' XP'); }, 'Add Duolingo usernames in the settings'));
         },
-        quote: function (w) { var d = GL[w.id]; return card('', d && d.q ? '<blockquote>' + esc(d.q) + '</blockquote><p class="mute small">' + esc(d.a || '') + '</p>' : '<p class="mute">' + esc(summary(w)) + '. A new quote shows on the screen each day.</p>'); },
+        quote: function (w) { var d = GL[w.id]; return d && d.q ? card('Showing now', '<blockquote>' + esc(d.q) + '</blockquote><p class="mute small">' + esc(d.a || '') + '</p>') : ''; },
     };
     var WIRE = { memo: function () { wireMemo(); }, list: wireList, todo: wireList, whereabouts: wireWhere, bins: function (w) { if ($('binSet')) $('binSet').onclick = function () { binWizard(w); }; } };
 
@@ -1707,14 +1708,52 @@
                 return '<option' + (pl === p.place ? ' selected' : '') + '>' + esc(pl) + '</option>'; })).join('') + '</select>';
         }).join('') +
         '<details class="adv"><summary>Move the hands automatically from phones</summary>' +
-        '<p class="mute small">iPhone: Shortcuts app → Automation → “When I arrive at / leave” a place → Get contents of URL, with the link below. ' +
-        'Android: the same with an automation app (e.g. MacroDroid → HTTP request). Change the name and place in each link.</p>' +
-        '<label>Set a place</label><textarea readonly rows="3">' + esc(base + '&person=' + encodeURIComponent(d.people[0] ? d.people[0].name : 'Oliver') + '&place=' + encodeURIComponent(d.places[1] || 'School')) + '</textarea>' +
-        '<label>Or send the phone’s position (it picks the nearest place, otherwise Travelling)</label><textarea readonly rows="3">' + esc(base + '&person=NAME&lat=LATITUDE&lon=LONGITUDE') + '</textarea>' +
-        '<label>OwnTracks app (HTTP mode) URL</label><textarea readonly rows="3">' + esc(c.url + '?owntracks=1&code=' + encodeURIComponent(c.code) + '&person=NAME') + '</textarea>' +
-        '<p class="mute small">These links contain your access code – only put them on family phones.</p></details>';
+        '<p class="small">Each person’s phone can move their own hand when they arrive somewhere. Set it up once per place, on that person’s phone:</p>' +
+        '<ol class="small wh-steps"><li>Choose the person and the place here, then <b>Copy the link</b>.</li>' +
+        '<li><b>iPhone:</b> open <b>Shortcuts</b> → Automation → <b>+</b> → <b>Arrive</b> → choose the place on the map → Run Immediately → add the action <b>Get Contents of URL</b> and paste the link.<br>' +
+        '<b>Android:</b> install <b>MacroDroid</b> → Add Macro → trigger <b>Location</b> (Enter area) → action <b>HTTP Request</b> → paste the link.</li>' +
+        '<li>Repeat for each place they go. Tip: add a <b>Leave</b> automation for Home with the place set to Travelling.</li></ol>' +
+        '<div class="wh-make"><select id="whWho">' + d.people.map(function (p) { return '<option>' + esc(p.name) + '</option>'; }).join('') + '</select>' +
+        '<select id="whPl">' + d.places.map(function (pl) { return '<option>' + esc(pl) + '</option>'; }).join('') + '</select>' +
+        '<button class="btn" id="whCopy">Copy the link</button></div>' +
+        '<textarea readonly rows="2" id="whLink" data-base="' + esc(base) + '"></textarea>' +
+        '<p class="mute small">The link contains your access code – only put it on family phones.</p>' +
+        '<details class="adv"><summary>Other ways (for the technically minded)</summary>' +
+        '<label>Send the phone’s position instead (it picks the nearest place, otherwise Travelling)</label><textarea readonly rows="3">' + esc(base + '&person=NAME&lat=LATITUDE&lon=LONGITUDE') + '</textarea>' +
+        '<label>OwnTracks app (HTTP mode) URL</label><textarea readonly rows="3">' + esc(c.url + '?owntracks=1&code=' + encodeURIComponent(c.code) + '&person=NAME') + '</textarea></details></details>';
+    }
+    /** The clock face as it looks on the dashboard. */
+    function whereFace(w) {
+        var d = ((DATA.whereabouts || []).filter(function (x) { return x.id === w.id; })[0] || {}).data;
+        if (!d || !d.places) return '';
+        var P = d.places, n = Math.max(P.length, 2), ang = function (i) { return -90 + (360 / n) * i; }, f = function (v) { return v.toFixed(1); };
+        var svg = '<circle r="98" class="wc-ring"/><circle r="90" class="wc-dial"/>';
+        P.forEach(function (name, i) {
+            var a = (ang(i) + 180 / n) * Math.PI / 180, b = ang(i) * Math.PI / 180;
+            svg += '<line x1="' + f(Math.cos(a) * 62) + '" y1="' + f(Math.sin(a) * 62) + '" x2="' + f(Math.cos(a) * 90) + '" y2="' + f(Math.sin(a) * 90) + '" class="wc-tick"/>' +
+                '<text x="' + f(Math.cos(b) * 76) + '" y="' + f(Math.sin(b) * 76) + '" class="wc-place" text-anchor="middle" dominant-baseline="central">' + esc(name) + '</text>';
+        });
+        var at = {};
+        d.people.forEach(function (p) { var i = P.indexOf(p.place); if (i < 0) i = P.length - 1; (at[i] = at[i] || []).push(p); });
+        Object.keys(at).forEach(function (k) {
+            at[k].forEach(function (p, j, g) {
+                var a = (ang(+k) + (j - (g.length - 1) / 2) * Math.min(16, 60 / g.length)) * Math.PI / 180, len = 60 - j * 9, x = f(Math.cos(a) * len), y = f(Math.sin(a) * len);
+                svg += '<g class="wc-hand" style="--hc:' + esc(p.colour) + '"><line x1="0" y1="0" x2="' + x + '" y2="' + y + '"/><circle cx="' + x + '" cy="' + y + '" r="7.5"/><text x="' + x + '" y="' + y + '" text-anchor="middle" dominant-baseline="central">' + esc(p.name.charAt(0)) + '</text></g>';
+            });
+        });
+        return card('How it looks on the screen', '<div class="wc-face"><svg viewBox="-100 -100 200 200">' + svg + '<circle r="5" class="wc-pin"/></svg></div>');
     }
     function wireWhere() {
+        var link = $('whLink');
+        if (link) {
+            var mk = function () { link.value = link.getAttribute('data-base') + '&person=' + encodeURIComponent($('whWho').value) + '&place=' + encodeURIComponent($('whPl').value); };
+            $('whWho').onchange = $('whPl').onchange = mk; mk();
+            $('whCopy').onclick = function () {
+                var done = function () { $('whCopy').textContent = 'Copied ✓'; setTimeout(function () { $('whCopy').textContent = 'Copy the link'; }, 1800); };
+                if (navigator.clipboard) navigator.clipboard.writeText(link.value).then(done, function () { link.select(); document.execCommand('copy'); done(); });
+                else { link.select(); document.execCommand('copy'); done(); }
+            };
+        }
         Array.prototype.forEach.call(document.querySelectorAll('#body [data-who]'), function (sel) {
             sel.onchange = function () {
                 if (!sel.value) return;
@@ -1834,7 +1873,7 @@
             case 'todo': return 'Google Tasks' + (s.TasksList ? ' · ' + s.TasksList : '');
             case 'words': return s.Language + (s.Duolingo ? ' · Duolingo: ' + s.Duolingo : '');
             case 'spotify': return DATA.spotifyConnected ? 'Connected' : 'Not connected yet';
-            case 'quote': return s.Source + ' · ' + s.Change;
+            case 'quote': return 'quotes from ' + (/^Another/.test(s.Source || '') ? 'your own link' : /^Zen/.test(s.Source || '') ? 'ZenQuotes' : 'the built-in list') + ', a new one ' + String(s.Change || 'Every day').toLowerCase();
             default: return typeOf(w.type).about || '';
         }
     }

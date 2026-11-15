@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.99';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.100';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -365,10 +365,11 @@ Object.assign(WIDGET_TYPES, {
     data: (s) => memos_(s), nocache: true },
   quote: { name: 'Quote', icon: '💬', sizes: ['half', 'full'], ttl: 12 * 3600, about: 'An encouraging quote that changes every day (or more often).',
     settings: [
-      { k: 'Source', label: 'Quotes from', type: 'select', def: 'Built-in (family-friendly)', options: ['Built-in (family-friendly)', 'ZenQuotes (online)'] },
+      { k: 'Source', label: 'Quotes from', type: 'select', def: 'Built-in (family-friendly)', options: ['Built-in (family-friendly)', 'ZenQuotes (online)', 'Another source (link below)'] },
+      { k: 'QuoteUrl', label: 'Quotes link', type: 'url', def: '', when: ['Source', ['Another source (link below)']], help: 'A quotes feed (RSS) or quotes list (JSON) address' },
       { k: 'Change', label: 'New quote', type: 'select', def: 'Every day', options: QUOTE_CHANGE },
     ],
-    data: (s) => s.Source === 'ZenQuotes (online)' ? zenQuotes_() : null },
+    data: (s) => s.Source === 'ZenQuotes (online)' ? zenQuotes_() : /^Another source/.test(String(s.Source || '')) ? quoteFeed_(s.QuoteUrl) : null },
   apod: { name: 'NASA Daily Picture', icon: '🔭', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'NASA’s Astronomy Picture of the Day. Tap it to read about it.',
     settings: [
       { k: 'ShowText', label: 'Show the title on the picture', type: 'bool', def: true },
@@ -3726,6 +3727,33 @@ function memo_(b) {
 }
 
 /* ------------------------------------------------------ quotes, NASA, Duolingo */
+
+/** Quotes from the family's own link: an RSS feed (description = quote, title = who said it, or a "quote – author"
+ *  title) or a JSON list ([{q, a}] or {quotes: [...]} with quote/content/text and author). */
+function quoteFeed_(url) {
+  url = String(url || '').trim();
+  if (!/^https?:\/\//i.test(url)) throw new Error('Add the quotes link in this widget’s settings');
+  const res = uf_(url, { muteHttpExceptions: true });
+  if (res.getResponseCode() !== 200) throw new Error('The quotes link said ' + res.getResponseCode());
+  const txt = res.getContentText();
+  const clean = t => String(t || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/<[^>]+>/g, ' ').replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&#39;|&rsquo;/g, '’').replace(/\s+/g, ' ').trim().replace(/^["“]|["”]$/g, '');
+  let quotes = [];
+  if (/^\s*[\[{]/.test(txt)) {
+    let j = JSON.parse(txt); if (!Array.isArray(j)) j = j.quotes || j.data || j.results || [j];
+    quotes = j.map(x => ({ q: clean(x.q || x.quote || x.content || x.text || x.body), a: clean(x.a || x.author || x.by || '') }));
+  } else {
+    quotes = txt.split(/<item[\s>]/i).slice(1).map(it => {
+      const get = tag => { const m = new RegExp('<' + tag + '[^>]*>([\\s\\S]*?)</' + tag + '>', 'i').exec(it); return m ? clean(m[1]) : ''; };
+      const title = get('title'), desc = get('description');
+      if (desc && title) return { q: desc, a: title };
+      const m = /^(.*?)\s+[–—-]\s+([^–—-]{2,40})$/.exec(title || desc);
+      return m ? { q: m[1], a: m[2] } : { q: title || desc, a: '' };
+    });
+  }
+  quotes = quotes.filter(x => x.q && x.q.length < 220);
+  if (!quotes.length) throw new Error('No quotes found at that link');
+  return { quotes: quotes.slice(0, 60), credit: 'Quotes from ' + url.replace(/^https?:\/\/(www\.)?/i, '').split('/')[0] };
+}
 
 function zenQuotes_() {
   const res = uf_('https://zenquotes.io/api/quotes', { muteHttpExceptions: true });

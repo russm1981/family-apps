@@ -1,11 +1,12 @@
 {
-  "app": "2026.11.215",
-  "script": "2026.11.99",
+  "app": "2026.11.216",
+  "script": "2026.11.100",
   "date": "2026-11-15",
   "notes": [
-    "Reminders can now be for anyone: “For who” lists Everyone, Everyone (in Rewards), then the children, then the adults",
-    "The Reminders widget (renamed from “Children’s reminders”) shows Everyone’s reminders first, then each child, then anyone else with something that day; a child’s reminders still also show on their Child’s Rewards widget",
-    "Reminders page: new “How reminders work” wording; the switch-time setting sits between two lines with even spacing"
+    "Other widgets: two widgets that share one space at different times both say “timed” (not “hidden”)",
+    "Traffic and Holiday countdown pages look like their widgets on the dashboard; colour marks sit beside their names",
+    "Kitchen timer: the quick buttons show as buttons, and you choose them by tapping (up to 6) instead of typing",
+    "News: the feed link appears under the news source only when you pick “Another feed”"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

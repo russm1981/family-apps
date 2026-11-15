@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.215",
+    "date": "2026-11-15",
+    "notes": [
+      "Other widgets: two widgets that share one space at different times both say “timed” (not “hidden”)",
+      "Traffic and Holiday countdown pages look like their widgets on the dashboard; colour marks sit beside their names",
+      "Kitchen timer: the quick buttons show as buttons, and you choose them by tapping (up to 6) instead of typing",
+      "News: the feed link appears under the news source only when you pick “Another feed”"
+    ]
+  },
+  {
     "version": "2026.11.208",
     "date": "2026-11-15",
     "notes": [
