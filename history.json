@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.195",
+    "date": "2026-11-15",
+    "notes": [
+      "Numbered steps in the help line up properly inside their box",
+      "The Raspberry Pi and Windows help says “display” and matches the buttons you actually press (Yes – Connect it; Connect the display)"
+    ]
+  },
+  {
     "version": "2026.11.194",
     "date": "2026-11-15",
     "notes": [

@@ -1,10 +1,10 @@
 {
-  "app": "2026.11.195",
+  "app": "2026.11.197",
   "script": "2026.11.95",
   "date": "2026-11-15",
   "notes": [
-    "Scanning a display’s QR code on a phone: the buttons are now “Yes – Connect it” and “No – Cancel” (which simply cancels, with a short note if you’re helping someone else)",
-    "The page header fits on narrow phones"
+    "Numbered steps in the help line up properly inside their box",
+    "The Raspberry Pi and Windows help says “display” and matches the buttons you actually press (Yes – Connect it; Connect the display)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

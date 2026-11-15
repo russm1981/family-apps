@@ -381,9 +381,9 @@
         title('Setup wizard');
         $('body').innerHTML =
             card('Start full wizard', connLine() +
-                '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data.</p>' +
-                '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family (setting up for the first time)</a>' +
-                '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' +
+                '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the display and phones, and the free keys for live data.</p>' +
+                '<div class="btn-row"><a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family (setting up for the first time)</a>' +
+                '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' + '</div>' +
                 '<p class="mute small" style="margin-top:14px">A new family gets its own new Google Sheet. Rerunning it on your family lets you change what’s there, or clear it and start again – a backup copy is kept in your Google Drive first.</p>') +
             stepsCard();
     }
@@ -626,7 +626,7 @@
             ['-', 'Settings'], ['places', '📍', 'Locations & home', warn('places', 'Home and other places')], ['keys', '🔑', 'External data keys', /^⚠/.test(line('keys')) ? '⚠ Keys needed' : 'Free keys for live data'],
             ['screen', '🌙', 'Display Sleep', 'Dimming and night hours'], ['licence', '🎫', 'Licence', /^⚠/.test(line('licence')) ? '⚠ Needs attention' : 'Your licence key'], ['updates', '⟳', 'Software updates', DATA.autoUpdate ? 'Version ' + (DATA.scriptVersion || '?') : '⚠ Automatic updates off'],
             ['-', 'My data'], ['mydata', '🗂️', 'My data (Google)', 'Your family’s Google Sheet'],
-            ['-', 'My devices'], ['devices', '📱', 'Devices and Phones', 'Screens and phones'],
+            ['-', 'My devices'], ['devices', '📱', 'Devices and Phones', 'Displays and phones'],
             ['-', 'Support'], ['support', '🩺', 'About & diagnostics', 'Versions and reports']];
         if (sub === 'system') sub = 'screen';
         var cur = sidePane('advanced', items, sub);
@@ -2653,7 +2653,7 @@
             screensCard() +
             card('Connect a display', '<p class="mute small">A new display (tablet, Raspberry Pi, computer) – or Family Admin or Family Dashboard opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
                 '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="ladd-row"><button class="btn fp-add" id="prGo">Connect</button></div><div id="prOut"></div>' +
-                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'dashboard</b>. <b>Windows PC (like the Corsair XENEON EDGE):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
+                '<p class="mute small" style="margin-top:18px"><b>A new display:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'dashboard</b>. <b>Windows PC (like the Corsair XENEON EDGE):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the display on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the dashboard link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
             card('Add a phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +

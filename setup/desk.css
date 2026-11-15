@@ -372,3 +372,8 @@ body.desk .sticky button.x:hover { background: #ef4444; color: #fff; }
 /* Bulleted lists sit a little further in from the edge of their box, everywhere */
 body.desk .card ul, body.desk .card ol, .card.explain ul { padding-left: 30px; }
 body.desk .card li { padding-left: 4px; }
+/* Buttons side by side always have a gap between them */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.btn-row > .btn { margin: 0 !important; }
+body.desk .card .btn + .btn { margin-left: 10px; }
+body.desk .card .btn-row .btn + .btn, body.desk .card .sheet-actions .btn + .btn { margin-left: 0; }
