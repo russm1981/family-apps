@@ -1,14 +1,16 @@
 {
-  "app": "2026.11.179",
-  "script": "2026.11.88",
+  "app": "2026.11.180",
+  "script": "2026.11.89",
   "date": "2026-11-15",
   "notes": [
-    "Menu: Screens, Lists, Reminders and Other have new icons drawn in colour – a screen with coloured widgets on it, a notepad with a yellow top and pencil, a list with coloured lines, and four coloured tiles – so they light up properly when you’re on that page. The status dot on ↻ is a little bigger.",
-    "Home: a green ▶ Open the dashboard button at the top; which family you’re connected to and how it works are now one short box; the two green boxes are one. The Setup wizard page is one box at the top too.",
-    "⚙ Widgets → Other: the list down the left scrolls on its own, with its scroll bar always showing, so every widget is easy to reach; each widget’s settings now come first, then what it’s showing.",
-    "New: a 🎂 button on the calendar shows birthdays only, in any view (press it again for everything). There’s always a Birthday category.",
-    "New widget: Birthdays (half or full height) – the next few birthdays from the calendar; any within a week stand out in pink, and today’s is highlighted.",
-    "Phone: the calendar offers Month and Week (and opens on the week, a day under a day); ⚙ Setup → Screens’ phone picture shows the same."
+    "Calendar colour coding: Birthday and Holiday are always there now (the widgets need them) – you can still show, hide or show them as Other",
+    "Home: both rows of the green box are now links; 'Connect a new dashboard display device' has clear steps for each kind of device, with More help links",
+    "Windows: the start file comes as a zip – the instructions everywhere now say to unzip it",
+    "Screens: 'Reconfigure Widgets' heading; a calendar page shows its picture first, then 'Calendar page settings'",
+    "'How screens work', 'How rewards work', 'How System works' and 'How widgets work' all look the same; System's menu has a short line under each item",
+    "Lists: bigger Shopping / To-do buttons",
+    "Dashboard calendar: new 🌴 button shows only the holidays (like 🎂 for birthdays), and the key says what's showing",
+    "Dashboard: other screens are now loaded in the background, so switching is quick; more room to tap the version number; Today & tomorrow spacing fixed"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

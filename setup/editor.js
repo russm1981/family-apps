@@ -143,7 +143,7 @@
             title = MON[now.getMonth()] + ' – ' + MON[(now.getMonth() + 2) % 12];
             body = '<div class="mk3' + (scroll ? ' scroll' : '') + '">' + rows + (scroll ? '<span class="mk-drag">⟵ drag along ⟶</span>' : '') + '</div>';
         }
-        return '<div class="mk-cal"><div class="mk-top"><b>' + esc(title) + '</b><span>' + (fmt === 'phone' ? 'Month · Week · 🎂 · 🌴' : '3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + ' · 🎂 · 🌴') + '</span></div>' + body + '</div>';
+        return '<div class="mk-cal"><div class="mk-top"><b>' + esc(title) + '</b><span>' + (fmt === 'phone' ? 'Month · Week · 🎂 · 🌴 · Key' : '3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + ' · 🎂 · 🌴') + '</span></div>' + body + '</div>';
     }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {

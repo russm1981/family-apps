@@ -1315,3 +1315,36 @@ body.fmt-phone .vw-btn[data-view="3m"], body.fmt-phone .vw-btn[data-view="3ms"] 
 .wg-agenda .ag-cols { row-gap: 1.25rem; }
 .wg-agenda .ag-col, .wg-agenda .ag-wk { gap: 0.3rem; }
 .wg-agenda .ag-col h3, .wg-agenda .ag-wk h3 { margin: 0; }
+/* ---- Phone (the Family Dashboard app): the screens' buttons along the top, the key in a pop-up box ---- */
+.vw-key, .key-x { display: none; }
+body.fmt-phone #rail { top: 0; bottom: auto; padding: calc(5px + env(safe-area-inset-top)) 6px 5px; border-top: 0; border-bottom: 1px solid var(--line); }
+body.fmt-phone #rail .nav-btn { height: 52px; }
+body.fmt-phone #screens { padding-top: calc(64px + env(safe-area-inset-top)); padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+body.fmt-phone .vw-key { display: inline-flex; }
+body.fmt-phone .cal-side { display: none; }
+/* the key's pop-up box is drawn on the page itself (scripts/screens.js), above everything */
+.key-pop { position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 0 1.2rem; }
+.key-pop .key-card { display: block; position: relative; width: 100%; max-width: 24rem; background: var(--panel); border: 1px solid var(--line); border-radius: 1rem; padding: 1rem 1.1rem 1.2rem; }
+.key-pop h3 { margin: 0 0 0.8rem; font-size: 1rem; text-transform: uppercase; letter-spacing: .06em; color: var(--mute); }
+.key-pop .cal-key { display: flex; flex-direction: column; align-items: stretch; gap: 0.65rem; margin: 0; max-height: 65vh; overflow-y: auto; }
+.key-pop .key { font-size: 1.1rem; white-space: normal; }
+.key-pop .key i { width: 1.2rem; height: 1.2rem; flex: none; }
+.key-pop .key i.bar { height: 0.45rem; }
+.key-pop .key-x { display: block; position: absolute; top: 0.6rem; right: 0.6rem; width: 2.4rem; height: 2.4rem; border-radius: 0.7rem; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); font-size: 1rem; }
+.key-pop .key-only { padding: 0.6rem 0; }
+/* the calendar's buttons, phone: ◀ the dates ▶ on the first line; Today, the views and + Add on the second */
+body.fmt-phone .cal-head { flex-wrap: wrap; gap: 0.5rem; }
+body.fmt-phone #calPrev { order: 1; } body.fmt-phone .cal-title { order: 2; flex: 1 1 0; min-width: 0; } body.fmt-phone #calNext { order: 3; }
+body.fmt-phone .cal-head .cal-spacer { order: 4; flex: 0 0 100%; height: 0; }
+body.fmt-phone #calToday { order: 5; padding: 0 0.7rem; }
+body.fmt-phone .cal-views { order: 6; flex: 1 1 auto; justify-content: space-between; }
+body.fmt-phone .cal-views .vw-btn { padding: 0 0.55rem; }
+body.fmt-phone #calAdd { order: 7; padding: 0 0.7rem; }
+body.fmt-phone #calStatus { order: 8; flex: 0 0 100%; }
+body.fmt-phone #calStatus:empty { display: none; }
+body.fmt-phone .vw-key { align-items: center; }
+body.fmt-phone .cal-views { flex: 0 1 auto; gap: 0.1rem; }
+body.fmt-phone .cal-views .vw-btn { padding: 0 0.5rem; font-size: 0.95rem; }
+body.fmt-phone #calToday, body.fmt-phone #calAdd { padding: 0 0.6rem; }
+@media (orientation: portrait) { body.fmt-phone .wv-head b { font-size: 0.95rem; } }
+@media (orientation: portrait) { body.fmt-phone .wv-head { padding: 0 0.15rem; } body.fmt-phone .wv-head b { font-size: 0.88rem; } }

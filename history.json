@@ -1,5 +1,19 @@
 [
   {
+    "version": "2026.11.179",
+    "date": "2026-11-15",
+    "notes": [
+      "Calendar colour coding: Birthday and Holiday are always there now (the widgets need them) – you can still show, hide or show them as Other",
+      "Home: both rows of the green box are now links; 'Connect a new dashboard display device' has clear steps for each kind of device, with More help links",
+      "Windows: the start file comes as a zip – the instructions everywhere now say to unzip it",
+      "Screens: 'Reconfigure Widgets' heading; a calendar page shows its picture first, then 'Calendar page settings'",
+      "'How screens work', 'How rewards work', 'How System works' and 'How widgets work' all look the same; System's menu has a short line under each item",
+      "Lists: bigger Shopping / To-do buttons",
+      "Dashboard calendar: new 🌴 button shows only the holidays (like 🎂 for birthdays), and the key says what's showing",
+      "Dashboard: other screens are now loaded in the background, so switching is quick; more room to tap the version number; Today & tomorrow spacing fixed"
+    ]
+  },
+  {
     "version": "2026.11.178",
     "date": "2026-11-15",
     "notes": [

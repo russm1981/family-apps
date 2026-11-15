@@ -417,7 +417,7 @@
         function render() {
             if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No Spotify'); return; }
             if (data.needLogin) {
-                body.innerHTML = '<div class="sp-msg"><span class="sp-logo">♫</span><b>Connect Spotify</b><span>' + (data.hasClient ? 'Open the Family Admin app → Widgets → Spotify → Connect Spotify.'
+                body.innerHTML = '<div class="sp-msg"><span class="sp-logo">♫</span><b>Connect Spotify</b><span>' + (data.hasClient ? 'On a computer: houserunner.app → ⚙ Widgets → Other → Spotify → Connect Spotify.'
                     : 'Add your Spotify app keys in ⚙ Setup → System → External data keys, then connect in ⚙ Widgets → Other → Spotify.') + '</span></div>';
                 return;
             }

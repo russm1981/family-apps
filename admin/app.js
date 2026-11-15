@@ -369,7 +369,7 @@
                 dev('📱', 'On a tablet', 'Go to <b>' + esc(host) + 'dashboard</b> in its browser and make it full-screen (on Android tablets the free <i>Fully Kiosk Browser</i> app does this).', 'pi') +
                 dev('💻', 'On any other computer', 'Go to <b>' + esc(host) + 'dashboard</b> in a browser and press <b>F11</b> for full-screen.', 'connect') +
                 '<div class="hm-dev hm-code"><span>🔢</span><div><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a>' +
-                '<p class="mute small">' + (PHONE ? 'Or on a computer: <b>' + esc(host) + '</b> → Home → <b>Type a display’s code</b>.' : 'Not at this computer? On a phone with <b>Family Admin</b>: <b>System → Devices and Phones → Connect by code</b> – or scan the display’s QR code with that phone’s camera.') + '</p></div></div></div>') +
+                '<p class="mute small">' + (PHONE ? 'Or on a computer: <b>' + esc(host) + '</b> → Home → <b>Type a display’s code</b>.' : 'Not at this computer? On a phone with <b>Family Admin</b>: <b>More → Connect a display</b> – or scan the display’s QR code with that phone’s camera.') + '</p></div></div></div>') +
             card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
                 '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
                 app('dashboard', '', 'Family Dashboard', 'for everyone', 'The dashboard itself on the phone – the calendar, the children’s cards and every widget, one under another.') + '</div>' +
@@ -729,7 +729,7 @@
         title(what);
         $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>HouseRunner Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
-            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>System → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>More → Connect a display</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }

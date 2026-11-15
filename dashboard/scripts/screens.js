@@ -508,6 +508,17 @@
                 // 🎂 / 🌴 – only one at a time; press it again for everything
                 if ($('calBday')) $('calBday').addEventListener('click', function () { setOnly(only === 'bday' ? '' : 'bday'); renderCalendar(); });
                 if ($('calHol')) $('calHol').addEventListener('click', function () { setOnly(only === 'hol' ? '' : 'hol'); renderCalendar(); });
+                // Phone: the key is in a box that pops up from the Key button, rather than taking up the screen
+                var keyBox = function (on) {
+                    var old = document.querySelector('.key-pop'); if (old) old.remove();
+                    if ($('calKeyBtn')) $('calKeyBtn').classList.toggle('on', on);
+                    if (!on) return;
+                    var pop = document.createElement('div'); pop.className = 'key-pop';
+                    pop.innerHTML = '<div class="key-card"><h3>Key</h3><button class="key-x" aria-label="Close">✕</button><div class="cal-key">' + $('calKey').innerHTML + '</div></div>';
+                    pop.addEventListener('click', function (e) { if (e.target === pop || e.target.closest('.key-x')) keyBox(false); });
+                    document.body.appendChild(pop);
+                };
+                if ($('calKeyBtn')) $('calKeyBtn').addEventListener('click', function () { keyBox(!document.querySelector('.key-pop')); });
                 $('calViews').addEventListener('click', function (e) {
                     var b = e.target.closest('[data-view]'); if (!b) return;
                     touched = true;

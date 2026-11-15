@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.88';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.89';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4401,7 +4401,7 @@ function moveEmail_(email, link, from) {
     '4. At “Publish & connect”, press “Bring everything across”. Everything in the moving pack is copied in, and the licence moves with it – you don’t need to type the key.\n\n' +
     'YOUR SCREENS AND PHONES\n\n' +
     'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
-    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → System → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
+    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → More → Connect a display, and type the code the screen shows.\n\n' +
     'AFTERWARDS\n\n' +
     'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“Family Dashboard – moving pack”) from this account’s Google Drive.\n\n' +
     'Help with every step: ' + appsBase_() + 'help/\n';

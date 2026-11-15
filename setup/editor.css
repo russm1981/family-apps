@@ -370,3 +370,6 @@
 .ed-info h3 { font-size: 17px; margin: 18px 0 4px; }
 .ed-page.info { border: 1px dashed var(--line2, #3a4252); }
 .ed-page.info.on { border: 1px dashed var(--acc); }
+/* The Family Dashboard app on a phone: the screens' buttons along the top */
+.ed-frame.phone { display: flex; flex-direction: column; }
+.ed-frame.phone .ed-pbar { order: -1; border-top: 0; border-bottom: 1px solid #22262e; }

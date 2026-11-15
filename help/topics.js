@@ -5,11 +5,11 @@
 window.FD_HELP = [
   {
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
-    summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
+    summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – the calendar, notes, lists and points – are in the Family Admin app on your phone.',
     body: `
 <p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>⚙ Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and System. <b>⚙ Widgets</b>: the calendar, notes, lists, reminders and the other widgets’ settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
-<p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
-<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → System → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
+<p><b>Family Admin (phone)</b> – six buttons along the top: <b>Calendar</b> (add an event, see what’s coming up), <b>Notes</b>, <b>Lists</b>, <b>Points</b> (give and take away points, tick off tasks), <b>Widgets</b> (each widget’s simple settings) and <b>More</b> (connect a display, add a phone, help and feedback). Everything else is set up on the Configurator.</p>
+<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Connect a display</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
@@ -71,7 +71,7 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>. For the Windows PC, make a new start file in the Configurator (<b>⚙ Setup → Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → More → Connect a display</b>. For the Windows PC, make a new start file in the Configurator (<b>⚙ Setup → Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
@@ -125,22 +125,22 @@ window.FD_HELP = [
     body: `
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
 <h2>The Configurator on a computer</h2>
-<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
+<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → More → Connect a display</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
 <h2>A new phone (Family Admin or Family Dashboard)</h2>
 <ol>
-<li>On a phone that’s <b>already connected</b>: <b>Family Admin → System → Devices and Phones</b>. This shows QR codes.</li>
+<li>On a phone that’s <b>already connected</b>: <b>Family Admin → More → Add a phone</b>. This shows QR codes.</li>
 <li>On the new phone, point the camera at the right QR code and open the link.</li>
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
 <h2>A new display</h2>
-<p>On the new display, start the dashboard – it shows a code like <b>K7Q2-M9XD</b>. Then on a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b> (or on a phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>).</p>
+<p>On the new display, start the dashboard – it shows a code like <b>K7Q2-M9XD</b>. Then on a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b> (or on a phone: <b>Family Admin → More → Connect a display</b>).</p>
 <ul>
 <li><b>Corsair XENEON EDGE (running Windows), or any Windows PC:</b> see <a href="#windows">Corsair XENEON EDGE or a Windows PC</a>.</li>
 <li><b>Raspberry Pi or tablet:</b> see <a href="#pi">Raspberry Pi or tablet</a>.</li>
 <li><b>Any other computer:</b> go to <b>houserunner.app/dashboard</b> in a browser and press <b>F11</b> for full-screen.</li>
 </ul>
 <h2>How many screens?</h2>
-<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → System → Devices and Phones</b>.</p>
+<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>houserunner.app → System → Devices and Phones</b> on a computer.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
   },
@@ -153,7 +153,7 @@ window.FD_HELP = [
 <li>It’s a small <b>zip file</b>. Open your Downloads folder, right-click it → <b>Extract All…</b>, and put the folder somewhere permanent, such as <b>Documents</b>.</li>
 <li>In the folder, double-click <b>Start Family Dashboard</b>. If Windows says “Windows protected your PC”: <b>More info → Run anyway</b>.</li>
 <li>The first time it asks two Yes/No questions: start when the PC turns on, and keep the screen switched on. <b>Yes</b> to both is best.</li>
-<li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b>, or on a phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>.</li>
+<li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b>, or on a phone: <b>Family Admin → More → Connect a display</b>.</li>
 </ol>
 <p>Close the dashboard with <b>Alt+F4</b>. Nothing needs updating by hand – it fetches the newest version each time it starts. If it doesn’t start with the PC, see <a href="#startup">The dashboard doesn’t start when the PC turns on</a>.</p>`
   },
@@ -166,7 +166,7 @@ window.FD_HELP = [
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
 <li><b>New to HouseRunner?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → System → Devices and Phones → <b>Connect by code</b> and type the code.)</li>
+<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → <b>Connect a display</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
@@ -212,7 +212,7 @@ window.FD_HELP = [
 <h2>Entering your key</h2>
 <ol><li>Find your order email – the key looks like <code>FD-AB2CD-EF3GH-JK4LM-NP5QR</code>.</li>
 <li>When you first set up, the setup wizard has a step <b>“Your licence key”</b> – the link in your email fills it in for you.</li>
-<li>Later: on your phone, <b>Family Admin → System → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
+<li>Later: on a computer, <b>houserunner.app → System → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
 <h2>Messages</h2>
 <dl>
 <dt>“Free trial: N days left”</dt><dd>Everything works; add your key before the trial ends.</dd>
@@ -228,7 +228,7 @@ window.FD_HELP = [
     body: `
 <p>This is the <b>sleep screen</b>. One touch anywhere wakes the dashboard – that touch doesn’t press anything underneath. A kitchen timer going off wakes it too.</p>
 <h2>Changing it</h2>
-<p><b>Family Admin → System → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
+<p>On a computer, <b>houserunner.app → System → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
 <h2>The screen goes completely black and a touch doesn’t wake it</h2>
 <p>That’s Windows switching the display off, not the dashboard. The start file offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
   },
@@ -265,7 +265,7 @@ window.FD_HELP = [
     summary: 'The Bins widget works anywhere in the UK. ⚙ Widgets → Other → Bins → Set up bin days: type your postcode, we find your council, and read your bin days from it if we can – otherwise you type your bins in once.',
     body: `
 <ol>
-<li><b>Family Admin</b> → tap the <b>Bins</b> tile → <b>Set up bin days</b>.</li>
+<li>On a computer: <b>houserunner.app → ⚙ Widgets → Other → Bins → Set up bin days</b>.</li>
 <li>Type your postcode → <b>Find my council</b>. Check it’s the council that collects your bins (choose another from the list if not). Councils marked ✔ can be read automatically.</li>
 <li><b>Council marked ✔:</b> most need your home’s <b>property number (UPRN)</b> – find it at <a href="https://www.findmyaddress.co.uk/search" target="_blank" rel="noopener">findmyaddress.co.uk</a> (search your postcode, pick your address, copy the UPRN). Press <b>Try it</b>: if your next collections appear, press <b>Use this</b>. If not, you can enter your bins by hand.</li>
 <li><b>Any other council:</b> enter your bins by hand – for each bin, what it is, how often (every 1–4 weeks) and its next collection date. You see the next few collections before you save. Or, if your council’s bin-day page has an “add to calendar” link, use that.<br><b>Shortcut:</b> open <b>✨ Let an AI assistant look it up</b> – copy the ready-written request into ChatGPT, Claude or Gemini, then paste its answer back and your bins fill themselves in. Check the dates against the council’s calendar before saving.</li>
@@ -293,7 +293,7 @@ window.FD_HELP = [
   },
   {
     id: 'points', icon: '★', title: 'Points, tasks and reminders',
-    summary: 'Children earn points for tasks, lose them for penalties and cash them in for pocket money. Parents set it all up in the Family Admin app → Points.',
+    summary: 'Children earn points for tasks, lose them for penalties and cash them in for pocket money. Parents set it up at houserunner.app → Rewards, and give points day to day in the Family Admin app → Points.',
     body: `
 <ul>
 <li><b>Tasks</b> earn points. Each child sees their next three on the screen; tap one when it’s done. Tasks can be once-only, daily or always available.</li>
@@ -325,7 +325,7 @@ window.FD_HELP = [
 <p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>the Configurator → System → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
-<ol><li>Free your licence key first: <b>Family Admin → System → Software Licence → Free up my licence key</b>. Note the key.</li>
+<ol><li>Free your licence key first: <b>houserunner.app → System → Software Licence → Free up my licence key</b> (on a computer). Note the key.</li>
 <li>Run the <a href="../setup/guide/">setup wizard</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup wizard shows how).</li></ol>`
   },
