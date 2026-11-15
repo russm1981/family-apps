@@ -1,9 +1,9 @@
 {
   "app": "2026.11.226",
-  "script": "2026.11.101",
+  "script": "2026.11.102",
   "date": "2026-11-15",
   "notes": [
-    "Family: the ⭐ Rewards note no longer mentions reminders – they’re for everyone now, on their own page"
+    "Reminders are no longer described as part of the reward system in the setup guide and the Child’s Rewards widget description"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

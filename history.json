@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.226",
+    "date": "2026-11-15",
+    "notes": [
+      "Reminders are no longer described as part of the reward system in the setup guide and the Child’s Rewards widget description"
+    ]
+  },
+  {
     "version": "2026.11.225",
     "date": "2026-11-15",
     "notes": [
