@@ -95,7 +95,7 @@
             '<input class="match" data-m placeholder="Matching words, e.g. half term, inset" value="' + esc(x.match || '') + '"></div>';
     }
     function linkFor(app) { return appsBase + (app === 'admin' ? '' : app + '/') + '#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
-    function screenUrl() { return appsBase + 'screen/#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
+    function screenUrl() { return appsBase + 'dashboard/#api=' + encodeURIComponent(S.url) + '&code=' + encodeURIComponent(S.code); }
     function qr(text) {
         if (!window.qrcode) return '';
         var q = window.qrcode(0, 'L'); q.addData(text); q.make();
@@ -430,14 +430,14 @@
                     '<details><summary>Or connect by pasting</summary><p class="mute">If the screen says "Connect this screen", copy this link and paste it there:</p>' + copyBox('scr2', 'Your screen link', screenUrl(), 3) + '</details></div>'
                 : dev === 'pi' ? '<div class="card big"><h3>XENEON EDGE on a Raspberry Pi</h3><p class="mute">The XENEON EDGE plugged into a Raspberry Pi, which runs the dashboard on its own – no PC needed.</p><ol class="howto">' +
                     '<li>Install <b>Raspberry Pi OS with desktop</b>, and connect it to your Wi-Fi.</li>' +
-                    '<li>Open <b>Terminal</b> and type:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'screen/"</code></li>' +
+                    '<li>Open <b>Terminal</b> and type:<code class="cmd">chromium --kiosk --noerrdialogs --disable-infobars "' + esc(appsBase) + 'dashboard/"</code></li>' +
                     codeBox('screen') +
                     '<li>To start it automatically when the Pi switches on, put that line in <code>~/.config/labwc/autostart</code>.</li></ol></div>' + pasteLink
                 : dev === 'tab' ? '<div class="card big"><h3>A tablet</h3><p class="mute">An Android or Amazon Fire tablet – on the wall or the kitchen worktop.</p><ol class="howto">' +
                     '<li>On the tablet, install <b>Fully Kiosk Browser</b> (Google Play, or the Amazon Appstore on a Fire tablet).</li>' +
                     '<li>Open it. Where it asks for a <b>Start URL</b> (or in its Settings → Web Content Settings → Start URL), type this short address:' +
-                    '<div class="bigaddr">' + esc(appsBase.replace(/^https:\/\//, '') + 'screen/') + '</div>' +
-                    '<span class="mute">Or scan this with the tablet’s camera – it’s the same short address:</span>' + qr(appsBase + 'screen/') + '</li>' +
+                    '<div class="bigaddr">' + esc(appsBase.replace(/^https:\/\//, '') + 'dashboard') + '</div>' +
+                    '<span class="mute">Or scan this with the tablet’s camera – it’s the same short address:</span>' + qr(appsBase + 'dashboard/') + '</li>' +
                     codeBox('tablet') +
                     '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' + pasteLink
                 : '<div class="card big"><h3>In a browser on this computer</h3><p>No screen to connect yet, or just want to try it? Open the dashboard in a new tab here – it’s what the screen will show, already connected.</p>' +
@@ -673,7 +673,7 @@
     function batFile(link) {
         // A small start file: it holds only the private link; the real work is in downloads/windows/launcher.ps1,
         // fetched fresh from GitHub every time it starts, so the start file never needs replacing.
-        return ["@echo off", "rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.", "rem This file only holds your screen link. Each time it starts it fetches the latest launcher from the internet", "rem (so it never needs replacing), keeping a copy for when the internet is down. The dashboard itself also loads", "rem from the internet each time, so it is always the latest version. Nothing else needs to be on this PC.", "rem PRIVATE: this file contains your access code. Don't share it.", 'set "APPS=' + appsBase + '"', "set \"SCREEN=%APPS%screen/\"", 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', "set \"FDBAT=%~f0\"", "set \"FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk\"", "if not exist \"%FDPROFILE%\" mkdir \"%FDPROFILE%\"", "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$f = Join-Path $env:FDPROFILE 'launcher.ps1'; [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12; for ($i = 0; $i -lt 30; $i++) { try { $w = New-Object Net.WebClient; $w.Encoding = [Text.Encoding]::UTF8; $t = $w.DownloadString($env:APPS + 'downloads/windows/launcher.ps1?t=' + [DateTime]::Now.Ticks); if ($t -match 'FAMILY-DASHBOARD-LAUNCHER') { Set-Content -Path $f -Value $t -Encoding UTF8 }; break } catch { if (Test-Path $f) { break }; Start-Sleep -Seconds 2 } }; if (Test-Path $f) { & $f } else { Start-Process 'msedge' -ArgumentList @('--kiosk', $(if ($env:LINK) { $env:LINK } else { $env:SCREEN }), '--edge-kiosk-type=fullscreen') }\"", ""].join('\r\n');
+        return ["@echo off", "rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.", "rem This file only holds your screen link. Each time it starts it fetches the latest launcher from the internet", "rem (so it never needs replacing), keeping a copy for when the internet is down. The dashboard itself also loads", "rem from the internet each time, so it is always the latest version. Nothing else needs to be on this PC.", "rem PRIVATE: this file contains your access code. Don't share it.", 'set "APPS=' + appsBase + '"', "set \"SCREEN=%APPS%dashboard/\"", 'set "LINK=' + String(link || '').replace(/%/g, '%%') + '"', "set \"FDBAT=%~f0\"", "set \"FDPROFILE=%LOCALAPPDATA%\\FamilyDashboardKiosk\"", "if not exist \"%FDPROFILE%\" mkdir \"%FDPROFILE%\"", "powershell -NoProfile -ExecutionPolicy Bypass -Command \"$f = Join-Path $env:FDPROFILE 'launcher.ps1'; [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12; for ($i = 0; $i -lt 30; $i++) { try { $w = New-Object Net.WebClient; $w.Encoding = [Text.Encoding]::UTF8; $t = $w.DownloadString($env:APPS + 'downloads/windows/launcher.ps1?t=' + [DateTime]::Now.Ticks); if ($t -match 'FAMILY-DASHBOARD-LAUNCHER') { Set-Content -Path $f -Value $t -Encoding UTF8 }; break } catch { if (Test-Path $f) { break }; Start-Sleep -Seconds 2 } }; if (Test-Path $f) { & $f } else { Start-Process 'msedge' -ArgumentList @('--kiosk', $(if ($env:LINK) { $env:LINK } else { $env:SCREEN }), '--edge-kiosk-type=fullscreen') }\"", ""].join('\r\n');
     }
 
     /** Show or hide every widget of the given types (used by "Skip"). */

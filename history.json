@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.164",
+    "date": "2026-11-15",
+    "notes": [
+      "The Configurator’s menu now reads ⚙ Setup and ⚙ Widgets (Calendar, Notes, Lists, Reminders, Other) – “Widgets” everywhere instead of “Apps”.",
+      "A green ▶ View dashboard button at the top of the Configurator and the setup wizard opens the dashboard itself.",
+      "The dashboard’s address is now houserunner.app/dashboard. The old …/screen address still works and forwards there, so screens already set up carry on as they are."
+    ]
+  },
+  {
     "version": "2026.11.163",
     "date": "2026-11-15",
     "notes": [

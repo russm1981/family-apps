@@ -6,7 +6,7 @@
     if (!/^russm1981\.github\.io$/i.test(location.hostname)) return;
     var NEW = 'https://houserunner.app', path = location.pathname.replace(/^\/family-apps/i, '') || '/';
     function saved(k) { try { var c = JSON.parse(localStorage.getItem(k) || 'null'); return c && c.url && c.code ? c : null; } catch (e) { return null; } }
-    var screen = /^\/screen\//.test(path);
+    var screen = /^\/(screen|dashboard)\//.test(path);
     var c = screen ? (saved('familyDashboard.cfg.v1') || saved('fdapp.cfg.v1')) : (saved('fdapp.cfg.v1') || saved('familyDashboard.cfg.v1'));
     var hash = location.hash;
     if (c && !/[#&]api=/.test(hash)) hash = '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code);

@@ -12,7 +12,7 @@
 # Nothing of the dashboard itself is stored on the card – it loads the latest version from the internet each time,
 # so a card made today still works, and is up to date, a year from now.
 set -e
-URL="https://houserunner.app/screen/"
+URL="https://houserunner.app/dashboard/"
 WIFI_SETUP=0; [ "$1" = "--wifi-setup" ] && WIFI_SETUP=1
 
 echo "== Family Dashboard: installing (this takes a few minutes)"

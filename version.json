@@ -1,9 +1,11 @@
 {
-  "app": "2026.11.163",
-  "script": "2026.11.81",
+  "app": "2026.11.164",
+  "script": "2026.11.82",
   "date": "2026-11-15",
   "notes": [
-    "Connect this device pop-up: scanning the QR code is marked best on Android; typing the code in the Family Admin app is the way that always works, including on iPhone."
+    "The Configurator’s menu now reads ⚙ Setup and ⚙ Widgets (Calendar, Notes, Lists, Reminders, Other) – “Widgets” everywhere instead of “Apps”.",
+    "A green ▶ View dashboard button at the top of the Configurator and the setup wizard opens the dashboard itself.",
+    "The dashboard’s address is now houserunner.app/dashboard. The old …/screen address still works and forwards there, so screens already set up carry on as they are."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

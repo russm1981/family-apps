@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.81';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.82';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -781,7 +781,7 @@ function emailLinks_() {
     'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
     'HouseRunner – the Configurator on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
     'Family Calendar (everyone’s phones):\n' + base + 'calendar/' + tail + '\n\n' +
-    'The screen (the XENEON EDGE, a tablet or a browser):\n' + base + 'screen/' + tail + '\n\n' +
+    'The dashboard (the XENEON EDGE, a tablet or a browser):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
     'If you change your access code (Configurator → Advanced → My data), you’ll be sent new links.\n';
   GmailApp.sendEmail(to, 'Your Family Dashboard links – keep this email', body);

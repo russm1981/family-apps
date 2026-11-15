@@ -30,9 +30,9 @@
     var DESK = !!window.FD_DESK;
     var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other widgets']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
-        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Apps'], ['more', '⋯', 'More']];
+        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
     function appsRoot() { return location.href.replace(/[#?].*$/, '').replace(/(admin|setup|settings)\/.*$/, ''); }
@@ -228,13 +228,13 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'Family Admin') + '</h1><span class="sync" id="sync"></span>' +
-            (DESK ? '<a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
+            (DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ View dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp">Setup</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp">Apps</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Setup</span>' : i === 6 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Widgets</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -326,16 +326,16 @@
             '<div class="card hm-new"><b>🚀 New to HouseRunner?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>' +
             '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>' +
             '<h1 class="page-h hm-h">Setup</h1>' +
-            '<p class="mute help">The configurator website is in two parts – <b>Setup</b> and <b>Apps</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
+            '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again') +
                 btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages') +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
-            card('Apps', '<p class="small">The apps your family uses every day, on this computer – the same as on the dashboard and your phones.</p><div class="hm-grid">' +
+            card('Widgets', '<p class="small">The everyday settings for the widgets on your dashboard – what’s on the calendar, the notes, the lists, reminders and the rest.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
-                btn('other', '◈', 'Other widgets', 'Everyday settings for the other widgets') + '</div>') + homeDevices();
+                btn('other', '◈', 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();
     }
     /** Home, at the bottom: connecting a new display, and a new phone. */
     function homeDevices() {
@@ -349,8 +349,8 @@
             card('Connect a new display', '<p class="small">A display shows the dashboard. Start it with one of these – it shows a code like <b>K7Q2-M9XD</b> – then type the code in <a href="#" data-go="s/devices">Devices and Phones</a>.</p><div class="hm-grid">' +
                 dev(base + 'windows/', '🖥', 'Corsair XENEON EDGE', 'On a Windows PC: <b>' + esc(host) + 'windows</b> – download and start it') +
                 dev(base + 'help/#pi', '🍓', 'Raspberry Pi', 'One command on the Pi, then it starts by itself') +
-                dev(base + 'help/#pi', '📱', 'Tablet', 'Open <b>' + esc(host) + 'screen</b> in its browser, full-screen') +
-                dev(base + 'screen/', '💻', 'Any computer', 'Open <b>' + esc(host) + 'screen</b> in a browser') + '</div>' +
+                dev(base + 'help/#pi', '📱', 'Tablet', 'Open <b>' + esc(host) + 'dashboard</b> in its browser, full-screen') +
+                dev(base + 'dashboard/', '💻', 'Any computer', 'Open <b>' + esc(host) + 'dashboard</b> in a browser') + '</div>' +
                 '<div class="ladd-row" style="margin-top:12px"><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a></div>') +
             card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
                 '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
@@ -791,7 +791,7 @@
         fetchGlance();
     }
     function renderOther() {
-        title(DESK ? 'Other widgets' : 'Apps');
+        title('Other widgets');
         // Every widget on the screens (hidden ones too), then every kind that isn't on any screen – its settings can still be changed.
         var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type] && w.type !== 'child'; };   // children: on the Family tab
         fi.hidden = fr.hidden = true;
@@ -2131,7 +2131,7 @@
           steps: ['Go to <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>, log in and click <b>Create app</b>.',
                   'Any name and description. For <b>Redirect URI</b> paste your web app address: <button type="button" class="btn ghost sm" data-copyurl>Copy it</button>. Tick <b>Web API</b>, agree and save.',
                   'Open the app’s <b>Settings</b>: copy the <b>Client ID</b>, then <b>View client secret</b> and copy that too – into the two boxes above.',
-                  'Save here, then in the Family Admin app: Apps → Spotify → <b>Connect Spotify</b> (one-off).'] },
+                  'Save here, then in Widgets → Other → Spotify: <b>Connect Spotify</b> (one-off).'] },
     ];
     function secKeys() {
         title('External data (API) keys');
@@ -2535,7 +2535,7 @@
             screensCard() +
             card('Connect a display', '<p class="mute small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
                 '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="ladd-row"><button class="btn fp-add" id="prGo">Connect</button></div><div id="prOut"></div>' +
-                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'screen/</b>. <b>Windows PC (like the Corsair):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
+                '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'dashboard</b>. <b>Windows PC (like the Corsair):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +
                 '<details class="adv"><summary>Or open the screen link directly (tablets)</summary><div class="qr-box">' + qrSvg(appLink('screen')) + '</div><p class="mute small">Scan this with the tablet itself – it opens the dashboard already connected.</p></details>') +
             card('Add a phone', '<div class="seg" id="devApp">' + Object.keys(APPS).map(function (k) { return '<button type="button" data-app="' + k + '"' + (devPick === k ? ' class="on"' : '') + '>' + APPS[k][0] + '</button>'; }).join('') + '</div>' +

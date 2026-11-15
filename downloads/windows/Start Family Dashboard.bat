@@ -5,7 +5,7 @@ rem (so it never needs replacing), keeping a copy for when the internet is down.
 rem from the internet each time, so it is always the latest version. Nothing else needs to be on this PC.
 rem PRIVATE: this file contains your access code. Don't share it.
 set "APPS=https://houserunner.app/"
-set "SCREEN=%APPS%screen/"
+set "SCREEN=%APPS%dashboard/"
 set "LINK="
 set "FDBAT=%~f0"
 set "FDPROFILE=%LOCALAPPDATA%\FamilyDashboardKiosk"
