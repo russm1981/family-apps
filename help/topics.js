@@ -138,7 +138,7 @@ window.FD_HELP = [
 <li>Put it on the PC (for example in Documents) and double-click it. Answer Y to start with Windows.</li>
 </ol>
 <h2>A tablet or Raspberry Pi</h2>
-<p>Open the <b>screen link</b> from the same page in the device’s browser (or scan the “Tablet or Pi screen” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
+<p>Open the <b>dashboard link</b> from the same page in the device’s browser (or scan the “Tablet or Pi dashboard” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
 <h2>How many screens?</h2>
 <p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → System → Devices and Phones</b>.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>

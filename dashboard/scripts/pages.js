@@ -158,8 +158,8 @@
             msg.style.display = 'none';
         } else if (!api().ready()) {
             msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
-                '<p>On your computer, open houserunner.app \u2192 <b>System \u2192 Devices and Phones</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
-                '<div class="connect-row"><input id="connectIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
+                '<p>On your computer, open houserunner.app \u2192 <b>System \u2192 Devices and Phones</b> \u2192 <b>Or open the dashboard link directly</b> \u2192 copy it, then paste it here (Ctrl+V).</p>' +
+                '<div class="connect-row"><input id="connectIn" placeholder="Paste your dashboard link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
                 '<p class="foot">Or download your personal start file from houserunner.app/windows \u2013 it connects by itself.</p></div>';
             msg.style.display = 'flex';
             var go = function () { if (!api().connect(document.getElementById('connectIn').value)) api().toast('That isn\u2019t a Family Dashboard link', true); };

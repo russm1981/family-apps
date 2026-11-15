@@ -61,7 +61,7 @@
             '<li><b>Already set up?</b> One tap on your phone connects it.</li></ol>' +
             '<p class="pr-code">Or in Family Admin → System → Devices and Phones → <b>Connect by code</b>, and type <span class="pr-c">' + esc(code) + '</span></p>' +
             '<p class="pr-state">Waiting for your phone…</p>' +
-            '<details class="pr-paste"><summary>Have a keyboard? Paste a screen link instead</summary><div class="connect-row"><input id="pairIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="pairGo">Connect</button></div></details>' +
+            '<details class="pr-paste"><summary>Have a keyboard? Paste a dashboard link instead</summary><div class="connect-row"><input id="pairIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="pairGo">Connect</button></div></details>' +
             '</div></div>';
         el.style.display = 'flex';
         var go = function () { if (!api().connect(document.getElementById('pairIn').value)) api().toast('That isn’t a Family Dashboard link', true); };

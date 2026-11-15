@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.170",
+    "date": "2026-11-15",
+    "notes": [
+      "Consistency check across the whole system: the same names everywhere – the Configurator, Family Admin, the Family Dashboard app, ⚙ Setup → System → …, ⚙ Widgets → …, and “dashboard link” – in Help, the setup wizard, the dashboard’s messages, the privacy notice and the Google script’s messages.",
+      "Phone: the daily to-dos’ day pickers fit the screen."
+    ]
+  },
+  {
     "version": "2026.11.169",
     "date": "2026-11-15",
     "notes": [

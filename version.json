@@ -1,11 +1,10 @@
 {
-  "app": "2026.11.169",
-  "script": "2026.11.85",
+  "app": "2026.11.170",
+  "script": "2026.11.86",
   "date": "2026-11-15",
   "notes": [
-    "New: the Family Dashboard phone app – the dashboard itself on a phone. Every widget is shown full width, one under another, with the screens’ buttons along the bottom; the children’s cards stack the same way. It opens on the calendar (the week, as a list of days when the phone is upright) and turns with the phone. Phones don’t count as screens on your licence.",
-    "It replaces the Family Calendar app: houserunner.app/calendar now opens the Family Dashboard app, and you add events from its calendar. Install it from ⚙ Setup → System → Devices and Phones, or Home → Connect a new phone. New icons: Family Admin has a cog, Family Dashboard a green dashboard badge.",
-    "The menu: “Advanced” is now “System” (🔧), so the ⚙ cogs only mark the Setup and Widgets groups. Every menu item has a coloured icon – grey until it’s the page you’re on, with white words – and when the window is narrow the menu leaves room for its scroll bar."
+    "Consistency check across the whole system: the same names everywhere – the Configurator, Family Admin, the Family Dashboard app, ⚙ Setup → System → …, ⚙ Widgets → …, and “dashboard link” – in Help, the setup wizard, the dashboard’s messages, the privacy notice and the Google script’s messages.",
+    "Phone: the daily to-dos’ day pickers fit the screen."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

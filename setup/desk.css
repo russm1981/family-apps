@@ -305,3 +305,4 @@ body.desk.phone .lrow .rpick, body.desk.phone .lrow .opick { flex: 1 1 100%; fle
 body.desk.phone .lrow .x, body.desk.phone .tk-row .x { flex: none; }
 body.desk.phone .ladd-row { flex-wrap: wrap; }
 body.desk.phone .ladd-row .btn { white-space: normal; }
+body.desk.phone .dpick { flex-wrap: wrap; } body.desk.phone .op-daily { flex-wrap: wrap; max-width: 100%; }
