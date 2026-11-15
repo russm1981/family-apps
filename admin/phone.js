@@ -141,8 +141,8 @@
         if (w.type === 'memo') return 'Notes';
         if (w.type === 'whereabouts') return 'Weasley Clock';
         if (w.type === 'countdown') return st.Title || 'Countdown';
-        var same = onScreens(function (x) { return x.type === w.type; });
-        return T.name.replace(/ \(.*\)$/, '') + (same.length > 1 ? ' ' + (same.indexOf(w) + 1) : '');
+        if (w._copies === undefined) otherList();
+        return T.name.replace(/ \(.*\)$/, '') + (w._copies > 1 ? ' ' + w._copy : '');
     }
 
     /* ------------------------------------------------------------------ 📅 Calendar */
@@ -603,19 +603,50 @@
 
     // These have their own button at the top, or are set up on a computer.
     var OWN = { memo: 'notes', list: 'lists', todo: 'lists', child: 'points' };
+    /** The widgets listed under Other – the same as on the computer: every one on a screen (hidden ones too), numbered
+     *  "copy 1 of 2" when there's more than one, with Always shows / Timed (Primary) / Timed (Secondary) / Hidden. */
+    function otherList() {
+        var pages = (DATA.pages || []).map(function (p) { return p.id; });
+        var all = (DATA.widgets || []).filter(function (w) { return !OWN[w.type] && !w.pending; })
+            .sort(function (a, b) { return (pages.indexOf(a.page) - pages.indexOf(b.page)) || ((a.order || 0) - (b.order || 0)); });
+        var count = {}, seen = {};
+        all.forEach(function (w) { var n = baseName(w); count[n] = (count[n] || 0) + 1; });
+        all.forEach(function (w) { var n = baseName(w); w._copies = count[n]; w._copy = count[n] > 1 ? (seen[n] = (seen[n] || 0) + 1) : 0; });
+        return all;
+    }
+    function baseName(w) {
+        var T = typeOf(w.type), st = w.settings || {};
+        if (w.type === 'whereabouts') return 'Weasley Clock';
+        if (w.type === 'countdown') return st.Title || 'Countdown';
+        return T.name.replace(/ \(.*\)$/, '');
+    }
+    /** The widget shown in a timed widget's space the rest of the time (the first of its kind). */
+    function backupFor(w) {
+        var src = (DATA.widgets || []).filter(function (x) { return x.type === w.type && !x.pending; })[0];
+        if (!src || src.id !== w.id) return '';
+        return (DATA.widgets || []).filter(function (x) { return x.when && x.when.OtherTimes === w.type; }).map(function (x) { return typeOf(x.type).name.replace(/ \(.*\)$/, ''); }).join(' and ');
+    }
+    function statusOf(w) {
+        return (backupFor(w) ? 'Timed (Secondary)' : w.when ? 'Timed (Primary)' : w.show ? 'Always shows' : 'Hidden') + (w._copies > 1 ? ' · copy ' + w._copy + ' of ' + w._copies : '');
+    }
+    function timedSay(w) {
+        var bk = backupFor(w), span = function (t) { return (t.ShowDays || 'Every day') + ', ' + (t.ShowFrom || '00:00') + '–' + (t.ShowUntil || '24:00'); };
+        if (bk) { var main = (DATA.widgets || []).filter(function (x) { return x.when && x.when.OtherTimes === w.type; })[0]; return 'Timed (Secondary): shown in place of ' + bk + ' when it isn’t showing' + (main ? ' – outside ' + span(main.when) : '') + '.'; }
+        if (w.when) return 'Timed (Primary): shown ' + span(w.when) + '; at other times ' + (w.when.OtherTimes ? typeOf(w.when.OtherTimes).name.replace(/ \(.*\)$/, '') + ' shows in its place' : 'the space is empty') + '.';
+        return w.show ? 'Always shows.' : 'Hidden – on the screen but switched off.';
+    }
     function widgetsPage() {
         $('faMain').onclick = null;
-        var ws = onScreens(function (w) { return !OWN[w.type]; });
-        var byPage = {};
-        ws.forEach(function (w) { (byPage[w.page] = byPage[w.page] || []).push(w); });
+        var ws = otherList(), byPage = {}, lost = [];
+        ws.forEach(function (w) { if (pageOf(w.page)) (byPage[w.page] = byPage[w.page] || []).push(w); else lost.push(w); });
+        var row = function (w) {
+            return '<a class="fa-row go" href="#/w/' + encodeURIComponent(w.id) + '"><span class="fa-ico">' + FDIco(typeOf(w.type)) + '</span><span class="fa-t"><b>' + esc(nameOf(w)) + '</b><small>' + esc(statusOf(w)) + '</small></span><i>›</i></a>';
+        };
         $('faMain').innerHTML = '<p class="fa-lead">Tap a widget to change its settings.</p>' +
-            (DATA.pages || []).filter(function (p) { return byPage[p.id]; }).map(function (p) {
-                return h(esc(p.title) + ' <small>screen</small>') + byPage[p.id].map(function (w) {
-                    var T = typeOf(w.type);
-                    return '<a class="fa-row go" href="#/w/' + encodeURIComponent(w.id) + '"><span class="fa-ico">' + FDIco(T) + '</span><span class="fa-t"><b>' + esc(nameOf(w)) + '</b><small>' + esc(T.about || '') + '</small></span><i>›</i></a>';
-                }).join('');
-            }).join('') + (ws.length ? '' : empty('No widgets on the dashboard yet')) +
-            computer('Which widgets go on which screen is chosen');
+            (DATA.pages || []).filter(function (p) { return byPage[p.id]; }).map(function (p) { return h(esc(p.title) + ' <small>screen</small>') + byPage[p.id].map(row).join(''); }).join('') +
+            (lost.length ? h('At other times') + lost.map(row).join('') : '') +
+            (ws.length ? '' : empty('No widgets on the dashboard yet')) +
+            '<p class="fa-warn">⚠ Widgets that aren’t on any screen (Not in use) aren’t listed here. To see them, add one, or move one to another screen, use a computer at <b>' + esc(HOST) + '</b> → Widgets → Other and Screens.</p>';
     }
     function widgetPage(id) {
         var w = widgetOf(id);
@@ -624,10 +655,12 @@
         var simple = defs.filter(function (f) { return !PC_ONLY(f); }), pc = defs.filter(PC_ONLY);
         $('faMain').innerHTML = '<a class="fa-back" href="#/other">‹ Other</a>' +
             '<div class="fa-whead"><span class="fa-ico big">' + FDIco(T) + '</span><div><h1>' + esc(nameOf(w)) + '</h1><p class="mute">' + esc(T.about || '') + '</p></div></div>' +
+            '<p class="fa-status">' + esc((pageOf(w.page) ? 'On the ' + pageOf(w.page).title + ' screen · ' : '') + timedSay(w)) + (w._copies > 1 ? ' Copy ' + w._copy + ' of ' + w._copies + ' – each copy has its own settings.' : '') + '</p>' +
             (w.type === 'whereabouts' ? whereBox(w) : '') +
             (simple.length ? box(simple.map(function (f) { return wrapWhen(f, field(f, (w.settings || {})[f.k])); }).join('') +
                 '<button class="btn good wide" id="wSave">Save</button>', 'fa-form') : (pc.length ? '' : '<p class="fa-note">Nothing to set – it works as it is.</p>')) +
-            (pc.length ? '<p class="fa-pc">💻 ' + pc.map(function (f) { return '<b>' + esc(f.label) + '</b>'; }).join(', ') + (w.type === 'bins' ? ' (and where the bin days come from)' : '') + ' – change ' + (pc.length > 1 ? 'these' : 'this') + ' on a computer at <b>' + esc(HOST) + '</b>.</p>' : '');
+            (pc.length ? '<p class="fa-pc">💻 ' + pc.map(function (f) { return '<b>' + esc(f.label) + '</b>'; }).join(', ') + (w.type === 'bins' ? ' (and where the bin days come from)' : '') + ' – change ' + (pc.length > 1 ? 'these' : 'this') + ' on a computer at <b>' + esc(HOST) + '</b>.</p>' : '') +
+            '<p class="fa-pc">💻 Its height, whether it shows, when it shows (timed), and which screen it’s on are changed on a computer at <b>' + esc(HOST) + '</b> → Widgets → Other.</p>';
         whenFields();
         Array.prototype.forEach.call(document.querySelectorAll('.fa-mins'), function (box) {
             box.onclick = function (e) {

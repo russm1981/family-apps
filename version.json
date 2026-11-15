@@ -1,14 +1,13 @@
 {
-  "app": "2026.11.239",
+  "app": "2026.11.240",
   "script": "2026.11.104",
   "date": "2026-11-15",
   "notes": [
-    "Family Admin (phone): the browser tab says HouseRunner – Family Admin App",
-    "Family Admin: calendar entries look like the website – colour line, category, description, and the time only if there is one",
-    "Family Admin: with more than two lists, the list buttons are two to a row; you can have up to 5 General Lists plus the To-Do List (Google)",
-    "Family Admin: Rewards has Configure (Reward Tasks, Daily To-Dos, Reminder Display, reward rules, manual adjustments – as on the computer) and View (each child, fully open)",
-    "Family Admin: a new Reminders button – add and change reminders, clear expired ones, and set when tomorrow’s show; Widgets is now called Other",
-    "Configurator: timed widgets say Timed (Primary) or Timed (Secondary) in the list, with the days, times and what shows instead on the widget’s page"
+    "Family Dashboard (phone): the browser tab says HouseRunner – Dashboard; a little more space between widgets; Child’s Rewards cards are as tall as they need to be",
+    "Family Dashboard (phone) calendar: just Month and Week (no 🎂 or 🌴), short day names in portrait, Today and the views on the left, Key and + Add on the right",
+    "Family Dashboard (phone): a small ⓘ at the end of the top row opens About & diagnostics, laid out for the phone",
+    "Diagnostics everywhere now include this device – what kind of device, operating system and version, browser and version, screen, touch, memory and connection – shown on the page and put in the report",
+    "Family Admin (phone): More → About and diagnostics, with the versions, this phone, and a report you can share or email"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
