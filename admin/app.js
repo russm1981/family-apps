@@ -2374,7 +2374,7 @@
     }
     function secPlaces() {
         var pw = placeWidgets();
-        $('body').innerHTML = card('Where you live and location settings', installFields('home') + saveInstallBtn('hSave', 'Save where you live and location settings'), 'sx-home') +
+        $('body').innerHTML = card('Where you live and location settings', installFields('home', ['HomeAddress']) + '<hr class="sep">' + installFields('home', ['Country', 'TimeZone', 'Currency', 'WeekStart', 'DateOrder']) + saveInstallBtn('hSave', 'Save where you live and location settings'), 'sx-home') +
             (pw.length ? card('Places your widgets use', '<p class="mute small">Each of these has its own addresses or places. Left blank, they use the home address.</p>' + pw.map(function (w) {
                 var pg = pageOf(w.page), vals = typeOf(w.type).settings.filter(function (f) { return PLACE_KEYS.indexOf(f.k) >= 0; }).map(function (f) { return lines(w.settings[f.k]).join(', '); }).filter(Boolean).join(' · ');
                 return '<button class="mrow" data-go="w/' + esc(w.id) + '"><span class="m-ico">' + FDIco(typeOf(w.type)) + '</span><span class="m-tx"><b>' + esc(widgetName(w)) + (pg ? ' <span class="mute small">(' + esc(pg.title) + ')</span>' : '') + '</b><small>' +

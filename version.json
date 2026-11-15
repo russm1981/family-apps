@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.228",
+  "app": "2026.11.229",
   "script": "2026.11.102",
   "date": "2026-11-15",
   "notes": [
-    "Reward Tasks, Daily To-Dos and the other list editors: more space above the Add button, then a dividing line before Save and Undo"
+    "Child cards: the blue ‘Tasks · this morning · statement’ label is gone – the details are always shown"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

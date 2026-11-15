@@ -445,3 +445,4 @@ body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
 body.desk .lrows + .ladd-row, body.desk #tkRows + .ladd-row { margin-top: 24px; }
 body.desk .ladd-row + .sheet-actions { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line, #2a303b); }
 body.desk .boy-more > summary { display: none; }
+hr.sep { border: 0; border-top: 1px solid var(--line, #2a303b); margin: 22px 0 18px; }
