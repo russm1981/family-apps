@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.222",
+  "app": "2026.11.223",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Calendar colour coding: Holiday and Birthday at the top of General categories, both grey notes together under the list, and even spacing between rows"
+    "Calendar colour coding: clearer note on Birthday and Holiday – they’re mandatory for the Birthdays and Holiday countdown widgets, and hiding them only takes them off the calendar"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

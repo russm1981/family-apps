@@ -96,7 +96,7 @@
             '<h3 class="cs-h2">Family groups</h3>' +
             '<p class="mute small cs-expl">Family groups put particular people together – the children, the grown-ups… – so the calendar doesn’t have a colour for every person. Choose who’s in each group below, under People in the family.</p>' +
             '<div class="cs-row cs-grow cs-rhead"><span>Name</span><span>Colour</span><span></span></div>' +
-            (fam ? groupRow(fam, 'g' + gi(fam), '<b>Family</b> <span class="mute small">everyone – things you all do together</span>') : '') +
+            (fam ? groupRow(fam, 'g' + gi(fam), '<b>Family</b> <span class="mute small">everyone – things you all do together</span>', '<span class="cs-lock" title="Needed – it can’t be removed">🔒</span>') : '') +
             own.map(function (g) { return groupRow(g, 'g' + gi(g), nameIn('data-gname', gi(g), g.name, 'Group name, e.g. The children'), '<button class="cs-x" data-gdel="' + gi(g) + '" title="Remove this group">✕</button>'); }).join('') +
             (own.length < L.groups && all().length < L.cats ? '<button class="btn sm" id="csAddGroup">+ Add a group</button>' : '') +
 

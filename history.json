@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.222",
+    "date": "2026-11-15",
+    "notes": [
+      "Calendar colour coding: clearer note on Birthday and Holiday – they’re mandatory for the Birthdays and Holiday countdown widgets, and hiding them only takes them off the calendar"
+    ]
+  },
+  {
     "version": "2026.11.221",
     "date": "2026-11-15",
     "notes": [
