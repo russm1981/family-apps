@@ -375,3 +375,7 @@
 .ed-frame.phone .ed-pbar { order: -1; border-top: 0; border-bottom: 1px solid #22262e; }
 .ed-tag { display: inline-block; margin-left: 6px; padding: 0 6px; border-radius: 6px; background: rgba(255,255,255,.08); color: var(--mute); font-size: 11px; font-weight: 600; vertical-align: 1px; }
 .ed-how, .ed-recon + .ed-how { margin-top: 14px; margin-bottom: 22px; }
+.cs-notes { margin: 14px 0 0; }
+.cs-notes p { margin: 0 0 8px; line-height: 1.5; }
+.cs-notes + .cs-addc { margin: 10px 0 6px; }
+.cs-card .cs-row:not(.cs-rhead) { min-height: 58px; }

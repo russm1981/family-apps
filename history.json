@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.220",
+    "date": "2026-11-15",
+    "notes": [
+      "Screens → calendar: ‘Calendar screen settings’ with a matching ‘Save calendar screen settings’ button"
+    ]
+  },
+  {
     "version": "2026.11.219",
     "date": "2026-11-15",
     "notes": [

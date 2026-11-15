@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.220",
+  "app": "2026.11.221",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Setup wizard buttons: ‘Set up a new family (first use)’ and ‘Rerun wizard for the … family’",
-    "Raspberry Pi: the Wi-Fi network it makes for setting up is now called Pi-HouseRunner (for Pis set up from now on)"
+    "Screens → calendar: ‘Calendar screen settings’ with a matching ‘Save calendar screen settings’ button"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
