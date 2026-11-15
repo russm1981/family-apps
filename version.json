@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.242",
-  "script": "2026.11.104",
+  "app": "2026.11.243",
+  "script": "2026.11.105",
   "date": "2026-11-15",
   "notes": [
-    "Family Admin → Calendar: the note that the whole calendar is in the Family Dashboard app is now under Coming up, and the grey text (the subtitle, categories and times) is bigger"
+    "Family Admin → Lists: each list is its own button, two to a row"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

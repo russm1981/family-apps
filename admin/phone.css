@@ -173,3 +173,4 @@ body.fa .fa-row.ev .fa-time { font-size: 15.5px; color: #b6c0cc; }
 body.fa #lsPick { background: none; border: 0; padding: 0; gap: 10px; margin: 4px 0 12px; }
 body.fa #lsPick button { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px; }
 body.fa #lsPick button.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; }
+body.fa .fa-morelink { display: block; margin: 6px 0 0 auto; background: none; border: 0; color: #3fa9f5; font-weight: 700; font-size: 14px; padding: 6px 2px; font-family: inherit; }

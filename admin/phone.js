@@ -295,8 +295,8 @@
                 '<div class="fa-more open">' +
                     '<h3>Reward Tasks</h3>' + (tasks.length ? tasks.map(function (t) { return '<button class="fa-row task" data-task="' + i + ':' + esc(t.id) + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.text) + '</b></span><em>+' + t.points + '</em></button>'; }).join('') : empty('No tasks waiting')) +
                     '<h3>Daily To-Dos</h3>' + (b.todos.length ? b.todos.map(function (t, j) { return '<button class="fa-row li' + (t.done ? ' done' : '') + '" data-todo="' + i + ':' + j + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.item) + '</b></span></button>'; }).join('') : empty('Nothing today')) +
-                    '<h3>Statement</h3>' + (b.statement || []).slice(0, 5).map(function (l) { return '<div class="fa-row st"><span class="fa-t"><b>' + esc(l.text) + '</b></span><em class="' + (l.points < 0 ? 'neg' : 'pos') + '">' + (l.points > 0 ? '+' : '') + l.points + '</em></div>'; }).join('') +
-                    '<button class="btn ghost wide" data-stmt="' + i + '">The whole statement</button></div></section>';
+                    '<h3>Statement</h3>' + (b.statement || []).slice(0, 10).map(function (l) { return '<div class="fa-row st"><span class="fa-t"><b>' + esc(l.text) + '</b></span><em class="' + (l.points < 0 ? 'neg' : 'pos') + '">' + (l.points > 0 ? '+' : '') + l.points + '</em></div>'; }).join('') +
+                    '<button class="fa-morelink" data-stmt="' + i + '">More…</button></div></section>';
         }).join('');
         wireRwSeg();
         $('faMain').onclick = function (e) {

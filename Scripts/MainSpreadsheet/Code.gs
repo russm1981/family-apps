@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.104';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.105';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -944,7 +944,7 @@ function getState_() {
       const items = remindersFor(ds, DAYS[(DAYS.indexOf(dow) + i) % 7]);
       if (items.length) week.push({ date: ds, items: items });
     }
-    const statement = mine.slice(-6).reverse().map(l => ({
+    const statement = mine.slice(-10).reverse().map(l => ({
       id: l.ID, when: fmt_(new Date(l.Timestamp), 'EEE d MMM HH:mm'),
       type: l.Type, text: l.Description, points: Number(l.Points),
     }));

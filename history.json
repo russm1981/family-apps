@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.242",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Admin → Lists: each list is its own button, two to a row"
+    ]
+  },
+  {
     "version": "2026.11.241",
     "date": "2026-11-15",
     "notes": [
