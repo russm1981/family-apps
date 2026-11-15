@@ -232,6 +232,16 @@
             layers.clearLayers();
             last = t;
             if (!t || !t.routes) return;
+            el.classList.toggle('t-area', !!t.area);
+            if (t.area && t.home) {
+                // Nothing to route: live traffic all around home, out to the distance in the settings.
+                var mi = t.radiusMiles || 30, dLat = mi / 69, dLng = mi / (69 * Math.cos(t.home[0] * Math.PI / 180));
+                L.circleMarker(t.home, { radius: 8, color: '#fff', weight: 2, fillColor: '#3fa9f5', fillOpacity: 1 })
+                    .bindTooltip('<span class="ml-in">Home</span>', { permanent: true, direction: 'right', className: 'map-label', offset: [8, 0] }).addTo(layers);
+                sel = -1; unturn(); bounds = [[t.home[0] - dLat, t.home[1] - dLng], [t.home[0] + dLat, t.home[1] + dLng]];
+                try { map.invalidateSize(); map.fitBounds(bounds, { padding: [0, 0] }); } catch (e) { /* not on show yet */ }
+                return;
+            }
             if (sel >= t.routes.length) sel = -1;
             Array.prototype.forEach.call(box.querySelectorAll('.route[data-i]'), function (row) { row.classList.toggle('sel', +row.getAttribute('data-i') === sel); });
             outer.classList.toggle('picked', sel >= 0);
@@ -268,7 +278,7 @@
                         '<span class="r-sub">' + (diff > 0 ? '+' + diff + ' min \u00b7 usually ' : 'Usually ') + r.usualMins + ' min \u00b7 ' + r.miles + ' mi</span></div>' +
                         '<span class="pill ' + r.status + '">' + STATUS[r.status] + '</span>' +
                         '<div class="r-time"><b>' + r.mins + '</b> min</div></div>';
-                }).join('') || '<div class="empty">' + esc(t.resting || 'Add destinations in the admin app') + '</div>';
+                }).join('') || '<div class="empty">' + esc(t.resting || 'Live traffic around home') + '</div>';
                 draw(t);
             },
             show: function () { setTimeout(fit, 60); },

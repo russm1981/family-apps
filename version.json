@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.166",
-  "script": "2026.11.82",
+  "app": "2026.11.167",
+  "script": "2026.11.83",
   "date": "2026-11-15",
   "notes": [
-    "⚙ Widgets → Calendar is now simple and practical: a form to add an event (what, who or what for, the day or days, a time, notes) and a list of everything coming up in the next five weeks, each with ✕ to delete it. The full calendar – week, month and year – is on the dashboard."
+    "Traffic: when there are no journeys set up, or none is due at this time, the widget shows a live traffic map around home instead, filling the widget. How far it reaches is a new setting – “Area map: distance from home” – 30 miles to start with."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

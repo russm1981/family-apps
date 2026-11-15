@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.82';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.83';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -204,8 +204,10 @@ const WIDGET_TYPES = {
           { k: 'days', label: 'Days', type: 'days' }, { k: 'times', label: 'Times', type: 'span' }],
         help: 'Up to 3. Each can show all the time, or only on some days and between two times – e.g. school on Monday and Wednesday, 8am to 12 noon.' },
       { k: 'From', label: 'Start from', type: 'text', def: '', max: 150, help: 'An address or postcode. Leave blank for home.' },
+      { k: 'RadiusMiles', label: 'Area map: distance from home (miles)', type: 'number', def: 30, min: 2, max: 100,
+        help: 'When no journey is due (or none are set up), the widget shows live traffic on a map this far around home instead.' },
     ],
-    data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations) },
+    data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations, s.RadiusMiles) },
   trains: { name: 'Trains (UK)', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
     settings: [
       { k: 'From', label: 'From station (code)', type: 'crs', def: 'VIC', help: 'Three-letter code, e.g. VIC for London Victoria. Find codes at nationalrail.co.uk.' },
@@ -2030,7 +2032,7 @@ function destNow_(r, now) {
  * Live journey times via TomTom: now (live traffic) vs. usual for this time of day (historic).
  * Status: green = normal, amber = a bit slower, red = a lot slower.
  */
-function traffic_(home, destText) {
+function traffic_(home, destText, radius) {
   const key = String(inst_('TomTomKey') || '').trim();
   if (!key) throw new Error('Add a TomTom API key on the Installation tab of the admin app');
   const from = geocode_(home);
@@ -2063,7 +2065,9 @@ function traffic_(home, destText) {
       return { name: r.name, error: String(err && err.message || err) };
     }
   });
-  return { home: [from.lat, from.lng], routes: routes, resting: all.length && !routes.length ? 'No journeys to show at this time' : '' };
+  // No journeys set up, or none due now: the widget shows a live traffic map around home instead.
+  return { home: [from.lat, from.lng], routes: routes, radiusMiles: Math.max(2, Math.min(100, Number(radius) || 30)),
+    area: !routes.length, resting: all.length && !routes.length ? 'No journeys due now' : '' };
 }
 function round5_(n) { return Math.round(n * 1e5) / 1e5; }
 /** Keep at most max points; map[oldIndex] = newIndex so traffic sections still line up. */

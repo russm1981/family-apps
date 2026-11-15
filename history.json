@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.167",
+    "date": "2026-11-15",
+    "notes": [
+      "Traffic: when there are no journeys set up, or none is due at this time, the widget shows a live traffic map around home instead, filling the widget. How far it reaches is a new setting – “Area map: distance from home” – 30 miles to start with."
+    ]
+  },
+  {
     "version": "2026.11.166",
     "date": "2026-11-15",
     "notes": [
