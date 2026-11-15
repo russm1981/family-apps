@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.204",
+    "date": "2026-11-15",
+    "notes": [
+      "Display Sleep: says where the Windows start file comes from (houserunner.app/windows)"
+    ]
+  },
+  {
     "version": "2026.11.203",
     "date": "2026-11-15",
     "notes": [

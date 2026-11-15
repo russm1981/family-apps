@@ -230,7 +230,7 @@ window.FD_HELP = [
 <h2>Changing it</h2>
 <p>On a computer, <b>houserunner.app → System → Display Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
 <h2>The screen goes completely black and a touch doesn’t wake it</h2>
-<p>That’s Windows switching the display off, not the dashboard. The start file offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
+<p>That’s Windows switching the display off, not the dashboard. The start file (the one you download from <b>houserunner.app/windows</b>) offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
   },
   {
     id: 'startup', icon: '🖥', title: 'The dashboard doesn’t start when the PC turns on',
