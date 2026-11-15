@@ -169,3 +169,7 @@ body.fa .fa-h small { font-size: 14px; }
 body.fa .fa-cal-note { margin: 0 2px 12px; font-size: 15px; color: #b6c0cc; text-align: left; }
 body.fa .fa-row.ev .fa-cat { font-size: 15px; width: 84px; color: #b6c0cc; }
 body.fa .fa-row.ev .fa-time { font-size: 15.5px; color: #b6c0cc; }
+/* Lists: each list its own button (two to a row when there are more than two) */
+body.fa #lsPick { background: none; border: 0; padding: 0; gap: 10px; margin: 4px 0 12px; }
+body.fa #lsPick button { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px 10px; }
+body.fa #lsPick button.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; }

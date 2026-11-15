@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.241",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Admin → Calendar: the note that the whole calendar is in the Family Dashboard app is now under Coming up, and the grey text (the subtitle, categories and times) is bigger"
+    ]
+  },
+  {
     "version": "2026.11.240",
     "date": "2026-11-15",
     "notes": [
