@@ -309,3 +309,8 @@ body.desk.phone .dpick { flex-wrap: wrap; } body.desk.phone .op-daily { flex-wra
 /* Each icon close to its own word, and clear space between one menu item and the next */
 body.desk .tabbar button { gap: 5px; padding: 9px 13px; flex: none; }
 body.desk .tabbar { gap: 6px; }
+/* The top bar: the same space after ▶ Dashboard, 💬 Feedback and ❓ Help; the green "up to date" dot sits on the refresh button */
+body.desk .hdr-dash, body.desk .hdr-help { margin-right: 10px; }
+body.desk .hdr-dash { margin-left: auto; }
+#refresh { position: relative; }
+#refresh .sync { position: absolute; top: -3px; right: -3px; margin: 0; border: 2px solid var(--bg, #0c0e12); width: 12px; height: 12px; min-width: 12px; }

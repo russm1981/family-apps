@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.173",
+    "date": "2026-11-15",
+    "notes": [
+      "Top bar: ▶ Dashboard, 💬 Feedback and ❓ Help are evenly spaced, and the green “up to date” dot now sits on the corner of the ↻ refresh button."
+    ]
+  },
+  {
     "version": "2026.11.172",
     "date": "2026-11-15",
     "notes": [

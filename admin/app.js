@@ -232,10 +232,10 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (PHONE ? '<span class="hr-phone" title="HouseRunner – settings"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="HouseRunner"><b>⚙️</b></span>' : DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (PHONE ? '<span class="hr-phone" title="HouseRunner – settings"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="HouseRunner"><b>⚙️</b></span>' : DESK ? DESK_TITLE : 'HouseRunner') + '</h1>' +
             (PHONE ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" title="Open the dashboard">▶ Dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#" aria-label="Feedback">💬</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#" aria-label="Help">❓</a>' :
              DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ Dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
-            '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
+            '<button class="icon-btn" id="refresh" aria-label="Refresh">↻<span class="sync" id="sync"></span></button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
@@ -246,7 +246,7 @@
         $('tabs').onclick = function (e) { var b = e.target.closest('[data-t]'); if (b) go(b.getAttribute('data-t')); };
         document.addEventListener('click', function (e) { var g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); go(g.getAttribute('data-go')); } });
         $('back').onclick = function () { if (history.length > 1) history.back(); else go(route().tab); };
-        $('sync').onclick = function () { if (this.classList.contains('err')) { FD.toast(syncWhy + ' – trying again…', true); load(); } else FD.toast(this.title); };
+        $('sync').onclick = function (e) { if (e) e.stopPropagation(); if (this.classList.contains('err')) { FD.toast(syncWhy + ' – trying again…', true); load(); } else FD.toast(this.title); };
         $('refresh').onclick = function () { load(); fetchGlance(true); var r = route(); if (r.w) fetchWidget(r.w); };
         $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
         window.addEventListener('hashchange', function () { closeSheet(); render(); window.scrollTo(0, 0); });
