@@ -356,13 +356,12 @@
                 var t = parseYmd(a.today), m = parseYmd(a.tomorrow), bh = a.bankHolidays || {}, W = a.weekend;
                 var hasWk = wkOn && W && W.days && W.days.length;
                 var fri = hasWk && a.friday;                 // Friday: the weekend takes tomorrow's place
-                q('.ag-h1').innerHTML = 'Today <span>' + dmy(t) + '</span>' + tags(a.days.today, bh.today);
+                q('.ag-h1').innerHTML = '<b class="ag-hd">Today <span>' + dmy(t) + '</span></b>' + tags(a.days.today, bh.today);
                 q('.l1').innerHTML = list(plain(a.days.today), a.today, fri ? max * 2 : max);
                 var wHead = '', wRows = [];
                 if (hasWk) {
                     var ds = W.days.map(parseYmd), d0 = ds[0], d1 = ds[1], seen = {};
-                    wHead = (W.next ? 'Next weekend' : 'This weekend') + ' <span>' + DOW[d0.getDay()] + ' ' + (FDL.L.monthFirst ? MON[d0.getMonth()] + ' ' + d0.getDate() : d0.getDate() + (d0.getMonth() !== d1.getMonth() ? ' ' + MON[d0.getMonth()] : '')) +
-                        '\u2013' + DOW[d1.getDay()] + ' ' + FDL.dm(d1.getDate(), d1.getMonth()) + '</span>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
+                    wHead = '<b class="ag-hd">Weekend <span>' + FDL.range(d0, d1) + '</span></b>' + tags([].concat.apply([], W.events || []), (W.bankHolidays || []).filter(Boolean)[0] || '');
                     (W.events || []).forEach(function (evs, i) {
                         plain(evs).forEach(function (x) {
                             var id = (x.e.id || x.e.full || x.e.t) + '|' + (x.e.s || '');      // a repeating event's Saturday and Sunday are separate
@@ -378,7 +377,7 @@
                     if (q('.ag-wk')) q('.ag-wk').style.display = 'none';
                     return;
                 }
-                q('.ag-h2').innerHTML = 'Tomorrow <span>' + dmy(m) + '</span>' + tags(a.days.tomorrow, bh.tomorrow);
+                q('.ag-h2').innerHTML = '<b class="ag-hd">Tomorrow <span>' + dmy(m) + '</span></b>' + tags(a.days.tomorrow, bh.tomorrow);
                 q('.l2').innerHTML = list(plain(a.days.tomorrow), a.tomorrow, max);
                 q('.ag-cols').className = 'ag-cols ' + (hasWk ? 'three' : 'two');
                 if (!q('.ag-wk')) return;

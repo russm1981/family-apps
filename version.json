@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.174",
+  "app": "2026.11.175",
   "script": "2026.11.86",
   "date": "2026-11-15",
   "notes": [
-    "The menu bar keeps its height, with the buttons centred in it – the same space above them as below (on the Configurator and the setup wizard)."
+    "Today & Tomorrow widget: “TODAY Sun 15 Nov” and “TOMORROW Mon 16 Nov” always stay on one line, and the weekend heading is simply “WEEKEND 21–22 Nov”."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

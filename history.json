@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.175",
+    "date": "2026-11-15",
+    "notes": [
+      "Today & Tomorrow widget: “TODAY Sun 15 Nov” and “TOMORROW Mon 16 Nov” always stay on one line, and the weekend heading is simply “WEEKEND 21–22 Nov”."
+    ]
+  },
+  {
     "version": "2026.11.174",
     "date": "2026-11-15",
     "notes": [
