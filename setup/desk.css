@@ -444,3 +444,4 @@ body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
 /* Add button, a dividing line, then Save / Undo */
 body.desk .lrows + .ladd-row, body.desk #tkRows + .ladd-row { margin-top: 24px; }
 body.desk .ladd-row + .sheet-actions { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line, #2a303b); }
+body.desk .boy-more > summary { display: none; }

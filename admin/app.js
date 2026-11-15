@@ -1297,7 +1297,7 @@
                 '<div class="row-btns">' + s.penalties.map(function (p) { return '<button class="pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
                     '<button class="bonus" data-bonus="' + i + '">+ Bonus</button></div>' +
                 '<button class="btn wide cash' + (can ? '' : ' off') + '" data-cash="' + i + '"' + (can ? '' : ' disabled') + '>Cash in ' + target + ' for £' + s.cashIn.value + '</button>' +
-                '<details class="boy-more"' + (openBoys[b.name] || (DESK && openBoys[b.name] !== false) ? ' open' : '') + ' data-boy="' + esc(b.name) + '"><summary>Tasks ' + (b.allTasks || b.tasks).length + ' · this morning ' + b.todos.filter(function (t) { return t.done; }).length + '/' + b.todos.length + ' · statement</summary>' +
+                '<details class="boy-more"' + (DESK || openBoys[b.name] ? ' open' : '') + ' data-boy="' + esc(b.name) + '"><summary>Tasks ' + (b.allTasks || b.tasks).length + ' · this morning ' + b.todos.filter(function (t) { return t.done; }).length + '/' + b.todos.length + ' · statement</summary>' +
                 '<h3>Tasks (' + (b.allTasks || b.tasks).length + ')</h3>' + ((b.allTasks || b.tasks).length ? (b.allTasks || b.tasks).map(function (t) {
                     return '<button class="task" data-task="' + i + ':' + esc(t.id) + '"><span class="tick"></span><span class="tx">' + esc(t.text) + '</span><b>+' + t.points + '</b></button>';
                 }).join('') : '<div class="mute small">No tasks waiting</div>') +
