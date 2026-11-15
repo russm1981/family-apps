@@ -384,3 +384,6 @@ body.desk .card h2 + .card-sub { margin: -4px 0 12px; }
 #tkRows + .ladd-row { margin-top: 16px; }
 #fTasks .ladd-row + .sheet-actions { margin-top: 16px; }
 body.desk .card h3.sub-h { font-size: 18px; font-weight: 750; color: #fff; margin: 22px 0 4px; }
+/* Coming up: colour, category, what – and the time after it, only when there is one */
+.ev-cat { width: 110px; flex: none; color: var(--mute, #8b95a5); font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-t .ev-time { width: auto; margin-left: 1.6em; font-weight: 400; }

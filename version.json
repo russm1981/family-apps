@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.205",
+  "app": "2026.11.206",
   "script": "2026.11.96",
   "date": "2026-11-15",
   "notes": [
-    "Display Sleep: says where the Windows start file comes from (houserunner.app/windows)"
+    "Help: the screen-sleep article says where the Windows start file comes from too"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

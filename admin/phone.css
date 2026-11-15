@@ -119,3 +119,4 @@ body.fa .fa-stickies .sticky span { padding-right: 22px; }
 body.fa .fa-x:active { background: #ef4444; border-color: #ef4444; color: #fff; }
 body.fa .fa-nice { color: #3fa9f5; font-weight: 700; margin-left: 4px; }
 body.fa .fa-pv { padding-left: 26px; } body.fa .fa-pv li { padding-left: 4px; }
+body.fa .fa-time { margin-left: 1.2em; font-weight: 400; color: var(--mute); font-size: 14px; }

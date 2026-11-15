@@ -705,7 +705,7 @@
         var list = !D ? '<div class="empty">Loading…</div>' : !days.length ? '<p class="mute">Nothing in the next five weeks.</p>' : days.map(function (k) {
             var dd = new Date(k + 'T12:00:00'), lab = k === ymd(today) ? 'Today' : k === ymd(new Date(today.getTime() + 86400000)) ? 'Tomorrow' : nice(k);
             return '<div class="ev-day"><h3>' + esc(lab) + '</h3>' + D.days[k].map(function (e, n) {
-                return '<div class="ev-row"><span class="ev-dot" style="background:' + esc(e.c || '#888') + '"></span><span class="ev-time">' + esc(e.time || 'All day') + '</span><span class="ev-t"><b>' + esc(e.t) + '</b> <span class="mute small">' + esc(e.cat || '') + '</span></span>' +
+                return '<div class="ev-row"><span class="ev-dot" style="background:' + esc(e.c || '#888') + '"></span><span class="ev-cat">' + esc(e.cat || '') + '</span><span class="ev-t"><b>' + esc(e.t) + '</b>' + (e.time ? '<span class="ev-time">' + esc(e.time) + '</span>' : '') + '</span>' +
                     '<button class="ev-x" title="Delete this event" data-del="' + esc(k) + '|' + n + '">✕</button>' + '</div>';
             }).join('') + '</div>';
         }).join('');

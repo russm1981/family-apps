@@ -154,7 +154,7 @@
             h('Coming up', '<small>the next five weeks</small>') +
             (!D ? empty('Loading…') : !days.length ? empty('Nothing in the next five weeks') : days.map(function (k) {
                 return '<div class="fa-day"><h3>' + (k === t0 ? 'Today' : k === t1 ? 'Tomorrow' : esc(nice(k))) + '</h3>' + D.days[k].map(function (e, n) {
-                    return '<div class="fa-row ev"><span class="fa-swatch" style="background:' + esc(e.c || '#888') + '"></span><span class="fa-t"><b>' + esc(e.t) + '</b><small>' + esc(e.time || 'All day') + (e.cat ? ' · ' + esc(e.cat) : '') + '</small></span>' +
+                    return '<div class="fa-row ev"><span class="fa-swatch" style="background:' + esc(e.c || '#888') + '"></span><span class="fa-t">' + (e.cat ? '<small>' + esc(e.cat) + '</small>' : '') + '<b>' + esc(e.t) + (e.time ? '<span class="fa-time">' + esc(e.time) + '</span>' : '') + '</b></span>' +
                         '<button class="fa-x" data-del="' + esc(k) + '|' + n + '" aria-label="Delete">✕</button></div>';
                 }).join('') + '</div>';
             }).join('')) +
