@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.166",
+    "date": "2026-11-15",
+    "notes": [
+      "⚙ Widgets → Calendar is now simple and practical: a form to add an event (what, who or what for, the day or days, a time, notes) and a list of everything coming up in the next five weeks, each with ✕ to delete it. The full calendar – week, month and year – is on the dashboard."
+    ]
+  },
+  {
     "version": "2026.11.165",
     "date": "2026-11-15",
     "notes": [

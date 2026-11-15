@@ -655,15 +655,56 @@
         }, function (e) { if ($('fbMine')) $('fbMine').textContent = 'Couldn’t check just now (' + e.message + ').'; });
     }
     /** The calendar app, on the computer – with a switch between calendar pages when there's more than one. */
+    /** ⚙ Widgets → Calendar: a plain list of what's coming up, and a form to add an event. (The calendar itself is on the dashboard.) */
+    var CALV = { data: null, page: null, at: 0 };
+    function ymd(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
     function renderCalApp() {
         title('Calendar');
         var cps = (DATA.pages || []).filter(function (p) { return p.type === 'calendar'; }), cur = '';
         try { cur = localStorage.getItem('fdadmin.calPage') || ''; } catch (e) { /* fine */ }
         if (!cps.some(function (p) { return p.id === cur; })) cur = cps.length ? cps[0].id : '';
-        var src = appsRoot() + 'calendar/' + (cur ? '?page=' + encodeURIComponent(cur) : '');
-        $('body').innerHTML = '<div class="frame-bar">' + (cps.length > 1 ? '<div class="chips" id="calPick">' + cps.map(function (p) { return '<button class="chip' + (p.id === cur ? ' on' : '') + '" data-cp="' + esc(p.id) + '">' + esc(p.title) + '</button>'; }).join('') + '</div>' : '<span></span>') +
-            '<a class="link" href="' + esc(src) + '" target="_blank" rel="noopener">Open in a new tab ↗</a></div><iframe class="desk-frame" src="' + esc(src) + '" title="Calendar"></iframe>';
+        var today = new Date(); today.setHours(0, 0, 0, 0);
+        var end = new Date(today.getTime() + 35 * 86400000), D = CALV.page === cur ? CALV.data : null;
+        var addable = D ? D.addable || [] : [];
+        var days = D ? Object.keys(D.days || {}).sort() : [];
+        var list = !D ? '<div class="empty">Loading…</div>' : !days.length ? '<p class="mute">Nothing in the next five weeks.</p>' : days.map(function (k) {
+            var dd = new Date(k + 'T12:00:00'), lab = k === ymd(today) ? 'Today' : k === ymd(new Date(today.getTime() + 86400000)) ? 'Tomorrow' : nice(k);
+            return '<div class="ev-day"><h3>' + esc(lab) + '</h3>' + D.days[k].map(function (e, n) {
+                return '<div class="ev-row"><span class="ev-dot" style="background:' + esc(e.c || '#888') + '"></span><span class="ev-time">' + esc(e.time || 'All day') + '</span><span class="ev-t"><b>' + esc(e.t) + '</b> <span class="mute small">' + esc(e.cat || '') + '</span></span>' +
+                    '<button class="ev-x" title="Delete this event" data-del="' + esc(k) + '|' + n + '">✕</button>' + '</div>';
+            }).join('') + '</div>';
+        }).join('');
+        $('body').innerHTML = (cps.length > 1 ? '<div class="chips" id="calPick">' + cps.map(function (p) { return '<button class="chip' + (p.id === cur ? ' on' : '') + '" data-cp="' + esc(p.id) + '">' + esc(p.title) + '</button>'; }).join('') + '</div>' : '') +
+            card('Add an event', '<div class="ev-form">' +
+                '<label><span>What</span><input id="evT" maxlength="120" placeholder="e.g. Dentist"></label>' +
+                '<label><span>Who or what for</span><select id="evC">' + (addable.length ? addable.map(function (a) { return '<option>' + esc(a.name) + '</option>'; }).join('') : '<option value="">…</option>') + '</select></label>' +
+                '<label><span>Day</span><input type="date" id="evS" value="' + ymd(today) + '"></label>' +
+                '<label><span>Until <span class="mute small">(optional)</span></span><input type="date" id="evE"></label>' +
+                '<label><span>Time <span class="mute small">(blank = all day)</span></span><input type="time" id="evH"></label>' +
+                '<label class="ev-wide"><span>Notes <span class="mute small">(optional)</span></span><input id="evN" maxlength="300"></label></div>' +
+                '<div class="ladd-row"><button class="btn" id="evAdd">+ Add event</button></div>') +
+            card('Coming up', '<p class="mute small">The next five weeks. The full calendar – week, month and year – is on the <a href="' + esc(appsRoot()) + 'dashboard/" target="_blank" rel="noopener">dashboard</a>.</p>' + list);
         if ($('calPick')) $('calPick').onclick = function (e) { var b = e.target.closest('[data-cp]'); if (!b) return; try { localStorage.setItem('fdadmin.calPage', b.getAttribute('data-cp')); } catch (x) { /* fine */ } render(); };
+        var fetchCal = function () {
+            var q = { start: ymd(today), end: ymd(end) }; if (cur) q.page = cur;
+            FD.get('calendar', q).then(function (d) { CALV = { data: d, page: cur, at: Date.now() }; if (route().tab === 'calendar' && !hasEdits()) render(); }, function (e) { FD.toast(e.message, true); });
+        };
+        if (!D || Date.now() - CALV.at > 120000) fetchCal();
+        $('evAdd').onclick = function () {
+            var b = this, t = $('evT').value.trim(); if (!t) { FD.toast('Give the event a name', true); return; }
+            var q = { action: 'addEvent', title: t, category: $('evC').value, start: $('evS').value, end: $('evE').value || $('evS').value, time: $('evH').value, note: $('evN').value.trim() };
+            if (cur) q.page = cur;
+            b.disabled = true; b.textContent = '⏳ Adding…';
+            FD.post(q).then(function () { FD.toast('Added'); CALV.at = 0; fetchCal(); render(); }, function (e) { FD.toast(e.message, true); b.disabled = false; b.textContent = '+ Add event'; });
+        };
+        $('body').querySelectorAll('[data-del]').forEach(function (x) {
+            x.onclick = function () {
+                var k = x.getAttribute('data-del').split('|'), e = D.days[k[0]][+k[1]];
+                var all = e.rec && confirm('“' + e.t + '” repeats. Delete every one? (Cancel deletes just this one.)');
+                if (!e.rec && !confirm('Delete “' + e.t + '”?')) return;
+                FD.post({ action: 'deleteEvent', id: e.id, cal: e.cal, s: e.s, all: all }).then(function () { FD.toast('Deleted'); CALV.at = 0; fetchCal(); }, function (er) { FD.toast(er.message, true); });
+            };
+        });
     }
     /** On the phone: a page that's on the computer website instead. */
     function renderOnComputer(what) {
