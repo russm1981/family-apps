@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.224",
+    "date": "2026-11-15",
+    "notes": [
+      "Calendar colour coding: the Birthday and Holiday note now says that hiding one also removes its 🎂 or 🌴 button"
+    ]
+  },
+  {
     "version": "2026.11.223",
     "date": "2026-11-15",
     "notes": [

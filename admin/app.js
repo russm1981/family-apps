@@ -455,12 +455,12 @@
         };
         $('body').innerHTML = howBox('family', 'How the family works',
                 '<p>Add up to <b>10 people</b>. Each has a colour of their own – it’s used for them on the calendar when they have their own place on its key – and you can change it.</p>' +
-                '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for Reward Tasks, Daily To-Dos and reminders, and their own Child’s Rewards widget to put on a screen. That’s the only thing it changes.</p>' +
+                '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for Reward Tasks and Daily To-Dos, and their own Child’s Rewards widget to put on a screen. That’s the only thing it changes.</p>' +
                 '<p>Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
             card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p><input id="fpName" maxlength="30" placeholder="e.g. Smith" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
             card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
                 (famEdit.length < 10 ? '<button class="btn fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
-                '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, Reward Tasks, Daily To-Dos and reminders, with their own Child’s Rewards widget.</p>' +
+                '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, Reward Tasks, Daily To-Dos, with their own Child’s Rewards widget.</p>' +
                 '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p></div>' +
                 '<div class="sheet-actions"><button class="btn good" id="fpSave">Save the family</button><button class="btn ghost" id="fpUndo">Undo changes</button></div>');
         $('fpRows').oninput = function (e) { var t = e.target, k;

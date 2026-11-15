@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.224",
+  "app": "2026.11.225",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Calendar colour coding: Family has a 🔒 like Holiday and Birthday – it can’t be removed"
+    "Calendar colour coding: the Birthday and Holiday note now says that hiding one also removes its 🎂 or 🌴 button"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

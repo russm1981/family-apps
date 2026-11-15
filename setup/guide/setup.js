@@ -347,7 +347,7 @@
                     '<input id="home" value="' + esc(S.home || ((ADM.install || []).filter(function (f) { return f.k === 'HomeAddress'; })[0] || {}).value || '') + '" placeholder="e.g. London, SW1A 0AA"></div>' +
                 '<div class="card big"><h3>Everyone in the family</h3><div id="fwRows">' + FAM.people.map(famRow).join('') + '</div>' +
                     (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
-                    '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks, Daily To-Dos and reminders, and their own Child’s Rewards widget to put on a screen. ' +
+                    '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks and Daily To-Dos, and their own Child’s Rewards widget to put on a screen. ' +
                     'Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is the next step.</p>' +
                     '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
             function famRow(p, i) {
