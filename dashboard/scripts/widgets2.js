@@ -43,6 +43,27 @@
         return { update: function (d) { data = d; render(); }, destroy: function () { clearInterval(t); clearInterval(turner); } };
     };
 
+    /* ============================================================ BIRTHDAYS */
+
+    /** The next few birthdays; one within the week (or the days set) stands out, today's most of all. */
+    T.birthdays = function (el, w) {
+        var data = null;
+        el.innerHTML = '<h3 class="bd-title">🎂 Birthdays</h3><div class="bd-body">' + loading() + '</div>';
+        var body = el.querySelector('.bd-body');
+        function render() {
+            if (!data || data.error) { body.innerHTML = errBox(data ? data.error : 'No birthdays'); return; }
+            var items = data.items.filter(function (x) { return daysTo(x.date) >= 0; });
+            if (!items.length) { body.innerHTML = '<div class="empty">No birthdays on the calendar yet. Add them in the Birthday category – they repeat every year.</div>'; return; }
+            body.innerHTML = items.map(function (x) {
+                var n = daysTo(x.date), soon = n <= (data.soon || 7);
+                return '<div class="bd-row' + (n === 0 ? ' today' : soon ? ' soon' : '') + '"><span class="bd-name">' + esc(x.name) + '</span><em>' + esc(niceDate(x.date)) + '</em>' +
+                    '<b>' + (n === 0 ? 'Today! 🎉' : n === 1 ? 'Tomorrow' : 'in ' + n + ' days') + '</b></div>';
+            }).join('');
+        }
+        var t = setInterval(function () { if (data) render(); }, 30 * 60000);
+        return { update: function (d) { data = d; render(); }, destroy: function () { clearInterval(t); } };
+    };
+
     /* ========================================================= WEASLEY CLOCK */
 
     /** "07:45" today, "Tue" this week, otherwise "3 Nov". */

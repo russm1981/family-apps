@@ -1287,3 +1287,20 @@ body.fmt-phone #screen-boys { position: relative; }
 .wg-agenda .ag-hd { white-space: nowrap; font-weight: inherit; letter-spacing: 0.02em; }
 .wg-agenda .ag-hd span { margin-left: 0.35rem; }
 .wg-agenda .ag-col h3, .wg-agenda .ag-wk h3 { font-size: 0.95rem; }
+/* 🎂 birthdays only */
+.vw-bday { font-size: 1.15em; padding-left: 0.7em; padding-right: 0.7em; }
+.vw-bday.on { background: #f472b6 !important; color: #fff; }
+#screen-calendar.bday-only .cal-head h2::after, #screen-calendar.bday-only #calYear::after { content: " · birthdays"; color: #f472b6; font-size: 0.6em; font-weight: 700; }
+/* Phone: the calendar has Month and Week (the 3-month grids are too small to read there) */
+body.fmt-phone .vw-btn[data-view="3m"], body.fmt-phone .vw-btn[data-view="3ms"] { display: none; }
+/* Birthdays widget */
+.wg-birthdays { display: flex; flex-direction: column; }
+.bd-title { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--mute); margin-bottom: 0.5rem; }
+.bd-body { display: flex; flex-direction: column; gap: 0.35rem; overflow: hidden; }
+.bd-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 0.7rem; align-items: baseline; padding: 0.35rem 0.6rem; border-radius: 0.6rem; background: rgba(255,255,255,.03); }
+.bd-name { font-weight: 700; font-size: 1.05rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bd-row em { font-style: normal; color: var(--mute); font-size: 0.85rem; }
+.bd-row b { font-size: 0.85rem; color: var(--mute); }
+.bd-row.soon { background: rgba(244,114,182,.14); box-shadow: inset 3px 0 0 #f472b6; }
+.bd-row.soon b { color: #f9a8d4; }
+.bd-row.today { background: #f472b6; } .bd-row.today .bd-name, .bd-row.today b, .bd-row.today em { color: #fff; }

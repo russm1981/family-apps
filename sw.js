@@ -1,8 +1,8 @@
 /* Keeps houserunner.app (the Configurator / Family Admin) available offline. Family data always comes live from Google.
  * The screen, the Family Calendar app and the licence pages look after themselves, so they're left alone here. */
-const CACHE = 'root-v19';
+const CACHE = 'root-v20';
 const FILES = ["./", "index.html", "manifest.webmanifest", "admin/app.js", "admin/admin.css", "admin/icons/icon-192.png", "setup/desk.css", "setup/editor.css", "setup/editor.js", "setup/calsetup.js", "setup/config.js",
-  "help/topics.js", "shared/fd.js", "shared/storecheck.js", "shared/move.js", "shared/base.css", "shared/brand/mark.svg", "shared/privacy.js", "shared/countries.js", "shared/pair.js", "shared/qrcode.js"];
+  "help/topics.js", "shared/fd.js", "shared/storecheck.js", "shared/move.js", "shared/base.css", "shared/brand/mark.svg", "shared/privacy.js", "shared/countries.js", "shared/icons.js", "shared/pair.js", "shared/qrcode.js"];
 const OWN = /^\/(screen|dashboard|calendar|licencing|windows|downloads|Scripts)\//;
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).catch(() => {}).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('root-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

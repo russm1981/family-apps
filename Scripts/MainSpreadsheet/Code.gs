@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.86';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.87';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -307,6 +307,12 @@ Object.assign(WIDGET_TYPES, {
       { k: 'Show', label: 'How many to show', type: 'number', def: 3, min: 1, max: 6 },
     ],
     data: (s) => countdown_(s) },
+  birthdays: { name: 'Birthdays', icon: '🎂', sizes: ['half', 'full'], ttl: 30 * 60, calendar: true, about: 'The next few birthdays from the family calendar – the ones within a week stand out.',
+    settings: [
+      { k: 'Show', label: 'How many to show', type: 'number', def: 4, min: 2, max: 8 },
+      { k: 'SoonDays', label: 'Make it stand out when it’s this many days away (or fewer)', type: 'number', def: 7, min: 1, max: 30 },
+    ],
+    data: (s) => birthdays_(s) },
   whereabouts: { name: 'Weasley Clock', icon: '🕰️', sizes: ['full'], about: 'A clock whose hands show where each person is. Tap a name to move it, or let phones update it automatically.',
     settings: [
       { k: 'People', label: 'People', type: 'lines', maxLines: 6, def: 'Adam | #a855f7\nEve | #f472b6\nOliver | #3fa9f5\nAmelia | #f5a623\nNoah | #7ed321', ui: 'rows', addLabel: '+ Add a person',
@@ -2759,6 +2765,7 @@ function calModel_() {
     members: norm_(c.name) === 'family' ? people.map(p => p.name) : people.filter(p => norm_(p.group) === norm_(c.name)).map(p => p.name) }));
   if (!groups.some(x => x.fixed)) groups.push({ name: 'Family', colour: '#c08457', match: '', g: '', fixed: true, members: people.map(p => p.name) });
   const generals = raw.filter(c => c.type === 'general').map(c => ({ name: c.name, colour: c.colour, match: c.match, g: c.g, line: c.show === 'bar' }));
+  if (!generals.some(c => norm_(c.name) === 'birthday')) generals.push({ name: 'Birthday', colour: '#ffffff', match: 'birthday', g: '', line: false });   // always one
   return { people: people, groups: groups, generals: generals, cats: groups.concat(generals) };
 }
 /** The Google colour nearest to a colour (for giving an existing category its Google colour). */
@@ -3404,6 +3411,24 @@ function addEvent_(b) {
 /* ======================================================= WIDGETS v2 DATA */
 
 /* ------------------------------------------------------ holiday countdown */
+
+/** The next birthdays on the family calendar (the Birthday category, or "…’s birthday"), soonest first. */
+function birthdays_(s) {
+  const today = fmt_(new Date(), 'yyyy-MM-dd'), cats = categories_(), M = calModel_(), seen = {}, out = [];
+  const from = new Date(Date.now() - 86400000), to = new Date(Date.now() + 370 * 86400000);
+  calendarsFrom_(inst_('CalendarIds')).forEach(cal => cal.getEvents(from, to).forEach(ev => {
+    const title = ev.getTitle(), r = evCat_(ev, title, M, cats);
+    if (norm_(r.name || '') !== 'birthday' && !/birthday/i.test(title)) return;
+    const allDay = ev.isAllDayEvent();
+    const d = Utilities.formatDate(allDay ? ev.getAllDayStartDate() : ev.getStartTime(), allDay ? Session.getScriptTimeZone() : TZ, 'yyyy-MM-dd');
+    const name = tidyBirthday_(r.text || title, { name: 'Birthday' });
+    const key = name.toLowerCase();
+    if (d < today || seen[key]) return;
+    seen[key] = 1; out.push({ name: name, date: d });
+  }));
+  out.sort((a, b) => a.date < b.date ? -1 : 1);
+  return { items: out.slice(0, Math.max(2, Math.min(8, Number(s.Show) || 4))), soon: Math.max(1, Math.min(30, Number(s.SoonDays) || 7)), today: today };
+}
 
 function countdown_(s) {
   const today = fmt_(new Date(), 'yyyy-MM-dd'), year = today.slice(0, 4);

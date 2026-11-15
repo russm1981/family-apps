@@ -318,3 +318,19 @@ body.desk .hdr-dash { margin-left: auto; }
 body.desk .tabbar { padding-top: 5px; padding-bottom: 5px; align-items: center; }
 /* Icons always in Windows' / Apple's / Android's colour emoji font – otherwise Windows can draw some (🖥️, 🛠️) as thin black outlines */
 .tabbar button i, .cfg-tabs a i, .tab-grp b, .hm-btn > span, .pn-i, .t-ico, .ed-tile .ico, .ed-rb span, .hr-phone b, .side .ico { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-style: normal; }
+.mi { width: 1.2em; height: 1.2em; display: inline-block; vertical-align: -0.22em; }
+.hm-btn > span .mi { width: 1em; height: 1em; }
+/* The list down the left (Rewards, System, Other widgets): never taller than the window – it scrolls on its own,
+   and on Other widgets the scroll bar is always there, so it's clear there are more widgets further down */
+body.desk:not(.phone) .pane-nav { max-height: calc(100vh - 140px); overflow-y: auto; scrollbar-width: thin; }
+body.desk:not(.phone) .pane-other .pane-nav { overflow-y: scroll; }
+#refresh .sync { width: 15px !important; height: 15px !important; min-width: 15px !important; top: -4px; right: -4px; }
+/* Home: the green way to the dashboard, then one box for where you are and how it works, and one green box for new families */
+.hm-dash { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 16px; padding: 12px 24px; border-radius: 999px; background: #30d158; color: #06200f; font-weight: 800; font-size: 17px; text-decoration: none; box-shadow: 0 0 0 4px rgba(48,209,88,.15); }
+.hm-dash:hover { filter: brightness(1.08); }
+.hm-conn { margin: 0 0 8px; font-size: 16px; }
+.hm-how { margin: 0; }
+.hm-wiz { display: flex; flex-direction: column; gap: 12px; }
+.hm-go2 { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; color: inherit; text-decoration: none; padding-top: 12px; border-top: 1px solid rgba(74,222,128,.3); }
+.hm-go2 span { grid-column: 1; font-size: 14px; color: var(--mute, #8b95a5); }
+.hm-go2 i { grid-column: 2; grid-row: 1 / 3; font-style: normal; font-size: 26px; color: #4ade80; }

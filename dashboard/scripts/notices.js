@@ -6,7 +6,7 @@
  */
 (function () {
     'use strict';
-    var APP_VERSION = '2026.11.177';
+    var APP_VERSION = '2026.11.178';
     var SNOOZE_KEY = 'familyDashboard.updateSnooze', SCRIPT_KEY = 'familyDashboard.scriptNag';
     var latest = null, lastLayout = null, privacyOpen = false, lastTouch = Date.now(), updating = false;
     var IDLE_MS = 3 * 60000;

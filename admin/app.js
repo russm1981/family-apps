@@ -27,12 +27,13 @@
 
     // Two ways in. The phone app (admin/): everyday use and each widget's simple settings. The computer website
     // (setup/, window.FD_DESK – the Setup website): also the screen layout and the rarely-used settings – the phone links to it.
+    function IC(k, e) { return (window.FD_ICONS && FD_ICONS[k]) || e; }      // a drawn icon (shared/icons.js), or the emoji
     var DESK = !!window.FD_DESK, PHONE = !!window.FD_PHONE;      // PHONE: the Family Admin app – the same pages, narrow
     var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '🖥️', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '🛠️', 'System'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '🧩', 'Other']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', IC('screens', '🖥️'), 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '🛠️', 'System'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['reminders', IC('reminders', '🎒'), 'Reminders'], ['other', IC('other', '🧩'), 'Other']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
-        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
+        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', IC('lists', '📝'), 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
     if (PHONE) TABS = TABS.filter(function (t) { return t[0] !== 'start' && t[0] !== 'layout'; });   // they need a big screen
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
@@ -322,6 +323,10 @@
         var ppl = ((DATA.family || {}).people || []).map(function (p) { return p.name; }), fn = String(DATA.familyName || '').trim();
         return (fn ? 'the <b>' + esc(fn) + ' family</b> dashboard' : 'your <b>family dashboard</b>') + (ppl.length ? ' <span class="mute">(' + esc(ppl.join(', ')) + ')</span>' : '');
     }
+    /** One line: which family this device is connected to, with a quiet way out. */
+    function connLine() {
+        return '<p class="hm-conn">✔ This ' + (PHONE ? 'phone' : 'computer') + ' is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this ' + (PHONE ? 'phone' : 'computer') + '</a></p>';
+    }
     function statusCard() {
         return card('✔ Your dashboard is set up', '<p>This ' + (PHONE ? 'phone' : 'computer') + ' is connected to ' + familyDash() + '. <a href="#" id="hmOut" class="mute small">Not yours? Disconnect this ' + (PHONE ? 'phone' : 'computer') + '</a></p>');
     }
@@ -329,20 +334,24 @@
     function renderHome() {
         title('Home');
         var btn = function (go, ico, name, what) { return '<a class="hm-btn" data-go="' + go + '" href="#"><span>' + ico + '</span><b>' + esc(name) + '</b><small>' + esc(what) + '</small></a>'; };
-        $('body').innerHTML = '<h1 class="page-h">Home</h1>' + card('How it works', HOW_IT_WORKS) + statusCard() +
-            (PHONE ? '' : '<div class="card hm-new"><b>🚀 New to HouseRunner?</b> Start with the <a href="#" data-go="start">Setup wizard</a> – it takes you through everything, step by step.</div>') +
-            (PHONE ? '' : '<a class="card hm-new hm-go" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Start the setup wizard for a new family</b><span>It makes a new Google Sheet for the family – a dashboard that’s already set up stays exactly as it is.</span><i>›</i></a>') +
+        $('body').innerHTML = '<h1 class="page-h">Home</h1>' +
+            '<a class="hm-dash" href="' + esc(appsRoot()) + 'dashboard/"' + (PHONE ? '' : ' target="_blank" rel="noopener"') + '>▶ Open the dashboard</a>' +
+            // Where you are and how it works – one box
+            card('', connLine() + '<p class="small hm-how"><b>How it works:</b> everything that belongs to your family – names, the calendar, points, notes and settings – is kept in a Google Sheet in <b>your own Google account</b>. ' +
+                'HouseRunner reaches it with a <b>private access code</b> that stays on your own screen, phones and computer, so your family’s information stays private.</p>', 'hm-top') +
+            (PHONE ? '' : '<div class="card hm-new hm-wiz"><div><b>🚀 New to HouseRunner?</b> The <a href="#" data-go="start">Setup wizard</a> takes you through everything, step by step.</div>' +
+                '<a class="hm-go2" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Set up another family</b><span>A new Google Sheet – the dashboard that’s set up here stays exactly as it is.</span><i>›</i></a></div>') +
             '<h1 class="page-h hm-h">Setup</h1>' +
             '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 (PHONE ? '' : btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again')) +
-                (PHONE ? '' : btn('layout', '🖥️', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
+                (PHONE ? '' : btn('layout', IC('screens', '🖥️'), 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
                 btn('advanced', '🛠️', 'System', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Widgets', '<p class="small">The everyday settings for the widgets on your dashboard – what’s on the calendar, the notes, the lists, reminders and the rest.</p><div class="hm-grid">' +
-                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '📝', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
-                btn('other', '🧩', 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();
+                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', IC('lists', '📝'), 'Lists', 'Shopping and other lists') + btn('rewards/timetable', IC('reminders', '🎒'), 'Reminders', 'Sports kit, library books – the things to remember each day') +
+                btn('other', IC('other', '🧩'), 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();
     }
     /** Home, at the bottom: connecting a new display, and a new phone. */
     function homeDevices() {
@@ -367,8 +376,8 @@
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
     function renderStart() {
         title('Setup wizard');
-        $('body').innerHTML = statusCard() +
-            card('Start full wizard', '' +
+        $('body').innerHTML =
+            card('Start full wizard', connLine() +
                 '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the screen and phones, and the free keys for live data.</p>' +
                 '<a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family (setting up for the first time)</a>' +
                 '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' +
@@ -581,7 +590,7 @@
     function sidePane(tab, items, sub) {
         var real = items.filter(function (i) { return i[0] !== '-'; }), cur = real.some(function (i) { return i[0] === sub; }) ? sub : real[0][0];
         var outer = $('body');
-        outer.innerHTML = '<div class="pane"><nav class="pane-nav">' + items.map(function (i) {
+        outer.innerHTML = '<div class="pane pane-' + tab + '"><nav class="pane-nav">' + items.map(function (i) {
             return i[0] === '-' ? '<div class="pn-h">' + esc(i[1]) + '</div>' : '<a class="pn' + (i[0] === cur ? ' on' : '') + '" href="#/' + tab + '/' + i[0] + '"><span class="pn-i">' + i[1] + '</span><span class="pn-t"><b>' + esc(i[2]) + '</b>' + (i[3] ? '<small>' + esc(i[3]) + '</small>' : '') + '</span></a>';
         }).join('') + '</nav><div class="pane-body" id="paneIn"></div></div>';
         outer.id = 'bodyOuter'; $('paneIn').id = 'body';
@@ -793,7 +802,7 @@
     /* ================================================================ home */
 
     // Widgets with something to show or do in the app. ('do' = everyday things you add to or change.)
-    var GLANCE = { weather: 1, traffic: 1, trains: 1, agenda: 1, bins: 1, countdown: 1, news: 1, flights: 1, bus: 1, parcels: 1, photos: 1, apod: 1, words: 1, quote: 1, spotify: 1 };
+    var GLANCE = { birthdays: 1, weather: 1, traffic: 1, trains: 1, agenda: 1, bins: 1, countdown: 1, news: 1, flights: 1, bus: 1, parcels: 1, photos: 1, apod: 1, words: 1, quote: 1, spotify: 1 };
     var EVERYDAY = { memo: 1, list: 1, todo: 1, whereabouts: 1 };
 
     /** One widget of each kind (two Memo widgets show the same notes; two lists of the same name are one list). */
@@ -922,6 +931,7 @@
                 case 'trains': var s = d.services.filter(function (x) { return !x.cancelled; })[0]; return s ? esc(s.std + ' to ' + (s.destination || d.to) + ' – ' + s.etd) : 'No trains soon';
                 case 'agenda': return d.days.today.length + ' today · ' + d.days.tomorrow.length + ' tomorrow' + (d.days.today[0] ? ': ' + esc((d.days.today[0].time || '') + ' ' + d.days.today[0].t) : '');
                 case 'bins': var b = d.upcoming[0]; return b ? esc((b.daysAway === 0 ? 'Today' : b.daysAway === 1 ? 'Tomorrow' : nice(b.date)) + ': ' + b.bins.map(function (x) { return x.bin; }).join(', ')) : 'No collections found';
+                case 'birthdays': var bd = d.items[0]; return bd ? esc(bd.name + ' – ' + (daysTo(bd.date) === 0 ? 'today!' : 'in ' + daysTo(bd.date) + ' days')) : 'No birthdays on the calendar';
                 case 'countdown': var c = d.items[0]; return c ? esc(c.name + ' in ' + daysTo(c.date) + ' days') : 'Nothing coming up';
                 case 'news': return d.items[0] ? esc(d.items[0].title) : '';
                 case 'flights': return d.planes.length + ' plane' + (d.planes.length === 1 ? '' : 's') + ' within ' + d.radiusMiles + ' miles';
@@ -944,9 +954,11 @@
         title(widgetName(w));
         var view = VIEWS[w.type] ? VIEWS[w.type](w) : '<p class="mute">This widget is shown on the screen. ' + esc(T.about) + '</p>';
         $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + esc(T.icon) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
-            '<div id="wView">' + view + '</div>' +
-            card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
-                (DESK ? '<button class="btn ghost wide" data-go="layout">Where it goes on the screen ›</button>' : '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>'), 'w-set');
+            // Its settings first, then what it's showing now
+            card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><div class="ladd-row"><button class="btn" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
+                (DESK && !PHONE ? '<button class="btn ghost" data-go="layout">Where it goes on the screen ›</button>' : '') + '</div>' +
+                (PHONE ? '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>' : ''), 'w-set') +
+            '<div id="wView">' + view + '</div>';
         $('wSet').onclick = function () { settingsSheet(w); };
         if (WIRE[w.type]) WIRE[w.type](w);
         if (GLANCE[w.type] && !GL[w.id]) fetchWidget(w.id);

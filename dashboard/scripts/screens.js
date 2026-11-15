@@ -25,8 +25,11 @@
     /** Split a day into normal entries and the school-holiday style bar (if any). */
     /** Split a day into normal entries and its lines (up to two, e.g. holidays and school holidays, drawn under the day). */
     function lineNo(e) { return e.bar === true ? 1 : +e.bar || 0; }
+    var bdayOnly = false;
+    function isBday(e) { return /birthday/i.test(String(e.cat || '') + ' ' + String(e.k || '')) || /birthday/i.test(String(e.full || e.t || '')); }
     function dayParts(data, ds) {
         var all = data[ds] || [], evs = [], bars = [];
+        if (bdayOnly) all = all.filter(isBday);       // 🎂: birthdays only (no holiday lines either)
         all.forEach(function (e) { if (lineNo(e)) bars.push(e); else evs.push(e); });
         bars.sort(function (a, b) { return lineNo(a) - lineNo(b); });
         return { evs: evs, bar: bars[0] || null, bars: bars };
@@ -488,6 +491,8 @@
                 $('calPrev').addEventListener('click', function () { step(-1); });
                 $('calNext').addEventListener('click', function () { step(1); });
                 $('calToday').addEventListener('click', goToday);
+                // 🎂 – just the birthdays, in whatever view you're in; press again for everything
+                if ($('calBday')) $('calBday').addEventListener('click', function () { bdayOnly = !bdayOnly; this.classList.toggle('on', bdayOnly); $('screen-calendar').classList.toggle('bday-only', bdayOnly); renderCalendar(); });
                 $('calViews').addEventListener('click', function (e) {
                     var b = e.target.closest('[data-view]'); if (!b) return;
                     touched = true;

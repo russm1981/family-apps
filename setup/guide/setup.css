@@ -200,3 +200,5 @@ select { width: 100%; height: 46px; background: var(--panel-2); color: var(--tex
 .cfg-tabs { padding-top: 5px; padding-bottom: 5px; align-items: center; } .cfg-tabs a { margin: 0 3px; }
 /* Icons always in Windows' / Apple's / Android's colour emoji font – otherwise Windows can draw some (🖥️, 🛠️) as thin black outlines */
 .tabbar button i, .cfg-tabs a i, .tab-grp b, .hm-btn > span, .pn-i, .t-ico, .ed-tile .ico, .ed-rb span, .hr-phone b, .side .ico { font-family: "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; font-style: normal; }
+.mi { width: 1.2em; height: 1.2em; display: inline-block; vertical-align: -0.22em; }
+.hm-btn > span .mi { width: 1em; height: 1em; }

@@ -143,7 +143,7 @@
             title = MON[now.getMonth()] + ' – ' + MON[(now.getMonth() + 2) % 12];
             body = '<div class="mk3' + (scroll ? ' scroll' : '') + '">' + rows + (scroll ? '<span class="mk-drag">⟵ drag along ⟶</span>' : '') + '</div>';
         }
-        return '<div class="mk-cal"><div class="mk-top"><b>' + esc(title) + '</b><span>3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + '</span></div>' + body + '</div>';
+        return '<div class="mk-cal"><div class="mk-top"><b>' + esc(title) + '</b><span>' + (fmt === 'phone' ? 'Month · Week · 🎂' : '3 months · 3 months (scroll) · Month · Week' + (fmt === 'wide' ? '' : ' · Year') + ' · 🎂') + '</span></div>' + body + '</div>';
     }
     /** A drawing of a calendar or points screen (no real names or entries), the same size as a widget screen. */
     function mockFrame(p, fmt, n) {
@@ -161,7 +161,7 @@
     function otherView(p) {
         var fmt = load(KEY_F, 'wide'), out = '';
         if (p.type === 'calendar') {
-            out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : fmt === 'phone' ? '<div class="ed-phone"><div class="ed-frame phone mock"><div class="mk-in">' + calInner('phone', true, 'Week') + '</div></div><p class="mute small">On a phone the calendar opens on the week, a day under a day (turn the phone for the week across).</p></div>' : mockFrame(p, fmt);
+            out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : fmt === 'phone' ? '<div class="ed-phone"><div class="ed-frame phone mock"><div class="mk-in">' + calInner('phone', true, 'Week') + '</div></div><p class="mute small">On a phone the calendar has Month and Week. It opens on the week – a day under a day, like a list (turn the phone for the week across).</p></div>' : mockFrame(p, fmt);
             // This page's few settings first, then the picture of it, then the categories and key.
             return (H.pageForm ? '<section class="ed-pset ed-pset-top" data-pset="' + esc(p.id) + '">' + H.pageForm(p.id) +
                     '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '') + out +
