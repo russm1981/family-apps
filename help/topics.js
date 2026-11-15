@@ -145,7 +145,7 @@ window.FD_HELP = [
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 HouseRunner → Connect my screen and phones</b>.</p>`
   },
   {
-    id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new screen',
+    id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new display',
     summary: 'On the PC, go to houserunner.app/windows, download the zip file, unzip it and double-click Start HouseRunner. Then type the code it shows into houserunner.app.',
     body: `
 <ol>
@@ -158,16 +158,16 @@ window.FD_HELP = [
 <p>Close the dashboard with <b>Alt+F4</b>. Nothing needs updating by hand – it fetches the newest version each time it starts. If it doesn’t start with the PC, see <a href="#startup">The dashboard doesn’t start when the PC turns on</a>.</p>`
   },
   {
-    id: 'pi', icon: '🍓', title: 'Raspberry Pi or tablet: connecting a new screen',
-    summary: 'A new screen shows a QR code. Scan it with your phone: if you’re new it takes you through setup first, otherwise one tap connects the screen.',
+    id: 'pi', icon: '🍓', title: 'Raspberry Pi or tablet: connecting a new display',
+    summary: 'A new display shows a QR code. Scan it with your phone: if you’re new it takes you through setup first, otherwise one tap connects the display.',
     body: `
 <h2>Switching on a ready-made Raspberry Pi</h2>
 <ol>
-<li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
+<li>Plug in the monitor, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
-<li><b>New to HouseRunner?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → <b>Connect a display</b> and type the code.)</li>
-<li>The screen connects within a few seconds and remembers it from then on.</li>
+<li><b>New to HouseRunner?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the display</b>.</li>
+<li><b>Already set up?</b> Press <b>Yes – Connect it</b> on your phone. (If the page says it can’t see your family, open Family Admin → More → <b>Connect a display</b> and type the code.)</li>
+<li>The display connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
 <p>If the Pi was prepared with Wi-Fi set-up, it makes a Wi-Fi network called <b>FamilyDashboard-…</b>. Join it from your phone, choose your home Wi-Fi and type its password; the Pi then restarts on your Wi-Fi.</p>

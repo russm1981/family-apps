@@ -1,10 +1,10 @@
 {
-  "app": "2026.11.194",
+  "app": "2026.11.195",
   "script": "2026.11.95",
   "date": "2026-11-15",
   "notes": [
-    "Bulleted lists sit a little further in from the edge of their box, on every page",
-    "“What you need” now says a display (not a screen) for the dashboard"
+    "Scanning a display’s QR code on a phone: the buttons are now “Yes – Connect it” and “No – Cancel” (which simply cancels, with a short note if you’re helping someone else)",
+    "The page header fits on narrow phones"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
