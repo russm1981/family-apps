@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.225",
+  "app": "2026.11.226",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Calendar colour coding: the Birthday and Holiday note now says that hiding one also removes its 🎂 or 🌴 button"
+    "Family: the ⭐ Rewards note no longer mentions reminders – they’re for everyone now, on their own page"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

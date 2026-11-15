@@ -620,7 +620,7 @@
                         (cls === 'ok' ? '' : '<button class="btn sm ghost" data-fin="' + i + '">Go to this step</button>') + '</div>';
                 }).join('') + '</div>' +
                 (probs.length ? '' : '<div class="card big"><h3>What next</h3><ul><li>Change anything later in the <a href="../">houserunner.app</a> on this computer, or the Family Admin app on your phone.</li>' +
-                    '<li>Set up the reward system – Reward Tasks, Daily To-Dos and reminders – at houserunner.app → Rewards.</li><li>Arrange the widgets on each screen at houserunner.app → Screens.</li></ul>' +
+                    '<li>Set up the reward system – Reward Tasks and Daily To-Dos – at houserunner.app → Rewards, and reminders at houserunner.app → Reminders.</li><li>Arrange the widgets on each screen at houserunner.app → Screens.</li></ul>' +
                     '<a class="btn" href="../">Open houserunner.app</a></div>');
         }, wire: function () {
             $('page').querySelectorAll('[data-fin]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-fin')); }; });

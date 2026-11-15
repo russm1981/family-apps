@@ -353,7 +353,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
-  child: { name: 'Child’s Rewards', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards – their points, Reward Tasks, Daily To-Dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
+  child: { name: 'Child’s Rewards', icon: '\u2B50', sizes: ['full'], about: 'One child’s rewards – their points, Reward Tasks, Daily To-Dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },
