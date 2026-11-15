@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.244",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Dashboard (phone): the ⓘ button opens About & diagnostics as a normal page under the top row (not a pop-up), and widgets are listed only if something’s wrong – otherwise it says ‘All widgets working’"
+    ]
+  },
+  {
     "version": "2026.11.243",
     "date": "2026-11-15",
     "notes": [

@@ -174,7 +174,7 @@ window.FD_HELP = [
 <h2>Updates</h2>
 <p>Nothing of the dashboard is stored on the Pi’s card – it loads the latest version from the internet every time, installs security updates by itself and restarts at 4 am. A Pi that’s been in a drawer for a year is up to date as soon as it’s switched on.</p>
 <h2>Making your own Pi</h2>
-<p>Install Raspberry Pi OS (64-bit, with desktop) with Raspberry Pi Imager, then in a terminal on the Pi run:<br><code>curl -fsSL https://houserunner.app/downloads/raspberry-pi/setup-pi.sh | bash</code><br>and restart it.</p>
+<p>Follow the steps at <a href="../pi/">houserunner.app/pi</a>. In short: put Raspberry Pi OS (64-bit, with desktop) on the card with Raspberry Pi Imager, then in the Pi’s Terminal type<br><code>curl -sL houserunner.app/pi.sh | bash</code><br>and restart it.</p>
 <h2>A tablet</h2>
 <p>Go to <b>houserunner.app/dashboard</b> in the tablet’s browser (on Fire and Android tablets the free <i>Fully Kiosk Browser</i> keeps it full-screen and starts it by itself – set that address as its Start URL). It shows the same QR code and code to connect it.</p>`
   },

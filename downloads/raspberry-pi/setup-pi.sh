@@ -1,10 +1,10 @@
 #!/bin/bash
-# Family Dashboard – turn a fresh Raspberry Pi into a dashboard screen.
+# HouseRunner – turn a fresh Raspberry Pi into a dashboard screen (instructions: https://houserunner.app/pi).
 #
 # Needs: Raspberry Pi 4 or 5, Raspberry Pi OS (64-bit, "with desktop", Bookworm or later), a screen, the internet.
 # Run once, in a terminal on the Pi:
-#     curl -fsSL https://houserunner.app/downloads/raspberry-pi/setup-pi.sh | bash
-# Add  --wifi-setup  (… | bash -s -- --wifi-setup) to also install a "join my Wi-Fi from your phone" hotspot for the
+#     curl -sL houserunner.app/pi.sh | bash
+# Add  --wifi-setup  (curl -sL houserunner.app/pi.sh | bash -s -- --wifi-setup) to also install a "join my Wi-Fi from your phone" hotspot for the
 # first start – for cards prepared for someone else's home.
 #
 # What it does: switches off screen blanking, logs in to the desktop by itself, starts the dashboard full-screen at
@@ -15,7 +15,7 @@ set -e
 URL="https://houserunner.app/dashboard/"
 WIFI_SETUP=0; [ "$1" = "--wifi-setup" ] && WIFI_SETUP=1
 
-echo "== Family Dashboard: installing (this takes a few minutes)"
+echo "== HouseRunner: setting up this Pi as a dashboard screen (this takes a few minutes)"
 sudo apt-get update
 sudo apt-get install -y chromium-browser 2>/dev/null || sudo apt-get install -y chromium
 sudo apt-get install -y unattended-upgrades curl
@@ -60,4 +60,4 @@ if [ "$WIFI_SETUP" = "1" ]; then
 fi
 
 echo
-echo "Done. Restart the Pi (sudo reboot). The dashboard opens full-screen and shows a QR code to connect it."
+echo "Done. Restart the Pi (type: sudo reboot). The dashboard opens full screen and shows a code – connect it at houserunner.app (Home → Type a display’s code)."

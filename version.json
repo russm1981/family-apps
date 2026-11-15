@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.244",
+  "app": "2026.11.245",
   "script": "2026.11.105",
   "date": "2026-11-15",
   "notes": [
-    "Family Admin → Rewards → View: each child’s statement shows the last ten entries, with a small More… link for the whole statement"
+    "Family Dashboard (phone): the ⓘ button opens About & diagnostics as a normal page under the top row (not a pop-up), and widgets are listed only if something’s wrong – otherwise it says ‘All widgets working’"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
