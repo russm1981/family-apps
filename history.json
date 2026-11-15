@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.165",
+    "date": "2026-11-15",
+    "notes": [
+      "⚙ Widgets → Other is now laid out like Rewards: every widget down the left – grouped into Information, Everything else and Not in use – and its settings on the right when you click it.",
+      "A widget that’s on your screens more than once is listed once for each copy, numbered in the order they appear (Photo slideshow 1, Photo slideshow 2), because each copy has its own settings. “How widgets work”, at the top of the list, explains this."
+    ]
+  },
+  {
     "version": "2026.11.164",
     "date": "2026-11-15",
     "notes": [

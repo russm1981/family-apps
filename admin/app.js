@@ -203,6 +203,9 @@
 
     function route() {
         var h = location.hash.replace(/^#\/?/, '').split('/');
+        if (h[0] === 'other') return { tab: 'other', sub: decodeURIComponent(h[1] || '') };
+        // A widget that belongs on the Other page opens there, in its list (on the phone too – the list is a row of buttons).
+        if (h[0] === 'w' && h[1] && (function (x) { return x && tabFor(x.type) === 'other' && x.type !== 'child'; })(widgetOf(decodeURIComponent(h[1])))) return { tab: 'other', sub: decodeURIComponent(h[1]) };
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
         // On the computer, Reminders is its own page under Apps (the Reminders item in Rewards goes there).
         // On the computer, Reminders under Apps is a shortcut to Rewards → Reminders.
@@ -276,7 +279,7 @@
         else if (r.w) renderWidget(r.w);
         else if (r.s) renderSection(r.s);
         else if (r.pts) renderPointsSetup();
-        else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: renderOther, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart,
+        else ({ family: renderFamily, memos: renderMemos, lists: renderLists, other: function () { renderOther(r.sub); }, layout: renderLayout, settings: renderSettings, tools: renderTools, start: renderStart,
             famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, reminders: function () { renderRewards('timetable', true); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
@@ -790,25 +793,52 @@
         if ($('ptsRules')) $('ptsRules').onclick = function (e) { e.stopPropagation(); rulesSheet(); };
         fetchGlance();
     }
-    function renderOther() {
-        title('Other widgets');
-        // Every widget on the screens (hidden ones too), then every kind that isn't on any screen – its settings can still be changed.
+    /** Other: like Rewards – every copy of every widget listed down the left (grouped), its settings on the right.
+     * A widget can be on the screens more than once; each copy has its own settings, so copies are listed one by one
+     * and numbered ("Flights overhead 1", "Flights overhead 2") in the order they appear on the screens. */
+    function otherCopies() {
         var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type] && w.type !== 'child'; };   // children: on the Family tab
-        fi.hidden = fr.hidden = true;
-        var info = distinct(fi), rest = distinct(fr);
-        var order = ['bins', 'weather', 'trains', 'bus', 'traffic'];
-        info.sort(function (a, b) { return order.indexOf(a.type) - order.indexOf(b.type); });
-        var t = function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w) + (w.show ? '' : ' (hidden)'), GLANCE[w.type] ? glanceLine(w) : esc(summary(w))); };
-        $('body').innerHTML = (info.length ? '<h3 class="sec">Information <button class="link" id="glRefresh">Refresh</button></h3><div class="tiles">' + info.map(t).join('') + '</div>' : '') +
-            (rest.length ? '<h3 class="sec">Everything else</h3><div class="tiles">' + rest.map(t).join('') + '</div>' : '') +
-            ((DATA.unused || []).length ? '<h3 class="sec">Not in use</h3><p class="mute small">Not on any screen. Their settings are kept, ready for when they’re added (on Setup, on a computer).</p><div class="tiles">' +
-                DATA.unused.map(function (u) { return '<button class="tile unused" data-unused="' + esc(u.id) + '"><span class="t-ico">' + esc(typeOf(u.type).icon) + '</span><b>' + esc(typeOf(u.type).name) + '</b><small>Settings ›</small></button>'; }).join('') + '</div>' : '') +
-            (info.length || rest.length ? '' : card('Nothing here yet', '<p class="mute">Widgets are added on the computer, at ' + esc(deskShort()) + '.</p>'));
-        if ($('glRefresh')) $('glRefresh').onclick = function () { fetchGlance(true); FD.toast('Refreshing…'); };
-        $('body').querySelectorAll('[data-unused]').forEach(function (b) {
-            b.onclick = function () { var u = (DATA.unused || []).filter(function (x) { return x.id === b.getAttribute('data-unused'); })[0]; if (u) settingsSheet(u); };
-        });
-        fetchGlance();
+        var order = ['bins', 'weather', 'trains', 'bus', 'traffic'], pages = (DATA.pages || []).map(function (p) { return p.id; });
+        var all = (DATA.widgets || []).filter(function (w) { return fi(w) || fr(w); }).slice()
+            .sort(function (a, b) { return (pages.indexOf(a.page) - pages.indexOf(b.page)) || ((a.order || 0) - (b.order || 0)); });
+        var count = {}, seen = {};
+        all.forEach(function (w) { var n = widgetName(w); count[n] = (count[n] || 0) + 1; });
+        var label = function (w) { var n = widgetName(w); if (count[n] < 2) return n; seen[n] = (seen[n] || 0) + 1; return n + ' ' + seen[n]; };
+        all.forEach(function (w) { w._label = label(w); });
+        var info = all.filter(fi), rest = all.filter(fr);
+        info.sort(function (a, b) { var x = order.indexOf(a.type), y = order.indexOf(b.type); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || a._label.localeCompare(b._label); });
+        rest.sort(function (a, b) { return a._label.localeCompare(b._label, undefined, { numeric: true }); });
+        return { info: info, rest: rest, unused: DATA.unused || [] };
+    }
+    function renderOther(sub) {
+        var C = otherCopies();
+        var where = function (w) { var p = pageOf(w.page); return (p ? 'On the ' + p.title + ' screen' : '') + (w.show ? '' : ' · hidden'); };
+        var item = function (w) { return [w.id, esc(typeOf(w.type).icon), w._label, where(w)]; };
+        var items = [['info', 'ℹ️', 'How widgets work']];
+        if (C.info.length) items = items.concat([['-', 'Information']], C.info.map(item));
+        if (C.rest.length) items = items.concat([['-', 'Everything else']], C.rest.map(item));
+        if (C.unused.length) items = items.concat([['-', 'Not in use']], C.unused.map(function (u) { return ['u-' + u.id, esc(typeOf(u.type).icon), typeOf(u.type).name.replace(/ \(.*\)$/, ''), 'Not on any screen']; }));
+        var cur = sidePane('other', items, sub);
+        if (cur === 'info') {
+            title('Other widgets');
+            $('body').innerHTML = explain('How widgets work',
+                '<p>Each widget can be on your screens <b>more than once</b> – on different screens, or twice on the same one. <b>Each copy has its own settings</b>, so the copies can look or behave differently: say, <i>Flights overhead 1</i> around home and <i>Flights overhead 2</i> around the school.</p>' +
+                '<p>That’s what the number after a name is for: it tells the copies apart, in the order they appear on your screens. A widget with only one copy has no number.</p>' +
+                '<ul class="small"><li><b>Information</b> – the widgets that show live information: bins, weather, trains, buses, traffic and so on.</li><li><b>Everything else</b> – the rest of the widgets on your screens.</li>' +
+                '<li><b>Not in use</b> – widgets that aren’t on any screen. Their settings are kept, ready for when they’re added.</li></ul>' +
+                '<p class="mute small">To add another copy of a widget, move one, or take one off, use <a href="#" data-go="layout">⚙ Setup → Screens</a>. The calendar, notes, lists and reminders have their own pages under ⚙ Widgets.</p>') +
+                (C.info.length || C.rest.length ? '' : card('Nothing here yet', '<p class="mute">Add widgets to your screens in ⚙ Setup → Screens.</p>'));
+            return;
+        }
+        if (/^u-/.test(cur)) {
+            var u = C.unused.filter(function (x) { return 'u-' + x.id === cur; })[0];
+            title('Other widgets');
+            $('body').innerHTML = card(esc(typeOf(u.type).name), '<p>Not on any screen at the moment. Its settings are kept – change them now, ready for when it’s added in ⚙ Setup → Screens.</p><div class="ladd-row"><button class="btn" id="uSet">Change its settings</button></div>');
+            $('uSet').onclick = function () { settingsSheet(u); };
+            return;
+        }
+        renderWidget(cur);
+        var w = widgetOf(cur); if (w && w._label) title(w._label);
     }
     function everydayLine(w) {
         if (w.type === 'memo') { var n = (DATA.memos || []).length; return n ? n + ' note' + (n > 1 ? 's' : '') + ': ' + DATA.memos[n - 1].text : 'No notes'; }
@@ -868,7 +898,7 @@
         var T = typeOf(w.type), p = pageOf(w.page);
         title(widgetName(w));
         var view = VIEWS[w.type] ? VIEWS[w.type](w) : '<p class="mute">This widget is shown on the screen. ' + esc(T.about) + '</p>';
-        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + esc(T.icon) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' page' + (w.show ? '' : ' (hidden)') + '</span></div>' +
+        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + esc(T.icon) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
             '<div id="wView">' + view + '</div>' +
             card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
                 (DESK ? '<button class="btn ghost wide" data-go="layout">Where it goes on the screen ›</button>' : '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>'), 'w-set');
