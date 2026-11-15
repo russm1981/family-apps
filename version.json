@@ -1,11 +1,12 @@
 {
-  "app": "2026.11.202",
-  "script": "2026.11.95",
+  "app": "2026.11.203",
+  "script": "2026.11.96",
   "date": "2026-11-15",
   "notes": [
-    "Setup wizard page: a gap between the two wizard buttons (and between any buttons side by side)",
-    "Screens: the blue how-to under Reconfigure Widgets fits on one line",
-    "Devices and Phones says displays, not screens"
+    "Rewards lists: the same gap under the last row as between the buttons; Reward Tasks’ grey note now sits under its title; “Save Daily To-Dos” keeps its capitals",
+    "Reminders: no repeated introduction – a short grey line under “Your reminders” instead",
+    "Rewards menu: the grey lines under Daily To-Dos and Reminder Display fit without being cut off",
+    "Reward rules: “Penalty buttons” is a white heading"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

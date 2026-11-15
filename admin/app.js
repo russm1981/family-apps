@@ -2211,7 +2211,7 @@
             if (f.k === 'WeekStart' && window.FD_weekSelect) return '<label>Weeks start on</label>' + FD_weekSelect('setWeek', f.value, ' data-set="WeekStart"') +
                 '<div class="mute small hint">The first day of each week on the calendars.</div>';
             if (f.k === 'DateOrder' && window.FD_orderSelect) return '<label>How dates are written</label>' + FD_orderSelect('setOrder', f.value, ' data-set="DateOrder"') +
-                '<div class="mute small hint">On the screen and in the apps.</div>';
+                '<div class="mute small hint">On the dashboard and in the phone apps.</div>';
             return '<label>' + esc(f.label) + (need && !f.value ? ' <span class="need">needed</span>' : '') + '</label><input data-set="' + esc(f.k) + '" value="' + esc(f.value) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
                 '<div class="mute small hint">' + (f.uses ? '<b>Used by:</b> ' + esc(f.uses) + '. ' : '') + esc(f.help || '') + '</div>';
         }).join('');
@@ -2282,7 +2282,7 @@
     }
     function secPlaces() {
         var pw = placeWidgets();
-        $('body').innerHTML = card('Where you live', installFields('home') + saveInstallBtn('hSave', 'Save where you live'), 'sx-home') +
+        $('body').innerHTML = card('Where you live and location settings', installFields('home') + saveInstallBtn('hSave', 'Save where you live and location settings'), 'sx-home') +
             (pw.length ? card('Places your widgets use', '<p class="mute small">Each of these has its own addresses or places. Left blank, they use the home address.</p>' + pw.map(function (w) {
                 var pg = pageOf(w.page), vals = typeOf(w.type).settings.filter(function (f) { return PLACE_KEYS.indexOf(f.k) >= 0; }).map(function (f) { return lines(w.settings[f.k]).join(', '); }).filter(Boolean).join(' · ');
                 return '<button class="mrow" data-go="w/' + esc(w.id) + '"><span class="m-ico">' + FDIco(typeOf(w.type)) + '</span><span class="m-tx"><b>' + esc(widgetName(w)) + (pg ? ' <span class="mute small">(' + esc(pg.title) + ')</span>' : '') + '</b><small>' +

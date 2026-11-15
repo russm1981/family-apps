@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.95';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.96';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -118,7 +118,7 @@ const INSTALL = [
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
   { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from System → Software updates, the setup wizard or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the dashboard, houserunner.app and Family Admin are hosted. Only change this if you host your own copy.' },
-  { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
+  { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
   { k: 'Currency', group: 'home', label: 'Currency symbol', def: '£', help: 'Shown for the children’s cash-in, e.g. £, €, $.' },
   { k: 'WeekStart', group: 'home', label: 'Weeks start on', def: 'Monday', help: 'Monday or Sunday – for the calendars.' },

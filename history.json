@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.202",
+    "date": "2026-11-15",
+    "notes": [
+      "Rewards lists: the same gap under the last row as between the buttons; Reward Tasks’ grey note now sits under its title; “Save Daily To-Dos” keeps its capitals",
+      "Reminders: no repeated introduction – a short grey line under “Your reminders” instead",
+      "Rewards menu: the grey lines under Daily To-Dos and Reminder Display fit without being cut off",
+      "Reward rules: “Penalty buttons” is a white heading"
+    ]
+  },
+  {
     "version": "2026.11.197",
     "date": "2026-11-15",
     "notes": [

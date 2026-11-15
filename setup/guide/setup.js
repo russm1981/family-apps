@@ -337,7 +337,7 @@
                     'You can change all of this later at houserunner.app → Family. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="card big"><h3>Your family’s name</h3><p class="mute">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p>' +
                     '<input id="fwName" maxlength="30" placeholder="e.g. Smith" value="' + esc(FAM.name) + '"></div>' +
-                '<div class="card big"><h3>Where you live</h3><p class="mute">Your country sets the public holidays, map searches and units, and which widgets work there – a few (bin days from your council, trains, buses) are UK-only.</p>' +
+                '<div class="card big"><h3>Where you live and location settings</h3><p class="mute">Your country sets the public holidays, map searches and units, and which widgets work there – a few (bin days from your council, trains, buses) are UK-only.</p>' +
                     '<div class="grid2"><div><label>Country</label>' + FD_countrySelect('fwCountry', S.country || instV('Country') || FD_guessCountry()) + '</div>' +
                     '<div><label>Time zone</label>' + FD_tzSelect('fwTz', S.tz || (instV('TimeZone') !== 'Europe/London' && instV('TimeZone')) || (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || 'Europe/London') + '</div></div>' +
                     '<div class="grid2"><div><label>Weeks start on</label>' + FD_weekSelect('fwWeek', S.week || (instV('Country') ? instV('WeekStart') : FD_localeFor(FD_guessCountry()).WeekStart)) + '</div>' +
