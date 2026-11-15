@@ -30,7 +30,7 @@
     var DESK = !!window.FD_DESK, PHONE = !!window.FD_PHONE;      // PHONE: the Family Admin app – the same pages, narrow
     var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '🖥️', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '🔧', 'System'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '🧩', 'Other']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '📺', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '🧰', 'System'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '🧩', 'Other']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
         : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
     if (PHONE) TABS = TABS.filter(function (t) { return t[0] !== 'start' && t[0] !== 'layout'; });   // they need a big screen
@@ -232,14 +232,14 @@
         if (location.hash !== '#/' + where) location.hash = '#/' + where; else render(); window.scrollTo(0, 0); }
     function frame() {
         $('app').innerHTML =
-            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (PHONE ? '<span class="hr-phone" title="HouseRunner – settings"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="HouseRunner"><b>⚙</b></span>' : DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
+            '<header class="top"><div class="top-row"><button class="icon-btn back" id="back" aria-label="Back">‹</button>' + (DESK ? '' : '<img class="hr-top" src="' + appsRoot() + 'shared/brand/symbol.svg" alt="">') + '<h1 id="title">' + (PHONE ? '<span class="hr-phone" title="HouseRunner – settings"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="HouseRunner"><b>⚙️</b></span>' : DESK ? DESK_TITLE : 'HouseRunner') + '</h1><span class="sync" id="sync"></span>' +
             (PHONE ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" title="Open the dashboard">▶ Dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#" aria-label="Feedback">💬</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#" aria-label="Help">❓</a>' :
-             DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ View dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
+             DESK ? '<a class="hdr-dash" href="' + appsRoot() + 'dashboard/" target="_blank" rel="noopener" title="Open the dashboard itself, as it looks on your screen">▶ Dashboard</a><a class="hdr-help" id="hdrFb" data-go="feedback" href="#">💬 Feedback</a><a class="hdr-help" id="hdrHelp" data-go="help" href="#">❓ Help</a>' : '') +
             '<button class="icon-btn" id="refresh" aria-label="Refresh">↻</button></div></header>' +
             '<main class="main" id="body"></main>' +
             '<nav class="tabbar" id="tabs">' + TABS.map(function (t, i) {
                 // On the computer: the setting-up tabs, then the everyday ones (the same as the phone app)
-                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Setup</span>' : t[0] === 'calendar' ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙</b>Widgets</span>' : '';
+                var grp = !DESK ? '' : i === 1 ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙️</b>Setup</span>' : t[0] === 'calendar' ? '<span class="tab-sep"></span><span class="tab-grp"><b>⚙️</b>Widgets</span>' : '';
                 return grp + '<button data-t="' + t[0] + '"><i>' + t[1] + '</i>' + t[2] + '</button>';
             }).join('') + '</nav>' +
             '<div class="sheet-bg" id="sheetBg"><div class="sheet" id="sheet"></div></div>';
@@ -336,10 +336,10 @@
             '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 (PHONE ? '' : btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again')) +
-                (PHONE ? '' : btn('layout', '🖥️', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
+                (PHONE ? '' : btn('layout', '📺', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
-                btn('advanced', '🔧', 'System', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
+                btn('advanced', '🧰', 'System', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Widgets', '<p class="small">The everyday settings for the widgets on your dashboard – what’s on the calendar, the notes, the lists, reminders and the rest.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '📝', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
                 btn('other', '🧩', 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();

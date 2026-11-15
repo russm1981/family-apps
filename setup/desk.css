@@ -245,7 +245,7 @@ body.desk .sheet-actions { margin-top: 22px; }
 .hm-app p { margin: 8px 0 0; }
 
 /* ⚙ Setup / ⚙ Widgets group labels in the menu */
-.tabbar .tab-grp b, .cfg-tabs .tab-grp b { font-size: 14px; margin-right: 5px; letter-spacing: 0; vertical-align: -1px; opacity: .85; }
+.tabbar .tab-grp b, .cfg-tabs .tab-grp b { font-size: 14px; margin-right: 5px; letter-spacing: 0; vertical-align: -1px; opacity: .85; filter: grayscale(1); }
 /* ▶ View dashboard – set apart from the other buttons: it leaves the settings for the dashboard itself */
 body.desk .hdr-dash { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; margin-right: 22px; border-radius: 999px; background: #30d158; color: #06200f; font-weight: 800; font-size: 15px; text-decoration: none; white-space: nowrap; box-shadow: 0 0 0 4px rgba(48,209,88,.15); }
 body.desk .hdr-dash:hover { filter: brightness(1.08); }
@@ -306,3 +306,6 @@ body.desk.phone .lrow .x, body.desk.phone .tk-row .x { flex: none; }
 body.desk.phone .ladd-row { flex-wrap: wrap; }
 body.desk.phone .ladd-row .btn { white-space: normal; }
 body.desk.phone .dpick { flex-wrap: wrap; } body.desk.phone .op-daily { flex-wrap: wrap; max-width: 100%; }
+/* Each icon close to its own word, and clear space between one menu item and the next */
+body.desk .tabbar button { gap: 5px; padding: 9px 13px; flex: none; }
+body.desk .tabbar { gap: 6px; }

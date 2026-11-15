@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.171",
+    "date": "2026-11-15",
+    "notes": [
+      "Connect once: the Configurator, Family Admin and the dashboard share one connection on each device, so ▶ Dashboard opens straight onto your dashboard without asking to connect again (and the other way round).",
+      "The green button now just says ▶ Dashboard.",
+      "Menu: solid, colourful icons throughout – 📺 Screens and 🧰 System replace the thin screen and spanner – each icon sits closer to its own word, with clearer space between items."
+    ]
+  },
+  {
     "version": "2026.11.170",
     "date": "2026-11-15",
     "notes": [

@@ -8,7 +8,12 @@
     var KEY = 'fdapp.cfg.v1';
     var ROOT = (function () { try { return new URL('../', document.currentScript.src).href; } catch (e) { return '../'; } })();   // the apps' address (this file is in shared/)
 
-    function read() { try { return JSON.parse(localStorage.getItem(KEY) || 'null') || {}; } catch (e) { return {}; } }
+    // One connection for every page on this address: the Configurator, Family Admin and the dashboard share it,
+    // so connecting any of them connects them all (the dashboard keeps its own copy under its older name).
+    function read() {
+        var get = function (k) { try { var c = JSON.parse(localStorage.getItem(k) || 'null'); return c && c.url && c.code ? c : null; } catch (e) { return null; } };
+        return get(KEY) || get('familyDashboard.cfg.v1') || {};
+    }
     // Ask the browser to keep this site's storage (so it doesn't forget the family when space is short).
     function write(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) { /* ignore */ } }
 
@@ -186,7 +191,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.170',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.171',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });

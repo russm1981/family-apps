@@ -47,6 +47,8 @@
     function readConfig() {
         var link = fromLink(location.href), saved = {};
         try { saved = JSON.parse(load(CFG_KEY) || '{}') || {}; } catch (e) { saved = {}; }
+        // Connected already on this address (the Configurator or Family Admin)? Then so is the dashboard – connect once.
+        if (!saved.url) { try { var o = JSON.parse(load('fdapp.cfg.v1') || '{}') || {}; if (o.url && o.code) saved = { url: o.url, code: o.code }; } catch (e) { /* fine */ } }
         // A link that was mangled on the way (e.g. by an old start file) isn't used: the screen asks to be connected instead.
         if (saved.url && !/^https?:\/\/[^/]+\//.test(saved.url)) saved = {};
         if (link.api && link.code && /^https?:\/\/[^/]+\//.test(link.api)) {
