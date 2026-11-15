@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.208",
+    "date": "2026-11-15",
+    "notes": [
+      "Reminders can now be for anyone: “For who” lists Everyone, Everyone (in Rewards), then the children, then the adults",
+      "The Reminders widget (renamed from “Children’s reminders”) shows Everyone’s reminders first, then each child, then anyone else with something that day; a child’s reminders still also show on their Child’s Rewards widget",
+      "Reminders page: new “How reminders work” wording; the switch-time setting sits between two lines with even spacing"
+    ]
+  },
+  {
     "version": "2026.11.206",
     "date": "2026-11-15",
     "notes": [

@@ -392,3 +392,37 @@ body.desk .card .rem-from { margin-top: 16px; padding: 16px 0; border-top: 1px s
 body.desk .card .rem-from p { margin-bottom: 0; }
 body.desk .card .rem-from + .sheet-actions { margin-top: 16px; }
 body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
+/* Journey times: the same look as the traffic widget on the dashboard */
+.tr-routes { display: grid; gap: 8px; }
+.tr-route { --s: #8b95a5; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 14px; background: rgba(255,255,255,.04); border-radius: 12px; padding: 9px 14px; border-left: 5px solid var(--s); }
+.tr-route.green { --s: #4cd964; } .tr-route.amber { --s: #f5a623; } .tr-route.red { --s: #ef4444; }
+.tr-l { display: flex; flex-direction: column; min-width: 0; }
+.tr-l b { font-size: 16.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tr-l small { color: var(--mute, #8b95a5); font-size: 13.5px; }
+.tr-pill { font-size: 12.5px; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.tr-pill.green { background: #4cd964; color: #062b10; } .tr-pill.amber { background: #f5a623; color: #2b1d00; } .tr-pill.red { background: #ef4444; color: #fff; }
+.tr-time { font-size: 14px; color: var(--mute, #8b95a5); white-space: nowrap; } .tr-time b { font-size: 24px; color: var(--text, #fff); font-weight: 800; }
+/* Glance rows: a colour mark sits on the same line as its name */
+.r-main { display: block; } .r-main i.dot { margin-right: 8px; }
+/* Holiday countdown: the same look as the widget on the dashboard */
+.cdg-main { display: flex; align-items: center; gap: 22px; padding: 4px 0 12px; }
+.cdg-left { display: flex; flex-direction: column; align-items: center; min-width: 110px; }
+.cdg-num { font-size: 64px; font-weight: 800; line-height: 1; color: var(--cc); font-variant-numeric: tabular-nums; }
+.cdg-num.today { font-size: 38px; }
+.cdg-lbl { color: var(--mute, #8b95a5); font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.cdg-what { display: flex; flex-direction: column; min-width: 0; }
+.cdg-what b { font-size: 22px; line-height: 1.2; }
+.cdg-what span { color: var(--mute, #8b95a5); font-size: 15px; }
+.cdg-ico { font-size: 24px; }
+.cdg-next { border-top: 1px solid var(--line, #2a303b); padding-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.cdg-row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto 80px; gap: 10px; align-items: center; font-size: 15px; }
+.cdg-row i { width: 10px; height: 10px; border-radius: 50%; }
+.cdg-row em { font-style: normal; color: var(--mute, #8b95a5); font-size: 13.5px; }
+.cdg-row b { text-align: right; font-variant-numeric: tabular-nums; }
+/* Kitchen timer: tap the quick-button minutes */
+.mins-pick { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 2px; }
+.mins-pick .mp { min-width: 72px; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line, #2a303b); background: rgba(255,255,255,.04); color: #cbd5e1; font: inherit; font-weight: 700; cursor: pointer; }
+.mins-pick .mp:hover { border-color: #3fa9f5; color: #fff; }
+.mins-pick .mp.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; }
+.mins-show { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 14px; }
+.mins-show span { padding: 7px 14px; border-radius: 10px; background: rgba(63,169,245,.15); border: 1px solid rgba(63,169,245,.5); color: #fff; font-weight: 700; font-size: 14.5px; }

@@ -893,7 +893,9 @@
     }
     function renderOther(sub) {
         var C = otherCopies();
-        var where = function (w) { var p = pageOf(w.page); return (p ? 'On the ' + p.title + ' screen' : '') + (w.show ? '' : ' · hidden'); };
+        // "timed": the two widgets that share one space on a screen at different times (the main one and the one shown otherwise)
+        var timed = function (w) { return !!(w.when && w.when.OtherTimes) || !!backupFor(w); };
+        var where = function (w) { var p = pageOf(w.page); return (p ? 'On the ' + p.title + ' screen' : '') + (timed(w) ? ' · timed' : w.show ? '' : ' · hidden'); };
         var item = function (w) { return [w.id, FDIco(typeOf(w.type)), w._label, where(w)]; };
         var items = [['info', 'ℹ️', 'How widgets work']];
         if (C.info.length) items = items.concat([['-', 'Information']], C.info.map(item));
@@ -982,7 +984,8 @@
         var view = VIEWS[w.type] ? VIEWS[w.type](w) : '<p class="mute">This widget is shown on the screen. ' + esc(T.about) + '</p>';
         $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
             // Its settings first, then what it's showing now
-            card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><div class="ladd-row"><button class="btn ghost" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
+            card('Settings', (w.type === 'timer' ? '<div class="mins-show">' + String((w.settings || {}).Presets || '').split(',').filter(Boolean).map(function (n) { n = +n; return '<span>' + (n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min') + '</span>'; }).join('') + '</div>'
+                : '<p class="mute small">' + esc(summary(w)) + '</p>') + '<div class="ladd-row"><button class="btn ghost" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
                 (DESK && !PHONE ? '<button class="btn ghost" data-go="layout">Where it goes on the screen ›</button>' : '') + '</div>' +
                 (PHONE ? '<p class="mute small">Where it goes on the screen, and its height, are set on the computer: ' + esc(deskShort()) + '</p>' : ''), 'w-set') +
             '<div id="wView">' + view + '</div>';
@@ -992,7 +995,7 @@
     }
     function waiting(w) { var d = GL[w.id]; return !d ? '<div class="empty">Loading…</div>' : d.error ? '<div class="err small">⚠ ' + esc(d.error) + '</div>' : ''; }
     function rows(list, fn, none) { return list.length ? '<div class="rows">' + list.map(fn).join('') + '</div>' : '<div class="empty">' + (none || 'Nothing to show') + '</div>'; }
-    function row(left, right, sub, cls) { return '<div class="r' + (cls ? ' ' + cls : '') + '"><span class="r-l">' + left + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right != null ? '<b class="r-r">' + right + '</b>' : '') + '</div>'; }
+    function row(left, right, sub, cls) { return '<div class="r' + (cls ? ' ' + cls : '') + '"><span class="r-l"><span class="r-main">' + left + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + (right != null ? '<b class="r-r">' + right + '</b>' : '') + '</div>'; }
 
     var VIEWS = {
         memo: function () { return memoEditor(); },
@@ -1009,9 +1012,14 @@
         },
         traffic: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
-            return card('Journey times now', rows(d.routes, function (r) {
-                return row('<i class="dot ' + esc(r.status) + '"></i>' + esc(r.name), r.mins + ' min', (r.delayMins > 0 ? r.delayMins + ' min slower than usual' : 'Usual time') + ' · ' + r.miles + ' miles');
-            }, 'No routes yet – add them in the settings'));
+            // The same look as the traffic widget on the dashboard
+            var ST = { green: 'Normal', amber: 'A bit slower', red: 'Much slower' };
+            return card('Journey times now', (d.routes || []).length ? '<div class="tr-routes">' + d.routes.map(function (r) {
+                if (r.error) return '<div class="tr-route"><div class="tr-l"><b>' + esc(r.name) + '</b><small>' + esc(r.error) + '</small></div></div>';
+                var diff = r.mins - (r.usualMins || r.mins);
+                return '<div class="tr-route ' + esc(r.status) + '"><div class="tr-l"><b>' + esc(r.name) + '</b><small>' + (diff > 0 ? '+' + diff + ' min · usually ' : 'Usually ') + (r.usualMins || r.mins) + ' min · ' + r.miles + ' mi</small></div>' +
+                    '<span class="tr-pill ' + esc(r.status) + '">' + (ST[r.status] || '') + '</span><div class="tr-time"><b>' + r.mins + '</b> min</div></div>';
+            }).join('') + '</div>' : '<p class="mute">No routes yet – add them in the settings</p>');
         },
         trains: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
@@ -1036,7 +1044,15 @@
         },
         countdown: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
-            return card('Coming up', rows(d.items, function (c) { return row('<i class="dot" style="background:' + esc(c.colour || '#8a93a3') + '"></i>' + esc(c.name), daysTo(c.date) + ' days', nice(c.date)); }, 'Nothing coming up')) +
+            // The same look as the countdown widget on the dashboard: the next one big, then the rest
+            var it = d.items || [], a0 = it[0];
+            return card('Coming up', !a0 ? '<p class="mute">Nothing coming up</p>' : (function () {
+                var n = daysTo(a0.date);
+                return '<div class="cdg-main" style="--cc:' + esc(a0.colour || '#ffd54a') + '"><div class="cdg-left">' + (n === 0 ? '<b class="cdg-num today">Today!</b>' : '<b class="cdg-num">' + n + '</b><span class="cdg-lbl">' + (n === 1 ? 'sleep to go' : n < 15 ? 'sleeps to go' : 'days to go') + '</span>') + '</div>' +
+                    '<div class="cdg-what"><span class="cdg-ico">🏖️</span><b>' + esc(a0.name) + '</b><span>' + esc(nice(a0.date)) + '</span></div></div>' +
+                    (it.length > 1 ? '<div class="cdg-next">' + it.slice(1).map(function (x) { var dd = daysTo(x.date);
+                        return '<div class="cdg-row"><i style="background:' + esc(x.colour || '#8a93a3') + '"></i><span>' + esc(x.name) + '</span><em>' + esc(nice(x.date)) + '</em><b>' + dd + ' day' + (dd === 1 ? '' : 's') + '</b></div>'; }).join('') + '</div>' : '');
+            })()) +
                 '<p class="mute small">Holidays come from the calendar (the categories in the settings) and from your own dates.</p>';
         },
         news: function (w) {
@@ -1782,7 +1798,7 @@
                         var T = typeOf(w.type);
                         var bk = backupFor(w), tm = w.when ? '⏰ ' + w.when.ShowDays + ' ' + w.when.ShowFrom + '–' + w.when.ShowUntil + (w.when.OtherTimes ? ', then ' + typeOf(w.when.OtherTimes).name : '') : '';
                         return '<div class="wrow' + (w.show ? '' : ' off') + (w.pending ? ' pending' : '') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + FDIco(T) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
-                            esc(bk ? '⏰ Shown in place of ' + bk + ' at other times' : tm || summary(w)) + '</small></span><span class="badge">' + (w.show ? w.size : 'hidden') + '</span></button>' +
+                            esc(bk ? '⏰ Shown in place of ' + bk + ' at other times' : tm || summary(w)) + '</small></span><span class="badge">' + (bk || (w.when && w.when.OtherTimes) ? 'timed' : w.show ? w.size : 'hidden') + '</span></button>' +
                             '<button class="mini" data-wmove="' + esc(w.id) + ':-1"' + (j ? '' : ' disabled') + '>▲</button><button class="mini" data-wmove="' + esc(w.id) + ':1"' + (j < ws.length - 1 ? '' : ' disabled') + '>▼</button></div>';
                     }).join('') + '</div><button class="btn wide" data-wadd="' + esc(p.id) + '">+ Add a widget to ' + esc(p.title) + '</button>' : '') +
                     '</section>';
@@ -1811,7 +1827,7 @@
             case 'photos': return s.Source + ((s.Source === 'Google Drive folder' ? s.DriveFolder : s.AlbumLink) ? '' : ' – link needed');
             case 'clock': return lines(s.Zones).join(', ') || 'Local time';
             case 'list': return s.ListName + ' · ' + s.Source;
-            case 'timer': return s.Presets + ' min';
+            case 'timer': return String(s.Presets || '').split(',').filter(Boolean).map(function (n) { n = +n; return n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min'; }).join(' · ');
             case 'countdown': return s.Categories ? 'Calendar: ' + s.Categories : 'Your own dates';
             case 'whereabouts': return lines(s.People).join(', ');
             case 'bus': return s.StopName || (s.StopCode ? s.StopCode : 'Nearest stop to home');
@@ -1983,6 +1999,7 @@
         var id = 'f_' + f.k, help = f.help ? '<div class="mute small hint">' + esc(f.help) + '</div>' : '';
         var lab = '<label for="' + id + '">' + esc(f.label) + (f.max && f.type === 'text' ? ' <span class="cnt">max ' + f.max + '</span>' : '') + '</label>';
         if (f.ui === 'rows' && f.rows) { RW[f.k] = f; return rowsField(f, v, '<label>' + esc(f.label) + '</label>', help); }
+        if (f.type === 'minutes') return '<label>' + esc(f.label) + '</label>' + minutesPick(f.k, v == null ? f.def : v) + help;
         if (f.ui === 'cats' || f.ui === 'dates') {
             var lab2 = '<label>' + esc(f.label) + '</label>', h = f.ui === 'cats' ? catsField(f, v, lab2, help) : datesField(f, v, lab2, help);
             if (h) return h;
@@ -2008,6 +2025,22 @@
         });
     }
     document.addEventListener('change', function (e) { if (e.target.closest && e.target.closest('[data-f]')) applyWhen(); });
+    /** Tap the minutes you want as quick buttons (up to 6) – no typing. */
+    var MINS = [1, 2, 3, 4, 5, 8, 10, 12, 15, 20, 25, 30, 40, 45, 60, 90, 120];
+    function minutesPick(k, v) {
+        var on = String(v || '').split(',').map(function (x) { return +x.trim(); }).filter(Boolean);
+        var all = MINS.concat(on.filter(function (n) { return MINS.indexOf(n) < 0; })).sort(function (a, b) { return a - b; });
+        return '<div class="mins-pick" data-mins><input type="hidden" data-f="' + esc(k) + '" value="' + esc(on.join(',')) + '">' + all.map(function (n) {
+            return '<button type="button" class="mp' + (on.indexOf(n) >= 0 ? ' on' : '') + '" data-m="' + n + '">' + (n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min') + '</button>';
+        }).join('') + '</div>';
+    }
+    document.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('.mins-pick .mp'); if (!b) return;
+        var box = b.closest('.mins-pick'), inp = box.querySelector('[data-f]');
+        if (!b.classList.contains('on') && box.querySelectorAll('.mp.on').length >= 6) { FD.toast('Up to 6 – tap one to take it off first', true); return; }
+        b.classList.toggle('on');
+        inp.value = Array.prototype.map.call(box.querySelectorAll('.mp.on'), function (x) { return x.getAttribute('data-m'); }).join(',');
+    });
     function readFields() {
         var out = {};
         Array.prototype.forEach.call(document.querySelectorAll('#sheet [data-f]'), function (i) { out[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });

@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.97';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.99';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -254,14 +254,14 @@ const WIDGET_TYPES = {
   news: { name: 'News', icon: '\uD83D\uDCF0', sizes: ['half', 'full'], ttl: 10 * 60, about: 'Headlines from the BBC or any news feed.',
     settings: [
       { k: 'Feed', label: 'News', type: 'select', def: 'My country\u2019s news', options: Object.keys(NEWS_FEEDS), help: 'My country’s news = the main news for the country set in System → Locations & home (BBC in the UK, NPR in the USA, RTÉ in Ireland…).' },
-      { k: 'FeedUrl', label: 'Feed link', type: 'url', def: '', advanced: true, help: 'Only for "Another feed": the RSS address, e.g. https://www.theguardian.com/uk/rss' },
+      { k: 'FeedUrl', label: 'Feed link', type: 'url', def: '', when: ['Feed', ['Another feed (link below)']], help: 'The RSS address, e.g. https://www.theguardian.com/uk/rss' },
       { k: 'Rotate', label: 'Change the main story every (seconds)', type: 'number', def: 20, min: 5, max: 600 },
       { k: 'Pictures', label: 'Show pictures', type: 'bool', def: true },
     ],
     data: (s) => news_(s) },
   timer: { name: 'Kitchen timer', icon: '\u23F2\uFE0F', sizes: ['half'], about: 'Touch timer with quick buttons. Beeps on any page when it finishes.',
     settings: [
-      { k: 'Presets', label: 'Quick buttons (minutes)', type: 'text', def: '3,5,10,15,20,30', max: 30, help: 'Up to 6 numbers separated by commas.' },
+      { k: 'Presets', label: 'Quick buttons (minutes)', type: 'minutes', def: '3,5,10,15,20,30', max: 30, help: 'Tap up to 6.' },
       { k: 'Sound', label: 'Beep when finished', type: 'bool', def: true },
     ] },
   photos: { name: 'Photo slideshow', icon: '\uD83D\uDDBC\uFE0F', sizes: ['full', 'half'], ttl: 30 * 60, about: 'Photos from a Google Drive folder or a shared Google Photos album.',

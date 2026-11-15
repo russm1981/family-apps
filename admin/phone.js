@@ -355,6 +355,14 @@
                 '<button class="btn good wide" id="wSave">Save</button>', 'fa-form') : (pc.length ? '' : '<p class="fa-note">Nothing to set – it works as it is.</p>')) +
             (pc.length ? '<p class="fa-pc">💻 ' + pc.map(function (f) { return '<b>' + esc(f.label) + '</b>'; }).join(', ') + (w.type === 'bins' ? ' (and where the bin days come from)' : '') + ' – change ' + (pc.length > 1 ? 'these' : 'this') + ' on a computer at <b>' + esc(HOST) + '</b>.</p>' : '');
         whenFields();
+        Array.prototype.forEach.call(document.querySelectorAll('.fa-mins'), function (box) {
+            box.onclick = function (e) {
+                var b = e.target.closest('[data-m]'); if (!b) return;
+                if (!b.classList.contains('on') && box.querySelectorAll('.on').length >= 6) { FD.toast('Up to 6 – tap one to take it off first', true); return; }
+                b.classList.toggle('on');
+                box.querySelector('[data-f]').value = Array.prototype.map.call(box.querySelectorAll('button.on'), function (x) { return x.getAttribute('data-m'); }).join(',');
+            };
+        });
         if ($('wSave')) $('wSave').onclick = function () {
             var b = this, vals = {};
             Array.prototype.forEach.call(document.querySelectorAll('#faMain [data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
@@ -374,6 +382,12 @@
         if (v == null) v = f.def;
         if (f.type === 'bool') return '<label class="fa-tog"><input type="checkbox" id="' + id + '" data-f="' + esc(f.k) + '"' + (v ? ' checked' : '') + '><span>' + esc(f.label) + '</span></label>' + help;
         var lab = '<label for="' + id + '">' + esc(f.label) + '</label>';
+        if (f.type === 'minutes') {      // kitchen timer: tap up to 6
+            var on = String(v || '').split(',').map(function (x) { return +x.trim(); }).filter(Boolean);
+            var all = [1, 2, 3, 4, 5, 8, 10, 12, 15, 20, 25, 30, 40, 45, 60, 90, 120].concat(on).filter(function (n, i, a) { return a.indexOf(n) === i; }).sort(function (a, b) { return a - b; });
+            return lab + '<div class="fa-mins"><input type="hidden" data-f="' + esc(f.k) + '" value="' + esc(on.join(',')) + '">' + all.map(function (n) {
+                return '<button type="button" class="' + (on.indexOf(n) >= 0 ? 'on' : '') + '" data-m="' + n + '">' + (n >= 60 && n % 60 === 0 ? n / 60 + ' hr' : n + ' min') + '</button>'; }).join('') + '</div>' + help;
+        }
         if (f.type === 'select') return lab + '<select id="' + id + '" data-f="' + esc(f.k) + '">' + (f.options || []).map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>' + help;
         if (f.type === 'lines') return lab + '<textarea id="' + id + '" data-f="' + esc(f.k) + '" rows="' + Math.max(2, f.maxLines || 3) + '">' + esc(v) + '</textarea>' + help;
         var t = f.type === 'number' ? ' type="number" inputmode="numeric"' + (f.min != null ? ' min="' + f.min + '"' : '') + (f.max != null ? ' max="' + f.max + '"' : '')
