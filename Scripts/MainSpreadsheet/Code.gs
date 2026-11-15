@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.102';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.103';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -286,7 +286,7 @@ const WIDGET_TYPES = {
     ] },
   list: { name: 'General List', icon: '☑️', sizes: ['half', 'full'], about: 'A list you make yourself – shopping, packing, anything. Tick things off on the screen, clear the ticked ones, and add from your phone.',
     settings: [
-      { k: 'ListName', label: 'List name', type: 'text', def: 'Shopping', max: 16 },
+      { k: 'ListName', label: 'List name', type: 'text', def: 'New List 1', max: 16 },
       { k: 'Source', label: 'Kept in', type: 'select', def: 'This Google Sheet', options: ['This Google Sheet', 'Google Tasks'],
         help: 'Google Tasks lets you add items from the Google Tasks app or Gmail. It needs the Google Tasks service turned on in Apps Script (see the instructions).' },
       { k: 'TasksList', label: 'Google Tasks list name', type: 'text', def: '', max: 60, advanced: true, help: 'The list\u2019s name in Google Tasks. Blank = the same as the list name.' },
@@ -1728,6 +1728,15 @@ function addWidget_(pageId, type, at) {
     const all = wsetAll_(), names = childNames_(), mine = String((all[type + n] || {}).Child || '');
     const taken = rows_('widgets').filter(w => String(w.Type).trim() === 'child' && String(w.Widget).trim() !== type + n).map(w => String((all[String(w.Widget).trim()] || {}).Child || ''));
     if (names.indexOf(mine) < 0 || taken.indexOf(mine) >= 0) setWset_(type + n, 'Child', names.find(x => taken.indexOf(x) < 0) || names[0]);
+  }
+  if (type === 'list') {       // a new General List: "New List 1", or the next number not used by another list on the screens
+    const all = wsetAll_(), mine = String((all[type + n] || {}).ListName || '').trim();
+    const taken = rows_('widgets').filter(w => String(w.Type).trim() === 'list' && String(w.Widget).trim() !== type + n)
+      .map(w => norm_(String((all[String(w.Widget).trim()] || {}).ListName || 'New List 1')));
+    if (!mine || taken.indexOf(norm_(mine)) >= 0 || same.length) {
+      let k = 1; while (taken.indexOf(norm_('New List ' + k)) >= 0) k++;
+      setWset_(type + n, 'ListName', 'New List ' + k);
+    }
   }
   renumber_('widgets');
   if (at !== undefined && at !== null && isFinite(Number(at))) {     // dropped in a particular place (the settings website)

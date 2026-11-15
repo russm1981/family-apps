@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.231",
+    "date": "2026-11-15",
+    "notes": [
+      "Screens: adding a screen now shows it straight away (typing its name was being treated as an unsaved change, so the page didn’t redraw)",
+      "Screens: the widgets to drag on are in groups – Rewards; Lists, notes and reminders; Information; Travel; Family; Tools; Interest",
+      "Screens: while dragging a widget, moving near the top or bottom of the window scrolls the page"
+    ]
+  },
+  {
     "version": "2026.11.230",
     "date": "2026-11-15",
     "notes": [

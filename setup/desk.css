@@ -446,3 +446,7 @@ body.desk .lrows + .ladd-row, body.desk #tkRows + .ladd-row { margin-top: 24px; 
 body.desk .ladd-row + .sheet-actions { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line, #2a303b); }
 body.desk .boy-more > summary { display: none; }
 hr.sep { border: 0; border-top: 1px solid var(--line, #2a303b); margin: 22px 0 18px; }
+/* Widget settings pop-up: a normal-sized icon in the title, and the description set apart from the settings */
+#sheet h2 svg.mi, #sheet h2 img { width: 1.25em; height: 1.25em; vertical-align: -0.22em; }
+#sheet > h2 + p.mute { margin: 6px 0 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line, #2a303b); line-height: 1.5; }
+#sheet .ws-h { margin-top: 0; }

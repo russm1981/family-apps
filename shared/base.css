@@ -100,3 +100,5 @@ header.hr-head .hr-hdash { color: #06210f; background: #4cd964; }
 @media (max-width: 560px) { header.hr-head { padding: 0 12px; gap: 8px; } header.hr-head .hr-title { font-size: 18px; white-space: nowrap; flex: none; } header.hr-head .hr-mini { width: 26px; height: 26px; } header.hr-head nav { gap: 6px; } header.hr-head nav a { padding: 6px 10px; font-size: 13px; } }
 /* Bulleted lists: a little further in from the edge, everywhere */
 ul, ol { padding-left: 30px; } li { padding-left: 4px; }
+/* The green (Save) button always comes first, on the left */
+.sheet-actions .btn.good, .fa-actions .btn.good, .btn-row .btn.good { order: -1; }
