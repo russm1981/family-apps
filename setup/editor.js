@@ -13,7 +13,7 @@
     function load(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } }
     function store(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* fine */ } }
 
-    var FORMATS = [['wide', 'Corsair XENEON EDGE', '32:9 · 4 columns'], ['standard', 'Tablet', '16:10 · 2 columns a screen'], ['computer', 'Computer screen', '16:9 · the Corsair layout, centred']];
+    var FORMATS = [['wide', 'Corsair XENEON EDGE', '32:9 · 4 columns'], ['standard', 'Tablet', '16:10 · 2 columns a screen'], ['computer', 'Computer screen', '16:9 · the Corsair layout, centred'], ['phone', 'Phone', 'The Family Dashboard app · one column']];
     var DAYS = { 'Every day': 'Every day', 'Monday to Friday': 'Mon–Fri', 'Monday to Thursday': 'Mon–Thu', 'Weekends': 'Sat–Sun' };
 
     function D() { return H.data(); }
@@ -161,7 +161,7 @@
     function otherView(p) {
         var fmt = load(KEY_F, 'wide'), out = '';
         if (p.type === 'calendar') {
-            out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : mockFrame(p, fmt);
+            out = fmt === 'computer' ? '<div class="ed-monitor">' + mockFrame(p, 'wide') + '</div>' : fmt === 'phone' ? '<div class="ed-phone"><div class="ed-frame phone mock"><div class="mk-in">' + calInner('phone', true, 'Week') + '</div></div><p class="mute small">On a phone the calendar opens on the week, a day under a day (turn the phone for the week across).</p></div>' : mockFrame(p, fmt);
             // This page's few settings first, then the picture of it, then the categories and key.
             return (H.pageForm ? '<section class="ed-pset ed-pset-top" data-pset="' + esc(p.id) + '">' + H.pageForm(p.id) +
                     '<button class="btn good" data-psave="' + esc(p.id) + '">Save</button></section>' : '') + out +
@@ -170,7 +170,7 @@
         }
         var kids = Math.max(1, p.children || 1), screens = Math.ceil(kids / 3), frames = '';
         for (var k = 0; k < screens; k++) {
-            var nHere = Math.min(3, kids - k * 3), f = mockFrame(p, fmt === 'computer' ? 'wide' : fmt, nHere);
+            var nHere = Math.min(3, kids - k * 3), f = mockFrame(p, fmt === 'computer' || fmt === 'phone' ? 'wide' : fmt, nHere);
             frames += '<div class="ed-mockwrap">' + (screens > 1 ? '<div class="ed-flabel">' + esc(p.title) + ' ' + (k + 1) + '</div>' : '') + (fmt === 'computer' ? '<div class="ed-monitor">' + f + '</div>' : f) + '</div>';
         }
         return '<div class="ed-tabs' + (fmt === 'standard' ? ' stack' : ' one') + '">' + frames + '</div>' +
@@ -187,6 +187,12 @@
             out = '<div class="ed-tabs side">' + out + '</div>' + (n > 1 ? '<p class="mute small">On a tablet this screen is in ' + n + ' parts – each has its own button in the menu.</p>' : '');
         } else if (fmt === 'computer') {
             out = '<div class="ed-monitor">' + frame(cols, 4, '', 'wide', p) + '</div>';
+        } else if (fmt === 'phone') {
+            // The phone app: every widget full width, one under another – column by column, top to bottom, as on the Corsair.
+            var all = [].concat.apply([], cols.slice(0, 4));
+            out = '<div class="ed-phone"><div class="ed-frame phone"><div class="ed-pgrid">' + all.map(tile).join('') + (all.length ? '' : '<div class="ed-slot end">Drop a widget here</div>') + '</div>' +
+                '<div class="ed-pbar">' + (D().pages || []).filter(function (x) { return x.show; }).slice(0, 6).map(function (x) { return '<span class="' + (x.id === p.id ? 'on' : '') + '">' + (x.type === 'calendar' ? CAL_ICON : esc(x.icon)) + '<small>' + esc(x.title) + '</small></span>'; }).join('') + '</div></div>' +
+                '<p class="mute small">On a phone, the Family Dashboard app shows every widget full width, one under another, in the order of the Corsair’s columns (left to right, top to bottom). Change the order in the Corsair view. Click a widget for its settings.</p></div>';
         } else out = frame(cols, 4, '', 'wide', p);
         // What doesn't fit: shown underneath, to drag elsewhere or click to remove
         if (over > 0) out += '<div class="ed-over">⚠ ' + over + ' column' + (over > 1 ? 's' : '') + ' won’t fit on the screen. Drag ' + (over > 1 ? 'them' : 'it') +

@@ -340,3 +340,14 @@
     background: var(--acc, #3fa9f5); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .15s; z-index: 3; }
 .ed-tile:not(.pending):hover::after { opacity: 1; }
 .ed-tile.split::after { bottom: auto; top: 6px; }
+/* Phone: the Family Dashboard app – a tall narrow phone, widgets one under another, the screens' buttons along the bottom */
+.ed-phone { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.ed-frame.phone { width: 300px; border-radius: 26px; border-width: 8px; padding: 10px 8px 0; display: flex; flex-direction: column; max-height: 640px; }
+.ed-pgrid { display: flex; flex-direction: column; gap: 8px; overflow-y: auto; flex: 1; min-height: 0; padding-bottom: 8px; scrollbar-width: thin; }
+.ed-pgrid .ed-tile { flex: none; }
+.ed-pgrid .ed-tile.full { height: 150px; } .ed-pgrid .ed-tile.half { height: 92px; }
+.ed-pbar { display: flex; justify-content: space-around; border-top: 1px solid #22262e; padding: 6px 0 8px; }
+.ed-pbar span { display: flex; flex-direction: column; align-items: center; font-size: 14px; color: #9aa4b2; padding: 3px 5px; border-radius: 8px; }
+.ed-pbar span.on { background: #3fa9f5; color: #fff; } .ed-pbar small { font-size: 8px; }
+.ed-pbar svg { width: 15px; height: 15px; }
+.ed-frame.phone .mk-in { height: 520px; }

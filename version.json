@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.176",
+  "app": "2026.11.177",
   "script": "2026.11.86",
   "date": "2026-11-15",
   "notes": [
-    "⚙ Setup → Screens: hovering over a widget now shows a “⚙️ Click for settings” label, and the instructions start with “Click any widget to change its settings”."
+    "⚙ Setup → Screens: a fourth view, Phone, shows each screen as the Family Dashboard app draws it – every widget full width, one under another, with the screens’ buttons along the bottom. Click a widget there for its settings too.",
+    "Menu icons always use the colour emoji font, so Windows draws 🖥️ Screens and 🛠️ System in colour rather than as thin black outlines."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
