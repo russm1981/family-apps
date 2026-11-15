@@ -102,3 +102,7 @@ header.hr-head .hr-hdash { color: #06210f; background: #4cd964; }
 ul, ol { padding-left: 30px; } li { padding-left: 4px; }
 /* The green (Save) button always comes first, on the left */
 .sheet-actions .btn.good, .fa-actions .btn.good, .btn-row .btn.good { order: -1; }
+/* The box an error is about */
+.field-bad { border-color: #ef4444 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, .35) !important; }
+label.field-bad-l { color: #f87171 !important; }
+.toast .t-x { background: transparent; border: 0; color: inherit; font-size: 16px; margin-left: 10px; cursor: pointer; padding: 0 4px; }

@@ -2146,8 +2146,14 @@
                 if (bk) return;
                 w.size = body.size; w.show = body.show; w.when = body.when.ShowDays === 'Every day' && body.when.ShowFrom === '00:00' && body.when.ShowUntil === '24:00' ? null : body.when;
             });
+            var tried = JSON.parse(JSON.stringify(w)); Object.keys(vals).forEach(function (k) { tried.settings[k] = vals[k]; });
+            if (!bk) { tried.size = body.size; tried.show = body.show; tried.when = body.when; }
             act({ action: 'saveWidget', widget: body }, 'Saved – the screen updates within a minute')
-                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function (e) {
+                    // Not saved: back to the form with what you typed, and the box that needs fixing picked out
+                    if (!$('sheetBg').classList.contains('on')) widgetSheet(tried);
+                    setTimeout(function () { FD.flagField(e && e.message); }, 100);
+                });
         };
         if ($('wDel')) $('wDel').onclick = function () {
             var others = (DATA.widgets || []).some(function (x) { return x.id !== w.id && x.type === w.type; });
@@ -2204,9 +2210,14 @@
         $('wCancel').onclick = closeSheet;
         $('wSave').onclick = function () {
             var vals = readFields();
+            var tried = JSON.parse(JSON.stringify(w)); Object.keys(vals).forEach(function (k) { tried.settings[k] = vals[k]; });
             savingNow(w, function () { Object.keys(vals).forEach(function (k) { w.settings[k] = vals[k]; }); });
             act({ action: 'saveWidget', widget: { id: w.id, settings: vals } }, 'Saved – the screen updates within a minute')
-                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function () {});
+                .then(function () { closeSheet(); delete GL[w.id]; if (route().w === w.id) fetchWidget(w.id); }, function (e) {
+                    // Not saved: back to the form with what you typed, and the box that needs fixing picked out
+                    if (!$('sheetBg').classList.contains('on')) settingsSheet(tried);
+                    setTimeout(function () { FD.flagField(e && e.message); }, 100);
+                });
         };
     }
     function addWidgetSheet(pid) {

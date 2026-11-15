@@ -191,7 +191,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.235',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.236',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -236,10 +236,37 @@
             var t = document.getElementById('toast');
             if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
             t.className = 'toast on' + (bad ? ' bad' : '');
-            t.innerHTML = '<span>' + FD.esc(text) + '</span>' + (undo ? '<button>Undo</button>' : '');
+            t.innerHTML = '<span>' + FD.esc(text) + '</span>' + (undo ? '<button>Undo</button>' : '') + (bad ? '<button class="t-x" aria-label="Close">✕</button>' : '');
             if (undo) t.querySelector('button').onclick = function () { t.className = 'toast'; undo(); };
+            if (bad) t.querySelector('.t-x').onclick = function () { t.className = 'toast'; };
             clearTimeout(FD._tt);
-            FD._tt = setTimeout(function () { t.className = 'toast'; }, undo ? 8000 : 3000);
+            // A problem stays up long enough to read (or until ✕), and the box it's about is picked out
+            FD._tt = setTimeout(function () { t.className = 'toast'; }, bad ? 15000 : undo ? 8000 : 3000);
+            if (bad) setTimeout(function () { FD.flagField(text); }, 80);
+        },
+
+        /** Pick out the box an error message is about: messages start with the box's label ("List name is 20 characters…"). */
+        flagField: function (msg) {
+            msg = String(msg || '').toLowerCase().replace(/[“”"‘’']/g, '').trim();
+            var sheet = document.querySelector('.sheet-bg.on .sheet'), root = sheet || document.getElementById('body') || document.getElementById('faMain') || document.body;
+            var best = null, bestLen = 0;
+            Array.prototype.forEach.call(root.querySelectorAll('label'), function (l) {
+                var txt = ''; Array.prototype.forEach.call(l.childNodes, function (n) { if (n.nodeType === 3 || (n.tagName === 'SPAN' && !/cnt|small/.test(n.className))) txt += n.textContent; });
+                txt = txt.replace(/\s+/g, ' ').trim().toLowerCase();
+                if (txt.length > 2 && msg.indexOf(txt) === 0 && txt.length > bestLen) { best = l; bestLen = txt.length; }
+            });
+            if (!best) return false;
+            var box = best.querySelector('input,select,textarea') || (best.htmlFor && document.getElementById(best.htmlFor));
+            for (var n = best.nextElementSibling; !box && n; n = n.nextElementSibling) {
+                if (/^(INPUT|SELECT|TEXTAREA)$/.test(n.tagName)) box = n; else if (n.tagName === 'LABEL') break; else box = n.querySelector('input,select,textarea');
+            }
+            if (!box) return false;
+            Array.prototype.forEach.call(root.querySelectorAll('.field-bad'), function (x) { x.classList.remove('field-bad'); });
+            box.classList.add('field-bad'); best.classList.add('field-bad-l');
+            try { box.scrollIntoView({ block: 'center', behavior: 'smooth' }); box.focus({ preventScroll: true }); } catch (e) { /* fine */ }
+            var clear = function () { box.classList.remove('field-bad'); best.classList.remove('field-bad-l'); box.removeEventListener('input', clear); box.removeEventListener('change', clear); };
+            box.addEventListener('input', clear); box.addEventListener('change', clear);
+            return true;
         },
 
         /** Full-screen "connect this phone" form. Calls done() once it works. */

@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.235",
+  "app": "2026.11.236",
   "script": "2026.11.103",
   "date": "2026-11-15",
   "notes": [
-    "My data (Google): step-by-step for freeing your licence key before starting again from scratch, and ‘Copy everything to a fresh Sheet’ named so it isn’t confused with starting again"
+    "Widgets → Other: grouped by the screen each widget is on, in screen order; under each name it says Always shows, Timed (with the times) or Hidden, and ‘copy 1 of 2’ when there’s more than one"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.235",
+    "date": "2026-11-15",
+    "notes": [
+      "Widgets → Other: grouped by the screen each widget is on, in screen order; under each name it says Always shows, Timed (with the times) or Hidden, and ‘copy 1 of 2’ when there’s more than one"
+    ]
+  },
+  {
     "version": "2026.11.234",
     "date": "2026-11-15",
     "notes": [
