@@ -186,7 +186,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.168',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.169',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -213,7 +213,7 @@
         ymd: function (d) { return d.getFullYear() + '-' + FD.pad(d.getMonth() + 1) + '-' + FD.pad(d.getDate()); },
         parse: function (s) { var p = String(s).split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); },
         addDays: function (d, n) { return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); },
-        // How dates are shown, from Configurator → Advanced → Locations & home: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14"
+        // How dates are shown, from Configurator → System → Locations & home: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14"
         L: (function () { try { return JSON.parse(localStorage.getItem('fd.locale')) || { weekStart: 1, monthFirst: false }; } catch (e) { return { weekStart: 1, monthFirst: false }; } })(),
         setLocale: function (l) { if (!l) return; FD.L = { weekStart: l.weekStart === 0 ? 0 : 1, monthFirst: !!l.monthFirst }; try { localStorage.setItem('fd.locale', JSON.stringify(FD.L)); } catch (e) { /* fine */ } },
         dm: function (day, mon) { return FD.L.monthFirst ? FD.MON[mon] + ' ' + day : day + ' ' + FD.MON[mon]; },
@@ -258,7 +258,7 @@
                 '<h1>' + FD.esc(appName) + '</h1>' +
                 (/HouseRunner/.test(appName) ? '' : '<p class="mute small" style="margin:-2px 0 10px">HouseRunner – a family dashboard</p>') +
                 (other ? '<p>This browser is already connected to a HouseRunner dashboard (another of its apps).</p><button class="btn wide" id="suSame">Use the same family</button><div class="or">or</div>' : '') +
-                (waiter ? '<p><b>Connect from your phone</b> – on a phone that already has Family Admin: <b>Advanced → Devices and Phones → Connect by code</b>, and type</p>' +
+                (waiter ? '<p><b>Connect from your phone</b> – on a phone that already has Family Admin: <b>System → Devices and Phones → Connect by code</b>, and type</p>' +
                     '<p class="su-code" style="font:800 30px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-align:center;margin:8px 0">' + FD.esc(waiter.code) + '</p>' +
                     (qr ? '<p class="mute small" style="text-align:center">or scan this with the phone’s camera:</p><div style="background:#fff;border-radius:12px;padding:8px;width:180px;margin:6px auto">' + qr + '</div>' : '') +
                     '<p class="mute small" id="suState" style="text-align:center">Waiting for your phone…</p>' : '') +

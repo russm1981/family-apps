@@ -30,9 +30,9 @@
     var DESK = !!window.FD_DESK, PHONE = !!window.FD_PHONE;      // PHONE: the Family Admin app – the same pages, narrow
     var DESK_TITLE = '<span class="hr-title"><img src="' + appsRoot() + 'shared/brand/mark.svg" alt="" class="hr-mini"><span>House<span class="hr-acc">Runner</span></span></span>';   // the website's title bar
     // The website: setting up (first-time setup, screens & widgets, family, rewards, advanced), help, then the apps.
-    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '▦', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '⚙', 'Advanced'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '◈', 'Other']]
+    var TABS = DESK ? [['dhome', '🏠', 'Home'], ['start', '🚀', 'Setup wizard'], ['layout', '🖥️', 'Screens'], ['famcfg', '👪', 'Family'], ['rewards', '⭐', 'Rewards'], ['advanced', '🔧', 'System'], ['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['reminders', '🎒', 'Reminders'], ['other', '🧩', 'Other']]
         // The phone: the everyday part of the Configurator – rewards and the apps – with help, support and settings under More.
-        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '☰', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
+        : [['calendar', '📅', 'Calendar'], ['memos', '📌', 'Notes'], ['lists', '📝', 'Lists'], ['rewards', '⭐', 'Rewards'], ['other', '◈', 'Widgets'], ['more', '⋯', 'More']];
     if (PHONE) TABS = TABS.filter(function (t) { return t[0] !== 'start' && t[0] !== 'layout'; });   // they need a big screen
     // Settings sections on the phone (the rest are on the computer website).
     var PHONE_S = { screen: 1, licence: 1, devices: 1, updates: 1, support: 1 };   // updates: the "update now" override, if the script hasn't updated itself
@@ -336,13 +336,13 @@
             '<p class="mute help">The configurator website is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
                 (PHONE ? '' : btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again')) +
-                (PHONE ? '' : btn('layout', '▦', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
+                (PHONE ? '' : btn('layout', '🖥️', 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
                 btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
-                btn('advanced', '⚙', 'Advanced', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
+                btn('advanced', '🔧', 'System', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Widgets', '<p class="small">The everyday settings for the widgets on your dashboard – what’s on the calendar, the notes, the lists, reminders and the rest.</p><div class="hm-grid">' +
-                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '☰', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
-                btn('other', '◈', 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();
+                btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', '📝', 'Lists', 'Shopping and other lists') + btn('rewards/timetable', '🎒', 'Reminders', 'Sports kit, library books – the things to remember each day') +
+                btn('other', '🧩', 'Other', 'Settings for the other widgets – weather, traffic, news and so on') + '</div>') + homeDevices();
     }
     /** Home, at the bottom: connecting a new display, and a new phone. */
     function homeDevices() {
@@ -361,7 +361,7 @@
                 '<div class="ladd-row" style="margin-top:12px"><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a></div>') +
             card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
                 '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
-                app('calendar', '', 'Family Calendar', 'for everyone', 'See what’s on and add events.') + '</div>' +
+                app('dashboard', '', 'Family Dashboard', 'for everyone', 'The dashboard itself on the phone – the calendar, the children’s cards and every widget, one under another.') + '</div>' +
                 '<p class="mute small">These codes contain your private access code – only scan them with your own family’s phones.</p>');
     }
     /** The setup wizard: setting up for the first time, a single step again, the calendar. */
@@ -388,7 +388,7 @@
                 row('👪', 'Your family', 'Who’s in the family, their colours and who takes part in rewards', link('go=family')) +
                 row('📅', 'Your calendar', 'The calendar’s categories, groups and colours, and tidying up the Google calendar', link('go=calendar')) +
                 row('📺', 'Connect your display', 'The XENEON EDGE (Windows or Raspberry Pi), a tablet, or a browser on this computer', link('go=devices')) +
-            row('📱', 'Connect your phones', 'The Family Admin and Family Calendar apps – scan, then add to the home screen', link('go=phones')) +
+            row('📱', 'Connect your phones', 'The Family Admin and Family Dashboard apps – scan, then add to the home screen', link('go=phones')) +
                 row('🔑', 'Free keys for live data', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
                 row('🎫', 'Licence key', 'Add or check your licence key', link('go=licence')) +
                 row('✅', 'Check everything', 'Asks your Sheet to fetch every widget and reports anything that needs attention', link('go=check')) +
@@ -414,7 +414,7 @@
             row('👪', 'Your family', 'Who’s in the family, their colours and who takes part in rewards', link('go=family')) +
             '<a class="mrow" href="#" id="goCalSetup"><span class="m-ico">📅</span><span class="m-tx"><b>Your calendar – colour coding and tidy-up</b><small>Using a Google Calendar you already had? Set up its categories and the screen’s key, then tidy up so every event is in a category</small></span><i>›</i></a>' +
             row('📺', 'Connect your display', 'The XENEON EDGE (Windows or Raspberry Pi), a tablet, or a browser on this computer', link('go=devices')) +
-            row('📱', 'Connect your phones', 'The Family Admin and Family Calendar apps – scan, then add to the home screen', link('go=phones')) +
+            row('📱', 'Connect your phones', 'The Family Admin and Family Dashboard apps – scan, then add to the home screen', link('go=phones')) +
             row('🔑', 'Get free keys for external data sources', 'Traffic, trains, buses, NASA, Spotify – step by step', link('go=keys')) +
             row('🎫', 'Add licence key', 'The licence key links the software to your original purchase', link('go=licence')) +
             row('✅', 'Check everything (diagnostics)', 'Run full diagnostics to check the widgets, settings and software', link('go=check')) +
@@ -599,7 +599,7 @@
         if (sub === 'system') sub = 'screen';
         var cur = sidePane('advanced', items, sub);
         if (cur !== 'info') { renderSection(cur); return; }
-        title('Advanced');
+        title('System');
         $('body').innerHTML = explain('About these settings',
             '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
             '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
@@ -715,7 +715,7 @@
         title(what);
         $('body').innerHTML = card('💻 This is on the computer', '<p><b>' + esc(what) + '</b> is on the <b>HouseRunner Configurator</b>, the website for computers. On a computer, open:</p>' +
             '<div class="desk-addr">' + esc(deskShort()) + '</div>' +
-            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>Advanced → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
+            '<p class="mute small">The first time, it shows a code: type it on this phone in <b>System → Devices and Phones → Connect by code</b>, or open it on the computer you used for setup.</p>' +
             '<button class="btn ghost wide" id="deskCopy">Copy the address</button>');
         $('deskCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(deskUrl()) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', deskUrl()); }); };
     }
@@ -820,11 +820,11 @@
         var pp = pointsPage(), h = new Date().getHours();
         title(h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening');
         // Calendar (the calendar app – a new tab on the computer), today & tomorrow, the Weasley Clock, and reconfiguring the family.
-        var cal = appsRoot() + 'calendar/';
+        var cal = appsRoot() + 'dashboard/';
         var fam = distinct(function (w) { return FAMILY_W[w.type]; });
         var nTasks = (DATA.tasks || []).length, nTodos = (DATA.todos || []).length, nRem = (DATA.timetable || []).length, S = DATA.state;
         $('body').innerHTML = '<h3 class="sec">Family links and apps</h3><div class="tiles fam-tiles">' +
-            '<a class="tile" href="' + esc(cal) + '"' + (DESK ? ' target="_blank" rel="noopener"' : '') + '><span class="t-ico">📅</span><b>Family Calendar</b><small>' + (DESK ? 'Opens in a new tab' : 'Opens the calendar app') + ' – see and add events</small></a>' +
+            '<a class="tile" href="' + esc(cal) + '"' + (DESK ? ' target="_blank" rel="noopener"' : '') + '><span class="t-ico">▦</span><b>The dashboard</b><small>' + (DESK ? 'Opens in a new tab' : 'The calendar, the children’s cards and every widget') + '</small></a>' +
             fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') +
             (DESK ? '<a class="tile" href="' + esc(setupLink('family')) + '"><span class="t-ico">👪</span><b>Reconfigure the family</b><small>Who’s in the family, who has points, calendar groups and colours</small></a>' : '') + '</div>' +
             (pp && pointsOn() ? '<h3 class="sec">Set up rewards – tasks, to-dos and reminders</h3><div class="tiles fam-tiles">' +
@@ -986,7 +986,7 @@
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
             var ev = function (e) { return row('<i class="dot" style="background:' + esc(e.c) + '"></i>' + esc(e.t), e.allDay ? 'All day' : esc(e.time), esc(e.k)); };
             return card('Today', rows(d.days.today, ev, 'Nothing today')) + card('Tomorrow', rows(d.days.tomorrow, ev, 'Nothing tomorrow')) +
-                '<a class="btn wide" href="' + esc(location.href.replace(/admin\/.*$/, '') + 'calendar/') + '">Open the Family Calendar app</a>';
+                '<a class="btn wide" href="' + esc(appsRoot() + 'dashboard/') + '">Open the dashboard</a>';
         },
         bins: function (w) {
             var d = GL[w.id], set = '<button class="btn wide" id="binSet">' + (d && !d.error ? 'Change how bin days are found' : 'Set up bin days') + '</button>';
@@ -1657,7 +1657,7 @@
         var c = FD.config(), ok = DATA.spotifyConnected;
         var hasKeys = (DATA.install || []).some(function (f) { return f.k === 'SpotifyClientId' && f.value; });
         return '<h3 class="sh">Spotify account</h3><p class="mute small">' + (ok ? '✅ Connected.' : hasKeys ? 'Not connected yet.' :
-            'First create an app at developer.spotify.com and put its Client ID and secret in ⚙ Setup → Advanced → External data keys.') + ' Spotify needs Premium for play/pause/skip.</p>' +
+            'First create an app at developer.spotify.com and put its Client ID and secret in ⚙ Setup → System → External data keys.') + ' Spotify needs Premium for play/pause/skip.</p>' +
             (hasKeys ? '<a class="btn wide" target="_blank" rel="noopener" href="' + esc(c.url + '?spotify=login&key=' + encodeURIComponent(c.code)) + '">' + (ok ? 'Reconnect Spotify' : 'Connect Spotify') + '</a>' : '<button class="btn ghost wide" data-go="s/keys">API keys</button>');
     }
 
@@ -2302,7 +2302,7 @@
                 }).join('') + '</div>') +
             versionsCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
-                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (Advanced → Software Licence), so the new Sheet can use it.</p>' +
+                'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Software Licence), so the new Sheet can use it.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup wizard for a new family</a>') +
             accessCard();
         wireAfresh(); wireAccess();
@@ -2602,13 +2602,13 @@
     function secDevices() {
         var c = FD.config(), base = appsRoot();
         var APPS = { admin: ['⚙ Family Admin (adults)', 'The grown-ups’ app: give and take away points, tick off tasks, add notes and list items, change everyday settings, and look after the screen and licence.'],
-            calendar: ['📅 Family Calendar (everyone)', 'The family’s shared calendar: see what’s on and add events, in the same colours as the screen. It can’t change points or settings.'] };
+            dashboard: ['▦ Family Dashboard (everyone)', 'The dashboard itself on a phone: the calendar (it opens on it), the children’s cards and every widget, one under another. Add events from its calendar. It can’t change settings, and phones don’t count as screens.'] };
         if (!APPS[devPick]) devPick = 'admin';
         $('body').innerHTML =
             explain('How devices and phones work', '<p>There are two kinds of device. <b>Displays</b> show the dashboard – the Corsair XENEON EDGE, a tablet or a computer – and your licence says how many you can have. ' +
-                '<b>Phones</b> run the two apps, Family Admin and Family Calendar – connect as many as you like.</p><p>Every link and QR code here contains your access code, so only use them for your own family’s devices.</p>') +
+                '<b>Phones</b> run the two apps, Family Admin and Family Dashboard – connect as many as you like; phones don’t count as screens.</p><p>Every link and QR code here contains your access code, so only use them for your own family’s devices.</p>') +
             screensCard() +
-            card('Connect a display', '<p class="mute small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Calendar opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
+            card('Connect a display', '<p class="mute small">A new screen (tablet, Raspberry Pi, computer) – or Family Admin or Family Dashboard opened on a computer – shows a code like <b>K7Q2-M9XD</b> and a QR code. ' + (DESK ? 'Scan the QR code with your phone, or type the code here:' : 'Scan the QR code with this phone, or type the code here:') + '</p>' +
                 '<input id="prCode" class="mono" placeholder="K7Q2-M9XD" autocomplete="off" autocapitalize="characters" spellcheck="false"><div class="ladd-row"><button class="btn fp-add" id="prGo">Connect</button></div><div id="prOut"></div>' +
                 '<p class="mute small" style="margin-top:18px"><b>A new screen:</b> on it open <b>' + esc(base.replace(/^https?:\/\//, '')) + 'dashboard</b>. <b>Windows PC (like the Corsair):</b> download it from <b>' + esc(base.replace(/^https?:\/\//, '')) + 'windows</b>, run it, and type the code it shows here. ' +
                 'It asks whether to start with Windows and whether to keep the screen on, and updates itself.</p>' +

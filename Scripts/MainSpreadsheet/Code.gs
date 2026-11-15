@@ -15,9 +15,9 @@
  * It creates any missing tabs and moves settings from the old "Settings" tab into the new ones.
  */
 
-// The family's time zone (Configurator → Advanced → Locations & home). Kept in the script's properties so every run can read it cheaply.
+// The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.84';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.85';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -114,9 +114,9 @@ const INSTALL = [
   { k: 'PrivacyAccepted', label: 'Privacy notice accepted', help: 'Version of the privacy notice accepted, set by the apps.', hidden: true },
   { k: 'PrivacyAcceptedOn', label: 'Privacy notice accepted on', help: 'When and by whom.', hidden: true },
   { k: 'FamilyName', label: 'Family name', help: 'e.g. Smith – set on the Family page.', hidden: true },
-  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup wizard or ⚙ Setup → Advanced → Software Licence.', hidden: true },
+  { k: 'LicenceKey', label: 'Licence key', help: 'Your Family Dashboard licence key (FD-XXXXX-…). Entered in the setup wizard or ⚙ Setup → System → Software Licence.', hidden: true },
   { k: 'MovedTo', label: 'Moved to', help: 'Set when this dashboard has moved to a fresh Sheet (Start afresh): the new web app address.', hidden: true },
-  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from ⚙ Setup → Advanced → Software updates, the setup wizard or the Sheet menu.', hidden: true },
+  { k: 'AutoUpdate', label: 'Automatic updates', help: 'Yes = the Google script updates itself from the apps address. Turned on from ⚙ Setup → System → Software updates, the setup wizard or the Sheet menu.', hidden: true },
   { k: 'AppsAddress', group: 'advanced', label: 'Apps address', def: APPS_DEFAULT, help: 'Where the dashboard, the Configurator and Family Admin are hosted. Only change this if you host your own copy.' },
   { k: 'Country', group: 'home', label: 'Country', def: 'GB', help: 'Two-letter country code (GB, IE, US, AU…). Sets bank holidays, map searches, units and whether the UK-only widgets (bins by council, trains, buses) can be used.' },
   { k: 'TimeZone', group: 'home', label: 'Time zone', def: 'Europe/London', help: 'e.g. Europe/London, America/New_York.' },
@@ -252,7 +252,7 @@ const WIDGET_TYPES = {
     data: (s) => flights_(s) },
   news: { name: 'News', icon: '\uD83D\uDCF0', sizes: ['half', 'full'], ttl: 10 * 60, about: 'Headlines from the BBC or any news feed.',
     settings: [
-      { k: 'Feed', label: 'News', type: 'select', def: 'My country\u2019s news', options: Object.keys(NEWS_FEEDS), help: 'My country’s news = the main news for the country set in Advanced → Locations & home (BBC in the UK, NPR in the USA, RTÉ in Ireland…).' },
+      { k: 'Feed', label: 'News', type: 'select', def: 'My country\u2019s news', options: Object.keys(NEWS_FEEDS), help: 'My country’s news = the main news for the country set in System → Locations & home (BBC in the UK, NPR in the USA, RTÉ in Ireland…).' },
       { k: 'FeedUrl', label: 'Feed link', type: 'url', def: '', advanced: true, help: 'Only for "Another feed": the RSS address, e.g. https://www.theguardian.com/uk/rss' },
       { k: 'Rotate', label: 'Change the main story every (seconds)', type: 'number', def: 20, min: 5, max: 600 },
       { k: 'Pictures', label: 'Show pictures', type: 'bool', def: true },
@@ -782,10 +782,10 @@ function emailLinks_() {
   const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + '.\n\n' +
     'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
     'HouseRunner – the Configurator on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
-    'Family Calendar (everyone’s phones):\n' + base + 'calendar/' + tail + '\n\n' +
-    'The dashboard (the XENEON EDGE, a tablet or a browser):\n' + base + 'dashboard/' + tail + '\n\n' +
+
+    'The dashboard (the XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
-    'If you change your access code (Configurator → Advanced → My data), you’ll be sent new links.\n';
+    'If you change your access code (Configurator → System → My data), you’ll be sent new links.\n';
   GmailApp.sendEmail(to, 'Your Family Dashboard links – keep this email', body);
   PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
   return { ok: true, to: to };
@@ -1968,7 +1968,7 @@ function locale_() { return { weekStart: /^sun/i.test(String(inst_('WeekStart') 
 function units_() { const c = country_(); return { temp: c === 'US' ? 'F' : 'C', wind: c === 'US' || c === 'GB' ? 'mph' : 'km/h' }; }
 
 function geocode_(place) {
-  if (!String(place || '').trim()) throw new Error('Add your home address in ⚙ Setup → Advanced → Locations & home');
+  if (!String(place || '').trim()) throw new Error('Add your home address in ⚙ Setup → System → Locations & home');
   const m = String(place).match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
   if (m) return { lat: Number(m[1]), lng: Number(m[2]) };
   const cache = CacheService.getScriptCache();
@@ -2034,7 +2034,7 @@ function destNow_(r, now) {
  */
 function traffic_(home, destText, radius) {
   const key = String(inst_('TomTomKey') || '').trim();
-  if (!key) throw new Error('Add a TomTom API key in ⚙ Setup → Advanced → External data keys');
+  if (!key) throw new Error('Add a TomTom API key in ⚙ Setup → System → External data keys');
   const from = geocode_(home);
   const all = destinations_(destText), now = new Date();
   const routes = all.filter(r => destNow_(r, now)).map(r => {
@@ -2091,7 +2091,7 @@ function thin_(pts, max) {
  */
 function trains_(fromCrs, toCrs, disruption) {
   const key = String(inst_('RailDataKey') || '').trim();
-  if (!key) throw new Error('Add a National Rail key in ⚙ Setup → Advanced → External data keys');
+  if (!key) throw new Error('Add a National Rail key in ⚙ Setup → System → External data keys');
   const from = String(fromCrs || 'BPW').toUpperCase(), to = String(toCrs || '').toUpperCase();
   const guid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
   const order = guid ? [ldbSoap_, ldbRest_] : [ldbRest_, ldbSoap_];
@@ -2099,7 +2099,7 @@ function trains_(fromCrs, toCrs, disruption) {
   for (let i = 0; i < order.length && !d; i++) {
     try { d = order[i](key, from, to); } catch (err) { if (!first) first = err; if (!err.auth) throw err; }
   }
-  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it in ⚙ Setup → Advanced → External data keys.');
+  if (!d) throw new Error('National Rail didn’t accept the key (' + (first && first.message) + '). Check it in ⚙ Setup → System → External data keys.');
   const route = {};      // every station the trains call at on the way, for "only about this route"
   const services = (d.trainServices || []).map(s => {
     let arrive = null, calls = [];
@@ -3522,7 +3522,7 @@ function bus_(s, id) { return s.Source === 'bustimes.org' ? busTimesOrg_(s, id) 
 const TAPI_PER_DAY = 28;   // keeps 2 spare for finding the nearest stop
 function busTapi_(s, id) {
   const appId = String(inst_('TransportApiId') || '').trim(), key = String(inst_('TransportApiKey') || '').trim();
-  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key in ⚙ Setup → Advanced → External data keys (developer.transportapi.com), or switch this widget to bustimes.org');
+  if (!appId || !key) throw new Error('Add a free TransportAPI app ID and key in ⚙ Setup → System → External data keys (developer.transportapi.com), or switch this widget to bustimes.org');
   const props = PropertiesService.getScriptProperties();
   const auth = 'app_id=' + encodeURIComponent(appId) + '&app_key=' + encodeURIComponent(key);
   let code = String(s.StopCode || '').trim(), name = String(s.StopName || '');
@@ -3709,8 +3709,8 @@ function apod_() {
     try {
       const res = uf_(tries[i], { muteHttpExceptions: true });
       const code = res.getResponseCode();
-      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it in ⚙ Setup → Advanced → External data keys.'; break; }
-      if (code === 403) { why = 'NASA didn’t accept the key – check the NASA key in ⚙ Setup → Advanced → External data keys.'; break; }
+      if (code === 429) { why = 'NASA’s demo key has been used up for now. Get a free key at api.nasa.gov and add it in ⚙ Setup → System → External data keys.'; break; }
+      if (code === 403) { why = 'NASA didn’t accept the key – check the NASA key in ⚙ Setup → System → External data keys.'; break; }
       if (code !== 200) { why = 'NASA said ' + code; if (code >= 500) break; continue; }   // API down: go straight to the website
       const j = JSON.parse(res.getContentText());
       if (j && (j.url || j.thumbnail_url)) d = j;
@@ -3802,7 +3802,7 @@ function spotifyLoginPage_(key) {
   const id = String(inst_('SpotifyClientId') || '').trim();
   const redirect = spotifyRedirect_();
   if (!id || !String(inst_('SpotifyClientSecret') || '').trim()) {
-    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> in ⚙ Setup → Advanced → External data keys.</p>' +
+    return page_('Connect Spotify', '<p>First add your Spotify <b>Client ID</b> and <b>Client secret</b> in ⚙ Setup → System → External data keys.</p>' +
       '<p>In your app at developer.spotify.com, set the Redirect URI to:</p><p><code style="word-break:break-all">' + redirect + '</code></p>');
   }
   const state = 'sp_' + Utilities.getUuid().replace(/-/g, '');
@@ -3940,7 +3940,7 @@ function menuConnect() {
     dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
       '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
       '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
-      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to Family Dashboard → Allow</b></li>' +
+      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>System → Go to Family Dashboard → Allow</b></li>' +
       '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
       '<p>Then come back here and choose <b>🏠 Family Dashboard → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
     return;
@@ -4103,7 +4103,7 @@ function selfUpdate_(why) {
       return { ok: false, approval: true, message: msg, error: msg };
     }
     const vu = versionsUsed_(true);
-    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (⚙ Setup → Advanced → My data), or delete old versions in Apps Script → Project history.');
+    if (vu && vu.used >= VERSION_MAX - 1) throw new Error('This script has used ' + vu.used + ' of Google’s ' + VERSION_MAX + ' saved versions, so it can’t update any more. Use “Start afresh in a new Sheet” (⚙ Setup → System → My data), or delete old versions in Apps Script → Project history.');
     const keep = (cur.files || []).filter(f => !UPDATE_FILES.some(u => u[0] === f.name)).map(f => ({ name: f.name, type: f.type, source: f.source }));
     scriptApi_('put', '/content', { files: UPDATE_FILES.map(f => ({ name: f[0], type: f[1], source: files[f[0]] })).concat(keep) });
     const ver = scriptApi_('post', '/versions', { description: 'Family Dashboard ' + latest.script });
@@ -4375,7 +4375,7 @@ function moveEmail_(email, link, from) {
     '4. At “Publish & connect”, press “Bring everything across”. Everything in the moving pack is copied in, and the licence moves with it – you don’t need to type the key.\n\n' +
     'YOUR SCREENS AND PHONES\n\n' +
     'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
-    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → Advanced → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
+    'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → System → Devices and Phones → Connect by code, and type the code the screen shows.\n\n' +
     'AFTERWARDS\n\n' +
     'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“Family Dashboard – moving pack”) from this account’s Google Drive.\n\n' +
     'Help with every step: ' + appsBase_() + 'help/\n';
@@ -4553,6 +4553,7 @@ function screenList_() {
 function screenCheck_(p) {
   const dev = String(p.dev || '').replace(/[^\w-]/g, '').slice(0, 40);
   if (!dev) return null;                                   // older screens: not counted
+  if (String(p.fmt || '') === 'phone') return null;        // the dashboard app on a phone: phones don't count, like Family Admin
   const reg = screensReg_(), now = Date.now(), name = String(p.dn || '').slice(0, 30) || 'Screen', fmt = String(p.fmt || '').slice(0, 10);
   if (reg[dev]) {
     if (now - reg[dev].last > 10 * 60000 || reg[dev].fmt !== fmt) { reg[dev].last = now; reg[dev].fmt = fmt; screensSave_(reg); }

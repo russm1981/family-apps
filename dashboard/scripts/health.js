@@ -110,7 +110,7 @@
             '<button class="n-btn ghost" data-h="save">Save a diagnostics report to this PC</button>' +
             '<button class="n-btn ghost" data-h="forget">Disconnect this screen</button></div>' +
             '</div></div>' + qrBlock() + '<div><div>' +
-            '<p class="hl-foot">To email a report to support, use ⚙ Setup → Advanced → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
+            '<p class="hl-foot">To email a report to support, use ⚙ Setup → System → About & diagnostics (on a computer, or in Family Admin on your phone). ' +
             'Private details (access code, keys, addresses, names) are locked so only support can read them.</p></div></div>';
     }
     /** Updates: what's waiting, what's been put off, and buttons to do it now. */
@@ -152,7 +152,7 @@
         var base = appsBase(), c = api() && api().config ? api().config() : {};
         if (!base) return '';
         var hash = c.url && c.code ? '#api=' + encodeURIComponent(c.url) + '&code=' + encodeURIComponent(c.code) : '';
-        var items = [['Family Calendar', 'phone app – everyone', base + 'calendar/' + hash], ['Family Admin', 'phone app – parents', base + hash],
+        var items = [['Family Dashboard', 'phone app – everyone', base + 'dashboard/' + hash], ['Family Admin', 'phone app – parents', base + hash],
             ['Tablet or Pi screen', 'opens this dashboard', base + 'dashboard/' + hash], ['Family Dashboard home', 'setup, help, what’s new', base]];
         return '<div class="hl-qr"><h3>Scan with a phone</h3><div class="hl-qrs">' + items.map(function (x) {
             return '<div class="hl-q"><div class="hl-qi">' + qrSvg(x[2]) + '</div><b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span></div>'; }).join('') +

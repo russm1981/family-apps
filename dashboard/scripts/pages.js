@@ -83,7 +83,9 @@
         if (L.locale && window.FDL) FDL.set(L.locale);
         store(LAYOUT_KEY, JSON.stringify(L));
         build();
-        show(pageExists(current) ? current : firstPage(), true);
+        // The phone app always opens on the calendar; screens open where they were.
+        var calP = phone() && navPages().filter(function (p) { return p.type === 'calendar'; })[0];
+        show(calP && !shownOnce ? calP.id : pageExists(current) ? current : firstPage(), true); shownOnce = true;
         return true;
     }
     /** Pages as shown in the side bar. One layout serves every screen:
@@ -97,7 +99,9 @@
             '<text x="12" y="18.3" text-anchor="middle" font-size="8.5" font-weight="700" font-family="system-ui,sans-serif" fill="currentColor">' + new Date().getDate() + '</text></svg>';
     }
     function tablet() { return !!(window.FDFormat && FDFormat.get().kind === 'standard'); }
-    function boysPerScreen() { return 3; }   // a tablet stacks each child's card (thinner and taller), so 3 fit there too
+    function phone() { return !!(window.FDFormat && FDFormat.get().kind === 'phone'); }
+    var shownOnce = false;
+    function boysPerScreen() { return phone() ? 99 : 3; }   // a phone: every child, one under another   // a tablet stacks each child's card (thinner and taller), so 3 fit there too
     function navPages() {
         var out = [];
         (layout ? layout.pages : []).filter(function (p) { return p.show; }).forEach(function (p) {
@@ -154,7 +158,7 @@
             msg.style.display = 'none';
         } else if (!api().ready()) {
             msg.innerHTML = '<div class="connect"><b>Connect this screen to your Family Dashboard</b>' +
-                '<p>On your computer, open houserunner.app \u2192 <b>Advanced \u2192 Devices and Phones</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
+                '<p>On your computer, open houserunner.app \u2192 <b>System \u2192 Devices and Phones</b> \u2192 <b>Copy the screen link</b>, then paste it here (Ctrl+V).</p>' +
                 '<div class="connect-row"><input id="connectIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="connectGo">Connect</button></div>' +
                 '<p class="foot">Or download your personal start file from houserunner.app/windows \u2013 it connects by itself.</p></div>';
             msg.style.display = 'flex';

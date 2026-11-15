@@ -161,7 +161,7 @@
                 '<div class="card big"><h3>What you’ll end up with</h3><ul>' +
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
-                '<li>Two phone apps: <b>Family Calendar</b> (everyone) and <b>Family Admin</b> (adults).</li></ul></div>' +
+                '<li>Two phone apps: <b>Family Dashboard</b> (everyone – the dashboard on a phone) and <b>Family Admin</b> (adults – the settings).</li></ul></div>' +
                 '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>';
         }, wire: function () {
             if ($('suAmend')) $('suAmend').onclick = function () { S.mode = 'amend'; save(); render(); };
@@ -281,7 +281,7 @@
             if ($('pairSend')) $('pairSend').onclick = function () {
                 var b = this; b.disabled = true;
                 FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
-                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → Advanced → Devices and Phones.)'); });
+                    function (e) { b.disabled = false; $('pairStatus').innerHTML = okLine(false, e.message + ' (The code lasts 10 minutes after it’s sent; if the screen shows a new code, use Family Admin → System → Devices and Phones.)'); });
             };
             if ($('packGo')) $('packGo').onclick = function () {
                 var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';
@@ -304,7 +304,7 @@
                 '<p class="mute">Copy it from the email and paste it in (Ctrl+V), or type it – capitals or not, with or without the dashes.</p></div></div>' +
                 '<details class="card"><summary>It says the key is “already in use”</summary><p>Each key works on one dashboard. If it was typed into an app that was connected to <b>someone else’s</b> dashboard, ' +
                 'it went to theirs. Ask the person who sold you the licence to <b>release</b> it, then press <b>Check and save</b> again.</p></details>' +
-                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in ⚙ Setup → Advanced → Software Licence (on a computer or in the Family Admin app).</p></details>' + helpLink('licence');
+                '<details class="card"><summary>No key yet?</summary><p>You can carry on without one: the dashboard works as a free trial for 14 days. Add the key later in ⚙ Setup → System → Software Licence (on a computer or in the Family Admin app).</p></details>' + helpLink('licence');
         }, wire: function () {
             if (!connected()) return;
             var show = function (L) {
@@ -442,7 +442,7 @@
                     '<li>In Fully Kiosk’s settings, turn on <b>Keep Screen On</b> and, if you like, <b>Kiosk Mode</b>.</li></ol></div>' + pasteLink
                 : '<div class="card big"><h3>In a browser on this computer</h3><p>No screen to connect yet, or just want to try it? Open the dashboard in a new tab here – it’s what the screen will show, already connected.</p>' +
                     '<a class="btn" href="' + esc(screenUrl()) + '" target="_blank" rel="noopener">Open the dashboard in a new tab</a>' +
-                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → Advanced → Devices and Phones.</p></div>';
+                    '<p class="mute">Press <b>F11</b> for full screen, and F11 again to come back. Make the window wide and short to see it like the XENEON EDGE. When you get your screen, come back to this step, or use the Family Admin app → System → Devices and Phones.</p></div>';
             return '<h1>6. Connect your display</h1><p class="lead">The display is what shows the dashboard – the XENEON EDGE, a tablet, or a browser. Choose yours below. ' +
                     'These links are <b>private</b>: they point at your Sheet and contain your access code, so only use them on your own devices. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="tabs" id="devTabs">' + tab('pc', 'XENEON EDGE (Windows)') + tab('pi', 'XENEON EDGE (Raspberry Pi)') + tab('tab', 'Tablet') + tab('here', 'PC browser') + '</div>' + body + helpLink('connect');
@@ -458,15 +458,15 @@
         } },
         { id: 'phones', title: 'Connect your phones', render: function () {
             if (!connected()) return '<h1>7. Connect your phones</h1>' + needConnect();
-            var app = S.papp === 'calendar' ? 'calendar' : 'admin', os = S.pos === 'android' ? 'android' : 'iphone';
+            var app = S.papp === 'dashboard' || S.papp === 'calendar' ? 'dashboard' : 'admin', os = S.pos === 'android' ? 'android' : 'iphone';
             var tab = function (attr, k, cur, t) { return '<button ' + attr + '="' + k + '" class="' + (cur === k ? 'on' : '') + '">' + t + '</button>'; };
             var A = app === 'admin'
                 ? { ico: '⚙', name: 'Family Admin', who: 'for the adults', what: 'The grown-ups’ app: give and take away the children’s points and tick off their tasks, add notes and shopping-list items, change the widgets’ everyday settings, and look after the screen and the licence. Put it on each adult’s phone.' }
-                : { ico: '📅', name: 'Family Calendar', who: 'for everyone', what: 'The family’s shared calendar: see what’s on and add events, in the same colours as the screen. Put it on everyone’s phone – the children’s too, if they have one. It can’t change points or settings.' };
+                : { ico: '▦', name: 'Family Dashboard', who: 'for everyone', what: 'The dashboard itself on a phone: the calendar (it opens on it – add events there), the children’s cards and every widget, one under another. Put it on everyone’s phone – the children’s too, if they have one. It can’t change settings, and phones don’t count as screens on your licence.' };
             return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If the Configurator website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
                     'A backup of your private links has also been emailed to your Google account (“Your Family Dashboard links”).</p></div>' +
-                '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'calendar', app, '📅 Family Calendar (everyone)') + '</div>' +
+                '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'dashboard', app, '▦ Family Dashboard (everyone)') + '</div>' +
                 '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
                     '<ol class="howto"><li><b>Scan this code</b> with the phone’s camera and tap the link that appears. It opens ' + A.name + ', already connected to your family – the code holds your family’s private link.' +
                     qr(linkFor(app)) +
@@ -505,7 +505,7 @@
                     var got = KEYS.filter(function (x) { return S.keys[x.k]; }), sk = KEYS.filter(function (x) { return S.skip[x.k]; });
                     return bar + '<div class="card big"><h3>✔ That’s all the services</h3>' +
                         '<p>' + (got.length ? 'Added: <b>' + got.map(function (x) { return esc(x.name); }).join(', ') + '</b>. ' : '') + (sk.length ? 'Skipped (their widgets are hidden): ' + sk.map(function (x) { return esc(x.name); }).join(', ') + '. ' : '') +
-                        'You can add or change any of them later in the Configurator → Advanced → External data (API) keys.</p>' +
+                        'You can add or change any of them later in the Configurator → System → External data (API) keys.</p>' +
                         '<div class="row"><button class="btn ghost" data-kgo="' + (n - 1) + '">← Back to ' + esc(KEYS[n - 1].name) + '</button></div><p class="mute">Press <b>Next</b> at the bottom to carry on.</p></div>';
                 }
                 var x = KEYS[at], done = S.keys[x.k], skipped = S.skip[x.k];
@@ -653,7 +653,7 @@
             if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
             save();
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
-            if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Configurator → Advanced → My data.' : ''));
+            if (st) st.innerHTML = okLine(true, 'Connected to your Family Dashboard Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it in the Configurator → System → My data.' : ''));
             if (!S.linksEmailed) post({ action: 'emailLinks' }).then(function (d) { S.linksEmailed = d.to || true; save(); toast('A backup of your private links has been emailed to ' + (d.to || 'you')); }, function () { /* older Google script – fine */ });
             renderSteps();
             return true;

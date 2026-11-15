@@ -11,7 +11,7 @@
     function errBox(text) { return '<div class="err">' + esc(text) + '</div>'; }
     function loading() { return '<div class="empty">Loading\u2026</div>'; }
     var DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    /* How dates are shown (Configurator → Advanced → Locations & home), sent with the layout: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14". */
+    /* How dates are shown (Configurator → System → Locations & home), sent with the layout: weeks start Monday (1) or Sunday (0); "14 Nov" or "Nov 14". */
     window.FDL = window.FDL || (function () {
         var L = { weekStart: 1, monthFirst: false }; try { L = JSON.parse(localStorage.getItem('fd.locale')) || L; } catch (e) { /* fine */ }
         var M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -220,7 +220,7 @@
         });
         function draw(t, keepView) {
             if (!window.L) { mapEl.innerHTML = errBox('Map library missing'); return; }
-            if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key in ⚙ Setup → Advanced → External data keys to see the traffic map</div>'; return; }
+            if (!key) { mapEl.innerHTML = '<div class="map-msg">Add a TomTom key in ⚙ Setup → System → External data keys to see the traffic map</div>'; return; }
             if (!map) {
                 map = L.map(mapEl, Object.assign({}, MAP_OPTS, { zoomSnap: 0 }));   // fractional zoom so the routes fill the map
                 map.attributionControl.setPrefix('');

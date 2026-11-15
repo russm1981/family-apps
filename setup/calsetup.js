@@ -283,7 +283,7 @@
     window.FDCalSetup = {
         render: function (el, id, hooks) {
             H = hooks; box = el; pageId = id; CS = (H.data() || {}).calSetup;
-            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">Advanced → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
+            if (!CS) { el.innerHTML = '<div class="cs-card"><h3>Colour coding</h3><p class="cs-warn">⚠ Your Google application needs updating before the calendar’s colour coding can be set up here. Go to <a href="#/advanced/updates">System → Software updates</a> and press Update now, then come back to this page.</p></div>'; return; }
             cats = { groups: clone(CS.groups).map(function (g) { g.was = g.name; return g; }), generals: clone(CS.generals).map(function (g) { g.was = g.name; return g; }) };
             var key = (CS.keys || []).filter(function (k) { return k.page === id; })[0] || (CS.keys || [])[0] || { slots: [], lines: [], hide: [] };
             look = { other: key.other !== false };
@@ -296,7 +296,7 @@
                 return { name: p.name, colour: p.colour, display: key.slots.indexOf(p.name) >= 0 ? 'me' : key.hide.indexOf(p.name) >= 0 ? 'hide' : g ? 'g' + cats.groups.indexOf(g) : 'family' };
             });
             try { draw(); wire(); }
-            catch (e) { el.innerHTML = '<div class="cs-card"><p class="cs-warn">⚠ The calendar set-up couldn’t be shown: ' + esc(e.message) + '. Try reloading the page; if it keeps happening, send a report from Advanced → About &amp; diagnostics.</p></div>'; }
+            catch (e) { el.innerHTML = '<div class="cs-card"><p class="cs-warn">⚠ The calendar set-up couldn’t be shown: ' + esc(e.message) + '. Try reloading the page; if it keeps happening, send a report from System → About &amp; diagnostics.</p></div>'; }
         },
     };
 })();

@@ -36,14 +36,17 @@
     }
     function detect() {
         var w = window.innerWidth, h = window.innerHeight, r = w / Math.max(1, h);
-        var forced = /[?&#]format=(wide|standard|computer)/.exec(location.href);
+        var forced = /[?&#]format=(wide|standard|computer|phone)/.exec(location.href);
+        // A phone (either way up): one column – every widget full width, one under another, and the page scrolls.
+        var phone = forced ? forced[1] === 'phone' : (Math.min(w, h) < 600 && !isComputer());
         var nearer = Math.abs(Math.log(r / WIDE)) < Math.abs(Math.log(r / STD)) ? 'wide' : 'standard';
-        var kind = forced ? forced[1] : (nearer === 'standard' || r < RANGES.wide[0]) && isComputer() && r >= 1 ? 'computer' : nearer;
-        var rg = RANGES[kind];
-        F = { kind: kind, ratio: r, width: w, height: h, supported: !!forced || kind === 'computer' || (r >= rg[0] && r <= rg[1]), portrait: r < 1 };
+        var kind = forced ? forced[1] : phone ? 'phone' : (nearer === 'standard' || r < RANGES.wide[0]) && isComputer() && r >= 1 ? 'computer' : nearer;
+        var rg = RANGES[kind] || [0, 99];
+        F = { kind: kind, ratio: r, width: w, height: h, supported: !!forced || kind === 'computer' || kind === 'phone' || (r >= rg[0] && r <= rg[1]), portrait: r < 1 };
         document.body.classList.toggle('fmt-wide', kind === 'wide' || kind === 'computer');   // a computer shows the Corsair layout
         document.body.classList.toggle('fmt-computer', kind === 'computer');
         document.body.classList.toggle('fmt-standard', kind === 'standard');
+        document.body.classList.toggle('fmt-phone', kind === 'phone'); document.documentElement.classList.toggle('fmt-phone', kind === 'phone');
         box();
         var msg = F.supported ? '' : 'This screen is ' + w + '×' + h + (F.portrait ? ' and upright' : '') + '. The dashboard is made for the Corsair XENEON EDGE (very wide), a tablet such as the Fire HD 10 held sideways, or a computer browser – it’s showing the ' +
             (kind === 'wide' ? 'wide' : 'tablet') + ' layout, but some things may not fit.' + (F.portrait ? ' Turn the tablet sideways.' : '');

@@ -558,6 +558,8 @@
                 if (align !== alignDays) { alignDays = align; if (visible('screen-calendar')) renderCalendar(); }
                 var view = { '3 months': '3m', '3 months (scroll)': '3ms', 'Month': '1m', 'Week': 'week', 'Year': 'year' }[v] || '3m';
                 if (view === 'year' && !yearAvailable()) view = '3m';
+                // A phone: the week, a day under a day – the 3-month and year grids are far too small to read there.
+                if (window.FDFormat && FDFormat.get().kind === 'phone' && view !== '1m') view = 'week';
                 if (defaultView === view) return;
                 defaultView = view;
                 if (!touched) setView(view, new Date());

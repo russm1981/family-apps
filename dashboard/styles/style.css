@@ -1231,3 +1231,55 @@ body.fmt-standard .boy-body { grid-template-rows: auto auto; }
 /* Traffic with no journey due (or none set up): just the live map around home, filling the widget */
 .t-area .routes { display: none !important; }
 .t-area .map { flex: 1 1 auto; }
+
+/* ===================================================================== PHONE
+ * The dashboard app on a phone, either way up: one long column – every widget full width, one under another – with the
+ * screens' buttons along the bottom. Children's cards and the calendar scroll the same way. */
+html.fmt-phone { font-size: 14px; }
+html.fmt-phone, html.fmt-phone body { height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto; -webkit-user-select: text; user-select: text; }
+body.fmt-phone #app { flex-direction: column; height: auto; min-height: 100vh; }
+body.fmt-phone #screens { position: static; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+body.fmt-phone .screen { position: static; padding: 0.8rem 0.7rem; }
+body.fmt-phone .screen.on { display: block; }
+body.fmt-phone .screen.wpage.on { display: flex; flex-direction: column; gap: 0.8rem; }
+body.fmt-phone .wcol { display: contents; }
+body.fmt-phone .wg.full, body.fmt-phone .wg.half { flex: none; min-height: 0; }
+body.fmt-phone .wg.full { height: 25rem; }
+body.fmt-phone .wg.half { height: 15rem; }
+body.fmt-phone .half-pager { display: none !important; }
+/* the screens' buttons: a bar along the bottom */
+body.fmt-phone #rail { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; height: auto; z-index: 60; flex-direction: row; gap: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(12,14,18,.96); border-top: 1px solid var(--line); border-right: 0; }
+body.fmt-phone #rail .rail-pages { flex: 1; flex-direction: row; justify-content: space-around; gap: 4px; overflow-x: auto; }
+body.fmt-phone #rail .nav-btn { height: 54px; flex: 1 1 0; min-width: 56px; padding: 4px 2px; border-radius: 12px; gap: 2px; }
+body.fmt-phone #rail .nav-btn .ico { font-size: 22px; }
+body.fmt-phone #rail .nav-btn .nt { font-size: 11px; display: block; }
+body.fmt-phone #rail .rail-foot { display: none; }
+/* children: each card full width, one under another */
+body.fmt-phone #screen-boys.on { display: flex; flex-direction: column; gap: 0.8rem; }
+body.fmt-phone #screen-boys > * { zoom: 1; }
+
+/* the calendar: as tall as it needs, scrolling with the page */
+body.fmt-phone #screen-calendar.on { display: flex; flex-direction: column; height: auto; }
+body.fmt-phone #screen-calendar > * { zoom: 1; }
+body.fmt-phone .cal-side { display: block; }
+body.fmt-phone #fmtNote { display: none !important; }
+/* the calendar, upright phone: the week as a list of days (each day its row: the day on the left, its events on the right) */
+body.fmt-phone .cal-head { flex-wrap: wrap; row-gap: 0.5rem; }
+body.fmt-phone .cal-body { flex-direction: column; }
+body.fmt-phone .cal-side { order: 2; }
+body.fmt-phone .cal-key { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; }
+@media (orientation: portrait) {
+    body.fmt-phone .cal-rows.view-week { display: flex; flex-direction: column; gap: 0.45rem; }
+    body.fmt-phone .wv-col { display: grid; grid-template-columns: 5.2rem minmax(0, 1fr); text-align: left; overflow: visible; min-height: 3.2rem; }
+    body.fmt-phone .wv-head { border-bottom: 0; border-right: 1px solid var(--line); justify-content: center; }
+    body.fmt-phone .wv-head b { font-size: 1.1rem; }
+    body.fmt-phone .wv-list { overflow: visible; }
+    body.fmt-phone .wev .wx { white-space: normal; word-break: normal; }
+    body.fmt-phone .cal-rows.view-1m { font-size: 0.8rem; }
+}
+/* children, phone: each card full width and as tall as everything in it */
+body.fmt-phone .boys-grid { display: flex; flex-direction: column; gap: 0.8rem; }
+body.fmt-phone .boy { width: 100%; height: auto; min-height: 0; overflow: visible; }
+body.fmt-phone .boy-body { display: flex; flex-direction: column; overflow: visible; }
+body.fmt-phone #screen-boys { position: relative; }

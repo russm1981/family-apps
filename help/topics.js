@@ -7,9 +7,9 @@ window.FD_HELP = [
     id: 'where', icon: '🧭', title: 'The Configurator and the Family Admin app',
     summary: 'Setting things up is on the HouseRunner Configurator, on a computer. Everyday things – rewards, notes, lists, the calendar – are in the Family Admin app on your phone too.',
     body: `
-<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>⚙ Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and Advanced. <b>⚙ Widgets</b>: the calendar, notes, lists, reminders and the other widgets’ settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
+<p><b>The HouseRunner Configurator (computer)</b> – <b>houserunner.app</b> – is in two parts. <b>⚙ Setup</b>: the Setup wizard, Screens (which widgets go where, and the calendar pages), Family, Rewards and System. <b>⚙ Widgets</b>: the calendar, notes, lists, reminders and the other widgets’ settings. <b>Help</b> and <b>Feedback</b> are at the top, by the title.</p>
 <p><b>Family Admin (phone)</b>: the everyday things – rewards (tasks, to-dos, reminders, points by hand), notes, lists, the calendar and the widgets’ everyday settings – plus help, support requests and diagnostics.</p>
-<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → Advanced → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
+<p>The first time you open the Configurator on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → System → Devices and Phones → Connect by code</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
@@ -71,7 +71,7 @@ window.FD_HELP = [
 </ol>
 <h2>What the message says, and what to do</h2>
 <dl>
-<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → Advanced → Devices and Phones → Connect by code</b>. For the Windows PC, make a new start file in the Configurator (<b>⚙ Setup → Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
+<dt>“Wrong access code”</dt><dd>The access code was changed, so this screen needs connecting again. On your phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>. For the Windows PC, make a new start file in the Configurator (<b>⚙ Setup → Setup wizard</b>, step “Connect your devices”) and replace the old one.</dd>
 <dt>“The Google script sent back an error page” or “needs approving again”</dt><dd>Google wants you to approve the script again (this happens after some updates). On a computer: open your Family Dashboard Google Sheet → <b>Extensions → Apps Script</b> → choose <b>setup</b> at the top → <b>Run</b> → follow Google’s “Review permissions” screens and press <b>Allow</b>. Then in the same window: <b>Deploy → Manage deployments → pencil ✎ → Version: New version → Deploy</b>.</dd>
 <dt>“This PC is offline”</dt><dd>The computer has no internet. Check its Wi-Fi or cable.</dd>
 <dt>“No answer from the Google script for 20 seconds”</dt><dd>Google was slow. It usually sorts itself out; if it keeps happening, check the internet speed.</dd>
@@ -86,10 +86,10 @@ window.FD_HELP = [
 <p>Each widget gets its information from a different free service. If one service is down, or the widget needs something you haven’t given it yet, just that widget shows a message and the dot turns orange. The rest keep working.</p>
 <h2>Common messages</h2>
 <dl>
-<dt>Traffic or maps: “needs a TomTom key”</dt><dd>Add a free TomTom key: <b>the Configurator → Advanced → Data keys</b>. See <a href="#keys">Free API keys</a> for how to get one.</dd>
-<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>⚙ Setup → Advanced → External data keys</b>. Check the station codes in the Trains widget settings (three letters, e.g. VIC for London Victoria – find yours at nationalrail.co.uk).</dd>
+<dt>Traffic or maps: “needs a TomTom key”</dt><dd>Add a free TomTom key: <b>the Configurator → System → Data keys</b>. See <a href="#keys">Free API keys</a> for how to get one.</dd>
+<dt>Trains: “needs a Rail Data key” or no trains</dt><dd>Add a National Rail key in <b>⚙ Setup → System → External data keys</b>. Check the station codes in the Trains widget settings (three letters, e.g. VIC for London Victoria – find yours at nationalrail.co.uk).</dd>
 <dt>Photos: “Paste a Google Drive folder link”</dt><dd>See <a href="#photos">Photos</a>.</dd>
-<dt>Buses: no departures</dt><dd>Needs the TransportAPI app ID and key in <b>⚙ Setup → Advanced → External data keys</b>, and the right bus stop in the widget’s settings.</dd>
+<dt>Buses: no departures</dt><dd>Needs the TransportAPI app ID and key in <b>⚙ Setup → System → External data keys</b>, and the right bus stop in the widget’s settings.</dd>
 <dt>Spotify: “Not connected”</dt><dd>In the Family Admin app open the Spotify widget and press <b>Connect Spotify</b>. Play/pause needs Spotify Premium.</dd>
 <dt>Anything saying “unavailable”, “didn’t answer” or a number like 500</dt><dd>The outside service is having a problem. Wait an hour – it usually comes back by itself.</dd>
 </dl>
@@ -110,8 +110,8 @@ window.FD_HELP = [
 <h2>“Your Google script needs updating”</h2>
 <p>Your Sheet was set up before the loader existed. Switch to it once – the last time you’ll paste anything:</p>
 <ol>
-<li>On a computer open <b>⚙ Setup → Advanced → Software updates</b>, or open your Sheet → <b>Extensions → Apps Script</b>.</li>
-<li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (⚙ Setup → Advanced → Software updates has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
+<li>On a computer open <b>⚙ Setup → System → Software updates</b>, or open your Sheet → <b>Extensions → Apps Script</b>.</li>
+<li>Replace everything in <b>Code.gs</b> with <b>Loader.gs</b> (⚙ Setup → System → Software updates has a Copy button; it’s also on GitHub in Scripts/MainSpreadsheet). Replace <b>Admin.html</b> and <b>appsscript.json</b> too.</li>
 <li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>
 </ol>
 <p>The old way (the script rewriting itself) needs Google’s Apps Script API switched on in two places – your account settings and the script’s own Google Cloud project, which Google often won’t let you open. The loader avoids all of that.</p>
@@ -124,11 +124,11 @@ window.FD_HELP = [
     summary: 'Each phone or screen needs your family’s private link once. Get it from the Family Admin app on a phone that’s already connected, or from the Configurator on a computer.',
     body: `
 <p>Your dashboard is private: each device needs a link containing your family’s access code before it can show anything. You only do this once per device.</p>
-<h2>Family Admin or Family Calendar on a computer</h2>
-<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → Advanced → Devices and Phones → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
-<h2>A new phone (Family Admin or Family Calendar)</h2>
+<h2>The Configurator on a computer</h2>
+<p>Open it: it shows a code like <b>K7Q2-M9XD</b> and a QR code. On your phone: <b>Family Admin → System → Devices and Phones → Connect by code</b>, type the code (or scan the QR code with the phone’s camera) – the computer connects within a few seconds. If the computer’s browser already has another of the apps connected, it just offers <b>Use the same family</b>.</p>
+<h2>A new phone (Family Admin or Family Dashboard)</h2>
 <ol>
-<li>On a phone that’s <b>already connected</b>: <b>Family Admin → Advanced → Devices and Phones</b>. This shows QR codes.</li>
+<li>On a phone that’s <b>already connected</b>: <b>Family Admin → System → Devices and Phones</b>. This shows QR codes.</li>
 <li>On the new phone, point the camera at the right QR code and open the link.</li>
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
@@ -140,7 +140,7 @@ window.FD_HELP = [
 <h2>A tablet or Raspberry Pi</h2>
 <p>Open the <b>screen link</b> from the same page in the device’s browser (or scan the “Tablet or Pi screen” code on the main screen’s status page – tap its version number) and make it full-screen (on Android tablets, the free <i>Fully Kiosk Browser</i> app works well).</p>
 <h2>How many screens?</h2>
-<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones with Family Admin or Family Calendar don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → Advanced → Devices and Phones</b>.</p>
+<p>Your licence says how many <b>screens</b> (Corsair, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>Family Admin → System → Devices and Phones</b>.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
 <p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 Family Dashboard → Connect my screen and phones</b>.</p>`
   },
@@ -153,7 +153,7 @@ window.FD_HELP = [
 <li>Plug in the screen, the internet (a network cable is easiest) and the power. After a minute the dashboard opens full-screen.</li>
 <li>It shows a <b>QR code</b> and a code like <code>K7Q2-M9XD</code>. Scan the QR code with your phone’s camera.</li>
 <li><b>New to HouseRunner?</b> Your phone opens setup. Follow it (about 30 minutes – easiest on a computer). At “Publish &amp; connect” press <b>Connect the screen</b>.</li>
-<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → Advanced → Devices and Phones → <b>Connect by code</b> and type the code.)</li>
+<li><b>Already set up?</b> Press <b>Connect the screen</b> on your phone. (If the page says it can’t see your family, open Family Admin → System → Devices and Phones → <b>Connect by code</b> and type the code.)</li>
 <li>The screen connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
@@ -184,13 +184,13 @@ window.FD_HELP = [
 <p>Some families prefer the dashboard’s permissions (calendar, Gmail for parcels…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
 <ol>
 <li>If you haven’t got one, make the new Google account (e.g. at gmail.com).</li>
-<li>On a computer (or in Family Admin): <b>⚙ Setup → Advanced → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
+<li>On a computer (or in Family Admin): <b>⚙ Setup → System → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>
 <li>On a <b>computer</b>, sign in to Google as the new account (a private/incognito window is easiest) and open the link. It’s the setup wizard, in “moving” mode.</li>
 <li>Follow the setup steps for the new account: make the Sheet and publish it (steps 2 and 3).</li>
 <li>At <b>Publish &amp; connect</b>, press <b>Bring everything across</b>.</li>
 </ol>
 <p>That’s it: people, points, tasks, lists, notes, settings and your licence move to the new account, and your screen and phones switch over by themselves. The old Sheet is kept as a backup – keep it for a few weeks, as it points older links to the new one, then you can delete it.</p>
-<p>Calendars: the new account needs to see your family calendar. In Google Calendar (on the old account) share the calendar with the new account, then add its ID in <b>the Configurator → Advanced → Locations &amp; home</b>.</p>`
+<p>Calendars: the new account needs to see your family calendar. In Google Calendar (on the old account) share the calendar with the new account, then add its ID in <b>the Configurator → System → Locations &amp; home</b>.</p>`
   },
   {
     id: 'licence', icon: '🎫', title: 'Licence key',
@@ -199,7 +199,7 @@ window.FD_HELP = [
 <h2>Entering your key</h2>
 <ol><li>Find your order email – the key looks like <code>FD-AB2CD-EF3GH-JK4LM-NP5QR</code>.</li>
 <li>When you first set up, the setup wizard has a step <b>“Your licence key”</b> – the link in your email fills it in for you.</li>
-<li>Later: on your phone, <b>Family Admin → Advanced → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
+<li>Later: on your phone, <b>Family Admin → System → Software Licence</b>, paste it in and press <b>Check and save</b>. If the screen says <b>“Add your licence key”</b>, you can also type it straight in on the screen.</li></ol>
 <h2>Messages</h2>
 <dl>
 <dt>“Free trial: N days left”</dt><dd>Everything works; add your key before the trial ends.</dd>
@@ -215,7 +215,7 @@ window.FD_HELP = [
     body: `
 <p>This is the <b>sleep screen</b>. One touch anywhere wakes the dashboard – that touch doesn’t press anything underneath. A kitchen timer going off wakes it too.</p>
 <h2>Changing it</h2>
-<p><b>Family Admin → Advanced → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
+<p><b>Family Admin → System → Screen Sleep</b>: how many minutes before it sleeps (0 = never), a small clock or completely black, and the night hours.</p>
 <h2>The screen goes completely black and a touch doesn’t wake it</h2>
 <p>That’s Windows switching the display off, not the dashboard. The start file offers to fix this the first time (“keep the screen switched on?” – Yes). Or on the PC: <b>Settings → System → Power</b> (or <b>Power &amp; battery</b>) → <b>Screen and sleep</b> → set “Turn off my screen” and “Put my device to sleep” to <b>Never</b>. The dashboard’s own sleep screen then takes care of it.</p>`
   },
@@ -237,7 +237,7 @@ window.FD_HELP = [
     id: 'keys', icon: '🔑', title: 'Free API keys (maps, trains, buses, NASA, Spotify)',
     summary: 'Some widgets use free services that need a key – a long code that identifies you. They’re free and take a few minutes each; you only need the ones for the widgets you use.',
     body: `
-<p>An <b>API key</b> is like a free library card for an online service. You sign up on their website, they give you a long code, and you paste it into <b>the Configurator → Advanced → Data keys</b>. That page marks the ones your widgets need.</p>
+<p>An <b>API key</b> is like a free library card for an online service. You sign up on their website, they give you a long code, and you paste it into <b>the Configurator → System → Data keys</b>. That page marks the ones your widgets need.</p>
 <table class="t">
 <tr><td><b>TomTom</b></td><td>Traffic times and the traffic map. Free at developer.tomtom.com.</td></tr>
 <tr><td><b>National Rail</b></td><td>Train departures. Free from the Rail Data Marketplace (raildata.org.uk) or National Rail’s OpenLDBWS.</td></tr>
@@ -258,7 +258,7 @@ window.FD_HELP = [
 <li><b>Any other council:</b> enter your bins by hand – for each bin, what it is, how often (every 1–4 weeks) and its next collection date. You see the next few collections before you save. Or, if your council’s bin-day page has an “add to calendar” link, use that.<br><b>Shortcut:</b> open <b>✨ Let an AI assistant look it up</b> – copy the ready-written request into ChatGPT, Claude or Gemini, then paste its answer back and your bins fill themselves in. Check the dates against the council’s calendar before saving.</li>
 </ol>
 <p>More councils are being added over time; ones you’ve set up by hand can switch over later. Bank-holiday changes aren’t known when you’ve entered your bins by hand.</p>
-<p>If it stops working, a diagnostics report (⚙ Setup → Advanced → About &amp; diagnostics) includes what the council’s service said, so support can see why.</p>`
+<p>If it stops working, a diagnostics report (⚙ Setup → System → About &amp; diagnostics) includes what the council’s service said, so support can see why.</p>`
   },
   {
     id: 'voice', icon: '🎙', title: 'Voice commands',
@@ -307,10 +307,10 @@ window.FD_HELP = [
     summary: 'Want a clean start? Set up a new family from scratch – your old Sheet is kept as a backup. (Moving everything to another Google account is a separate option.)',
     body: `
 <h2>Start afresh – only for older Sheets</h2>
-<p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>the Configurator → Advanced → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
+<p>Dashboards that use the <b>loader</b> (everything set up from November 2026, or switched over – see <a href="#updates">Updates</a>) never need this: Google’s limit of 200 saved versions doesn’t apply to them. On an older Sheet that’s nearly at the limit, <b>the Configurator → System → My data (Google) → Start afresh in a new Sheet</b> copies everything into a new Sheet – but switching to the loader is easier.</p>
 <h2>From scratch – a brand-new family set-up</h2>
 <p>Use this for a completely clean start (new people, new settings). Your old Sheet isn’t changed, so it stays in your Google Drive as a backup.</p>
-<ol><li>Free your licence key first: <b>Family Admin → Advanced → Software Licence → Free up my licence key</b>. Note the key.</li>
+<ol><li>Free your licence key first: <b>Family Admin → System → Software Licence → Free up my licence key</b>. Note the key.</li>
 <li>Run the <a href="../setup/guide/">setup wizard</a> from the start, and enter the key when asked.</li>
 <li>Connect your screen and phones again (the setup wizard shows how).</li></ol>`
   },
