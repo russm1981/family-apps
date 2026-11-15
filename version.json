@@ -1,11 +1,9 @@
 {
-  "app": "2026.11.218",
+  "app": "2026.11.219",
   "script": "2026.11.101",
   "date": "2026-11-15",
   "notes": [
-    "Other widgets are now grouped: Information (Weather, Clock, Bins, Parcels, News), Travel, Family (Weasley Clock last), Tools and Interest, with Not in use at the end",
-    "Word of the day is now called Duolingo Words everywhere",
-    "Setup wizard: two short buttons – Set up a new family, and Rerun for your family – with more space between them"
+    "Screens: more space above and below the blue ‘Click a widget for its settings’ box"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

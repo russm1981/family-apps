@@ -170,7 +170,7 @@ window.FD_HELP = [
 <li>The display connects within a few seconds and remembers it from then on.</li>
 </ol>
 <h2>No network cable?</h2>
-<p>If the Pi was prepared with Wi-Fi set-up, it makes a Wi-Fi network called <b>FamilyDashboard-…</b>. Join it from your phone, choose your home Wi-Fi and type its password; the Pi then restarts on your Wi-Fi.</p>
+<p>If the Pi was prepared with Wi-Fi set-up, it makes a Wi-Fi network called <b>Pi-HouseRunner</b>. Join it from your phone, choose your home Wi-Fi and type its password; the Pi then restarts on your Wi-Fi.</p>
 <h2>Updates</h2>
 <p>Nothing of the dashboard is stored on the Pi’s card – it loads the latest version from the internet every time, installs security updates by itself and restarts at 4 am. A Pi that’s been in a drawer for a year is up to date as soon as it’s switched on.</p>
 <h2>Making your own Pi</h2>

@@ -382,9 +382,9 @@
         $('body').innerHTML =
             card('Start full wizard', connLine() +
                 '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the display and phones, and the free keys for live data.</p>' +
-                '<div class="btn-row wiz-btns"><a class="btn" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Set up a new family</a>' +
-                '<a class="btn" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun for the ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'current family') + '</a></div>' +
-                '<p class="mute small"><b>New family</b> – the first time only; it makes a new Google Sheet. <b>Rerun</b> – change what’s there, or clear it and start again; a backup copy is kept in your Google Drive first.</p>') +
+                '<div class="btn-row wiz-btns"><a class="btn" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Set up a new family (first use)</a>' +
+                '<a class="btn" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun wizard for the ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'current family') + '</a></div>' +
+                '<p class="mute small"><b>New family</b> – makes a new Google Sheet. <b>Rerun</b> – change what’s there, or clear it and start again; a backup copy is kept in your Google Drive first.</p>') +
             stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */

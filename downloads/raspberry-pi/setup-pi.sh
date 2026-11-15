@@ -54,9 +54,9 @@ echo "== Fresh start every night at 4 am"
 ( sudo crontab -l 2>/dev/null | grep -v family-dashboard-reboot; echo "0 4 * * * /sbin/shutdown -r now # family-dashboard-reboot" ) | sudo crontab -
 
 if [ "$WIFI_SETUP" = "1" ]; then
-  echo "== Wi-Fi from a phone: with no known Wi-Fi, the Pi makes a hotspot called 'FamilyDashboard-xxxx' to choose one"
+  echo "== Wi-Fi from a phone: with no known Wi-Fi, the Pi makes a hotspot called 'Pi-HouseRunner' to choose one"
   sudo apt-get install -y comitup || echo "(comitup couldn't be installed – connect Wi-Fi from the desktop instead)"
-  [ -f /etc/comitup.conf ] && sudo sed -i 's/^#\?ap_name:.*/ap_name: FamilyDashboard-<nnnn>/' /etc/comitup.conf || true
+  [ -f /etc/comitup.conf ] && sudo sed -i 's/^#\?ap_name:.*/ap_name: Pi-HouseRunner/' /etc/comitup.conf || true
 fi
 
 echo
