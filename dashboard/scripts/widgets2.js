@@ -151,7 +151,7 @@
     /* ========================================================= TO-DO (TASKS) */
 
     T.todo = function (el, w) {
-        var s = w.settings, full = w.size === 'full', data = null, busy = false;
+        var s = w.settings, full = w.size === 'full', data = null, pending = 0, queue = Promise.resolve();
         el.innerHTML = '<div class="ls-head"><h3 class="ls-title">' + esc(s.Title || 'To do') + '</h3><span class="ls-count"></span>' +
             (s.AddOnScreen ? '<button class="ls-btn" data-l="add">+ Add</button>' : '') + '</div><div class="td-items">' + loading() + '</div>';
         var box = el.querySelector('.td-items');
@@ -192,11 +192,13 @@
                 : '<div class="empty">Nothing to do 🎉</div>') + foot;
         }
         var touched = 0;   // a background refresh straight after a change may carry older data: ignore it for a few seconds
+        // Each change is saved in turn (none are lost when several are tapped quickly); the saved list comes back after the last.
         function send(b) {
-            if (busy) return; busy = true; touched = Date.now();
+            touched = Date.now(); pending++;
             b.action = 'listItem'; b.widget = w.id;
-            post(b, function (r) { data = r.data; render(); if (popAll && document.getElementById('pop').classList.contains('on')) openAll(); })
-                .catch(function () {}).finally(function () { busy = false; });
+            queue = queue.then(function () {
+                return post(b, function (r) { if (pending === 1) { data = r.data; render(); if (popAll && document.getElementById('pop').classList.contains('on')) openAll(); } }).catch(function () {});
+            }).then(function () { pending--; touched = Date.now(); });
         }
         var popAll = false;
         function openAll() {
@@ -243,7 +245,7 @@
             else if (a === 'clear') { send({ op: 'clearDone' }); if (popAll) closePop(); }
         }
         el.addEventListener('click', click);
-        return { update: function (d) { if (!busy && Date.now() - touched > 8000) { data = d; render(); } } };
+        return { update: function (d) { if (!pending && Date.now() - touched > 8000) { data = d; render(); } } };
     };
 
     /* =============================================================== PARCELS */

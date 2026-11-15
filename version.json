@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.182",
-  "script": "2026.11.91",
+  "app": "2026.11.187",
+  "script": "2026.11.94",
   "date": "2026-11-15",
   "notes": [
-    "The Windows start file is now called “Start HouseRunner” (an older “Start Family Dashboard” file keeps working, and its start-up shortcut is replaced rather than doubled)",
-    "The links email is now “Your HouseRunner links – keep this email”"
+    "The Memo widget is now called Notes, so notes are “Notes” everywhere – the widget, the menus, both phone apps, voice commands and the tab in your Google Sheet"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

@@ -817,8 +817,8 @@
     /* =============================================================== LIST */
 
     T.list = function (el, w) {
-        var s = w.settings, full = w.size === 'full', data = null, busy = false;
-        el.innerHTML = '<div class="ls-head"><h3 class="ls-title">' + esc(s.ListName) + '</h3><span class="ls-count"></span>' +
+        var s = w.settings, full = w.size === 'full', data = null, pending = 0, queue = Promise.resolve();
+        el.innerHTML = '<div class="ls-head"><h3 class="ls-title">' + esc(s.ListName) + '</h3>' +
             (s.AddOnScreen ? '<button class="ls-btn" data-l="add">+ Add</button>' : '') + '</div><div class="ls-items">' + loading() + '</div>';
         var box = el.querySelector('.ls-items');
         function items() { return (data && data.items || []).filter(function (i) { return s.ShowTicked || !i.done; }); }
@@ -828,7 +828,6 @@
         function render() {
             if (!data || data.error) { box.innerHTML = errBox(data ? data.error : 'No list'); return; }
             var all = items(), left = data.items.filter(function (i) { return !i.done; }).length, ticked = data.items.length - left;
-            el.querySelector('.ls-count').textContent = left ? left + ' to get' : 'All done';
             var fit = full ? 20 : 8;      // two columns
             var cut = all.length > fit ? fit - 1 : all.length;
             box.innerHTML = all.length ? all.slice(0, cut).map(row).join('') +
@@ -836,19 +835,22 @@
                 (ticked && s.ShowTicked && all.length <= cut ? '<button class="ls-clear" data-l="clear">Clear ticked (' + ticked + ')</button>' : '')
                 : '<div class="empty">Nothing on the list</div>';
         }
+        // Every tick is saved, one after another in order – tapping several quickly no longer loses any. The list on the
+        // screen only takes the saved copy back once the last one is done, so ticks don't flicker back while saving.
         function send(body) {
-            if (busy) return;
-            busy = true;
             body.action = 'listItem'; body.widget = w.id;
-            api().post(body).then(function (r) { data = r.data; render(); if (document.getElementById('pop').classList.contains('on') && popList) openAll(); })
-                .catch(function (e) { api().toast('Didn\u2019t save: ' + e.message, true); })
-                .finally(function () { busy = false; });
+            pending++;
+            queue = queue.then(function () {
+                return api().post(body).then(function (r) {
+                    if (pending === 1) { data = r.data; render(); if (document.getElementById('pop').classList.contains('on') && popList) openAll(); }
+                }, function (e) { api().toast('Didn\u2019t save: ' + e.message, true); });
+            }).then(function () { pending--; });
         }
         var popList = false;
         function openAll() {
             popList = true;
             var ticked = data.items.filter(function (i) { return i.done; }).length;
-            pop(s.ListName + ' (' + data.items.filter(function (i) { return !i.done; }).length + ' to get)',
+            pop(s.ListName,
                 '<div class="ls-all">' + items().map(row).join('') + '</div>' +
                 (ticked ? '<button class="ls-clear" data-l="clear">Clear ticked (' + ticked + ')</button>' : ''), onClick);
         }
@@ -880,7 +882,7 @@
             else if (a === 'clear') { data.items = data.items.filter(function (i) { return !i.done; }); render(); send({ op: 'clearDone' }); if (popList) closePop(); }
         }
         el.addEventListener('click', onClick);
-        return { update: function (d) { if (!busy) { data = d; render(); } } };
+        return { update: function (d) { if (!pending) { data = d; render(); } } };
     };
 
     /* ===================================================================== */

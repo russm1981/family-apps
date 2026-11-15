@@ -12,3 +12,14 @@ window.FD_ICONS = {
     other: '<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="8.5" height="8.5" rx="2.2" fill="#3fa9f5"/><rect x="13" y="2.5" width="8.5" height="8.5" rx="4.25" fill="#f5a623"/>' +
         '<rect x="2.5" y="13" width="8.5" height="8.5" rx="2.2" fill="#a855f7"/><path d="M17.25 13.5v7.5M13.5 17.25h7.5" stroke="#4cd964" stroke-width="2.8" stroke-linecap="round"/></svg>'
 };
+
+/* The two kinds of list widget: a plain tick for a list you make yourself, and a tick with Google's "G" for Google Tasks. */
+window.FD_ICONS.w_list = '<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="4.5" fill="#22c55e"/><path d="M7 12.4l3.3 3.3L17.2 8.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+window.FD_ICONS.w_todo = '<svg class="mi" viewBox="0 0 24 24" aria-hidden="true"><rect x="1.5" y="1.5" width="17" height="17" rx="4" fill="#3b82f6"/><path d="M5.3 10.2l2.9 2.9 6-6.2" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<circle cx="17.6" cy="17.6" r="6" fill="#fff"/><path d="M21.1 15.4a4 4 0 1 0 .45 3.1" fill="none" stroke="#ea4335" stroke-width="1.9"/><path d="M14.1 15.6a4 4 0 0 0 0 4" fill="none" stroke="#fbbc05" stroke-width="1.9"/>' +
+    '<path d="M14.3 20.1a4 4 0 0 0 6.9-.4" fill="none" stroke="#34a853" stroke-width="1.9"/><path d="M17.7 17.6h3.9a4 4 0 0 1-.4 2.1" fill="none" stroke="#4285f4" stroke-width="1.9"/></svg>';
+/** A widget kind's icon: the drawn one if there is one, otherwise its emoji. */
+window.FDIco = function (T) {
+    var svg = T && window.FD_ICONS['w_' + T.type]; if (svg) return svg;
+    var d = document.createElement('i'); d.textContent = (T && T.icon) || ''; return d.innerHTML;
+};

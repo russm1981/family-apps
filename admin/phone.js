@@ -129,7 +129,8 @@
     /** The same names as the Configurator uses. */
     function nameOf(w) {
         var T = typeOf(w.type), st = w.settings || {};
-        if (w.type === 'list') return st.ListName || 'List';
+        if (w.type === 'list') return st.ListName || 'General List';
+        if (w.type === 'todo') return 'To-Do (Google)';
         if (w.type === 'memo') return 'Notes';
         if (w.type === 'whereabouts') return 'Weasley Clock';
         if (w.type === 'countdown') return st.Title || 'Countdown';
@@ -203,10 +204,11 @@
                 box('<textarea id="mmNew" rows="2" maxlength="' + (L().memo || 80) + '" placeholder="Write a note…"></textarea>' +
                     '<div class="fa-inline"><input id="mmFrom" maxlength="12" placeholder="From (optional)" value="' + esc(from) + '" autocomplete="off"><button class="btn" id="mmAdd">+ Add</button></div>', 'fa-addbox')) +
             h('On the dashboard', '<small>' + m.length + ' of ' + max + '</small>') +
-            (m.length ? m.map(function (x, i) {
-                return '<div class="fa-row note"><span class="fa-sticky" style="background:' + COLOURS[i % COLOURS.length] + '"></span><span class="fa-t"><b>' + esc(x.text) + '</b><small>' + (x.from ? esc(x.from) + ' · ' : '') + esc(x.added) + '</small></span>' +
-                    '<button class="fa-x" data-mrm="' + esc(x.id) + '" aria-label="Take it off">✕</button></div>';
-            }).join('') : empty('No notes on the dashboard'));
+            // Sticky notes, as on the dashboard – two to a row
+            (m.length ? '<div class="stickies fa-stickies">' + m.map(function (x, i) {
+                return '<div class="sticky" style="--nc:' + COLOURS[i % COLOURS.length] + ';--rot:' + ((i % 3) - 1) * 1.2 + 'deg"><span>' + esc(x.text) + '</span><small>' + (x.from ? '— ' + esc(x.from) + ', ' : '') + esc(x.added) + '</small>' +
+                    '<button class="x" data-mrm="' + esc(x.id) + '" aria-label="Take it off">✕</button></div>';
+            }).join('') + '</div>' : empty('No notes on the dashboard'));
         if ($('mmAdd')) $('mmAdd').onclick = function () {
             var t = $('mmNew').value.trim(), f = $('mmFrom').value.trim(); if (!t) return;
             try { localStorage.setItem('fdadmin.from', f); } catch (e) { /* fine */ }
@@ -215,7 +217,7 @@
         };
         $('faMain').onclick = function (e) {
             var b = e.target.closest('[data-mrm]'); if (!b) return;
-            b.closest('.fa-row').classList.add('gone');
+            b.closest('.sticky').classList.add('gone');
             act({ action: 'memo', op: 'remove', id: b.getAttribute('data-mrm') }, 'Taken off').then(function () { return load(true); }, function () { draw(); });
         };
     }
@@ -223,13 +225,13 @@
     /* ------------------------------------------------------------------ 📝 Lists */
 
     function listsPage() {
-        var ws = onScreens(function (w) { return w.type === 'list' || w.type === 'todo'; });
+        var ws = onScreens(function (w) { return w.type === 'list' || w.type === 'todo'; }).sort(function (a, b) { return (b.type === 'todo') - (a.type === 'todo'); });      // To-Do (Google) first
         $('faMain').onclick = null;
         if (!ws.length) { $('faMain').innerHTML = empty('No lists on the dashboard') + '<p class="fa-pc">Add a List or To-do widget on a computer at <b>' + esc(HOST) + '</b> → Screens.</p>'; return; }
         var open = ''; try { open = sessionStorage.getItem('fdadmin.openList') || ''; } catch (e) { /* fine */ }
         var w = ws.filter(function (x) { return x.id === open; })[0] || ws[0];
         var d = (DATA.lists || {})[w.id], items = d && d.items || [], done = items.filter(function (i) { return i.done; }).length;
-        $('faMain').innerHTML = (ws.length > 1 ? '<div class="fa-seg big" id="lsPick">' + ws.map(function (x) { return '<button data-l="' + esc(x.id) + '"' + (x === w ? ' class="on"' : '') + '>' + esc(typeOf(x.type).icon) + ' ' + esc(nameOf(x)) + '</button>'; }).join('') + '</div>' : h(esc(typeOf(w.type).icon + ' ' + nameOf(w)))) +
+        $('faMain').innerHTML = (ws.length > 1 ? '<div class="fa-seg big" id="lsPick">' + ws.map(function (x) { return '<button data-l="' + esc(x.id) + '"' + (x === w ? ' class="on"' : '') + '>' + FDIco(typeOf(x.type)) + ' ' + esc(nameOf(x)) + '</button>'; }).join('') + '</div>' : h(esc(typeOf(w.type).icon + ' ' + nameOf(w)))) +
             box('<div class="fa-inline"><input id="lsNew" maxlength="' + (L().listItem || 30) + '" placeholder="Add an item…" autocomplete="off"><button class="btn" id="lsAdd">+ Add</button></div>', 'fa-addbox') +
             (!d ? empty('Loading…') : d.error ? '<p class="fa-err">' + esc(d.error) + '</p>' : items.length ? items.map(function (i) {
                 return '<div class="fa-row li' + (i.done ? ' done' : '') + '"><button class="fa-tick" data-ltog="' + esc(i.id) + '" aria-label="Tick"></button><span class="fa-t" data-ltog="' + esc(i.id) + '"><b>' + esc(i.text) + '</b>' + (i.due ? '<small>' + esc(nice(i.due)) + '</small>' : '') + '</span>' +
@@ -266,12 +268,12 @@
                 '<div class="fa-bar"><i style="width:' + pct + '%"></i></div><p class="fa-to">' + (can ? 'Ready to cash in!' : (target - b.balance) + ' more to £' + s.cashIn.value) + '</p>' + rem +
                 '<div class="fa-kbtns">' + s.penalties.map(function (p) { return '<button class="fa-pen" data-pen="' + i + ':' + p + '">−' + p + '</button>'; }).join('') +
                     '<button class="fa-plus" data-bonus="' + i + '">+ Points</button>' + (can ? '<button class="btn good" data-cash="' + i + '">Cash in £' + s.cashIn.value + '</button>' : '') + '</div>' +
-                '<details class="fa-more"' + (openKid[b.name] ? ' open' : '') + ' data-kid="' + esc(b.name) + '"><summary>Tasks ' + tasks.length + (b.todos.length ? ' · this morning ' + b.todos.filter(function (t) { return t.done; }).length + ' of ' + b.todos.length : '') + ' · statement</summary>' +
-                    '<h3>Tasks</h3>' + (tasks.length ? tasks.map(function (t) { return '<button class="fa-row task" data-task="' + i + ':' + esc(t.id) + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.text) + '</b></span><em>+' + t.points + '</em></button>'; }).join('') : empty('No tasks waiting')) +
-                    '<h3>This morning</h3>' + (b.todos.length ? b.todos.map(function (t, j) { return '<button class="fa-row li' + (t.done ? ' done' : '') + '" data-todo="' + i + ':' + j + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.item) + '</b></span></button>'; }).join('') : empty('Nothing today')) +
+                '<details class="fa-more"' + (openKid[b.name] ? ' open' : '') + ' data-kid="' + esc(b.name) + '"><summary>Reward Tasks ' + tasks.length + (b.todos.length ? ' · Daily To-Dos ' + b.todos.filter(function (t) { return t.done; }).length + ' of ' + b.todos.length : '') + ' · statement</summary>' +
+                    '<h3>Reward Tasks</h3>' + (tasks.length ? tasks.map(function (t) { return '<button class="fa-row task" data-task="' + i + ':' + esc(t.id) + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.text) + '</b></span><em>+' + t.points + '</em></button>'; }).join('') : empty('No tasks waiting')) +
+                    '<h3>Daily To-Dos</h3>' + (b.todos.length ? b.todos.map(function (t, j) { return '<button class="fa-row li' + (t.done ? ' done' : '') + '" data-todo="' + i + ':' + j + '"><span class="fa-tick"></span><span class="fa-t"><b>' + esc(t.item) + '</b></span></button>'; }).join('') : empty('Nothing today')) +
                     '<h3>Statement</h3>' + (b.statement || []).slice(0, 5).map(function (l) { return '<div class="fa-row st"><span class="fa-t"><b>' + esc(l.text) + '</b></span><em class="' + (l.points < 0 ? 'neg' : 'pos') + '">' + (l.points > 0 ? '+' : '') + l.points + '</em></div>'; }).join('') +
                     '<button class="btn ghost wide" data-stmt="' + i + '">The whole statement</button></details></section>';
-        }).join('') + computer('Tasks, daily to-dos, reminders and the reward rules are set up');
+        }).join('') + computer('Reward Tasks, Daily To-Dos, reminders and the reward rules are set up');
         Array.prototype.forEach.call(document.querySelectorAll('.fa-more'), function (d) { d.ontoggle = function () { openKid[d.getAttribute('data-kid')] = d.open; }; });
         $('faMain').onclick = function (e) {
             var el;
@@ -335,7 +337,7 @@
             (DATA.pages || []).filter(function (p) { return byPage[p.id]; }).map(function (p) {
                 return h(esc(p.title) + ' <small>screen</small>') + byPage[p.id].map(function (w) {
                     var T = typeOf(w.type);
-                    return '<a class="fa-row go" href="#/w/' + encodeURIComponent(w.id) + '"><span class="fa-ico">' + esc(T.icon) + '</span><span class="fa-t"><b>' + esc(nameOf(w)) + '</b><small>' + esc(T.about || '') + '</small></span><i>›</i></a>';
+                    return '<a class="fa-row go" href="#/w/' + encodeURIComponent(w.id) + '"><span class="fa-ico">' + FDIco(T) + '</span><span class="fa-t"><b>' + esc(nameOf(w)) + '</b><small>' + esc(T.about || '') + '</small></span><i>›</i></a>';
                 }).join('');
             }).join('') + (ws.length ? '' : empty('No widgets on the dashboard yet')) +
             computer('Which widgets go on which screen is chosen');
@@ -346,7 +348,7 @@
         var T = typeOf(w.type), defs = T.settings || [];
         var simple = defs.filter(function (f) { return !PC_ONLY(f); }), pc = defs.filter(PC_ONLY);
         $('faMain').innerHTML = '<a class="fa-back" href="#/widgets">‹ Widgets</a>' +
-            '<div class="fa-whead"><span class="fa-ico big">' + esc(T.icon) + '</span><div><h1>' + esc(nameOf(w)) + '</h1><p class="mute">' + esc(T.about || '') + '</p></div></div>' +
+            '<div class="fa-whead"><span class="fa-ico big">' + FDIco(T) + '</span><div><h1>' + esc(nameOf(w)) + '</h1><p class="mute">' + esc(T.about || '') + '</p></div></div>' +
             (w.type === 'whereabouts' ? whereBox(w) : '') +
             (simple.length ? box(simple.map(function (f) { return wrapWhen(f, field(f, (w.settings || {})[f.k])); }).join('') +
                 '<button class="btn good wide" id="wSave">Save</button>', 'fa-form') : (pc.length ? '' : '<p class="fa-note">Nothing to set – it works as it is.</p>')) +

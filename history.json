@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.182",
+    "date": "2026-11-15",
+    "notes": [
+      "The Memo widget is now called Notes, so notes are “Notes” everywhere – the widget, the menus, both phone apps, voice commands and the tab in your Google Sheet"
+    ]
+  },
+  {
     "version": "2026.11.181",
     "date": "2026-11-15",
     "notes": [

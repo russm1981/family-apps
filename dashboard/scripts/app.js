@@ -287,7 +287,7 @@
             if (compact) {     // the child widget: the at-a-glance things first, in one column that scrolls if it needs to
                 return '<article class="boy compact" style="--c:' + esc(b.colour) + '">' +
                     '<header class="boy-head"><span class="dot"></span><h2>' + esc(b.name) + '</h2></header>' +
-                    '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>' +
+                    (s.showReminders === false ? '' : '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>') +
                     '<div class="boy-body">' +
                         '<div class="cb-top"><div class="score"><span class="num">' + b.balance + '</span><span class="lbl">points</span></div>' + cashBtn + '</div>' +
                         tasksHead + '<div class="tasks">' + tasks + '</div>' +
@@ -300,7 +300,7 @@
             }
             return '<article class="boy" style="--c:' + esc(b.colour) + '">' +
                 '<header class="boy-head"><span class="dot"></span><h2>' + esc(b.name) + '</h2></header>' +
-                '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>' +
+                (s.showReminders === false ? '' : '<div class="chips rem-row">' + rem + '<button class="more-btn wk" data-act="panel" data-sec="rem" data-boy="' + bi + '" title="Reminders for the week">\u203a\u203a\u203a</button></div>') +
                 '<div class="boy-body">' +
                     '<div class="col-left">' +
                         '<div class="score"><span class="num">' + b.balance + '</span><span class="lbl">points</span></div>' +

@@ -211,7 +211,8 @@
         if (h[0] === 'w' && h[1]) { var ww = widgetOf(decodeURIComponent(h[1])); return { w: decodeURIComponent(h[1]), tab: ww ? tabFor(ww.type) : 'other' }; }
         // On the computer, Reminders is its own page under Apps (the Reminders item in Rewards goes there).
         // On the computer, Reminders under Apps is a shortcut to Rewards → Reminders.
-        if (DESK && h[0] === 'reminders') { try { history.replaceState(null, '', '#/rewards/timetable'); } catch (e) { /* fine */ } return { tab: 'rewards', sub: 'timetable' }; }
+        // Reminders has its own page now; Rewards keeps only "Reminder Display"
+        if (DESK && h[0] === 'rewards' && h[1] === 'timetable') { try { history.replaceState(null, '', '#/reminders'); } catch (e) { /* fine */ } return { tab: 'reminders' }; }
         if (h[0] === 'points') return { tab: 'rewards', sub: h[1] || '' };
         if (DESK && ({ family: 1, tools: 1, settings: 1 })[h[0]]) return { tab: h[0] === 'family' ? 'rewards' : h[0] === 'tools' ? 'start' : 'advanced' };
         if (!DESK && h[0] === 'family') return { tab: 'rewards' };       // older phone links
@@ -347,7 +348,7 @@
                 (PHONE ? '' : btn('start', '🚀', 'Setup wizard', 'Step by step – setting up for the first time, or doing one step again')) +
                 (PHONE ? '' : btn('layout', IC('screens', '🖥️'), 'Screens', 'Which widgets go on which screen, each widget’s settings, and the calendar pages')) +
                 btn('famcfg', '👪', 'Family', 'The family’s name, who’s in it, their colours, who takes part in rewards') +
-                btn('rewards', '⭐', 'Rewards', 'Points-earning tasks, daily to-dos, reminders, the reward rules – and each child') +
+                btn('rewards', '⭐', 'Rewards', 'Reward Tasks, Daily To-Dos, reminders, the reward rules – and each child') +
                 btn('advanced', '🛠️', 'System', 'Locations, data keys, screen sleep, licence, software updates, your data, devices') + '</div>') +
             card('Widgets', '<p class="small">The everyday settings for the widgets on your dashboard – what’s on the calendar, the notes, the lists, reminders and the rest.</p><div class="hm-grid">' +
                 btn('calendar', '📅', 'Calendar', 'See and add events') + btn('memos', '📌', 'Notes', 'The notes on the dashboard') + btn('lists', IC('lists', '📝'), 'Lists', 'Shopping and other lists') + btn('rewards/timetable', IC('reminders', '🎒'), 'Reminders', 'Sports kit, library books – the things to remember each day') +
@@ -446,12 +447,12 @@
         };
         $('body').innerHTML = explain('How the family works',
                 '<p>Add up to <b>10 people</b>. Each has a colour of their own – it’s used for them on the calendar when they have their own place on its key – and you can change it.</p>' +
-                '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for tasks, daily to-dos and reminders, and a Reward Widget of their own to put on a screen. That’s the only thing it changes.</p>' +
+                '<p><b>⭐ Rewards</b>: tick it for anyone who takes part in the reward system (usually the children). They get points for Reward Tasks, Daily To-Dos and reminders, and a Reward Widget of their own to put on a screen. That’s the only thing it changes.</p>' +
                 '<p>Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is part of the calendar set-up: <a href="#" data-go="layout">Screens &amp; widgets</a> → your calendar page.</p>') +
             card('Your family’s name', '<p class="mute small">Shown on the Home page – e.g. “Smith” for “The Smith family”.</p><input id="fpName" maxlength="30" placeholder="e.g. Smith" value="' + esc(famName == null ? (DATA.familyName || '') : famName) + '" autocomplete="off">') +
             card('Everyone in the family', '<div id="fpRows">' + famEdit.map(row).join('') + '</div>' +
                 (famEdit.length < 10 ? '<button class="btn fp-add" id="fpAdd">+ Add a person</button>' : '<p class="mute small">That’s the most (10).</p>') +
-                '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, tasks, daily to-dos and reminders, with a Reward Widget of their own.</p>' +
+                '<div class="fp-notes"><p class="mute small">Ticking <b>⭐ Rewards</b> for someone includes them in the reward system – points, Reward Tasks, Daily To-Dos and reminders, with a Reward Widget of their own.</p>' +
                 '<p class="mute small">Renaming someone keeps their points, tasks and calendar events. Taking someone out of rewards keeps their points, in case they come back.</p></div>' +
                 '<div class="sheet-actions"><button class="btn good" id="fpSave">Save the family</button><button class="btn ghost" id="fpUndo">Undo changes</button></div>');
         $('fpRows').oninput = function (e) { var t = e.target, k;
@@ -480,8 +481,8 @@
         var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
         if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
         var cur = solo ? 'timetable' : sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
-            ['-', 'Setup'], ['tasks', '✅', 'Tasks', 'Set up points-earning tasks'], ['todos', '☀️', 'Daily to-dos', 'Set up daily or weekly checklists'],
-            ['timetable', '🎒', 'Reminders', 'e.g. sports kit, library books'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
+            ['-', 'Setup'], ['tasks', '✅', 'Reward Tasks', 'Jobs that earn points'], ['todos', '☀️', 'Daily To-Dos', 'Set up daily or weekly checklists'],
+            ['remdisplay', '🎒', 'Reminder Display', 'On the Reward Widgets or not'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
             ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title(solo ? 'Reminders' : 'Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
@@ -490,9 +491,9 @@
         var html = '';
         if (cur === 'info') html = explain('How rewards work',
                 '<p>The reward system lets the children earn points and cash them in. Who takes part is ticked in <a href="#" data-go="famcfg">Family</a>; each of them has a card you can put on any screen (in <b>Screens</b>).</p>' +
-                '<ul class="small"><li><b>Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
-                '<li><b>Daily to-dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
-                '<li><b>Reminders</b> – things to remember on a day, e.g. “Sports kit” on Fridays. Shown on the child’s card on the day, and from the evening before (5 pm, or the time you set on the Reminders page). The <b>Reminders</b> widget shows every child’s together.</li>' +
+                '<ul class="small"><li><b>Reward Tasks</b> – jobs that earn points, e.g. “Empty the dishwasher +20”. Each child sees their next three on their card and taps one when it’s done.</li>' +
+                '<li><b>Daily To-Dos</b> – checklists with no points: daily ones for getting ready (teeth, dressed, bag), which start afresh each morning, and weekly ones (TTRS, drums practice) that reset on a day you choose.</li>' +
+                '<li><b>Reminder Display</b> – whether each child’s reminders (set up on the <a href="#" data-go="reminders">Reminders</a> page) also show on their Reward Widget. The <b>Children’s reminders</b> widget shows every child’s together.</li>' +
                 '<li><b>Reward rules</b> – how many points make a cash-in, what that’s worth, and the penalty buttons.</li>' +
                 '<li><b>Manual adjustments</b> – add or take away points, override a balance, see a statement.</li></ul>');
         else if (cur === 'tasks') {
@@ -507,8 +508,8 @@
                     '<button type="button" class="ptb' + (t.Active === false ? '' : ' on') + '" data-tact title="Untick to pause it – it stays here but isn’t shown">' + (t.Active === false ? '⏸ Paused' : '✔ On') + '</button>' +
                     '<button type="button" class="x" data-tx title="Delete this task">✕</button></div>';
             };
-            html = head('Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, in this order. Once = gone when it’s done; Every day = back tomorrow; Always there = can be done any number of times.') +
-                '<div class="card" id="fTasks"><h2>Your tasks</h2>' +
+            html = head('Reward Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, in this order. Once = gone when it’s done; Every day = back tomorrow; Always there = can be done any number of times.') +
+                '<div class="card" id="fTasks"><h2>Your Reward Tasks</h2>' +
                 '<div class="tk-row tk-head"><span></span><span>Task <small>max ' + L().task + '</small></span><span>Points</span><span>For who</span><span>Repeats</span><span></span><span></span></div>' +
                 '<div id="tkRows">' + tasks.map(trow).join('') + '</div>' +
                 '<div class="ladd-row"><button class="btn fp-add" id="tkAdd">+ Add a task</button></div>' +
@@ -533,10 +534,14 @@
                 };
             }, 0);
         }
-        else if (cur === 'todos') html = head('Daily to-dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
+        else if (cur === 'todos') html = head('Daily To-Dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
         else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
+        else if (cur === 'remdisplay') html = head('Reminder Display', 'Whether each child’s reminders show on their Reward Widget, on the day and from the evening before.') +
+            '<div class="card" id="remDispBox"><h2>On the Reward Widgets</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k === 'ShowReminders'; }), pp.settings || {}) : '') +
+                '<p class="mute small">To add or change reminders (PE kit, library books…), go to the <a href="#" data-go="reminders">Reminders</a> page. The <b>Children’s reminders</b> widget shows everyone’s together, whatever you choose here.</p>' +
+                '<div class="sheet-actions"><button class="btn good" id="remDispSave">Save reminder display</button></div></div>';
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
-            '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom'; }), pp.settings || {}) : '') +
+            '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom' && f.k !== 'ShowReminders'; }), pp.settings || {}) : '') +
                 '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
                 '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
                 '<div class="sheet-actions"><button class="btn good" id="rulesSave">Save the rules</button><button class="btn ghost" id="rulesUndo">Undo changes</button></div></div>';
@@ -568,6 +573,10 @@
             drawPens();
         }
         if ($('rulesUndo')) $('rulesUndo').onclick = function () { render(); };
+        if ($('remDispSave')) $('remDispSave').onclick = function () {
+            var c = $('remDispBox').querySelector('[data-f=ShowReminders]');
+            act({ action: 'savePage', page: { id: pp.id, settings: { ShowReminders: !!(c && c.checked) } } }, 'Saved – the screen updates within a minute').then(function () { (pp.settings = pp.settings || {}).ShowReminders = !!(c && c.checked); }, function () {});
+        };
         if ($('rulesSave')) $('rulesSave').onclick = function () {
             var vals = {}; Array.prototype.forEach.call($('rulesBox').querySelectorAll('[data-f]'), function (i) { vals[i.getAttribute('data-f')] = i.type === 'checkbox' ? i.checked : i.value.trim(); });
             act({ action: 'savePage', page: { id: pp.id, settings: vals } }, 'Saved – the screen updates within a minute');
@@ -824,7 +833,8 @@
     }
     function widgetName(w) {
         var T = typeOf(w.type);
-        if (w.type === 'list') return w.settings.ListName || 'List';
+        if (w.type === 'list') return w.settings.ListName || 'General List';
+        if (w.type === 'todo') return 'To-Do (Google)';
         if (w.type === 'memo') return 'Notes';
         if (w.type === 'whereabouts') return 'Weasley Clock';
         if (w.type === 'countdown') return w.settings.Title || 'Countdown';
@@ -839,12 +849,12 @@
         var nTasks = (DATA.tasks || []).length, nTodos = (DATA.todos || []).length, nRem = (DATA.timetable || []).length, S = DATA.state;
         $('body').innerHTML = '<h3 class="sec">Family links and apps</h3><div class="tiles fam-tiles">' +
             '<a class="tile" href="' + esc(cal) + '"' + (DESK ? ' target="_blank" rel="noopener"' : '') + '><span class="t-ico">▦</span><b>The dashboard</b><small>' + (DESK ? 'Opens in a new tab' : 'The calendar, the children’s cards and every widget') + '</small></a>' +
-            fam.map(function (w) { return tile('w/' + w.id, esc(typeOf(w.type).icon), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') +
+            fam.map(function (w) { return tile('w/' + w.id, FDIco(typeOf(w.type)), widgetName(w), w.type === 'whereabouts' ? esc(everydayLine(w)) : glanceLine(w)); }).join('') +
             (DESK ? '<a class="tile" href="' + esc(setupLink('family')) + '"><span class="t-ico">👪</span><b>Reconfigure the family</b><small>Who’s in the family, who has points, calendar groups and colours</small></a>' : '') + '</div>' +
             (pp && pointsOn() ? '<h3 class="sec">Set up rewards – tasks, to-dos and reminders</h3><div class="tiles fam-tiles">' +
-                tile('points/tasks', '✅', 'Set up tasks', nTasks + ' task' + (nTasks === 1 ? '' : 's') + ' – what earns points') +
-                tile('points/todos', '☀️', 'Set up daily to-dos', nTodos + ' – daily or weekly checklists') +
-                tile('points/timetable', '🎒', 'Set up reminders', nRem + ' – sports kit, library books…') +
+                tile('points/tasks', '✅', 'Set up Reward Tasks', nTasks + ' Reward Task' + (nTasks === 1 ? '' : 's') + ' – what earns points') +
+                tile('points/todos', '☀️', 'Set up Daily To-Dos', nTodos + ' – daily or weekly checklists') +
+                tile('reminders', '🎒', 'Set up reminders', nRem + ' – sports kit, library books…') +
                 '<button class="tile" id="ptsRules"><span class="t-ico">⚖️</span><b>Set up reward rules</b><small>' + (S ? S.cashIn.points + ' points = £' + S.cashIn.value + ' · penalties ' + esc(S.penalties.join(', ')) : 'Cash-in and penalties') + '</small></button></div>' +
                 '<h3 class="sec">Each child as they’ll show on the dashboard</h3><div class="boys-row">' + boysCards() + '</div>' : '') +
             (DESK ? '' : '<div class="link-card"><b>👪 Reconfigure the family</b><span class="mute small">Who’s in the family, who has points, calendar groups and colours – on <b>Setup</b>, on a computer: ' + esc(deskShort()) + ' → Reconfigure → Family &amp; calendar.</span></div>');
@@ -872,11 +882,11 @@
     function renderOther(sub) {
         var C = otherCopies();
         var where = function (w) { var p = pageOf(w.page); return (p ? 'On the ' + p.title + ' screen' : '') + (w.show ? '' : ' · hidden'); };
-        var item = function (w) { return [w.id, esc(typeOf(w.type).icon), w._label, where(w)]; };
+        var item = function (w) { return [w.id, FDIco(typeOf(w.type)), w._label, where(w)]; };
         var items = [['info', 'ℹ️', 'How widgets work']];
         if (C.info.length) items = items.concat([['-', 'Information']], C.info.map(item));
         if (C.rest.length) items = items.concat([['-', 'Everything else']], C.rest.map(item));
-        if (C.unused.length) items = items.concat([['-', 'Not in use']], C.unused.map(function (u) { return ['u-' + u.id, esc(typeOf(u.type).icon), typeOf(u.type).name.replace(/ \(.*\)$/, ''), 'Not on any screen']; }));
+        if (C.unused.length) items = items.concat([['-', 'Not in use']], C.unused.map(function (u) { return ['u-' + u.id, FDIco(typeOf(u.type)), typeOf(u.type).name.replace(/ \(.*\)$/, ''), 'Not on any screen']; }));
         var cur = sidePane('other', items, sub);
         if (cur === 'info') {
             title('Other widgets');
@@ -958,7 +968,7 @@
         var T = typeOf(w.type), p = pageOf(w.page);
         title(widgetName(w));
         var view = VIEWS[w.type] ? VIEWS[w.type](w) : '<p class="mute">This widget is shown on the screen. ' + esc(T.about) + '</p>';
-        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + esc(T.icon) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
+        $('body').innerHTML = '<div class="w-head"><span class="w-ico">' + FDIco(T) + '</span><span class="mute small">' + esc(T.name) + ' · on the ' + esc(p ? p.title : '?') + ' screen' + (w.show ? '' : ' (hidden)') + '</span></div>' +
             // Its settings first, then what it's showing now
             card('Settings', '<p class="mute small">' + esc(summary(w)) + '</p><div class="ladd-row"><button class="btn" id="wSet">Change ' + esc(widgetName(w)) + ' settings</button>' +
                 (DESK && !PHONE ? '<button class="btn ghost" data-go="layout">Where it goes on the screen ›</button>' : '') + '</div>' +
@@ -1267,8 +1277,8 @@
     /** Setting up one part of the children's points (from the Family tab): tasks, morning to-dos or reminders. */
     function renderPointsSetup() {
         var s = DATA.state, sec = route().sec || 'tasks';
-        var names = { tasks: 'Set up tasks', todos: 'Set up daily to-dos', timetable: 'Set up reminders' };
-        title(names[sec] || 'Set up tasks');
+        var names = { tasks: 'Set up Reward Tasks', todos: 'Set up Daily To-Dos', timetable: 'Set up reminders' };
+        title(names[sec] || 'Set up Reward Tasks');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
         var tasks = (DATA.tasks || []).slice().sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
         var other = Object.keys(names).filter(function (k) { return k !== sec; }).map(function (k) { return '<button class="chip" data-go="points/' + k + '">' + names[k] + '</button>'; }).join('') +
@@ -1305,7 +1315,7 @@
         $('rSave').onclick = function () { act({ action: 'savePage', page: { id: pp.id, settings: readFields() } }, 'Saved – the screen updates within a minute').then(closeSheet, function () {}); };
     }
     var LISTS = {
-        todos: { title: 'Daily to-dos', one: 'to-do', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
+        todos: { title: 'Daily To-Dos', one: 'To-Do', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
             cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'How often']], ordered: true },
         timetable: { title: 'Reminders', one: 'reminder', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
@@ -1564,15 +1574,17 @@
     /* ================================================================ lists: notes, shopping, to-dos together */
 
     function renderMemos() { renderListsOf('Notes', function (w) { return w.type === 'memo'; }, 'No notes on the screen', 'Add a Notes widget'); }
-    function renderLists() { renderListsOf('Lists', function (w) { return w.type === 'list' || w.type === 'todo'; }, 'No lists on the screen', 'Add a List or To-do widget'); }
-    function renderListsOf(name, which, none, how) {
+    function renderLists() { renderListsOf('Lists and To-Dos', function (w) { return w.type === 'list' || w.type === 'todo'; }, 'No lists on the screen', 'Add a General List or To-Do List (Google) widget',
+        '<details class="card explain"><summary><b>ℹ️ How lists work</b></summary><p><b>To-Do (Google)</b> is linked to Google Tasks: it shows the tasks in your family’s Google account, with due dates and ★ priorities, so they also appear in Gmail, Google Calendar and the Google Tasks app.</p>' +
+        '<p>All the others are <b>general lists</b> you make yourself – shopping, packing, anything. Each one is its own widget on the dashboard: tick things off there or here, then clear the ticked ones.</p></details>'); }
+    function renderListsOf(name, which, none, how, explain) {
         title(name);
-        var ws = distinct(which);
+        var ws = distinct(which).sort(function (a, b) { return (b.type === 'todo') - (a.type === 'todo'); });      // To-Do (Google) first
         if (!ws.length) { $('body').innerHTML = card(none, '<p class="mute">' + how + ' on Setup, on a computer: ' + esc(deskShort()) + '.</p>'); return; }
         // Only one list at a time can be edited here (the editors share element ids), so the others show a summary.
         var open = sessionStorage.getItem('fdadmin.openList') || ws[0].id;
         if (!ws.some(function (w) { return w.id === open; })) open = ws[0].id;
-        $('body').innerHTML = (ws.length < 2 ? '<div id="lseg"></div>' : '<div class="seg lseg" id="lseg">' + ws.map(function (w) { return '<button data-l="' + esc(w.id) + '" class="' + (w.id === open ? 'on' : '') + '">' + esc(typeOf(w.type).icon) + ' ' + esc(widgetName(w)) + '</button>'; }).join('') + '</div>') +
+        $('body').innerHTML = (explain || '') + (ws.length < 2 ? '<div id="lseg"></div>' : '<div class="seg lseg" id="lseg">' + ws.map(function (w) { return '<button data-l="' + esc(w.id) + '" class="' + (w.id === open ? 'on' : '') + '">' + FDIco(typeOf(w.type)) + ' ' + esc(widgetName(w)) + '</button>'; }).join('') + '</div>') +
             '<div id="lone">' + VIEWS[widgetOf(open).type](widgetOf(open)) + '</div>';
         $('lseg').onclick = function (e) { var b = e.target.closest('[data-l]'); if (b) { try { sessionStorage.setItem('fdadmin.openList', b.getAttribute('data-l')); } catch (x) { /* fine */ } render(); } };
         WIRE[widgetOf(open).type](widgetOf(open));
@@ -1695,7 +1707,7 @@
             var c = cols[i] || [];
             html += '<div class="pv-col' + (i >= n ? ' over' : '') + '">' + (c.length ? c.map(function (w) {
                 var T = typeOf(w.type);
-                return '<button class="pv-w ' + w.size + '" data-w="' + esc(w.id) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b></button>';
+                return '<button class="pv-w ' + w.size + '" data-w="' + esc(w.id) + '"><span>' + FDIco(T) + '</span><b>' + esc(T.name) + '</b></button>';
             }).join('') : '<span class="pv-empty">empty</span>') + '</div>';
         }
         var over = cols.length - n;
@@ -1743,7 +1755,7 @@
                     (isW ? preview(p.id) + '<div class="wl">' + ws.map(function (w, j) {
                         var T = typeOf(w.type);
                         var bk = backupFor(w), tm = w.when ? '⏰ ' + w.when.ShowDays + ' ' + w.when.ShowFrom + '–' + w.when.ShowUntil + (w.when.OtherTimes ? ', then ' + typeOf(w.when.OtherTimes).name : '') : '';
-                        return '<div class="wrow' + (w.show ? '' : ' off') + (w.pending ? ' pending' : '') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + esc(T.icon) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
+                        return '<div class="wrow' + (w.show ? '' : ' off') + (w.pending ? ' pending' : '') + '"><button class="wmain" data-w="' + esc(w.id) + '"><span class="wico">' + FDIco(T) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' +
                             esc(bk ? '⏰ Shown in place of ' + bk + ' at other times' : tm || summary(w)) + '</small></span><span class="badge">' + (w.show ? w.size : 'hidden') + '</span></button>' +
                             '<button class="mini" data-wmove="' + esc(w.id) + ':-1"' + (j ? '' : ' disabled') + '>▲</button><button class="mini" data-wmove="' + esc(w.id) + ':1"' + (j < ws.length - 1 ? '' : ' disabled') + '>▼</button></div>';
                     }).join('') + '</div><button class="btn wide" data-wadd="' + esc(p.id) + '">+ Add a widget to ' + esc(p.title) + '</button>' : '') +
@@ -1986,8 +1998,8 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
-        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set ' + (DESK ? 'on the <a href="#" data-go="rewards/timetable">Rewards → Reminders</a> page.' : 'on the <a href="#" data-go="rewards/timetable">Rewards</a> tab (Reminders).') + '</p>';
-        if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – tasks, daily to-dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
+        if (w.type === 'kidrem') extra += '<p class="ws-note">🎒 The reminders themselves, and the time it switches to tomorrow’s, are set ' + (DESK ? 'on the <a href="#" data-go="reminders">Reminders</a> page.' : 'on the <a href="#" data-go="reminders">Reminders</a> tab (Reminders).') + '</p>';
+        if (w.type === 'child') extra += '<p class="ws-note">⭐ To set up the reward system – Reward Tasks, Daily To-Dos, reminders and the reward rules – use the <a href="#" data-go="rewards">Rewards</a> tab at the top.</p>';
         var own = '<section class="ws-set"><h3 class="ws-h">' + esc(T.name) + ' settings</h3>' + extra +
             (defs.length ? fields(defs, w.settings) : '<p class="mute small">Nothing to set up – it works as it is.</p>') + '</section>';
         var place = bk ? '' : '<section class="ws-place"><h3 class="ws-h">On the screen</h3>' +
@@ -1995,7 +2007,7 @@
             '<label class="tog"><input type="checkbox" id="wShow"' + (w.show ? ' checked' : '') + '><span>Show on the screen</span></label>' +
             whenHtml(w, T) +
             '<button class="btn bad wide" id="wDel">Remove this widget</button></section>';
-        sheet('<h2>' + esc(T.icon) + ' ' + esc(widgetName(w)) + '</h2><p class="mute small">' + esc(T.about) + '</p>' +
+        sheet('<h2>' + FDIco(T) + ' ' + esc(widgetName(w)) + '</h2><p class="mute small">' + esc(T.about) + '</p>' +
             (bk ? '<p class="ws-note">⏰ Shown in place of <b>' + esc(bk) + '</b> at other times, in the same space – its height and times are set on ' + esc(bk) + '.</p>' : '') +
             '<div class="ws-cols' + (bk ? ' one' : '') + '">' + place + own + '</div>' +
             '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>');
@@ -2078,7 +2090,7 @@
             defs = defs.filter(function (f) { return f.k === 'ReminderFrom'; });
             extra = '<p class="small"><b>Bin days come from:</b> ' + esc(summary(w)) + '</p><button class="btn ghost wide" id="wBins">Set up bin days</button>';
         }
-        sheet('<h2>' + esc(T.icon) + ' ' + esc(widgetName(w)) + ' settings</h2><p class="mute small">' + esc(T.about) + '</p>' + extra + fields(defs, w.settings) +
+        sheet('<h2>' + FDIco(T) + ' ' + esc(widgetName(w)) + ' settings</h2><p class="mute small">' + esc(T.about) + '</p>' + extra + fields(defs, w.settings) +
             '<div class="sheet-actions"><button class="btn ghost" id="wCancel">Cancel</button><button class="btn good" id="wSave">Save</button></div>');
         applyWhen();
         if ($('wBins')) $('wBins').onclick = function () { binWizard(w); };
@@ -2093,7 +2105,7 @@
     function addWidgetSheet(pid) {
         var page = pageOf(pid);
         sheet('<h2>Add a widget to ' + esc(page.title) + '</h2><div class="types">' + DATA.types.map(function (T) {
-            return '<button class="type" data-type="' + esc(T.type) + '"><span class="wico">' + esc(T.icon) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' + esc(T.about) + '</small></span>' +
+            return '<button class="type" data-type="' + esc(T.type) + '"><span class="wico">' + FDIco(T) + '</span><span class="wtx"><b>' + esc(T.name) + '</b><small>' + esc(T.about) + '</small></span>' +
                 '<span class="badge">' + T.sizes.join(' / ') + '</span></button>';
         }).join('') + '</div><button class="btn ghost wide" id="aCancel">Cancel</button>');
         $('aCancel').onclick = closeSheet;
@@ -2258,7 +2270,7 @@
         $('body').innerHTML = card('Where you live', installFields('home') + saveInstallBtn('hSave', 'Save where you live'), 'sx-home') +
             (pw.length ? card('Places your widgets use', '<p class="mute small">Each of these has its own addresses or places. Left blank, they use the home address.</p>' + pw.map(function (w) {
                 var pg = pageOf(w.page), vals = typeOf(w.type).settings.filter(function (f) { return PLACE_KEYS.indexOf(f.k) >= 0; }).map(function (f) { return lines(w.settings[f.k]).join(', '); }).filter(Boolean).join(' · ');
-                return '<button class="mrow" data-go="w/' + esc(w.id) + '"><span class="m-ico">' + esc(typeOf(w.type).icon) + '</span><span class="m-tx"><b>' + esc(widgetName(w)) + (pg ? ' <span class="mute small">(' + esc(pg.title) + ')</span>' : '') + '</b><small>' +
+                return '<button class="mrow" data-go="w/' + esc(w.id) + '"><span class="m-ico">' + FDIco(typeOf(w.type)) + '</span><span class="m-tx"><b>' + esc(widgetName(w)) + (pg ? ' <span class="mute small">(' + esc(pg.title) + ')</span>' : '') + '</b><small>' +
                     esc(vals || 'Uses the home address') + (w.show ? '' : ' · hidden') + '</small></span><i>›</i></button>';
             }).join('')) : '');
         wireSaveInstall('hSave', document.querySelector('.sx-home'));

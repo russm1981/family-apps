@@ -109,3 +109,10 @@ body.fa .fa-sheet h2 { margin: 0 0 6px; font-size: 20px; }
 body.fa .fa-actions { display: flex; gap: 10px; margin-top: 18px; } body.fa .fa-actions .btn { flex: 1; }
 body.fa .fa-scroll { max-height: 55vh; overflow-y: auto; }
 body.fa .fa-pv { padding-left: 18px; font-size: 14px; } body.fa .fa-pv li { margin: 6px 0; } body.fa .fa-pvfull { font-size: 13px; color: #cbd5e1; }
+/* Notes: sticky notes, two to a row (the same as on the dashboard and the computer) */
+body.fa .fa-stickies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 8px 2px 18px; }
+body.fa .fa-stickies .sticky { padding: 14px 14px 10px; }
+body.fa .fa-stickies .sticky span { font-size: 17px; }
+body.fa .fa-stickies .sticky .x { width: 30px; height: 30px; font-size: 13px; border: 0; }
+body.fa .sticky.gone { opacity: .3; }
+body.fa .fa-stickies .sticky span { padding-right: 22px; }

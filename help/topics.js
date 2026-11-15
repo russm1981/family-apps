@@ -293,10 +293,10 @@ window.FD_HELP = [
   },
   {
     id: 'points', icon: '★', title: 'Points, tasks and reminders',
-    summary: 'Children earn points for tasks, lose them for penalties and cash them in for pocket money. Parents set it up at houserunner.app → Rewards, and give points day to day in the Family Admin app → Points.',
+    summary: 'Children earn points for Reward Tasks, lose them for penalties and cash them in for pocket money. Parents set it up at houserunner.app → Rewards, and give points day to day in the Family Admin app → Points.',
     body: `
 <ul>
-<li><b>Tasks</b> earn points. Each child sees their next three on the screen; tap one when it’s done. Tasks can be once-only, daily or always available.</li>
+<li><b>Reward Tasks</b> earn points. Each child sees their next three on the screen; tap one when it’s done. Tasks can be once-only, daily or always available.</li>
 <li><b>Morning to-dos</b> are ticked off each morning (teeth, bag, shoes…).</li>
 <li><b>Reminders</b> show on the day, and from 5 pm the evening before (sports kit, library book…).</li>
 <li><b>Cashing in</b>: when a child reaches the target (e.g. 500 points = £5) the Cash in button appears.</li>

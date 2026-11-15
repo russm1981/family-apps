@@ -53,18 +53,18 @@
         var bin = w.pending ? '' : '<button class="ed-del" data-del="' + esc(w.id) + '" title="Remove this widget">🗑</button>';
         if (W && B) {
             return '<div class="' + cls + ' split" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin +
-                '<div class="sp-a"><span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b></div>' +
-                '<div class="sp-b"' + (backupOf(W.OtherTimes) ? ' data-sub="' + esc(backupOf(W.OtherTimes).id) + '" title="Click for the ' + esc(B.name) + ' settings"' : '') + '><span class="ico">' + esc(B.icon) + '</span><b>' + esc(B.name) + '</b></div>' +
+                '<div class="sp-a"><span class="ico">' + FDIco(T) + '</span><b>' + esc(T.name) + '</b></div>' +
+                '<div class="sp-b"' + (backupOf(W.OtherTimes) ? ' data-sub="' + esc(backupOf(W.OtherTimes).id) + '" title="Click for the ' + esc(B.name) + ' settings"' : '') + '><span class="ico">' + FDIco(B) + '</span><b>' + esc(B.name) + '</b></div>' +
                 '<svg class="sp-line" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="100" y1="0" x2="0" y2="100"/></svg>' +
                 '<div class="sp-time">' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + '<small>other times →</small></div></div>';
         }
         if (W) {   // limited times, nothing in its place
-            return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
+            return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '">' + bin + '<span class="ico">' + FDIco(T) + '</span><b>' + esc(T.name) + '</b>' +
                 '<small class="when">⏰ ' + esc(DAYS[W.ShowDays] || W.ShowDays) + ' ' + esc(W.ShowFrom) + '–' + esc(W.ShowUntil) + ' · empty otherwise</small></div>';
         }
-        if (w.type === 'child') return '<div class="' + cls + ' kid" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(w.settings && w.settings.Child || 'Child') + '</b>' +
+        if (w.type === 'child') return '<div class="' + cls + ' kid" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + FDIco(T) + '</span><b>' + esc(w.settings && w.settings.Child || 'Child') + '</b>' +
             '<small>Points, tasks, morning to-dos and reminders</small></div>';
-        return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b>' +
+        return '<div class="' + cls + '" draggable="true" data-id="' + esc(w.id) + '" title="Click for its settings · drag to move">' + bin + '<span class="ico">' + FDIco(T) + '</span><b>' + esc(T.name) + '</b>' +
             '<small>' + esc(w.pending ? 'Adding…' : H.summary(w) || '') + '</small></div>';
     }
     /** The widget that holds the settings of what's shown at other times (the first of that kind – usually a hidden one the Sheet made). */
@@ -203,7 +203,7 @@
         if (hidden.length) out += '<div class="ed-hidden"><h4>Hidden on this screen <small>– drag one onto the screen to show it</small></h4>' +
             hidden.map(function (w) {
                 var bk = (D().widgets || []).some(function (x) { return x.when && x.when.OtherTimes === w.type; });
-                return '<div class="ed-chip" draggable="true" data-id="' + esc(w.id) + '"><span>' + esc(H.typeOf(w.type).icon) + '</span>' + esc(H.typeOf(w.type).name) + (bk ? ' <small>(shown at other times)</small>' : '') + '</div>';
+                return '<div class="ed-chip" draggable="true" data-id="' + esc(w.id) + '"><span>' + FDIco(H.typeOf(w.type)) + '</span>' + esc(H.typeOf(w.type).name) + (H.typeOf(w.type).tag ? ' <small class="ed-tag">' + esc(H.typeOf(w.type).tag) + '</small>' : '') + (bk ? ' <small>(shown at other times)</small>' : '') + '</div>';
             }).join('') + '</div>';
         return out;
     }
@@ -247,7 +247,7 @@
     /** A widget screen (if there's another) or a second calendar page can be deleted. */
     function canDelete(x) { var same = pages().filter(function (y) { return y.type === x.type; }).length; return x.type === 'calendar' || (x.type === 'widgets' && same > 1); }
     function typeTile(T) {
-        return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + esc(T.icon) + '</span><b>' + esc(T.name) + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
+        return '<div class="ed-type" draggable="true" data-type="' + esc(T.type) + '" title="' + esc(T.about) + '"><span>' + FDIco(T) + '</span><b>' + esc(T.name) + (T.tag ? ' <small class="ed-tag">' + esc(T.tag) + '</small>' : '') + '</b><small>' + esc(T.sizes.join(' / ')) + '</small></div>';
     }
 
     /* ------------------------------------------------------------------ changes */

@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.91';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.94';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -148,6 +148,7 @@ const PAGE_TYPES = {
     { k: 'CashInPoints', label: 'Points needed to cash in', type: 'number', def: 500, min: 1, max: LIMITS.maxCashIn },
     { k: 'CashInValue', label: 'Cash-in value (\u00a3)', type: 'number', def: 5, min: 1, max: 100 },
     { k: 'PenaltyOptions', label: 'Penalty buttons', type: 'text', def: '10,20,50', max: 20, help: 'Points for each penalty button, separated by commas, e.g. 10,20,50 (up to 4).' },
+    { k: 'ShowReminders', label: 'Show each child’s reminders on their Reward Widget', type: 'bool', def: true },
     { k: 'TomorrowFrom', label: 'Switch to tomorrow’s reminders at', type: 'time', def: '17:00', help: 'Until this time the screen shows today’s reminders (with a peek at tomorrow’s); from this time, tomorrow’s – so school things can be got ready the evening before.' },
   ] },
   calendar: { name: 'Calendar', settings: [
@@ -208,7 +209,7 @@ const WIDGET_TYPES = {
         help: 'When no journey is due (or none are set up), the widget shows live traffic on a map this far around home instead.' },
     ],
     data: (s) => traffic_(s.From || inst_('HomeAddress'), s.Destinations, s.RadiusMiles) },
-  trains: { name: 'Trains (UK)', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
+  trains: { name: 'Trains', tag: 'UK only', icon: '\uD83D\uDE86', sizes: ['half', 'full'], ttl: 60, about: 'Live departure board between two stations (National Rail).',
     settings: [
       { k: 'From', label: 'From station (code)', type: 'crs', def: 'VIC', help: 'Three-letter code, e.g. VIC for London Victoria. Find codes at nationalrail.co.uk.' },
       { k: 'To', label: 'To station (code)', type: 'crs', def: 'GTW', help: 'e.g. GTW for Gatwick Airport.' },
@@ -223,7 +224,7 @@ const WIDGET_TYPES = {
       { k: 'Weekend', label: 'Show the weekend (on Fridays it takes the place of tomorrow)', type: 'bool', def: true },
     ],
     data: () => agenda_(), nocache: true },
-  bins: { name: 'Bins', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in ⚙ Widgets → Other → Bins → Set up bin days.',
+  bins: { name: 'Bins', tag: 'UK only', icon: '\uD83D\uDDD1\uFE0F', sizes: ['full', 'half'], ttl: 3 * 3600, about: 'Bin collections anywhere in the UK, with a “put out tonight” reminder. Set up in ⚙ Widgets → Other → Bins → Set up bin days.',
     settings: [
       { k: 'Source', label: 'Collection days from', type: 'select', def: 'My council (automatic)', options: BIN_SOURCES,
         help: 'My council: looked up from your postcode, where your council is connected (see Help). Calendar link: many councils offer an "add to calendar" (iCal / .ics) link on their bin-day page. Repeating schedule: works everywhere.' },
@@ -283,7 +284,7 @@ const WIDGET_TYPES = {
         rows: [{ k: 'name', label: 'Name', type: 'text', max: 12, ph: 'e.g. Orlando' }, { k: 'tz', label: 'Time zone', type: 'tz' }],
         help: 'Up to 3.' },
     ] },
-  list: { name: 'List', icon: '\uD83D\uDED2', sizes: ['half', 'full'], about: 'Shopping or to-do list. Tick items off on the screen; add them from your phone.',
+  list: { name: 'General List', icon: '☑️', sizes: ['half', 'full'], about: 'A list you make yourself – shopping, packing, anything. Tick things off on the screen, clear the ticked ones, and add from your phone.',
     settings: [
       { k: 'ListName', label: 'List name', type: 'text', def: 'Shopping', max: 16 },
       { k: 'Source', label: 'Kept in', type: 'select', def: 'This Google Sheet', options: ['This Google Sheet', 'Google Tasks'],
@@ -324,7 +325,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'Radius', label: 'How close counts as being there (metres)', type: 'number', def: 300, min: 50, max: 5000, advanced: true },
     ],
     data: (s) => whereabouts_(s), nocache: true },
-  bus: { name: 'Bus stop (UK)', icon: '\uD83D\uDE8C', sizes: ['half', 'full'], ttl: 60, about: 'Live departures from a bus stop (TransportAPI, as used by the MagicMirror UK bus module). Uses the stop nearest home unless you pick one.',
+  bus: { name: 'Bus stop', tag: 'UK only', icon: '\uD83D\uDE8C', sizes: ['half', 'full'], ttl: 60, about: 'Live departures from a bus stop (TransportAPI, as used by the MagicMirror UK bus module). Uses the stop nearest home unless you pick one.',
     settings: [
       { k: 'Source', label: 'Bus times from', type: 'select', def: 'TransportAPI', options: ['TransportAPI', 'bustimes.org'],
         help: 'TransportAPI is the official live feed (free key, 30 updates a day). bustimes.org needs no key but reads its web pages.' },
@@ -335,7 +336,7 @@ Object.assign(WIDGET_TYPES, {
       { k: 'StopName', label: 'Stop found', type: 'text', def: '', max: 80, advanced: true, help: 'Filled in automatically.' },
     ],
     data: (s, id) => bus_(s, id) },
-  todo: { name: 'To-do (Google Tasks)', icon: '✅', sizes: ['full', 'half'], about: 'Your Google Tasks, with due dates. Tick them off on the screen; add from the Google Tasks app, Gmail, Calendar or here.',
+  todo: { name: 'To-Do List (Google)', icon: '✅', sizes: ['full', 'half'], about: 'Your Google Tasks, with due dates. Tick them off on the screen; add from the Google Tasks app, Gmail, Calendar or here.',
     settings: [
       { k: 'Title', label: 'Title on screen', type: 'text', def: 'To do', max: 16 },
       { k: 'TasksList', label: 'Google Tasks list', type: 'text', def: '', max: 60, help: 'The list’s name in Google Tasks. Blank = your first list (usually "My Tasks").' },
@@ -348,11 +349,11 @@ Object.assign(WIDGET_TYPES, {
       { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
     ],
     data: (s) => parcels_(s) },
-  kidrem: { name: 'Reminders (rewards)', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
+  kidrem: { name: 'Children’s reminders', icon: '🎒', sizes: ['half', 'full'], about: 'Every child’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Rewards tab.',
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
     ] },
-  child: { name: 'Reward Widget for Child', icon: '\u2B50', sizes: ['full'], about: 'One child’s Reward Widget – their points, tasks, daily to-dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
+  child: { name: 'Reward Widget for Child', icon: '\u2B50', sizes: ['full'], about: 'One child’s Reward Widget – their points, Reward Tasks, Daily To-Dos and reminders. There’s one for each child – put them on any screen. The reward system itself (tasks, to-dos, reminders, rules) is set up on the Rewards tab.',
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },
@@ -956,6 +957,7 @@ function getState_() {
   return {
     boys: out, today, dow, tomorrow,
     cashIn: { points: threshold, value, currency: currency_() },
+    showReminders: ps.ShowReminders !== false && String(ps.ShowReminders).toLowerCase() !== 'false',
     remindersFrom: /^\d{1,2}:\d{2}$/.test(String(ps.TomorrowFrom || '')) ? String(ps.TomorrowFrom) : '17:00',
     penalties: String(ps.PenaltyOptions || '10,20,50').split(',').map(n => Math.abs(Number(n))).filter(Boolean),
     serverTime: now.toISOString(),
@@ -1084,7 +1086,7 @@ function getAdmin_() {
   };
 }
 function schemaOut_(k, T) {
-  return { type: k, name: T.name, icon: T.icon || '', about: T.about || '', sizes: T.sizes || [], single: !!T.single,
+  return { type: k, name: T.name, tag: T.tag || '', icon: T.icon || '', about: T.about || '', sizes: T.sizes || [], single: !!T.single,
     settings: T.settings.map(f => f.type === 'child' ? Object.assign({}, f, { type: 'select', options: childNames_() }) : Object.assign({}, f)) };
 }
 
@@ -1149,7 +1151,7 @@ function saveList_(list, rows) {
   }));
   if (sh.getLastRow() > 1) sh.getRange(2, 1, sh.getLastRow() - 1, head.length).clearContent();
   if (values.length) sh.getRange(2, 1, values.length, head.length).setValues(values);
-  // Daily to-dos and reminders: just send the list back – quicker than all the admin data, so the app is ready sooner.
+  // Daily To-Dos and reminders: just send the list back – quicker than all the admin data, so the app is ready sooner.
   if (list === 'todos') return { saved: list, rows: rows_('todos') };
   if (list === 'timetable') return { saved: list, rows: rows_('timetable').map(r => Object.assign(r, { Day: r.Day instanceof Date ? fmt_(r.Day, 'yyyy-MM-dd') : r.Day })) };
   return getAdmin_();
