@@ -84,13 +84,17 @@
         var body = document.querySelector('#health .hl-body'); if (!body) return;
         var lv = level(), probs = problems(), N = window.FDNotices, L = (N && N.layout()) || {}, latest = (N && N.latest()) || {};
         var headline = lv === 'err' ? '<b>Can’t reach the Google Sheet.</b> ' + esc(H.msg) : lv === 'warn' ? '<b>Working, with ' + probs.length + ' problem' + (probs.length > 1 ? 's' : '') + '.</b>' : '<b>Everything is working.</b>';
+        var phone = document.body.classList.contains('fmt-phone'), bad = 0;
         var rows = widgets().filter(function (w) { return w.show; }).map(function (w) {
             var s = full && full[w.id] ? full[w.id] : H.w[w.id], st, cls;
             if (!s) { st = NO_DATA[w.type] ? 'Works on this screen' : 'Not checked yet'; cls = NO_DATA[w.type] ? 'ok' : 'mute'; }
             else if (s.error) { st = s.error; cls = 'bad'; }
             else { st = 'Working' + (s.ms >= 1500 ? ' (slow: ' + (s.ms / 1000).toFixed(1) + ' s)' : ''); cls = 'ok'; }
+            if (cls === 'bad') bad++;
+            if (phone && cls !== 'bad') return '';      // phone: only the widgets with a problem
             return '<tr><td>' + esc(nameOf(w.id)) + '</td><td class="hl-' + cls + '">' + esc(st) + '</td></tr>';
         }).join('');
+        if (phone && !bad) rows = '<tr><td colspan="2" class="hl-ok">✔ All widgets working</td></tr>';
         var lic = L.licence || {};
         var vrow = function (k, v, warn) { return '<tr><td>' + k + '</td><td' + (warn ? ' class="hl-bad"' : '') + '>' + esc(v || '?') + '</td></tr>'; };
         var behind = function (a, b) { return a && b && N && N.newer(b, a); };
@@ -231,6 +235,8 @@
 
     // Tap the version number (bottom of the side bar) to open the panel.
     document.addEventListener('click', function (e) { if (e.target.closest('#appVer') || e.target.closest('.rail-foot .sync')) open(); });
+    // Phone: it's a page under the top row – choosing another screen there closes it
+    document.addEventListener('click', function (e) { if (e.target.closest('#rail .nav-btn')) close(); });
 
     window.FDHealth = {
         redraw: function () { if ($('health') && $('health').classList.contains('on')) draw(); },

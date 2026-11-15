@@ -1374,3 +1374,6 @@ body.fmt-phone .hl-t td:first-child { white-space: normal; width: 42%; }
 body.fmt-phone .hl-t td { overflow-wrap: anywhere; }
 body.fmt-phone .hl-btns .n-btn { flex: 1 1 100%; }
 body.fmt-phone .hl-head h2 { font-size: 1.1rem; }
+/* Phone: About & diagnostics is a normal page under the top row, not a pop-up box */
+body.fmt-phone .health { top: calc(64px + env(safe-area-inset-top)); background: var(--bg); align-items: stretch; justify-content: stretch; z-index: 50; }
+body.fmt-phone .health .hl-card { width: 100%; max-height: none; height: 100%; border: 0; border-radius: 0; background: var(--bg); padding: 1rem 0.9rem 2rem; overflow-y: auto; }
