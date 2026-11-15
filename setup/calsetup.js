@@ -89,7 +89,7 @@
             head(['Name', 'Colour', 'Line?', 'How to display', '']) +
             cats.generals.map(function (c, i) { return [c, i]; }).sort(function (x, y) { return (MUST(y[0]) ? 1 : 0) - (MUST(x[0]) ? 1 : 0) || (/holiday/i.test(y[0].name) ? 1 : 0) - (/holiday/i.test(x[0].name) ? 1 : 0) || x[1] - y[1]; }).map(function (ci) { var c = ci[0], i = ci[1]; return MUST(c) ? catRow(c, 'c' + i, '<span class="cs-must">' + esc(c.name) + '</span>', '<span class="cs-lock" title="Needed – it can’t be removed">🔒</span>')
                 : catRow(c, 'c' + i, nameIn('data-cname', i, c.name, 'Name'), '<button class="cs-x" data-cdel="' + i + '" title="Remove">✕</button>'); }).join('') +
-            '<div class="cs-notes"><p class="mute small">🔒 <b>Holiday</b> and <b>Birthday</b> are always here: the Holiday countdown and Birthdays widgets, and the calendar’s 🌴 and 🎂 buttons, need them. You can still choose how they show.</p>' +
+            '<div class="cs-notes"><p class="mute small">🔒 <b>Birthday</b> and <b>Holiday</b> are mandatory categories to support the Birthdays and Holiday countdown widgets. Hiding them only takes them off the calendar – the widgets still show them.</p>' +
             '<p class="mute small"><b>Show as Other</b>: on the calendar in grey, counted as Other on the key – so it doesn’t use up a colour. <b>Hide</b>: not on the calendar at all.</p></div>' +
             (all().length < L.cats ? '<button class="btn sm cs-addc" data-sug="">+ Add another</button>' : '<p class="mute small">That’s the most categories and groups together (' + L.cats + ').</p>') +
 
