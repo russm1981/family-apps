@@ -146,12 +146,12 @@ window.FD_HELP = [
   },
   {
     id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new screen',
-    summary: 'On the PC, go to houserunner.app/windows, download the zip file, unzip it and double-click Start Family Dashboard. Then type the code it shows into houserunner.app.',
+    summary: 'On the PC, go to houserunner.app/windows, download the zip file, unzip it and double-click Start HouseRunner. Then type the code it shows into houserunner.app.',
     body: `
 <ol>
 <li>On the PC the Corsair XENEON EDGE is plugged into, go to <b>houserunner.app/windows</b> in a browser and press <b>Download</b>.</li>
 <li>It’s a small <b>zip file</b>. Open your Downloads folder, right-click it → <b>Extract All…</b>, and put the folder somewhere permanent, such as <b>Documents</b>.</li>
-<li>In the folder, double-click <b>Start Family Dashboard</b>. If Windows says “Windows protected your PC”: <b>More info → Run anyway</b>.</li>
+<li>In the folder, double-click <b>Start HouseRunner</b>. If Windows says “Windows protected your PC”: <b>More info → Run anyway</b>.</li>
 <li>The first time it asks two Yes/No questions: start when the PC turns on, and keep the screen switched on. <b>Yes</b> to both is best.</li>
 <li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b>, or on a phone: <b>Family Admin → More → Connect a display</b>.</li>
 </ol>
@@ -237,12 +237,12 @@ window.FD_HELP = [
     summary: 'The start file adds itself to Windows start-up the first time you run it. Double-click it once and it starts by itself from then on.',
     body: `
 <ol>
-<li>Find the <b>Start Family Dashboard</b> file on the PC – in the folder you unzipped (usually in Documents) – and double-click it. Don’t have it? <a href="#windows">Download it again</a>.</li>
+<li>Find the <b>Start HouseRunner</b> file on the PC – in the folder you unzipped (usually in Documents) – and double-click it. Don’t have it? <a href="#windows">Download it again</a>.</li>
 <li>The first time, two Windows boxes ask: <b>start automatically when the PC is switched on?</b> and <b>keep the screen switched on?</b> Press <b>Yes</b> to both (recommended).</li>
 <li>Your answers are remembered – from then on it starts by itself.</li>
 </ol>
 <p>Pressed No by mistake? On the PC open the folder <code>%LOCALAPPDATA%\\FamilyDashboardKiosk</code> (paste it into the File Explorer address bar), delete <code>startup-answer.txt</code> and/or <code>screen-answer.txt</code>, and run the start file again – it asks again.</p>
-<p>To check: press <b>Windows key + R</b>, type <code>shell:startup</code> and press Enter – there should be a “Family Dashboard” shortcut.</p>
+<p>To check: press <b>Windows key + R</b>, type <code>shell:startup</code> and press Enter – there should be a “HouseRunner” shortcut (on older set-ups, “Family Dashboard”).</p>
 <p>The start file updates itself: it only holds your link, and fetches the latest launcher from the internet every time it starts – you never need to download it again unless your access code changes.</p>
 <p>If the PC starts before its internet is ready, the start file waits up to a minute for it. Windows may also show “Windows protected your PC” the first time – choose <b>More info → Run anyway</b>.</p>`
   },

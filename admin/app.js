@@ -364,7 +364,7 @@
         };
         return '<h1 class="page-h hm-h">Connect</h1>' +
             card('Connect a new dashboard display device', '<p class="small">Follow the instructions below for the type of device you wish to add, then come back here and add the display code (it looks like <b>K7Q2-M9XD</b>).</p><div class="hm-devs">' +
-                dev('🖥', 'On a Corsair XENEON EDGE (running Windows)', 'Go to <b>' + esc(host) + 'windows</b> in a browser, download the zip file, unzip it and double-click <b>Start Family Dashboard</b>. Any other Windows PC screen works the same way.', 'windows') +
+                dev('🖥', 'On a Corsair XENEON EDGE (running Windows)', 'Go to <b>' + esc(host) + 'windows</b> in a browser, download the zip file, unzip it and double-click <b>Start HouseRunner</b>. Any other Windows PC screen works the same way.', 'windows') +
                 dev('🍓', 'On a Raspberry Pi', 'A ready-made Pi: plug in the screen, the internet and the power – it starts by itself. Making your own: install Raspberry Pi OS, then run the one command in the help article in its terminal.', 'pi') +
                 dev('📱', 'On a tablet', 'Go to <b>' + esc(host) + 'dashboard</b> in its browser and make it full-screen (on Android tablets the free <i>Fully Kiosk Browser</i> app does this).', 'pi') +
                 dev('💻', 'On any other computer', 'Go to <b>' + esc(host) + 'dashboard</b> in a browser and press <b>F11</b> for full-screen.', 'connect') +
@@ -2637,7 +2637,7 @@
                 '<li>From now on, open it from the new icon.</li></ol>' +
                 '<div class="ladd-row">' + (navigator.share ? '<button class="btn ghost fp-add" id="devShare">Send the link instead</button>' : '<button class="btn ghost fp-add" id="devCopy">Copy the link instead</button>') + '</div>') +
             card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to ' + familyDash() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p>' +
-                '<p class="mute small">If a computer or phone ever forgets your family, the email “Your Family Dashboard links” in your Google account has a link that connects it again. It was sent when you set up – send it again here.</p>' +
+                '<p class="mute small">If a computer or phone ever forgets your family, the email “Your HouseRunner links” in your Google account has a link that connects it again. It was sent when you set up – send it again here.</p>' +
                 '<div class="ladd-row"><button class="btn fp-add" id="sMail">📧 Email me my links</button><button class="btn ghost fp-add" id="sOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button></div>');
         $('devApp').onclick = function (e) { var b = e.target.closest('[data-app]'); if (b) { devPick = b.getAttribute('data-app'); secDevices(); } };
         if ($('devShare')) $('devShare').onclick = function () { navigator.share({ title: APPS[devPick][0].slice(2), text: 'Open this on your phone, then add it to your Home Screen:', url: appLink(devPick) }).catch(function () {}); };

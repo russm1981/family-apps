@@ -1,5 +1,5 @@
 @echo off
-rem Family Dashboard - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.
+rem HouseRunner - starts the dashboard full screen in Microsoft Edge. Close it with Alt+F4.
 rem This file only holds your screen link. Each time it starts it fetches the latest launcher from the internet
 rem (so it never needs replacing), keeping a copy for when the internet is down. The dashboard itself also loads
 rem from the internet each time, so it is always the latest version. Nothing else needs to be on this PC.

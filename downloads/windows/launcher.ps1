@@ -1,7 +1,7 @@
 # FAMILY-DASHBOARD-LAUNCHER
-# Family Dashboard - the Windows launcher. Version 2026.11.31
+# HouseRunner - the Windows launcher. Version 2026.11.32
 #
-# You never download or run this file yourself. Your "Start Family Dashboard.bat" (which holds your private screen
+# You never download or run this file yourself. Your "Start HouseRunner.bat" (or the older "Start Family Dashboard.bat") (which holds your private screen
 # link) fetches the latest copy of this file from GitHub every time it starts, keeps a copy in
 # %LOCALAPPDATA%\FamilyDashboardKiosk\launcher.ps1 for when the internet is down, and runs it. So changes to how the
 # dashboard starts reach every PC by themselves - the start file itself never needs replacing again.
@@ -23,15 +23,18 @@ function Ask($text, $file) {
     # Asked once, in a normal Windows Yes/No box; the answer is remembered in a small file. Delete the file to be asked again.
     $path = Join-Path $profileDir $file
     if (Test-Path $path) { return ((Get-Content $path -TotalCount 1) -match '^\s*Y') }
-    $r = [System.Windows.MessageBox]::Show($text, 'Family Dashboard', 'YesNo', 'Question')
+    $r = [System.Windows.MessageBox]::Show($text, 'HouseRunner', 'YesNo', 'Question')
     $yes = ($r -eq 'Yes')
     Set-Content -Path $path -Value $(if ($yes) { 'Y' } else { 'N' })
     return $yes
 }
 
 # 1. Start with Windows?
-$startup = Ask "Start the Family Dashboard automatically whenever this PC is switched on?" 'startup-answer.txt'
-$lnk = Join-Path ([Environment]::GetFolderPath('Startup')) 'Family Dashboard.lnk'
+$startup = Ask "Start the HouseRunner dashboard automatically whenever this PC is switched on?" 'startup-answer.txt'
+$lnk = Join-Path ([Environment]::GetFolderPath('Startup')) 'HouseRunner.lnk'
+# The shortcut used to be called "Family Dashboard" - remove that one so the dashboard doesn't start twice
+$old = Join-Path ([Environment]::GetFolderPath('Startup')) 'Family Dashboard.lnk'
+if (Test-Path $old) { Remove-Item $old -ErrorAction SilentlyContinue }
 if ($startup -and $env:FDBAT) {
     try {
         $s = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk)

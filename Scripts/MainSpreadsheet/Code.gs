@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.89';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.90';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -785,14 +785,14 @@ function emailLinks_() {
   if (!/\/exec$/.test(url)) throw new Error('Open the dashboard once first, then try again');
   const tail = '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(String(inst_('AccessCode') || ''));
   const base = appsBase_(), fam = String(inst_('FamilyName') || '').trim();
-  const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + '.\n\n' +
+  const body = 'These are the private links for ' + (fam ? 'the ' + fam + ' family dashboard' : 'your HouseRunner family dashboard') + '.\n\n' +
     'Keep this email. If a computer or phone ever forgets your family (it asks you to connect), open the right link below on it and it connects again straight away.\n\n' +
     'HouseRunner – the Configurator on a computer, Family Admin on the adults’ phones:\n' + base + tail + '\n\n' +
 
-    'The dashboard (the XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
+    'The dashboard (the Corsair XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
     'If you change your access code (Configurator → System → My data), you’ll be sent new links.\n';
-  GmailApp.sendEmail(to, 'Your Family Dashboard links – keep this email', body);
+  GmailApp.sendEmail(to, 'Your HouseRunner links – keep this email', body);
   PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
   return { ok: true, to: to };
 }
@@ -4391,7 +4391,7 @@ function packForAccount_(email) {
 function moveEmail_(email, link, from) {
   const fam = String(inst_('FamilyName') || '').trim();
   return 'Hello,\n\n' +
-    'This email is to move ' + (fam ? 'the ' + fam + ' family dashboard' : 'your Family Dashboard') + ' into this Google account (' + email + ')' + (from ? ', from ' + from : '') + '.\n\n' +
+    'This email is to move ' + (fam ? 'the ' + fam + ' family dashboard' : 'your HouseRunner family dashboard') + ' into this Google account (' + email + ')' + (from ? ', from ' + from : '') + '.\n\n' +
     'A “moving pack” has been shared with this account: a copy of everything – people, points, lists, notes, settings and the licence. ' +
     'Nothing changes on the screen until you finish the steps below, so take your time.\n\n' +
     'WHAT TO DO (about 20 minutes, on a computer – not a phone or tablet)\n\n' +

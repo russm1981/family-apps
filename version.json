@@ -1,16 +1,12 @@
 {
-  "app": "2026.11.180",
-  "script": "2026.11.89",
+  "app": "2026.11.181",
+  "script": "2026.11.90",
   "date": "2026-11-15",
   "notes": [
-    "Calendar colour coding: Birthday and Holiday are always there now (the widgets need them) – you can still show, hide or show them as Other",
-    "Home: both rows of the green box are now links; 'Connect a new dashboard display device' has clear steps for each kind of device, with More help links",
-    "Windows: the start file comes as a zip – the instructions everywhere now say to unzip it",
-    "Screens: 'Reconfigure Widgets' heading; a calendar page shows its picture first, then 'Calendar page settings'",
-    "'How screens work', 'How rewards work', 'How System works' and 'How widgets work' all look the same; System's menu has a short line under each item",
-    "Lists: bigger Shopping / To-do buttons",
-    "Dashboard calendar: new 🌴 button shows only the holidays (like 🎂 for birthdays), and the key says what's showing",
-    "Dashboard: other screens are now loaded in the background, so switching is quick; more room to tap the version number; Today & tomorrow spacing fixed"
+    "New Family Admin phone app, made for the phone: six buttons along the top – Calendar, Notes, Lists, Points, Widgets and More – and each page one long list",
+    "Family Admin: setting things up (screens, family, rewards, licence, system) now stays on the computer website – More shows where",
+    "Family Dashboard phone app: the screens' buttons are along the top, and the calendar's key opens in a box from a Key button",
+    "Help and on-screen instructions now point to Family Admin → More → Connect a display"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

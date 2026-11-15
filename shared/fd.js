@@ -191,7 +191,7 @@
         clearConfig: function () { cfg = {}; try { localStorage.removeItem(KEY); } catch (e) { /* ignore */ } },
         parseSetup: parseSetup,
 
-        VERSION: '2026.11.180',     // the phone apps' version (same number as the screen's)
+        VERSION: '2026.11.181',     // the phone apps' version (same number as the screen's)
         get: function (action, params, timeout) {
             var q = 'action=' + encodeURIComponent(action) + '&code=' + encodeURIComponent(cfg.code) + '&t=' + Date.now();
             Object.keys(params || {}).forEach(function (k) { q += '&' + k + '=' + encodeURIComponent(params[k]); });
@@ -267,7 +267,7 @@
                     '<p class="su-code" style="font:800 30px/1.2 ui-monospace,Menlo,Consolas,monospace;letter-spacing:2px;text-align:center;margin:8px 0">' + FD.esc(waiter.code) + '</p>' +
                     (qr ? '<p class="mute small" style="text-align:center">or scan this with the phone’s camera:</p><div style="background:#fff;border-radius:12px;padding:8px;width:180px;margin:6px auto">' + qr + '</div>' : '') +
                     '<p class="mute small" id="suState" style="text-align:center">Waiting for your phone…</p>' : '') +
-                '<p class="mute small" style="margin-top:14px">No phone with Family Admin to hand? Look in your Google account’s email for <b>“Your Family Dashboard links”</b> and open the link in it on this device – or paste it below.</p>' +
+                '<p class="mute small" style="margin-top:14px">No phone with Family Admin to hand? Look in your Google account’s email for <b>“Your HouseRunner links”</b> and open the link in it on this device – or paste it below.</p>' +
                 '<details' + (waiter ? '' : ' open') + '><summary>Or paste a setup link</summary>' +
                 '<label>Setup link</label><input id="suLink" placeholder="Paste setup link" autocomplete="off">' +
                 '<div class="or">or</div>' +

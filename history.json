@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.180",
+    "date": "2026-11-15",
+    "notes": [
+      "New Family Admin phone app, made for the phone: six buttons along the top – Calendar, Notes, Lists, Points, Widgets and More – and each page one long list",
+      "Family Admin: setting things up (screens, family, rewards, licence, system) now stays on the computer website – More shows where",
+      "Family Dashboard phone app: the screens' buttons are along the top, and the calendar's key opens in a box from a Key button",
+      "Help and on-screen instructions now point to Family Admin → More → Connect a display"
+    ]
+  },
+  {
     "version": "2026.11.179",
     "date": "2026-11-15",
     "notes": [
