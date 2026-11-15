@@ -2430,17 +2430,11 @@
     function secMyData() {
         var fresh = guideUrl();
         $('body').innerHTML = explain('How your data is kept', '<p>Everything your family puts in the dashboard lives in <b>your own Google Sheet</b>, in your Google account. Nothing is stored anywhere else.</p>') +
-            card('Reconfigure your existing setup', '<p class="mute small">Opens the Setup wizard with everything you already have filled in – change what you like, keep the rest.</p><div class="menu">' +
-                [['🚀', 'welcome', 'Go through the whole setup again', 'Every step, already filled in'], ['👪', 'family', 'Your family', 'Who’s in the family, their colours and who takes part in rewards'],
-                 ['📅', 'calendar', 'Your calendar', 'The calendar’s categories, groups and colours'], ['✅', 'check', 'Test all the widgets', 'Asks your Sheet to fetch every widget, and reports anything that needs attention'],
-                 ['🔑', 'keys', 'External data keys', 'Getting the free keys for traffic, trains, buses…']].map(function (x) {
-                    return '<a class="mrow" href="' + setupLink(x[1]) + '" target="_blank" rel="noopener"><span class="m-ico">' + x[0] + '</span><span class="m-tx"><b>' + x[2] + '</b><small>' + x[3] + '</small></span><i>›</i></a>';
-                }).join('') + '</div>') +
-            versionsCard() +
+            versionsCard() + accessCard() +
             card('Start again from scratch', '<p class="small">Set up a brand-new family from nothing, in a new Sheet. Your old Sheet stays in Google Drive as a backup. ' +
                 'To keep your people, points and lists, move them instead (above).</p><p class="mute small">Free your licence key first (System → Licence), so the new Sheet can use it.</p>' +
                 '<a class="btn ghost wide" href="' + esc(fresh) + '" target="_blank" rel="noopener">Open the setup wizard for a new family</a>') +
-            accessCard();
+            stepsCard();
         wireAfresh(); wireAccess();
     }
 
