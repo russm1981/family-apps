@@ -382,9 +382,9 @@
         $('body').innerHTML =
             card('Start full wizard', connLine() +
                 '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the display and phones, and the free keys for live data.</p>' +
-                '<div class="btn-row"><a class="btn wide" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Start the setup wizard for a new family (setting up for the first time)</a>' +
-                '<a class="btn wide" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun the wizard to reconfigure the current ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'family') + ' data</a>' + '</div>' +
-                '<p class="mute small" style="margin-top:14px">A new family gets its own new Google Sheet. Rerunning it on your family lets you change what’s there, or clear it and start again – a backup copy is kept in your Google Drive first.</p>') +
+                '<div class="btn-row wiz-btns"><a class="btn" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Set up a new family</a>' +
+                '<a class="btn" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun for the ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'current family') + '</a></div>' +
+                '<p class="mute small"><b>New family</b> – the first time only; it makes a new Google Sheet. <b>Rerun</b> – change what’s there, or clear it and start again; a backup copy is kept in your Google Drive first.</p>') +
             stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
@@ -877,19 +877,27 @@
     /** Other: like Rewards – every copy of every widget listed down the left (grouped), its settings on the right.
      * A widget can be on the screens more than once; each copy has its own settings, so copies are listed one by one
      * and numbered ("Flights overhead 1", "Flights overhead 2") in the order they appear on the screens. */
+    /* The groups down the left of Other, each in this order (Weasley Clock last in Family). */
+    var OTHER_GROUPS = [['Information', ['weather', 'clock', 'bins', 'parcels', 'news']], ['Travel', ['traffic', 'trains', 'bus']],
+        ['Family', ['agenda', 'birthdays', 'countdown', 'photos', 'kidrem', 'whereabouts']], ['Tools', ['timer', 'spotify']],
+        ['Interest', ['apod', 'flights', 'quote', 'words']]];
     function otherCopies() {
         var fi = function (w) { return INFO_W[w.type]; }, fr = function (w) { return tabFor(w.type) === 'other' && !INFO_W[w.type] && w.type !== 'child'; };   // children: on the Family tab
-        var order = ['bins', 'weather', 'trains', 'bus', 'traffic'], pages = (DATA.pages || []).map(function (p) { return p.id; });
+        var pages = (DATA.pages || []).map(function (p) { return p.id; });
         var all = (DATA.widgets || []).filter(function (w) { return fi(w) || fr(w); }).slice()
             .sort(function (a, b) { return (pages.indexOf(a.page) - pages.indexOf(b.page)) || ((a.order || 0) - (b.order || 0)); });
         var count = {}, seen = {};
         all.forEach(function (w) { var n = widgetName(w); count[n] = (count[n] || 0) + 1; });
         var label = function (w) { var n = widgetName(w); if (count[n] < 2) return n; seen[n] = (seen[n] || 0) + 1; return n + ' ' + seen[n]; };
         all.forEach(function (w) { w._label = label(w); });
-        var info = all.filter(fi), rest = all.filter(fr);
-        info.sort(function (a, b) { var x = order.indexOf(a.type), y = order.indexOf(b.type); return (x < 0 ? 99 : x) - (y < 0 ? 99 : y) || a._label.localeCompare(b._label); });
-        rest.sort(function (a, b) { return a._label.localeCompare(b._label, undefined, { numeric: true }); });
-        return { info: info, rest: rest, unused: DATA.unused || [] };
+        var groups = OTHER_GROUPS.map(function (g) {
+            return { name: g[0], list: all.filter(function (w) { return g[1].indexOf(w.type) >= 0; }).sort(function (a, b) {
+                return (g[1].indexOf(a.type) - g[1].indexOf(b.type)) || a._label.localeCompare(b._label, undefined, { numeric: true }); }) };
+        });
+        var known = [].concat.apply([], OTHER_GROUPS.map(function (g) { return g[1]; }));
+        var odd = all.filter(function (w) { return known.indexOf(w.type) < 0; });
+        if (odd.length) groups[groups.length - 1].list = groups[groups.length - 1].list.concat(odd);
+        return { groups: groups, any: all.length > 0, unused: (DATA.unused || []).slice().sort(function (a, b) { return known.indexOf(a.type) - known.indexOf(b.type); }) };
     }
     function renderOther(sub) {
         var C = otherCopies();
@@ -898,8 +906,7 @@
         var where = function (w) { var p = pageOf(w.page); return (p ? 'On the ' + p.title + ' screen' : '') + (timed(w) ? ' · timed' : w.show ? '' : ' · hidden'); };
         var item = function (w) { return [w.id, FDIco(typeOf(w.type)), w._label, where(w)]; };
         var items = [['info', 'ℹ️', 'How widgets work']];
-        if (C.info.length) items = items.concat([['-', 'Information']], C.info.map(item));
-        if (C.rest.length) items = items.concat([['-', 'Everything else']], C.rest.map(item));
+        C.groups.forEach(function (g) { if (g.list.length) items = items.concat([['-', g.name]], g.list.map(item)); });
         if (C.unused.length) items = items.concat([['-', 'Not in use']], C.unused.map(function (u) { return ['u-' + u.id, FDIco(typeOf(u.type)), typeOf(u.type).name.replace(/ \(.*\)$/, ''), 'Not on any screen']; }));
         var cur = sidePane('other', items, sub);
         if (cur === 'info') {
@@ -907,10 +914,12 @@
             $('body').innerHTML = explain('How widgets work',
                 '<p>Each widget can be on your screens <b>more than once</b> – on different screens, or twice on the same one. <b>Each copy has its own settings</b>, so the copies can look or behave differently: say, <i>Flights overhead 1</i> around home and <i>Flights overhead 2</i> around the school.</p>' +
                 '<p>That’s what the number after a name is for: it tells the copies apart, in the order they appear on your screens. A widget with only one copy has no number.</p>' +
-                '<ul class="small"><li><b>Information</b> – the widgets that show live information: bins, weather, trains, buses, traffic and so on.</li><li><b>Everything else</b> – the rest of the widgets on your screens.</li>' +
+                '<ul class="small"><li><b>Information</b> – weather, clock, bins, parcels and news.</li><li><b>Travel</b> – traffic, trains and buses.</li>' +
+                '<li><b>Family</b> – today &amp; tomorrow, birthdays, the holiday countdown, photos and the Weasley Clock.</li><li><b>Tools</b> – the kitchen timer and Spotify.</li>' +
+                '<li><b>Interest</b> – the NASA picture, flights overhead, quotes and Duolingo Words.</li>' +
                 '<li><b>Not in use</b> – widgets that aren’t on any screen. Their settings are kept, ready for when they’re added.</li></ul>' +
                 '<p class="mute small">To add another copy of a widget, move one, or take one off, use <a href="#" data-go="layout">Screens</a>. The calendar, notes, lists and reminders have their own pages under ⚙ Widgets.</p>') +
-                (C.info.length || C.rest.length ? '' : card('Nothing here yet', '<p class="mute">Add widgets to your screens in Screens.</p>'));
+                (C.any ? '' : card('Nothing here yet', '<p class="mute">Add widgets to your screens in Screens.</p>'));
             return;
         }
         if (/^u-/.test(cur)) {

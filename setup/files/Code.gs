@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.100';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.101';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -378,10 +378,10 @@ Object.assign(WIDGET_TYPES, {
   spotify: { name: 'Spotify', icon: '🎵', sizes: ['half'], ttl: 5, about: 'What’s playing on Spotify, with play, pause and skip. Needs Spotify Premium and a one-off connection.',
     settings: [],
     data: () => spotifyNow_() },
-  words: { name: 'Word of the day', icon: '🗣️', sizes: ['half'], ttl: 20 * 60, about: 'A new word in another language, plus Duolingo streaks.',
+  words: { name: 'Duolingo Words', icon: '🗣️', sizes: ['half'], ttl: 20 * 60, about: 'A new word in another language, plus Duolingo streaks.',
     settings: [
       { k: 'Language', label: 'Language', type: 'select', def: 'Same as Duolingo', options: ['Same as Duolingo', 'French', 'Spanish', 'German', 'Italian'],
-        help: 'The language of the word of the day. "Same as Duolingo" uses the language the first Duolingo username below is learning (French if there isn\u2019t one).' },
+        help: 'The language of the new word each day. "Same as Duolingo" uses the language the first Duolingo username below is learning (French if there isn\u2019t one).' },
       { k: 'Change', label: 'New word', type: 'select', def: 'Every hour', options: QUOTE_CHANGE },
       { k: 'Duolingo', label: 'Duolingo usernames', type: 'text', def: '', max: 80, help: 'Optional, separated by commas, to show each person’s streak. Profiles must be public.' },
     ],

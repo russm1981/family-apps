@@ -1,5 +1,5 @@
 /* Family Dashboard – more widgets (November 2026): holiday countdown, Weasley Clock, bus stop, to-do (Google Tasks),
- * parcels, memo, quote, NASA Daily Picture, Spotify and word of the day.
+ * parcels, memo, quote, NASA Daily Picture, Spotify and Duolingo Words.
  * Same rules as widgets.js: FDW.types[type](el, widget, ctx) → { update(data), show(), destroy() }.
  */
 (function () {
@@ -452,7 +452,7 @@
         return { update: update, destroy: function () { clearInterval(t); clearInterval(poll); } };
     };
 
-    /* ======================================================== WORD OF THE DAY */
+    /* ======================================================== DUOLINGO WORDS */
 
     var LANG = { Spanish: [1, '🇪🇸'], French: [2, '🇫🇷'], German: [3, '🇩🇪'], Italian: [4, '🇮🇹'] };
     var WORDS = [ // emoji, English, Spanish, French, German, Italian

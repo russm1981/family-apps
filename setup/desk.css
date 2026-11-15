@@ -440,3 +440,4 @@ body.desk .card .rem-from > label:first-child { margin-top: 0; display: block; }
 .wc-hand circle { fill: var(--hc); stroke: #0c0e12; stroke-width: 1.2; }
 .wc-hand text { fill: #0c0e12; font-size: 8px; font-weight: 800; }
 .wc-pin { fill: #c9a44c; stroke: #0c0e12; stroke-width: 1.5; }
+.btn-row.wiz-btns { gap: 22px; margin: 16px 0 14px; } .btn-row.wiz-btns > .btn { min-width: 260px; }

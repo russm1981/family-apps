@@ -741,7 +741,7 @@
     }
     var TYPE_NAMES = { weather: 'Weather', traffic: 'Traffic', trains: 'Trains', agenda: 'Today & tomorrow', bins: 'Bins', flights: 'Flights overhead',
         news: 'News', timer: 'Kitchen timer', photos: 'Photo slideshow', clock: 'Clock', list: 'List', countdown: 'Holiday countdown', whereabouts: 'Weasley Clock',
-        bus: 'Bus stop', todo: 'To-do', parcels: 'Parcels', memo: 'Notes', quote: 'Quote', apod: 'NASA Daily Picture', spotify: 'Spotify', words: 'Word of the day' };
+        bus: 'Bus stop', todo: 'To-do', parcels: 'Parcels', memo: 'Notes', quote: 'Quote', apod: 'NASA Daily Picture', spotify: 'Spotify', words: 'Duolingo Words' };
     function typeName(t) { return TYPE_NAMES[t] || t; }
     function summary(w, v) {
         if (v == null) return 'Works on the screen itself';
