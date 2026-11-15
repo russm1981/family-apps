@@ -16,7 +16,7 @@
     var DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     var MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
     var EXAMPLES = ['“Oliver add 15 points”', '“Take 10 points off Amelia”', '“Noah has done make your bed”', '“Calendar add Oliver drums at 12 on Saturday”',
-        '“Memo dentist moved to Thursday”', '“Add milk to the shopping list”', '“Timer 10 minutes”', '“Go to calendar”'];
+        '“Note: dentist moved to Thursday”', '“Add milk to the shopping list”', '“Timer 10 minutes”', '“Go to calendar”'];
     var rec = null, listening = false, panel = null, countdown = null, closeT = null, stopListening = function () { if (rec) try { rec.stop(); } catch (e) { /* ignore */ } };
 
     /* ------------------------------------------------------------ sounds */
@@ -206,9 +206,9 @@
         function memo(t) {
             var m = t.match(/^(?:memo|note|sticky note|reminder note)(?: add| to say| saying| that)? (.+)$/) || t.match(/^(?:add|new|make|write) (?:a )?(?:memo|note|sticky note)(?: to say| saying| that)? (.+)$/);
             if (!m) return null;
-            if (!widgets('memo').length) return { fail: 'There’s no Memo widget on the screen – add one in ⚙ Setup → Screens.' };
+            if (!widgets('memo').length) return { fail: 'There’s no Notes widget on the screen – add one in ⚙ Setup → Screens.' };
             var text = cap(m[1]).slice(0, 80);
-            return { say: 'New memo: <b>' + esc(text) + '</b>', run: function () {
+            return { say: 'New note: <b>' + esc(text) + '</b>', run: function () {
                 return api().post({ action: 'memo', op: 'add', text: text, from: '' }).then(function () { if (window.FDPages) window.FDPages.refreshNow(true); });
             } };
         },

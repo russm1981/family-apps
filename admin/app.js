@@ -1563,7 +1563,7 @@
 
     /* ================================================================ lists: notes, shopping, to-dos together */
 
-    function renderMemos() { renderListsOf('Notes', function (w) { return w.type === 'memo'; }, 'No notes on the screen', 'Add a Memo (notes) widget'); }
+    function renderMemos() { renderListsOf('Notes', function (w) { return w.type === 'memo'; }, 'No notes on the screen', 'Add a Notes widget'); }
     function renderLists() { renderListsOf('Lists', function (w) { return w.type === 'list' || w.type === 'todo'; }, 'No lists on the screen', 'Add a List or To-do widget'); }
     function renderListsOf(name, which, none, how) {
         title(name);

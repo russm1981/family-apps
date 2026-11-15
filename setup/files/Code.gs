@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.90';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.91';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -44,7 +44,7 @@ const TAB = {
   boys: 'Children', tasks: 'Tasks', ledger: 'Ledger', todos: 'Todos',
   todoLog: 'TodoLog', timetable: 'Timetable', categories: 'Categories',
   install: 'Installation', pages: 'Pages', widgets: 'Widgets', wset: 'Widget settings', lists: 'Lists',
-  where: 'Whereabouts', memos: 'Memos',
+  where: 'Whereabouts', memos: 'Notes',
 };
 // Calendar categories. An event's category is the word(s) before the dash in its title, e.g. "Oliver – Drums".
 // Match = extra words that put an un-prefixed event into the category (e.g. "Football practice" → Amelia).
@@ -88,7 +88,7 @@ const LIMITS = {
   eventNote: 300,
   category: 14,
   listItem: 30,       // shopping list item
-  memo: 80, maxNotes: 6,           // a note on the Memo widget
+  memo: 80, maxNotes: 6,           // a note on the Notes widget
   pageTitle: 10,      // fits under the icon in the side bar
   maxPoints: 999,     // a task, bonus or penalty
   maxCashIn: 9999,
@@ -356,7 +356,7 @@ Object.assign(WIDGET_TYPES, {
     settings: [
       { k: 'Child', label: 'Which child', type: 'child', def: '', help: 'The children come from the family (Family tab).' },
     ] },
-  memo: { name: 'Memo', icon: '📌', sizes: ['half', 'full'], about: 'Sticky notes for the family. Add from the phone or the screen; tap one to remove it.',
+  memo: { name: 'Notes', icon: '📌', sizes: ['half', 'full'], about: 'Sticky notes for the family. Add from the phone or the screen; tap one to remove it.',
     settings: [
       { k: 'KeepDays', label: 'Remove notes after (days)', type: 'number', def: 7, min: 1, max: 90 },
       { k: 'AddOnScreen', label: 'Allow adding on the screen', type: 'bool', def: true },
@@ -737,7 +737,7 @@ function ensureMigrated_() {
   freshCopy_();
   const ss = SpreadsheetApp.getActive();
   const ver = PropertiesService.getScriptProperties().getProperty('layoutVer');
-  if (ss.getSheetByName(TAB.widgets) && ss.getSheetByName(TAB.install) && ss.getSheetByName(TAB.memos) && ver === LAYOUT_VER) return;
+  if (ss.getSheetByName(TAB.widgets) && ss.getSheetByName(TAB.install) && ss.getSheetByName(tabName_('memos')) && ver === LAYOUT_VER) return;
   withLock_(() => migrate_());
 }
 
@@ -1173,7 +1173,9 @@ let tabRenamed_ = false;
 function tabName_(k) {
   if (!tabRenamed_) {
     tabRenamed_ = true;
-    try { const ss = SpreadsheetApp.getActive(), old = ss.getSheetByName('Boys'); if (old && !ss.getSheetByName('Children')) old.setName('Children'); } catch (e) { /* not bound to a sheet */ }
+    try { const ss = SpreadsheetApp.getActive(), old = ss.getSheetByName('Boys'); if (old && !ss.getSheetByName('Children')) old.setName('Children');
+      const m = ss.getSheetByName('Memos'); if (m && !ss.getSheetByName('Notes')) m.setName('Notes');      // "Notes" everywhere now
+    } catch (e) { /* not bound to a sheet */ }
   }
   return TAB[k];
 }

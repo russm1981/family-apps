@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.181",
+    "date": "2026-11-15",
+    "notes": [
+      "The Windows start file is now called “Start HouseRunner” (an older “Start Family Dashboard” file keeps working, and its start-up shortcut is replaced rather than doubled)",
+      "The links email is now “Your HouseRunner links – keep this email”"
+    ]
+  },
+  {
     "version": "2026.11.180",
     "date": "2026-11-15",
     "notes": [
