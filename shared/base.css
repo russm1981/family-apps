@@ -98,3 +98,5 @@ header.hr-head nav a { text-decoration: none; font-weight: 700; font-size: 14px;
 header.hr-head .hr-hbtn { color: var(--text); border: 1px solid var(--line); }
 header.hr-head .hr-hdash { color: #06210f; background: #4cd964; }
 @media (max-width: 560px) { header.hr-head { padding: 0 16px; } }
+/* Bulleted lists: a little further in from the edge, everywhere */
+ul, ol { padding-left: 30px; } li { padding-left: 4px; }

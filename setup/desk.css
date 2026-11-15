@@ -369,3 +369,6 @@ body.desk .card button.x:hover, body.desk .ev-x:hover, body.desk .cs-x:hover { b
 body.desk .sticky button.x { width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(255,255,255,.35); color: #5a5130; }
 body.desk .sticky button.x:hover { background: #ef4444; color: #fff; }
 .ev-nice { color: #3fa9f5; font-weight: 700; margin-left: 4px; }
+/* Bulleted lists sit a little further in from the edge of their box, everywhere */
+body.desk .card ul, body.desk .card ol, .card.explain ul { padding-left: 30px; }
+body.desk .card li { padding-left: 4px; }

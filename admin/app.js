@@ -636,9 +636,9 @@
             '<p>The settings you’ll rarely need – everything that isn’t the screens, the family or rewards. Pick one on the left.</p>' +
             '<ul class="small"><li><b>Locations &amp; home</b> – your home address, and the places widgets use (stations, routes, schools…).</li>' +
             '<li><b>External data (API) keys</b> – free keys some widgets need for live data: traffic, trains, buses, NASA, Spotify.</li>' +
-            '<li><b>Display Sleep</b> – when the screen dims and sleeps at night.</li><li><b>Licence</b> – your licence key.</li><li><b>Software updates</b> – the version of the Google script, and automatic updates.</li>' +
+            '<li><b>Display Sleep</b> – when the display dims and sleeps at night.</li><li><b>Licence</b> – your licence key.</li><li><b>Software updates</b> – the version of the Google script, and automatic updates.</li>' +
             '<li><b>My data</b> – your family’s information lives in a Google Sheet in your own Google account: your access code, starting afresh, moving to another account.</li>' +
-            '<li><b>Devices</b> – the screens, tablets, phones and computers connected to your dashboard, and connecting another.</li>' +
+            '<li><b>Devices</b> – the displays and phones connected to your dashboard, and connecting another.</li>' +
             '<li><b>About &amp; diagnostics</b> – every version number, what’s new, and a report to send if something goes wrong.</li></ul>') +
             '<p class="mute small">houserunner.app · Google script ' + esc(DATA.scriptVersion || '?') + '</p>';
     }

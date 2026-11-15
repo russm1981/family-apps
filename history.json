@@ -1,5 +1,21 @@
 [
   {
+    "version": "2026.11.190",
+    "date": "2026-11-15",
+    "notes": [
+      "Words used the same way everywhere: a “display” is the Corsair XENEON EDGE, tablet or computer showing the dashboard; a “screen” is a page of widgets",
+      "HouseRunner is the product name everywhere – the licence, privacy notice, emails and your Google Sheet’s menu (now 🏠 HouseRunner)",
+      "The website is called houserunner.app throughout (no more “Configurator”), and the Google side is always “your Google Sheet” and “the Google script”",
+      "Rewards everywhere: Family Admin’s Points button is now Rewards, and the child’s widget is “Child’s Rewards”",
+      "The Corsair XENEON EDGE always has its full name; connecting one is always “Connect a display”, with the same device names in the Setup wizard and on Home",
+      "System: Software Licence is now Licence, Screen Sleep is Display Sleep; menu groups renamed (Support, Set up rewards)",
+      "Every page without a left-hand menu has a folded ℹ️ “How … works” box; pick-one buttons all look like the Lists page; Save and + Add buttons say what they save or add",
+      "The same simple header on Help, the licence, privacy, What’s new, pairing and Windows pages",
+      "One green, one red and one amber across the website, phone apps and dashboard; colour stripes on rows; a boxed ✕ that turns red",
+      "Adding an event shows the chosen date the family’s way (e.g. Sun 15 Nov)"
+    ]
+  },
+  {
     "version": "2026.11.187",
     "date": "2026-11-15",
     "notes": [

@@ -24,11 +24,11 @@
         window.FD_DESK = true; window.FD_PHONE = !!phone;
     })();
     </script>
-    <link rel="stylesheet" href="shared/base.css?v=202611190">
-    <link rel="stylesheet" href="admin/admin.css?v=202611190">
-    <link rel="stylesheet" href="setup/desk.css?v=202611190">
-    <link rel="stylesheet" href="setup/editor.css?v=202611190">
-    <link rel="stylesheet" href="admin/phone.css?v=202611190">
+    <link rel="stylesheet" href="shared/base.css?v=202611192">
+    <link rel="stylesheet" href="admin/admin.css?v=202611192">
+    <link rel="stylesheet" href="setup/desk.css?v=202611192">
+    <link rel="stylesheet" href="setup/editor.css?v=202611192">
+    <link rel="stylesheet" href="admin/phone.css?v=202611192">
     <style>
 #landing { min-height: 100vh; }
 #landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
@@ -80,7 +80,8 @@
 #landing .ld-tiles.ld-feat .ld-tile .ld-ico { width: 44px; height: 44px; font-size: 22px; border-radius: 12px; background: var(--panel-2); display: flex; align-items: center; justify-content: center; }
 #landing .ld-tiles.ld-feat .ld-tile b, #landing .ld-steps3 .ld-tile b { font-size: 17px; }
 #landing .ld-need { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 8px 22px; }
-#landing .ld-need li { margin: 10px 0; color: #cdd5e1; }
+#landing .ld-need ul { padding-left: 30px; }
+#landing .ld-need li { margin: 10px 0; padding-left: 4px; color: #cdd5e1; }
 #landing .ld-need a { color: var(--acc); }
 @media (max-width: 560px) { #landing .ld-land-h { font-size: 30px; } }
 #landing .ld-connected { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 22px 0 0; padding: 14px 18px; border: 1px solid rgba(48,209,88,.45); background: rgba(48,209,88,.08); border-radius: 14px; font-size: 16px; }
@@ -159,7 +160,7 @@
    <ul>
     <li><b>A Google account</b> – ideally the one your family calendar is in. <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Make one free</a></li>
     <li><b>A computer</b> for setup – a Windows PC or a Mac</li>
-    <li><b>A screen</b> for the dashboard – the Corsair XENEON EDGE, a tablet, a Raspberry Pi with a screen, or any computer</li>
+    <li><b>A display</b> for the dashboard – the Corsair XENEON EDGE, a tablet, a Raspberry Pi with a monitor, or any computer</li>
     <li><b>A phone</b> for the grown-ups’ app</li>
     <li><b>Your licence key</b> – it’s in your order email (setup fills it in for you from the email’s link)</li>
    </ul>
@@ -191,19 +192,19 @@
     </div></div>
     <!-- Connected: houserunner.app (computer) or Family Admin (phone) – the same app. -->
     <div id="app"></div>
-    <script src="shared/storecheck.js?v=202611190"></script>
-    <script src="shared/fd.js?v=202611190"></script>
-    <script src="shared/pair.js?v=202611190"></script>
-    <script src="shared/qrcode.js?v=202611190"></script>
-    <script src="shared/privacy.js?v=202611190"></script>
-    <script src="shared/countries.js?v=202611190"></script>
-    <script src="setup/config.js?v=202611190"></script>
-    <script src="help/topics.js?v=202611190"></script>
-    <script src="setup/editor.js?v=202611190"></script>
-    <script src="setup/calsetup.js?v=202611190"></script>
-    <script src="shared/icons.js?v=202611190"></script>
+    <script src="shared/storecheck.js?v=202611192"></script>
+    <script src="shared/fd.js?v=202611192"></script>
+    <script src="shared/pair.js?v=202611192"></script>
+    <script src="shared/qrcode.js?v=202611192"></script>
+    <script src="shared/privacy.js?v=202611192"></script>
+    <script src="shared/countries.js?v=202611192"></script>
+    <script src="setup/config.js?v=202611192"></script>
+    <script src="help/topics.js?v=202611192"></script>
+    <script src="setup/editor.js?v=202611192"></script>
+    <script src="setup/calsetup.js?v=202611192"></script>
+    <script src="shared/icons.js?v=202611192"></script>
     <!-- A phone gets Family Admin, written for the phone; a computer houserunner.app. -->
-    <script>document.write('<script src="admin/' + (window.FD_PHONE ? 'phone' : 'app') + '.js?v=202611190"><\/script>');</script>
+    <script>document.write('<script src="admin/' + (window.FD_PHONE ? 'phone' : 'app') + '.js?v=202611192"><\/script>');</script>
 <script>
  (function () {
    'use strict';

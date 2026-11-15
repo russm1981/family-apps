@@ -152,7 +152,7 @@
                     '<li><b>A Google (Gmail) account</b> – ideally the one your family calendar is in. No Google account yet? <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">Create one free</a>, then come back here.</li>' +
                     '<li><b>This page open on a computer.</b></li>' +
                     '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
-                    '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No screen yet? You can try the dashboard in another tab on this computer.</p></div>' +
+                    '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No display yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
                 '<p>HouseRunner is standard software that runs on your display and your phones. Everything that belongs to your family – names, the calendar, ' +
                 'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
