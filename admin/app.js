@@ -489,8 +489,8 @@
         var nT = (DATA.tasks || []).length, nD = (DATA.todos || []).length, nR = (DATA.timetable || []).length;
         if (!DESK && !sub) sub = 'adjust';      // on the phone, open on the children's cards
         var cur = solo ? 'timetable' : sidePane('rewards', [['info', 'ℹ️', 'How rewards work'],
-            ['-', 'Set up rewards'], ['tasks', '✅', 'Reward Tasks', 'Jobs that earn points'], ['todos', '☀️', 'Daily To-Dos', 'Set up daily or weekly checklists'],
-            ['remdisplay', IC('reminders', '🎒'), 'Reminder Display', 'On the Child’s Rewards widgets or not'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
+            ['-', 'Set up rewards'], ['tasks', '✅', 'Reward Tasks', 'Jobs that earn points'], ['todos', '☀️', 'Daily To-Dos', 'Daily or weekly checklists'],
+            ['remdisplay', IC('reminders', '🎒'), 'Reminder Display', 'On Child’s Rewards or not'], ['rules', '⚖️', 'Reward rules', 'Set up the main reward rules'],
             ['-', 'The children'], ['adjust', '✏️', 'Manual adjustments', 'Points by hand, statements']], sub === 'cards' ? 'adjust' : sub);
         title(solo ? 'Reminders' : 'Rewards');
         if (!s) { $('body').innerHTML = '<div class="empty">Loading…</div>'; return; }
@@ -517,11 +517,10 @@
                     '<button type="button" class="x" data-tx title="Delete this task">✕</button></div>';
             };
             html = head('Reward Tasks', 'Jobs that earn points. Each child sees their next three open tasks on their card, in this order. Once = gone when it’s done; Every day = back tomorrow; Always there = can be done any number of times.') +
-                '<div class="card" id="fTasks"><h2>Your Reward Tasks</h2>' +
+                '<div class="card" id="fTasks"><h2>Your Reward Tasks</h2><p class="mute small card-sub">Points already earned stay when you change or delete a Reward Task.</p>' +
                 '<div class="tk-row tk-head"><span></span><span>Task <small>max ' + L().task + '</small></span><span>Points</span><span>For who</span><span>Repeats</span><span></span><span></span></div>' +
                 '<div id="tkRows">' + tasks.map(trow).join('') + '</div>' +
-                '<div class="ladd-row"><button class="btn fp-add" id="tkAdd">+ Add a task</button></div>' +
-                '<div class="fp-notes"><p class="mute small">Points already earned stay when you change or delete a task.</p></div>' +
+                '<div class="ladd-row"><button class="btn fp-add" id="tkAdd">+ Add a Reward Task</button></div>' +
                 '<div class="sheet-actions"><button class="btn good" id="tkSave">Save Reward Tasks</button><button class="btn ghost" id="tkUndo">Undo changes</button></div></div>';
             setTimeout(function () {
                 var rowsEl = $('tkRows'); if (!rowsEl) return;
@@ -543,14 +542,14 @@
             }, 0);
         }
         else if (cur === 'todos') html = head('Daily To-Dos', 'Checklists each child ticks off – no points. <b>Daily</b> ones (teeth, school bag) start afresh each morning, on the days you pick. <b>Weekly</b> ones (TTRS, Numbots, drums practice) stay ticked until they reset on the day you pick. The arrows put them in order (the order they show on the card).') + flat('todos');
-        else if (cur === 'timetable') html = head('Reminders', 'Things to remember on a day – shown on the child’s card on the day, and from the evening before (5 pm unless you change it below). Each one is either every week on the days you pick, or on one date.') + flat('timetable');
+        else if (cur === 'timetable') html = flat('timetable');      // its own page: the "How reminders work" box explains it
         else if (cur === 'remdisplay') html = head('Reminder Display', 'Whether each child’s reminders show on their Child’s Rewards widget, on the day and from the evening before.') +
             '<div class="card" id="remDispBox"><h2>On the Child’s Rewards widgets</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k === 'ShowReminders'; }), pp.settings || {}) : '') +
                 '<p class="mute small">To add or change reminders (PE kit, library books…), go to the <a href="#" data-go="reminders">Reminders</a> page. The <b>Children’s reminders</b> widget shows everyone’s together, whatever you choose here.</p>' +
                 '<div class="sheet-actions"><button class="btn good" id="remDispSave">Save reminder display</button></div></div>';
         else if (cur === 'rules') html = head('Reward rules', 'How many points make a cash-in, what it’s worth, and the penalty buttons on each child’s card.') +
             '<div class="card" id="rulesBox"><h2>The rules</h2>' + (pp ? fields(pageTypeOf('boys').settings.filter(function (f) { return f.k !== 'PenaltyOptions' && f.k !== 'TomorrowFrom' && f.k !== 'ShowReminders'; }), pp.settings || {}) : '') +
-                '<label>Penalty buttons</label><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
+                '<h3 class="sub-h">Penalty buttons</h3><p class="mute small">The buttons on each child’s card for taking points away – up to four.</p><div class="pens-ed" id="pensEd"></div>' +
                 '<input type="hidden" data-f="PenaltyOptions" id="pensVal" value="' + esc(((pp || {}).settings || {}).PenaltyOptions || '10,20,50') + '">' +
                 '<div class="sheet-actions"><button class="btn good" id="rulesSave">Save the rules</button><button class="btn ghost" id="rulesUndo">Undo changes</button></div></div>';
         else html = head('Manual adjustments', 'Put a child’s points right by hand – it goes on their statement. Below, each child’s card as it shows on the dashboard (you can tick things off and give points there too).') +
@@ -1330,7 +1329,7 @@
     var LISTS = {
         todos: { title: 'Daily To-Dos', one: 'To-Do', what: 'daily or weekly checklists', help: 'Pick who it’s for, and daily (on which days) or weekly (which day it resets). Use the arrows to put them in order.',
             cols: [['Item', 'To-do'], ['Boy', 'For who'], ['Days', 'How often']], ordered: true },
-        timetable: { title: 'Reminders', one: 'reminder', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
+        timetable: { title: 'Reminders', one: 'reminder', sub: 'Each one is every week on the days you pick, or on one date. Shown on the day, and from the evening before.', what: 'shown on the day and the evening before', help: 'Shown on each child’s card on the day, and from the evening before (5pm, or the time set below) – every week on some days, or on one date.',
             cols: [['Reminder', 'Reminder'], ['Boy', 'For who'], ['Day', 'When']] },
     };
     function listFold(k) {
@@ -1338,19 +1337,21 @@
         if (cfg.ordered) rs.sort(function (a, b) { return (+a.Order || 999) - (+b.Order || 999); });
         if (!rs.length) rs.push({});
         return '<details class="card fold" id="f_' + k + '"><summary><b>' + cfg.title + '</b><span class="mute">' + (DATA[k] || []).length + ' · ' + cfg.what + '</span></summary>' +
-            (DESK ? '<h2>Your ' + cfg.title.toLowerCase() + '</h2>' : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
+            (DESK ? '<h2>Your ' + nm(cfg.title) + '</h2>' + (cfg.sub ? '<p class="mute small card-sub">' + cfg.sub + '</p>' : '') : '<p class="mute small help">' + esc(cfg.help) + '</p>') +
             (DESK ? '<div class="lhead l-' + k + '">' + (cfg.ordered ? '<span></span>' : '') + cfg.cols.map(function (c) { var n = maxFor(k, c[0]); return '<span>' + esc(c[1]) + (n ? ' <small>max ' + n + '</small>' : '') + '</span>'; }).join('') + '</div>' : '') +
             '<div class="lrows" id="rows_' + k + '">' + rs.map(function (r) { return rowCard(k, r); }).join('') + '</div>' +
             '<div class="ladd-row"><button class="btn fp-add" data-ladd="' + k + '">+ Add a ' + cfg.one + '</button>' +
                 (k === 'timetable' ? '<button class="btn ghost fp-add" data-lclear title="Deletes every reminder whose date has passed. Weekly ones are kept.">🧹 Clear expired reminders</button>' : '') + '</div>' +
             (k === 'timetable' ? remFromRow() : '') +
-            '<div class="sheet-actions"><button class="btn good" data-lsave="' + k + '">Save ' + cfg.title.toLowerCase() + '</button><button class="btn ghost" data-lundo="' + k + '">Undo changes</button></div></details>';
+            '<div class="sheet-actions"><button class="btn good" data-lsave="' + k + '">Save ' + nm(cfg.title) + '</button><button class="btn ghost" data-lundo="' + k + '">Undo changes</button></div></details>';
     }
+    /** A list's name in a sentence: the named ones keep their capitals (Reward Tasks, Daily To-Dos). */
+    function nm(t) { return /Reward|To-Do/.test(t) ? t : t.toLowerCase(); }
     /** When the screen switches from today's reminders to tomorrow's (a Rewards setting, set with the reminders). */
     function remFrom() { var pp = pointsPage(); return String(((pp && pp.settings) || {}).TomorrowFrom || '17:00'); }
     function remFromRow() {
         return '<div class="rem-from"><label for="remFrom">Switch to tomorrow’s reminders at</label><input type="time" id="remFrom" value="' + esc(remFrom()) + '">' +
-            '<p class="mute small">Until this time the screen shows today’s reminders (with a preview of tomorrow); from this time, tomorrow’s – so school things can be got ready the evening before.</p></div>';
+            '<p class="mute small">Until this time the display shows today’s reminders (with a preview of tomorrow); from this time, tomorrow’s – so school things can be got ready the evening before.</p></div>';
     }
     function wireListFold(k) {
         var box = $('f_' + k);

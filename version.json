@@ -1,10 +1,11 @@
 {
-  "app": "2026.11.197",
+  "app": "2026.11.202",
   "script": "2026.11.95",
   "date": "2026-11-15",
   "notes": [
-    "Numbered steps in the help line up properly inside their box",
-    "The Raspberry Pi and Windows help says “display” and matches the buttons you actually press (Yes – Connect it; Connect the display)"
+    "Setup wizard page: a gap between the two wizard buttons (and between any buttons side by side)",
+    "Screens: the blue how-to under Reconfigure Widgets fits on one line",
+    "Devices and Phones says displays, not screens"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",
