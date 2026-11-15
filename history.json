@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.240",
+    "date": "2026-11-15",
+    "notes": [
+      "Family Admin → Other now lists widgets as the computer does: hidden ones too, Always shows / Timed (Primary) / Timed (Secondary) / Hidden under each, and ‘copy 1 of 2’ for copies",
+      "Family Admin → Other: each widget’s page says when it shows, and a note at the bottom of the list (and on each widget) says what is changed on a computer"
+    ]
+  },
+  {
     "version": "2026.11.239",
     "date": "2026-11-15",
     "notes": [

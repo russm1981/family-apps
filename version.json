@@ -1,13 +1,10 @@
 {
-  "app": "2026.11.240",
+  "app": "2026.11.241",
   "script": "2026.11.104",
   "date": "2026-11-15",
   "notes": [
-    "Family Dashboard (phone): the browser tab says HouseRunner – Dashboard; a little more space between widgets; Child’s Rewards cards are as tall as they need to be",
-    "Family Dashboard (phone) calendar: just Month and Week (no 🎂 or 🌴), short day names in portrait, Today and the views on the left, Key and + Add on the right",
-    "Family Dashboard (phone): a small ⓘ at the end of the top row opens About & diagnostics, laid out for the phone",
-    "Diagnostics everywhere now include this device – what kind of device, operating system and version, browser and version, screen, touch, memory and connection – shown on the page and put in the report",
-    "Family Admin (phone): More → About and diagnostics, with the versions, this phone, and a report you can share or email"
+    "Family Admin → Other now lists widgets as the computer does: hidden ones too, Always shows / Timed (Primary) / Timed (Secondary) / Hidden under each, and ‘copy 1 of 2’ for copies",
+    "Family Admin → Other: each widget’s page says when it shows, and a note at the bottom of the list (and on each widget) says what is changed on a computer"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.22",

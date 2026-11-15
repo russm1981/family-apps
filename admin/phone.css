@@ -164,3 +164,8 @@ body.fa .fa-lrow-top { padding-right: 48px; margin-bottom: 4px; }
 body.fa .fa-lrow > label:first-of-type { margin-top: 2px; padding-right: 48px; }
 body.fa .fa-warn { margin: 18px 2px 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(245,158,11,.45); background: rgba(245,158,11,.08); color: #fcd34d; font-size: 13.5px; line-height: 1.45; }
 body.fa .fa-status { margin: 4px 2px 12px; color: #cbd5e1; font-size: 14px; line-height: 1.45; }
+/* Calendar: the note about the full calendar under Coming up, and bigger grey text */
+body.fa .fa-h small { font-size: 14px; }
+body.fa .fa-cal-note { margin: 0 2px 12px; font-size: 15px; color: #b6c0cc; text-align: left; }
+body.fa .fa-row.ev .fa-cat { font-size: 15px; width: 84px; color: #b6c0cc; }
+body.fa .fa-row.ev .fa-time { font-size: 15.5px; color: #b6c0cc; }

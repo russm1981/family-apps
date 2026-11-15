@@ -159,13 +159,13 @@
             (cps.length > 1 ? '<div class="fa-seg" id="calPick">' + cps.map(function (p) { return '<button data-cp="' + esc(p.id) + '"' + (p.id === cur ? ' class="on"' : '') + '>' + esc(p.title) + '</button>'; }).join('') + '</div>' : '') +
             '<button class="btn fa-add" id="evOpen">+ Add an event</button>' +
             h('Coming up', '<small>the next five weeks</small>') +
+            '<p class="fa-foot fa-cal-note">The whole calendar – week and month – is in the <a href="' + esc(ROOT) + 'dashboard/">Family Dashboard</a> app.</p>' +
             (!D ? empty('Loading…') : !days.length ? empty('Nothing in the next five weeks') : days.map(function (k) {
                 return '<div class="fa-day"><h3>' + (k === t0 ? 'Today' : k === t1 ? 'Tomorrow' : esc(nice(k))) + '</h3>' + D.days[k].map(function (e, n) {
                     return '<div class="fa-row ev"><span class="fa-swatch" style="background:' + esc(e.c || '#888') + '"></span><span class="fa-cat">' + esc(e.cat || '') + '</span><span class="fa-t"><b>' + esc(e.t) + (e.time ? '<span class="fa-time">' + esc(e.time) + '</span>' : '') + '</b></span>' +
                         '<button class="fa-x" data-del="' + esc(k) + '|' + n + '" aria-label="Delete">✕</button></div>';
                 }).join('') + '</div>';
-            }).join('')) +
-            '<p class="fa-foot">The whole calendar – week and month – is in the <a href="' + esc(ROOT) + 'dashboard/">Family Dashboard</a> app.</p>';
+            }).join(''));
         if ($('calPick')) $('calPick').onclick = function (e) { var b = e.target.closest('[data-cp]'); if (!b) return; try { localStorage.setItem('fdadmin.calPage', b.getAttribute('data-cp')); } catch (x) { /* fine */ } draw(); };
         var fetchCal = function () {
             var q = { start: t0, end: ymd(new Date(today.getTime() + 35 * 864e5)) }; if (cur) q.page = cur;
