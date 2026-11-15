@@ -2321,7 +2321,7 @@
             card('Night hours', '<p class="mute small">Between these times the screen sleeps – if someone touches it, it goes back to sleep after 2 minutes.</p>' +
                 '<label class="tog"><input type="checkbox" id="ssNight"' + (nm ? ' checked' : '') + '><span>Sleep at night</span></label>' +
                 '<div class="ss-row" id="ssTimes"' + (nm ? '' : ' style="opacity:.45;pointer-events:none"') + '><span>from</span><input type="time" id="ssFrom" value="' + esc(from) + '"><span>to</span><input type="time" id="ssTo" value="' + esc(to) + '"></div>') +
-            card('On the Windows PC', '<p class="mute small">Set Windows <b>Settings → System → Power → “Turn off my screen”</b> to <b>Never</b>, so the dashboard’s own sleep screen is in charge and a touch always wakes it. (The start file offers to do this for you.)</p>') +
+            card('On the Windows PC', '<p class="mute small">Set Windows <b>Settings → System → Power → “Turn off my screen”</b> to <b>Never</b>, so the dashboard’s own sleep screen is in charge and a touch always wakes it. (The start file – the one you download from <b>houserunner.app/windows</b> – offers to do this for you.)</p>') +
             '<div class="sheet-actions"><button class="btn good" id="scSave">Save display sleep</button><button class="btn ghost" id="scUndo">Undo changes</button></div>' +
             '<input type="hidden" data-set="SleepMinutes" id="ssV1"><input type="hidden" data-set="SleepStyle" id="ssV2" value="' + style + '"><input type="hidden" data-set="NightHours" id="ssV3">';
         var sync = function () {
