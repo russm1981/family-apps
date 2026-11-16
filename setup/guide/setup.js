@@ -233,9 +233,9 @@
                     '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
                         'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
-                    '<li><b>No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
+                    '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
-                        'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></li>' +
+                        'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></div></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
                     '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +

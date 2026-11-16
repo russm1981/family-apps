@@ -163,7 +163,8 @@ function startHere_() {
   sh.getRange('A3').setFormula('=IMAGE("https://houserunner.app/shared/brand/sheet-start.png", 4, 622, 1130)');
   sh.setRowHeight(3, 630); sh.setColumnWidth(1, 1140);
   sh.getRange('A4').setValue('Why each permission is needed, and using a separate Google account just for HouseRunner: https://houserunner.app/help/#permissions').setFontSize(12);
-  sh.getRange('A5').setValue('No “Published ✅” after allowing it? Choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more – Google stops as soon as you’ve allowed it.').setFontSize(12);
+  sh.getRange('A5').setValue('⚠ No “Published ✅” message after allowing it? Choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more – the first click often only asks for permission.')
+    .setFontSize(13).setFontWeight('bold').setFontColor('#b91c1c').setBackground('#fff1f0');
 }
 // Names Google calls: the web app, the menu, the timer.
 function doGet() { return fdCall_('doGet', arguments); }
