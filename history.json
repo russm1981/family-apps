@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.262",
+    "date": "2026-11-15",
+    "notes": [
+      "Set up a new family (from Setup wizard or Home): asks first, disconnects this computer from the current family (their dashboard isn’t changed), then starts the wizard from the beginning in the same tab"
+    ]
+  },
+  {
     "version": "2026.11.261",
     "date": "2026-11-15",
     "notes": [

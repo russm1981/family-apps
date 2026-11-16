@@ -214,3 +214,4 @@ main > .nav { position: sticky; bottom: 0; z-index: 5; background: var(--bg, #0c
 #next.pulse { animation: nxpulse 1.2s ease-in-out infinite; }
 @keyframes nxpulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(63,169,245,.7); } 50% { box-shadow: 0 0 0 10px rgba(63,169,245,0); } }
 .card.moved h1 { font-size: 26px; }
+.step-pic { display: block; width: 100%; max-width: 440px; margin: 10px 0 4px; border-radius: 10px; border: 1px solid var(--line); }
