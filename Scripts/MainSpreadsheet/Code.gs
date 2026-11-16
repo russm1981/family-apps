@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.107';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.108';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4001,7 +4001,7 @@ function onOpen() {
   try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
   try { if (LOADED && typeof globalThis.startHere_ === 'function') globalThis.startHere_(); } catch (e) { /* fine */ }   // a brand-new copy: what to do next
   const m = SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
-    .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
+    .addItem('▶ HouseRunner – SETUP (connect my screen and phones)', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
     .addItem(LOADED ? 'Load the newest program now' : 'Update the Google script now', 'menuUpdate');
   // With the loader, updates need no switch and use no saved versions, so these two aren't needed.
@@ -4055,7 +4055,7 @@ function menuConnect() {
     dialog_('One switch, then it publishes itself', '<p>Google needs one switch turned on (once for your Google account' + (who ? ', <b>' + clean_(who) + '</b>' : '') + ') so the dashboard can publish itself:</p><ol>' +
       '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank"><b>this Google settings page</b></a> (it opens in a new tab)</li>' +
       '<li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li>' +
-      '<li>Come back to this tab and choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again</li></ol>' +
+      '<li>Come back to this tab and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again</li></ol>' +
       '<p style="color:#888;font-size:13px">If it already says On, wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>', 340);
     return;
   }
@@ -4065,7 +4065,7 @@ function menuConnect() {
       '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
       '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>System → Go to Family Dashboard → Allow</b></li>' +
       '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
-      '<p>Then come back here and choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again.</p>', 420);
+      '<p>Then come back here and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>', 420);
     return;
   }
   const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';

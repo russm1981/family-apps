@@ -229,14 +229,15 @@
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
-                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
                     '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
                         'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
-                    '<li><b>No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> once more. ' +
+                    '<li><b>No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
                         'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
+                    '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +
                     helpLink('setup') + '</div>' +
                     '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: press <b>Next</b> for the by-hand way to publish.</p>' + manual() + '</details>'
@@ -257,10 +258,10 @@
             return '<h1>Publish it and connect</h1><p class="lead">Already clicked <b>Carry on with setup</b> in your Sheet? Setup carries on in that new tab – you can close this one. Otherwise: your Sheet comes with a small program inside it. “Publishing” switches it on, so your screen and phones can talk to your Sheet – ' +
                 'using the private access code, and nothing else. You do it once, from a menu in your Sheet.</p>' +
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
-                '<li>Wait a few seconds for the <b>🏠 HouseRunner</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
+                '<li>Wait a few seconds for the <b>🏠 HouseRunner</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
                 '<li>Google asks for permission: click <b>Continue</b> (or <b>Authorize access</b>) and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
                     'Click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
-                '<li>Choose the menu again: <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>. ' +
+                '<li>Choose the menu again: <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>. ' +
                     '<span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
                 '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – this page opens again, already connected. Nothing to copy or paste.</li></ol>' +
                 helpLink('setup') + '<div id="connStatus"></div></div>' +
@@ -293,7 +294,7 @@
                     '<p class="mute">The URL: in Apps Script, <b>Deploy → Manage deployments</b>, and copy the <b>Web app URL</b> (it ends in /exec)' +
                     (connected() ? '' : ' – then paste it in the box above') + '.</p>' +
                     (connected() ? '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' : '') +
-                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>.</p>' +
+                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>.</p>' +
                     '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
                     '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
             }

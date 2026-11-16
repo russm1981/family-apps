@@ -57,7 +57,7 @@ window.FD_HELP = [
 <dt>The 🏠 HouseRunner menu doesn’t appear in the Sheet</dt><dd>Reload the Sheet’s tab (F5, or ⌘R on a Mac) and wait about 10 seconds – it appears after <b>Help</b> along the top.</dd>
 <dt>The setup page says “Couldn’t reach that address” or “opened a Google page instead”</dt><dd>In Apps Script: <b>Deploy → Manage deployments → ✎ (pencil)</b>, check <b>Who has access</b> is <b>Anyone</b>, and click <b>Deploy</b>.</dd>
 <dt>The licence key isn’t accepted</dt><dd>See <a href="#licence">Licence key</a>. You can carry on without it for 14 days and add it later.</dd>
-<dt>I closed the setup page</dt><dd>Open it again from the same computer and browser – it remembers where you were. Or in your Sheet: <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>.</dd>
+<dt>I closed the setup page</dt><dd>Open it again from the same computer and browser – it remembers where you were. Or in your Sheet: <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>.</dd>
 </dl>`
   },
   {

@@ -148,10 +148,7 @@ function onOpen(e) {
     // menu has the same first steps: each one loads the program when it's clicked.
     try { startHere_(); } catch (x) { /* fine */ }
     try {
-      SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
-        .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
-        .addItem('Change family & calendar', 'menuFamily')
-        .addSeparator().addItem('Load the dashboard program', 'fdRepair').addToUi();
+      SpreadsheetApp.getUi().createMenu('🏠 HouseRunner').addItem('▶ HouseRunner – SETUP', 'menuConnect').addToUi();
     } catch (x) { /* no UI */ }
   }
 }
@@ -160,17 +157,13 @@ function startHere_() {
   const ss = SpreadsheetApp.getActive(), sh = ss.getSheets()[0];
   if (ss.getSheets().length !== 1 || sh.getLastRow() > 0) return;
   sh.setName('Start here');
-  const rows = [['Welcome to your HouseRunner Sheet'], [''],
-    ['1. Click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ Set up & connect my screen and phones.'],
-    ['2. Google asks for permission. On the red “Google hasn’t verified this app” page, click Advanced → Go to HouseRunner (unsafe) – that’s normal for your own copy.'],
-    ['3. When Google lists the permissions, click Select all, then Continue. What each one is for, and which are optional: https://houserunner.app/help/#permissions'],
-    ['4. No “Published ✅” message yet? Choose 🏠 HouseRunner → ▶ Set up & connect my screen and phones once more – Google stops as soon as you’ve allowed it, so the first click often only asks for permission.'],
-    ['5. When it says “Published ✅”, click Carry on with setup.'], [''],
-    ['Rather not use your main Google account? You can make a new Google account just for HouseRunner – see the link above.']];
-  sh.getRange(1, 1, rows.length, 1).setValues(rows).setWrap(false);
-  sh.getRange(1, 1).setFontSize(18).setFontWeight('bold');
-  sh.getRange(3, 1, 5, 1).setFontSize(12);
-  sh.setColumnWidth(1, 900);
+  sh.getRange('A1').setValue('Welcome to your HouseRunner Sheet – click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ HouseRunner – SETUP')
+    .setFontSize(16).setFontWeight('bold');
+  sh.getRange('A2').setValue('Google then asks you to allow HouseRunner in your own copy. The picture shows what to expect:').setFontSize(12);
+  sh.getRange('A3').setFormula('=IMAGE("https://houserunner.app/shared/brand/sheet-start.png", 4, 540, 1130)');
+  sh.setRowHeight(3, 548); sh.setColumnWidth(1, 1140);
+  sh.getRange('A4').setValue('What each permission is for, which are optional, and using a separate Google account: https://houserunner.app/help/#permissions').setFontSize(12);
+  sh.getRange('A5').setValue('No “Published ✅” after allowing it? Choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more – Google stops as soon as you’ve allowed it.').setFontSize(12);
 }
 // Names Google calls: the web app, the menu, the timer.
 function doGet() { return fdCall_('doGet', arguments); }

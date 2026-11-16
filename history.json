@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.253",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard and the new Sheet’s Start here tab: choose the menu a second time only if “Published ✅” hasn’t appeared, and why"
+    ]
+  },
+  {
     "version": "2026.11.252",
     "date": "2026-11-15",
     "notes": [
