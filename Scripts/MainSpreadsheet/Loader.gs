@@ -159,9 +159,10 @@ function startHere_() {
   sh.setName('Start here');
   sh.getRange('A1').setValue('Welcome to your HouseRunner Sheet – click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ HouseRunner – SETUP')
     .setFontSize(16).setFontWeight('bold');
-  sh.getRange('A2').setValue('Google then asks you to allow HouseRunner in your own copy. The picture shows what to expect:').setFontSize(12);
-  sh.getRange('A3').setFormula('=IMAGE("https://houserunner.app/shared/brand/sheet-start.png", 4, 622, 1130)');
-  sh.setRowHeight(3, 630); sh.setColumnWidth(1, 1140);
+  sh.getRange('A2').setValue('Google then asks you to allow HouseRunner in your own copy: click Advanced → Go to HouseRunner (unsafe), then Select all → Continue.').setFontSize(12);
+  // (No =IMAGE() picture here: Google shows a "formulas send data to external parties" warning for it. The template's own HOME tab has the picture.)
+  sh.getRange('A3').setValue('A picture of each step: https://houserunner.app/shared/brand/sheet-start.png').setFontSize(12);
+  sh.setColumnWidth(1, 1140);
   sh.getRange('A4').setValue('Why each permission is needed, and using a separate Google account just for HouseRunner: https://houserunner.app/help/#permissions').setFontSize(12);
   sh.getRange('A5').setValue('⚠ No “Published ✅” message after allowing it? Choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more – the first click often only asks for permission.')
     .setFontSize(13).setFontWeight('bold').setFontColor('#b91c1c').setBackground('#fff1f0');

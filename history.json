@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.256",
+    "date": "2026-11-15",
+    "notes": [
+      "The ‘No Published ✅ yet? Choose the menu once more’ message is now a red warning in the Start here picture, the Sheet’s Start here tab and the setup wizard"
+    ]
+  },
+  {
     "version": "2026.11.255",
     "date": "2026-11-15",
     "notes": [
