@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.249",
+    "date": "2026-11-15",
+    "notes": [
+      "Google permissions: new families’ Sheets no longer ask to manage Apps Script projects and deployments – the loader never needs them (the Blank Template’s appsscript.json and the setup wizard’s by-hand file are the shorter one; older Sheets that update themselves the old way keep theirs)"
+    ]
+  },
+  {
     "version": "2026.11.248",
     "date": "2026-11-15",
     "notes": [

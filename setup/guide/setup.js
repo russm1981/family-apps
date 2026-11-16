@@ -11,9 +11,9 @@
     var $ = function (id) { return document.getElementById(id); };
     function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
     function whyPerms() { return '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
-        '<li><b>Gmail (read)</b> – Parcels widget.</li><li><b>Drive</b> – photo slideshow folder.</li><li><b>Tasks</b> – To-do widget.</li><li><b>External requests</b> – weather, traffic, trains…</li>' +
-        '<li><b>Run when you’re not there, and connect to external services</b> – the 5-minute timer, and fetching its own newest program from these apps.</li>' +
-        '<li><b>Apps Script projects and deployments</b> – so it can publish itself, without the Deploy screens.</li>' +
+        '<li><b>Gmail</b> – the Parcels widget searches for delivery emails, and it emails you a backup of your private links. Google only offers “read, send and delete” together; nothing is deleted.</li><li><b>Drive (read only)</b> – the photo slideshow folder.</li><li><b>Tasks</b> – the To-Do List (Google).</li>' +
+        '<li><b>Connect to external services</b> – fetching its program from houserunner.app, and weather, traffic, trains, the licence check…</li>' +
+        '<li><b>Run when you’re not there</b> – the timers for updates and the daily licence check. <b>Display content</b> – the 🏠 HouseRunner menu in your Sheet.</li>' +
         '<li>It all runs as you, inside your own Google account.</li></ul></details>'; }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
