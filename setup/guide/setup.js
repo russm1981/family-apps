@@ -231,7 +231,7 @@
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
                     '<li>Your new Sheet opens on its <b>Start HERE</b> tab. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
-                    '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
+                    '<li>Google says <b>“Authorization required – a script attached to this document needs your permission to run”</b>: click <b>OK</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
                         'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
                     '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +

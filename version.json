@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.263",
+  "app": "2026.11.264",
   "script": "2026.11.110",
   "date": "2026-11-15",
   "notes": [
-    "Set up a new family (from Setup wizard or Home): asks first, disconnects this computer from the current family (their dashboard isn’t changed), then starts the wizard from the beginning in the same tab"
+    "Setup wizard step 2: a picture of Google’s Copy document page, with the Make a copy button picked out"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",
