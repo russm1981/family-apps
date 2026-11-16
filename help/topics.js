@@ -12,6 +12,34 @@ window.FD_HELP = [
 <p>The first time you open houserunner.app on a computer that’s already set up for your family, it shows a code: on your phone, <b>Family Admin → More → Connect a display</b>. On the computer you used for setup, it connects by itself.</p>`
   },
   {
+    id: 'permissions', icon: '🔐', title: 'Google permissions: what they’re for',
+    summary: 'What Google asks you to allow when you set up HouseRunner, why, which are optional – and using a separate Google account.',
+    body: `
+<p>HouseRunner’s program runs inside a Google Sheet in <b>your own Google account</b>, as you. Google asks you to allow what it uses. Nobody else – including us – gets access to your account.</p>
+<h2>“Google hasn’t verified this app”</h2>
+<p>On the way, Google shows a red ⚠ page saying the developer – <b>your own email address</b> – hasn’t had the app verified. That’s normal: the copy is yours, so Google counts you as its developer. Click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. Don’t press <b>Back to safety</b>.</p>
+<h2>Needed – leave these ticked</h2>
+<ul>
+<li><b>See, edit, create and delete your spreadsheets</b> – your family’s information is kept in your own Sheet; setup also makes backup copies.</li>
+<li><b>Connect to an external service</b> – downloading the HouseRunner program, live information (weather, trains, buses, traffic, flights, news) and the daily licence check.</li>
+<li><b>Display and run third-party web content in prompts and sidebars</b> – the 🏠 HouseRunner menu and its windows in your Sheet.</li>
+<li><b>Allow this application to run when you are not present</b> – the timers that keep it up to date and check the licence.</li>
+<li><b>Create and update Google Apps Script projects and deployments</b> – so it can publish itself, without you using Google’s Deploy screens.</li>
+</ul>
+<h2>Optional – untick any you don’t want</h2>
+<p>Only the part named stops working, and it says so on the screen. Everything else carries on.</p>
+<ul>
+<li><b>Google Calendar</b> – the calendar screen, adding events, birthdays and the holiday countdown.</li>
+<li><b>Gmail</b> (“read, compose, send and permanently delete”) – the <b>Parcels</b> widget looks for delivery emails, and HouseRunner emails you a backup of your private links. Google only offers this all-in-one permission; HouseRunner never deletes or changes your email.</li>
+<li><b>Google Drive</b> (see and download files) – the <b>Photo slideshow</b> from a folder you choose. Read only.</li>
+<li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>
+</ul>
+<p>Changed your mind? In your Sheet choose <b>🏠 HouseRunner → Allow more permissions</b> and Google asks again for any you left out. To take permissions away: <a href="https://myaccount.google.com/connections" target="_blank" rel="noopener">myaccount.google.com → Your connections to third-party apps</a>.</p>
+<h2>Using a separate Google account</h2>
+<p>If you’d rather not give your main Google account these permissions, make a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">new Google account</a> just for HouseRunner and do the setup signed in to it. The catch: the calendar, parcels, photos and tasks it shows are that account’s. Share your family calendar with the new account (Google Calendar → ⚙ Settings → your calendar → <b>Share with specific people</b>, “Make changes to events”), and add the new account on your phone if you want to add events or tasks from Google’s own apps. HouseRunner’s phone apps work either way.</p>
+`
+  },
+  {
     id: 'setup', icon: '🧭', title: 'Help with first-time setup',
     summary: 'Setting up from your licence email: what to click at each step, and what to do where people most often get stuck.',
     body: `

@@ -1,4 +1,4 @@
-/* HouseRunner – Google script – LOADER (version 1.2)
+/* HouseRunner – Google script – LOADER (version 1.3)
  *
  * This small file is all that lives in this Apps Script project's "Code" file. Each time the script runs it fetches
  * the real program from where the apps are hosted (GitHub Pages), keeps a copy for a few hours so it stays quick,
@@ -13,7 +13,7 @@
  * same-named function in the program.
  */
 const FD_LOADER = (function () {
-  const VERSION = '1.2';   // compared with version.json "loader": a higher number there asks families to paste this file again
+  const VERSION = '1.3';   // compared with version.json "loader": a higher number there asks families to paste this file again
   const DEFAULT_BASE = 'https://houserunner.app/';
   const CODE = 'setup/files/Code.gs', HTML = 'setup/files/Admin.html';           // relative to the apps address
   const VKEY = 'script', VDECL = /const SCRIPT_VERSION = '([^']+)'/;  // version.json key, and how the program states its version
@@ -146,6 +146,7 @@ function onOpen(e) {
   catch (err) {
     // A brand-new copy can't download the program while the Sheet is opening (Google doesn't allow it yet), so this
     // menu has the same first steps: each one loads the program when it's clicked.
+    try { startHere_(); } catch (x) { /* fine */ }
     try {
       SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
         .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
@@ -153,6 +154,22 @@ function onOpen(e) {
         .addSeparator().addItem('Load the dashboard program', 'fdRepair').addToUi();
     } catch (x) { /* no UI */ }
   }
+}
+/** A brand-new copy: the empty first tab explains what happens next (setup removes it once it has made its own tabs). */
+function startHere_() {
+  const ss = SpreadsheetApp.getActive(), sh = ss.getSheets()[0];
+  if (ss.getSheets().length !== 1 || sh.getLastRow() > 0) return;
+  sh.setName('Start here');
+  const rows = [['Welcome to your HouseRunner Sheet'], [''],
+    ['1. Click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ Set up & connect my screen and phones.'],
+    ['2. Google asks for permission. On the red “Google hasn’t verified this app” page, click Advanced → Go to HouseRunner (unsafe) – that’s normal for your own copy.'],
+    ['3. When Google lists the permissions, click Select all, then Continue. What each one is for, and which are optional: https://houserunner.app/help/#permissions'],
+    ['4. Google stops once you’ve allowed it, so click 🏠 HouseRunner → ▶ Set up & connect my screen and phones once more.'], [''],
+    ['Rather not use your main Google account? You can make a new Google account just for HouseRunner – see the link above.']];
+  sh.getRange(1, 1, rows.length, 1).setValues(rows).setWrap(false);
+  sh.getRange(1, 1).setFontSize(18).setFontWeight('bold');
+  sh.getRange(3, 1, 4, 1).setFontSize(12);
+  sh.setColumnWidth(1, 900);
 }
 // Names Google calls: the web app, the menu, the timer.
 function doGet() { return fdCall_('doGet', arguments); }
@@ -166,4 +183,5 @@ function menuFamily() { return fdCall_('menuFamily', arguments); }
 function menuStartAfresh() { return fdCall_('menuStartAfresh', arguments); }
 function menuUpdate() { return fdCall_('menuUpdate', arguments); }
 function menuWipe() { return fdCall_('menuWipe', arguments); }
+function menuPermissions() { return fdCall_('menuPermissions', arguments); }
 

@@ -60,11 +60,11 @@
    if (window.top !== window) { document.querySelector('.top').style.display = 'none'; var hh = document.querySelector('header.hr-head'); if (hh) hh.style.display = 'none'; }      // inside houserunner.app or the app: they have the title
    // Five kinds of question, and a support request. Each topic is in one of them.
    var CATS = [
-     { id: 'start', icon: '🚀', name: 'Getting started', what: 'First-time setup, your licence, and connecting displays and phones', topics: ['where', 'setup', 'licence', 'connect', 'screens', 'pi', 'startup'] },
+     { id: 'start', icon: '🚀', name: 'Getting started', what: 'First-time setup, your licence, and connecting displays and phones', topics: ['where', 'setup', 'permissions', 'licence', 'connect', 'screens', 'pi', 'startup'] },
      { id: 'widgets', icon: '▦', name: 'Screens and widgets', what: 'Adding and setting up widgets, live-data keys, bin days, sleep and voice', topics: ['widget', 'keys', 'bins', 'sleep', 'voice'] },
      { id: 'family', icon: '⭐', name: 'Calendar and rewards', what: 'Calendar colours and categories, points, tasks, to-dos and reminders', topics: ['calendar', 'points'] },
      { id: 'trouble', icon: '🔧', name: 'Troubleshooting', what: 'The coloured dot, “can’t reach the Sheet”, widget problems and updates', topics: ['dot', 'sheet', 'updates', 'report'] },
-     { id: 'data', icon: '🔐', name: 'Your data and account', what: 'Privacy, moving to another Google account, and starting again', topics: ['privacy', 'account', 'afresh'] },
+     { id: 'data', icon: '🔐', name: 'Your data and account', what: 'Privacy, moving to another Google account, and starting again', topics: ['privacy', 'permissions', 'account', 'afresh'] },
    ];
    var SUPPORT = '../#/feedback/support';
    T.forEach(function (t) { if (!CATS.some(function (c) { return c.topics.indexOf(t.id) >= 0; })) CATS[1].topics.push(t.id); });   // a new topic not sorted yet

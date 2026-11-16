@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.250",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard ‘Why these permissions?’ and the privacy notice now describe the permissions new families are asked for, and how the loader updates"
+    ]
+  },
+  {
     "version": "2026.11.249",
     "date": "2026-11-15",
     "notes": [

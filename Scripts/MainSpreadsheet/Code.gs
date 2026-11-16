@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.105';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.107';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -434,6 +434,8 @@ function setup() {
   ensureTabs_();
   const def = ss.getSheetByName('Sheet1');
   if (def && def.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(def);
+  const start = ss.getSheetByName('Start here');        // the brand-new copy's instructions (from the loader) – done with now
+  if (start && ss.getSheets().length > 1 && String(start.getRange(1, 1).getValue()).indexOf('HouseRunner Sheet') >= 0) ss.deleteSheet(start);
 
   // Children (the points page) are added by the setup app's "Family & calendar" step.
   const tasks = sheet_('tasks');
@@ -780,6 +782,40 @@ function doGet(e) {
 
 /** A backup of the family's private links, emailed to the Google account the dashboard belongs to – so if a computer or phone
  * forgets its connection, the email has a link that connects it again. Only ever sent to the owner's own address. */
+/* ---- Permissions people can leave unticked on Google's permission screen (Google lets them pick) ----
+ * Essential: the Sheet, connecting to other services, the menu, timers, and publishing itself. Optional: these four – a
+ * widget that needs one that wasn't allowed says so (rather than failing oddly), and everything else carries on. */
+const OPT_SCOPES = {
+  calendar: ['https://www.googleapis.com/auth/calendar', 'Google Calendar', 'the calendar'],
+  gmail: ['https://mail.google.com/', 'Gmail', 'the Parcels widget and emailing you your links'],
+  drive: ['https://www.googleapis.com/auth/drive.readonly', 'Google Drive (read only)', 'the Photo slideshow'],
+  tasks: ['https://www.googleapis.com/auth/tasks', 'Google Tasks', 'the To-Do List (Google)'],
+};
+function granted_(k) {
+  try {
+    const i = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL, [OPT_SCOPES[k][0]]);
+    return i.getAuthorizationStatus() !== ScriptApp.AuthorizationStatus.REQUIRED;
+  } catch (e) { return true; }      // can't tell: try, and let Google's own error show
+}
+function needScope_(k, what) {
+  if (granted_(k)) return;
+  throw new Error((what || OPT_SCOPES[k][2]) + ' needs the ' + OPT_SCOPES[k][1] + ' permission, which wasn’t ticked when HouseRunner was allowed. ' +
+    'To add it: in your Google Sheet choose 🏠 HouseRunner → Allow more permissions, and tick ' + OPT_SCOPES[k][1] + ' when Google asks.');
+}
+const ESSENTIAL_SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/script.external_request',
+  'https://www.googleapis.com/auth/script.container.ui', 'https://www.googleapis.com/auth/script.scriptapp',
+  'https://www.googleapis.com/auth/script.projects', 'https://www.googleapis.com/auth/script.deployments'];
+/** Sheet menu → Allow more permissions: Google asks for any left unticked (the optional ones), then says what's on. */
+function menuPermissions() {
+  if (ScriptApp.requireAllScopes) ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
+  const p = permissions_();
+  dialog_('Permissions', '<p>What HouseRunner may use in your Google account:</p><ul>' + Object.keys(OPT_SCOPES).map(k =>
+    '<li>' + (p[k] ? '✅ ' : '⛔ ') + '<b>' + OPT_SCOPES[k][1] + '</b> – ' + OPT_SCOPES[k][2] + (p[k] ? '' : ' <i>(off)</i>') + '</li>').join('') + '</ul>' +
+    '<p style="color:#888;font-size:13px">To turn one on, choose this menu item again and tick it when Google asks. To take permissions away: myaccount.google.com → Security → Your connections to third-party apps.</p>', 300);
+}
+function permissions_() { const o = {}; Object.keys(OPT_SCOPES).forEach(k => { o[k] = granted_(k); }); return o; }
+function calApp_(what) { needScope_('calendar', what); return CalendarApp; }
+
 function emailLinks_() {
   const to = String(Session.getEffectiveUser().getEmail() || '');
   if (!to) throw new Error('Couldn’t find your Google account’s email address');
@@ -794,6 +830,7 @@ function emailLinks_() {
     'The dashboard (the Corsair XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
     'If you change your access code (houserunner.app → System → My data), you’ll be sent new links.\n';
+  if (!granted_('gmail')) return false;      // Gmail not allowed: no backup email (the apps show the links instead)
   GmailApp.sendEmail(to, 'Your HouseRunner links – keep this email', body);
   PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
   return { ok: true, to: to };
@@ -2623,6 +2660,7 @@ function photos_(s) {
 function drivePhotos_(link) {
   const id = (String(link || '').match(/folders\/([\w-]{10,})/) || String(link || '').match(/^([\w-]{20,})$/) || [])[1];
   if (!id) throw new Error('Paste a Google Drive folder link into the Photos widget settings');
+  needScope_('drive', 'The Photo slideshow');
   const folder = DriveApp.getFolderById(id);
   const out = [];
   const files = folder.getFiles();
@@ -2716,11 +2754,12 @@ function listItem_(b) {
 }
 
 function tasksApi_() {
+  needScope_('tasks', 'The To-Do List (Google)');
   if (typeof Tasks === 'undefined') throw new Error('Turn on Google Tasks: in Apps Script click Services (+), choose "Google Tasks API", Add, then deploy a new version.');
   return Tasks;
 }
 function tasksListId_(name) {
-  const lists = Tasks.Tasklists.list({ maxResults: 100 }).items || [];
+  const lists = tasksApi_().Tasklists.list({ maxResults: 100 }).items || [];
   const want = String(name || '').trim().toLowerCase();
   const hit = want ? lists.find(l => String(l.title).trim().toLowerCase() === want) : lists[0];
   if (!hit) throw new Error('No Google Tasks list called "' + name + '". Your lists: ' + lists.map(l => l.title).join(', '));
@@ -3198,7 +3237,7 @@ function calFix_(b) {
       const person = M.people.indexOf(cat) >= 0;
       const text = String(x.text || '').replace(/\s+/g, ' ').trim().slice(0, LIMITS.eventTitle);
       if (!text) throw new Error('No title');
-      const cal = cals[x.cal] || (cals[x.cal] = CalendarApp.getCalendarById(x.cal));
+      const cal = cals[x.cal] || (cals[x.cal] = calApp_().getCalendarById(x.cal));
       if (!cal) throw new Error('Can’t open that calendar');
       const ev = x.rec ? cal.getEventSeriesById(x.id) : cal.getEventById(x.id);
       if (!ev) throw new Error('Not found (deleted?)');
@@ -3214,9 +3253,9 @@ function calFix_(b) {
 function calSetup_() {
   const M = calModel_();
   // The Google calendars this account can see, for picking from a list.
-  const calendars = cached_(CacheService.getScriptCache(), 'calList', 600, false, () => {
-    const def = CalendarApp.getDefaultCalendar().getId();
-    return CalendarApp.getAllCalendars().map(c => ({ id: c.getId(), name: c.getName(), main: c.getId() === def })).slice(0, 40);
+  const calendars = !granted_('calendar') ? [] : cached_(CacheService.getScriptCache(), 'calList', 600, false, () => {
+    const def = calApp_().getDefaultCalendar().getId();
+    return calApp_().getAllCalendars().map(c => ({ id: c.getId(), name: c.getName(), main: c.getId() === def })).slice(0, 40);
   });
   return { people: M.people, groups: M.groups, generals: M.generals, gcolours: GCOLOURS, personG: PERSON_G, limits: CAL, calendars: calendars,
     keys: rows_('pages').filter(r => String(r.Type).toLowerCase() === 'calendar').map(r => calKey_(String(r.Page).trim(), M)) };
@@ -3320,8 +3359,8 @@ function bumpCalVersion_() { PropertiesService.getScriptProperties().setProperty
 function calendarsFrom_(setting) {
   const out = [], used = {};
   String(setting || 'default').split(',').map(x => x.trim()).filter(Boolean).forEach(id => {
-    const list = id.toLowerCase() === 'default' ? [CalendarApp.getDefaultCalendar()]
-      : id.toLowerCase() === 'all' ? CalendarApp.getAllCalendars() : [CalendarApp.getCalendarById(id)];
+    const list = id.toLowerCase() === 'default' ? [calApp_().getDefaultCalendar()]
+      : id.toLowerCase() === 'all' ? calApp_().getAllCalendars() : [calApp_().getCalendarById(id)];
     list.forEach(c => { if (c && !used[c.getId()]) { used[c.getId()] = 1; out.push(c); } });
   });
   return out;
@@ -3699,6 +3738,7 @@ function parcels_(s) {
   const days = Number(s.Days) || 7, keep = (Number(s.KeepDelivered) || 0) * 3600000;
   const q = 'newer_than:' + days + 'd -in:spam -in:trash subject:(delivered OR delivery OR dispatched OR despatched OR shipped OR parcel OR package OR "on its way" OR "out for delivery" OR arriving OR "missed you")';
   const out = [];
+  needScope_('gmail', 'The Parcels widget');
   GmailApp.search(q, 0, 40).forEach(t => {
     const msgs = t.getMessages(), m = msgs[msgs.length - 1];
     const subj = String(m.getSubject() || ''), from = String(m.getFrom() || '');
@@ -3959,6 +3999,7 @@ function spotifyControl_(op) {
 
 function onOpen() {
   try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
+  try { if (LOADED && typeof globalThis.startHere_ === 'function') globalThis.startHere_(); } catch (e) { /* fine */ }   // a brand-new copy: what to do next
   const m = SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
     .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')
@@ -3969,6 +4010,7 @@ function onOpen() {
   // (Through the loader, a menu item needs a matching name in the loader file – loaders from before 1.1 don't have this one.)
   if (!LOADED || typeof globalThis.menuWipe === 'function') m.addItem('Clear everything and start from scratch…', 'menuWipe');
   if (!LOADED) m.addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
+  if (!LOADED || typeof globalThis.menuPermissions === 'function') m.addItem('Allow more permissions (Gmail, Drive…)', 'menuPermissions');
   if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
   m.addToUi();
 }
@@ -4002,6 +4044,8 @@ function autoPublish_() {
   return url;
 }
 function menuConnect() {
+  // The permissions setup can't work without (Google may let people untick them): ask again for any that are missing.
+  if (ScriptApp.requireScopes) ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ESSENTIAL_SCOPES);
   setup();
   let url = myUrl_(), apiErr = '';
   // Publish by itself through Google's Apps Script API (needs one switch per Google account); otherwise the Deploy screen by hand.
@@ -4243,6 +4287,7 @@ function diagnostics_(appVer) {
     versions: { googleScript: SCRIPT_VERSION, layout: LAYOUT_VER, adminApp: appVer || '?', screenLastSeen: json('screenSeen'),
       latestOnGitHub: { app: latest.app, script: latest.script, licenceServer: latest.licenceServer }, licenceServer: licenceServerVersion_(),
       privacyAccepted: String(inst_('PrivacyAccepted') || '') },
+    permissions: permissions_(),
     updates: { automatic: autoUpdateOn_(), checkEveryMinutes: P.getProperty('tickEvery') || '60', lastUpdate: json('lastUpdate'), savedVersions: versionsUsed_(true),
       triggers: ScriptApp.getProjectTriggers().map(t => t.getHandlerFunction()) },
     licence: { state: lic.state, ok: lic.ok, message: lic.message, keyEnds: lic.key || '', installId: installId_().slice(0, 8) + '…', server: licenceServer_() ? 'set' : 'none' },

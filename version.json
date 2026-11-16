@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.250",
-  "script": "2026.11.105",
+  "app": "2026.11.252",
+  "script": "2026.11.107",
   "date": "2026-11-15",
   "notes": [
-    "Google permissions: new families’ Sheets no longer ask to manage Apps Script projects and deployments – the loader never needs them (the Blank Template’s appsscript.json and the setup wizard’s by-hand file are the shorter one; older Sheets that update themselves the old way keep theirs)"
+    "Setup wizard ‘Why these permissions?’ and the privacy notice now describe the permissions new families are asked for, and how the loader updates"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",

@@ -10,11 +10,23 @@
     var S = load();
     var $ = function (id) { return document.getElementById(id); };
     function load() { try { return JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { return {}; } }
-    function whyPerms() { return '<details><summary>Why these permissions?</summary><ul class="mute"><li><b>Sheets</b> – where everything is stored.</li><li><b>Calendar</b> – shows and adds entries.</li>' +
-        '<li><b>Gmail</b> – the Parcels widget searches for delivery emails, and it emails you a backup of your private links. Google only offers “read, send and delete” together; nothing is deleted.</li><li><b>Drive (read only)</b> – the photo slideshow folder.</li><li><b>Tasks</b> – the To-Do List (Google).</li>' +
-        '<li><b>Connect to external services</b> – fetching its program from houserunner.app, and weather, traffic, trains, the licence check…</li>' +
-        '<li><b>Run when you’re not there</b> – the timers for updates and the daily licence check. <b>Display content</b> – the 🏠 HouseRunner menu in your Sheet.</li>' +
-        '<li>It all runs as you, inside your own Google account.</li></ul></details>'; }
+    /** What Google asks to allow, which are needed and which are optional (Google now lets people untick some). */
+    function whyPerms() {
+        return '<div class="card perms"><h3>A note on the permissions</h3><p class="mute">Google lists what HouseRunner may do. It all runs as you, inside your own Google account – nobody else, including us, gets access. ' +
+            'Google may show a tick box for each one: <b>Select all</b> is simplest.</p>' +
+            '<p><b>Needed</b> – leave these ticked, or setup can’t work:</p><ul class="mute">' +
+            '<li><b>Spreadsheets</b> – your family’s information is kept in your own Sheet.</li>' +
+            '<li><b>Connect to an external service</b> – fetching the HouseRunner program, and live information (weather, trains, traffic…), and the licence check.</li>' +
+            '<li><b>Display and run third-party web content</b> – the 🏠 HouseRunner menu in your Sheet.</li>' +
+            '<li><b>Run when you’re not present</b> – the timers that keep it up to date and check the licence each day.</li>' +
+            '<li><b>Create and update Apps Script projects and deployments</b> – so it can publish itself, without you using Google’s Deploy screens.</li></ul>' +
+            '<p><b>Optional</b> – untick any you don’t want; only the part named stops working, and says why:</p><ul class="mute">' +
+            '<li><b>Google Calendar</b> – the calendar, birthdays and holiday countdown.</li>' +
+            '<li><b>Gmail</b> – the <b>Parcels</b> widget (finds delivery emails) and emailing you a backup of your private links. Google only offers “read, send and delete” together; HouseRunner never deletes anything.</li>' +
+            '<li><b>Google Drive (see files)</b> – the <b>Photo slideshow</b> from a folder you choose.</li>' +
+            '<li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li></ul>' +
+            '<p class="mute small">Changed your mind later? In your Sheet choose 🏠 HouseRunner → <b>Allow more permissions</b>, and Google asks for any you left out.</p></div>';
+    }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
     function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     function toast(t, bad) { var el = $('toast'); el.textContent = t; el.className = 'toast on' + (bad ? ' bad' : ''); clearTimeout(toast.h); toast.h = setTimeout(function () { el.className = 'toast'; }, 3500); }
@@ -78,7 +90,7 @@
     }
     function okLine(ok, text) { return '<div class="status ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✔ ' : '⚠ ') + esc(text) + '</div>'; }
     function connected() { return !!(S.url && S.code && S.connected); }
-    function needConnect() { return connected() ? '' : '<div class="note bad">Connect to your Google Sheet first (step 2, “Publish & connect”).</div>'; }
+    function needConnect() { return connected() ? '' : '<div class="note bad">Connect to your Google Sheet first (step 2, “Make your Sheet & switch it on”).</div>'; }
     function helpLink(topic) { return '<p class="mute help-l">Stuck? <a href="../../help/#' + topic + '" target="_blank" rel="noopener">Help with this step</a></p>'; }
     function phoneish() { return (window.matchMedia && matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 820) || /iPhone|Android.+Mobile/.test(navigator.userAgent); }
     /** Family as the server sends it → the form, remembering each name so renames can be followed. */
@@ -157,6 +169,13 @@
                     '<li><b>This page open on a computer.</b></li>' +
                     '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No display yet? You can try the dashboard in another tab on this computer.</p></div>' +
+                '<div class="note"><h3>🔐 Before you start: Google will ask for permissions</h3>' +
+                    '<p>HouseRunner runs as a small program in a Google Sheet in <b>your</b> Google account, so Google asks you to allow it to use parts of that account – Sheets, Calendar, Gmail (for the Parcels widget), Drive (for photos), Tasks. ' +
+                    'Google shows a red “Google hasn’t verified this app” page on the way: that’s normal for your own private copy. When it lists the permissions, <b>Select all</b> is simplest. ' +
+                    '<a href="../../help/#permissions" target="_blank" rel="noopener">What each permission is for, and which are optional ›</a></p>' +
+                    '<p><b>Rather keep it away from your main Google account?</b> You can <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">make a new Google account</a> just for HouseRunner, and do this whole setup signed in to that one. ' +
+                    'The catch: the calendar, Gmail parcels, photos and Google Tasks it shows are that account’s, not your main one’s – so share your family calendar with the new account (Google Calendar → Settings → Share with specific people), ' +
+                    'and to add events or tasks from your phone’s own Google apps, add the new account on your phone too. HouseRunner’s own phone apps work either way.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
                 '<p>HouseRunner is standard software that runs on your display and your phones. Everything that belongs to your family – names, the calendar, ' +
                 'the children’s points, notes and settings – is kept <b>in your own Google account</b>, in a Google Sheet that only you own.</p>' +
@@ -211,10 +230,13 @@
                     '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
                     '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
-                    '<li>Google asks for permission: click <b>Continue</b> and choose your account. <b>“Google hasn’t verified this app”</b> is normal, because it’s your own private copy: ' +
-                        'click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + whyPerms() + '</li>' +
-                    '<li>Choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
-                    '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, and you can close this one.</li></ol>' +
+                    '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
+                        'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
+                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
+                    '<li>Choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">Why twice? Google stops as soon as you’ve allowed it, so the first click only asks for permission. ' +
+                        'On a Google account that’s never published a script, it may also ask you to turn on one switch (the Apps Script API) – follow its link, turn it on, and choose the menu once more.</span></li>' +
+                    '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
+                    whyPerms() +
                     helpLink('setup') + '</div>' +
                     '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: press <b>Next</b> for the by-hand way to publish.</p>' + manual() + '</details>'
                   : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes). Then press <b>Next</b>.</div><div class="card big">' + manual() + '</div>');
@@ -227,7 +249,7 @@
             }
         } },
 
-        { id: 'publish', title: 'Publish & connect', render: function () {
+        { id: 'publish', title: 'Publish by hand (if needed)', render: function () {
             var perms = whyPerms();
             if (connected()) return '<h1>Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your HouseRunner Google Sheet.') + '<p>Press <b>Next</b>.</p>' +
                 '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
@@ -236,7 +258,7 @@
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
                 '<li>Wait a few seconds for the <b>🏠 HouseRunner</b> menu to appear along the top (next to <b>Help</b>). Click it → <b>▶ Set up &amp; connect my screen and phones</b>.</li>' +
                 '<li>Google asks for permission: click <b>Continue</b> (or <b>Authorize access</b>) and choose your account. You’ll see <b>“Google hasn’t verified this app”</b> – that’s normal, because it’s your own private copy. ' +
-                    'Click <b>Advanced</b> (small, bottom left) → <b>Go to Family Dashboard (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
+                    'Click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b> → <b>Allow</b>. ' + perms + '</li>' +
                 '<li>Choose the menu again: <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b>. ' +
                     '<span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
                 '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – this page opens again, already connected. Nothing to copy or paste.</li></ol>' +
@@ -808,8 +830,23 @@
         render();
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
-    $('back').onclick = function () { S.step--; render(); };
-    $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1); };
+    $('back').onclick = function () { S.step -= S.step - 1 === PUB && connected() ? 2 : 1; render(); };
+    // Connected in another tab (the Sheet's "Carry on with setup" opens a new one): this tab catches up too
+    window.addEventListener('storage', function (e) {
+        if (e.key !== KEY) return;
+        var was = connected(); S = load();
+        if (!was && connected()) {
+            // The Sheet's "Carry on with setup" opened setup in a new tab, and that one is connected: this old tab steps aside
+            ADM = null; LICP = null;
+            $('page').innerHTML = '<div class="card big moved"><h1>✅ Done – setup has moved to the new tab</h1><p class="lead">Your Google Sheet is published and connected. Setup carries on in the <b>other HouseRunner tab</b> that just opened – you can <b>close this one</b> (and the Sheet’s tab).</p>' +
+                '<button class="btn ghost" id="suHere">Carry on in this tab instead</button></div>';
+            $('next').style.visibility = 'hidden'; $('back').style.visibility = 'hidden';
+            $('suHere').onclick = function () { if (STEPS[S.step] && /^(sheet|publish)$/.test(STEPS[S.step].id)) S.step = PUB + 1; render(); };
+        }
+    });
+    // The menu in the Sheet publishes and connects in one go, so once connected "Publish & connect" is skipped going forwards and back
+    var PUB = STEPS.map(function (x) { return x.id; }).indexOf('publish');
+    $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1 === PUB && connected() ? PUB + 1 : S.step + 1); };
     document.addEventListener('click', function (e) {
         var c = e.target.closest('[data-copy]');
         if (c) { var t = $(c.getAttribute('data-copy')); navigator.clipboard.writeText(t.value).then(function () { toast('Copied'); }, function () { t.select(); toast('Press Ctrl+C to copy'); }); }
@@ -845,7 +882,8 @@
             else if (wantUpdate) S.step = ids.indexOf('check');
             else if (p.from === 'sheet' && connected()) S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : ids.indexOf('privacy');
             render();
-            if (p.from === 'sheet' && connected()) toast('Connected to your HouseRunner Google Sheet \u2705');
+            if (p.from === 'sheet' && connected()) { toast('Connected to your HouseRunner Google Sheet \u2705'); var pg = $('page'); if (pg) pg.insertAdjacentHTML('afterbegin', '<div class="note ok arrived">✅ <b>Your Google Sheet is published and connected – that part’s done.</b> This tab is your setup now: you can close the other HouseRunner tab and the Sheet’s tab. ' +
+                'Carry on with this step, then press <b>Next →</b> at the bottom right.</div>'); $('next').classList.add('pulse'); setTimeout(function () { $('next').classList.remove('pulse'); }, 12000); }
         };
         var pending = (p.api && p.code) ? connect(true) : Promise.resolve();
         // Read the Sheet (family, calendar) and the licence in the background, so the steps open straight away
