@@ -678,9 +678,9 @@
             return S.code ? null : get('claim').then(function (d) { S.code = d.code; save(); });
         }).then(function () { return get('layout'); }).then(function (L) {
             S.connected = true; S.needCode = false;
-            try { new BroadcastChannel('hr-setup').postMessage('connected'); } catch (e) { /* the storage event does it */ }
             if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
-            save();
+            save();   // saved first, so the other tab reads "connected" when the message reaches it
+            try { new BroadcastChannel('hr-setup').postMessage('connected'); } catch (e) { /* the storage event does it */ }
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
             if (st) st.innerHTML = okLine(true, 'Connected to your HouseRunner Google Sheet.' + (L.codeWeak ? ' Tip: your access code is weak – change it at houserunner.app → System → My data.' : ''));
             if (!S.linksEmailed) post({ action: 'emailLinks' }).then(function (d) { S.linksEmailed = d.to || true; save(); toast('A backup of your private links has been emailed to ' + (d.to || 'you')); }, function () { /* older Google script – fine */ });
@@ -861,6 +861,8 @@
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-byhand]')) { S.byHand = true; S.step = PUB; render(); } });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
+    // …and in case the browser held back those messages (a tab in the background often is): look every few seconds as well
+    setInterval(function () { if (!connected()) { var s2 = load(); if (s2.url && s2.code && s2.connected) catchUp(); } }, 3000);
     // The menu in the Sheet publishes and connects in one go, so once connected "Publish & connect" is skipped going forwards and back
     var PUB = STEPS.map(function (x) { return x.id; }).indexOf('publish');
     $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1 === PUB && (connected() || !S.byHand) ? PUB + 1 : S.step + 1); };
@@ -902,7 +904,21 @@
             if (p.from === 'sheet' && connected()) { toast('Connected to your HouseRunner Google Sheet \u2705'); var pg = $('page'); if (pg) pg.insertAdjacentHTML('afterbegin', '<div class="note ok arrived">✅ <b>Your Google Sheet is published and connected – that part’s done.</b> This tab is your setup now: you can close the other HouseRunner tab and the Sheet’s tab. ' +
                 'Carry on with this step, then press <b>Next →</b> at the bottom right.</div>'); $('next').classList.add('pulse'); setTimeout(function () { $('next').classList.remove('pulse'); }, 12000); }
         };
-        var pending = (p.api && p.code) ? connect(true) : Promise.resolve();
+        // From the Sheet's "Published ✅": a dashboard published a moment ago can take a minute to answer, so keep trying
+        var patient = function () {
+            var tries = 0, pg = function () { return $('page'); };
+            var one = function () {
+                return connect(true).then(function (ok) {
+                    var w = document.getElementById('suWait');
+                    if (ok) { if (w) w.remove(); return true; }
+                    if (++tries > 24) { if (w) w.innerHTML = '⚠ Your Sheet isn’t answering yet. In the Sheet choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again, then click <b>Carry on with setup</b>.'; return false; }
+                    if (!w && pg()) pg().insertAdjacentHTML('afterbegin', '<div class="note" id="suWait">⏳ <b>Connecting to your Sheet…</b> Google can take up to a minute after publishing – this page keeps trying by itself.</div>');
+                    return new Promise(function (r) { setTimeout(r, 5000); }).then(one);
+                });
+            };
+            return one();
+        };
+        var pending = (p.api && p.code) ? (p.from === 'sheet' ? patient() : connect(true)) : Promise.resolve();
         // Read the Sheet (family, calendar) and the licence in the background, so the steps open straight away
         var ahead = function () { if (connected()) { if (!ADM) loadAdm(); licenceNow(); } };
         pending.then(refreshVersions).then(after, after).then(ahead, ahead);

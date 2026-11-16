@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.266",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard: ‘Publish by hand’ is hidden unless you ask for it – the steps go Make your Sheet → Your licence key; until the Sheet is published, Next stays put and says so, and the page carries on by itself once it is",
+      "Setup wizard: an open setup tab catches up as soon as you look at it again after ‘Carry on with setup’ (and the Sheet’s Published message says either tab can be used)",
+      "Google script 2026.11.112: a new family’s copy is renamed ‘HouseRunner MAIN DATA’ so it isn’t mistaken for the template"
+    ]
+  },
+  {
     "version": "2026.11.264",
     "date": "2026-11-15",
     "notes": [
