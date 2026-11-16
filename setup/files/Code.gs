@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.110';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.112';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -429,7 +429,8 @@ const PAGE_ICONS = ['\u2302', '\u25C8', '\u2726', '\u2600', '\u266B', '\u2708', 
 function setup() {
   freshCopy_();
   const ss = SpreadsheetApp.getActive();
-  try { if (/^Copy of /i.test(ss.getName())) ss.rename(ss.getName().replace(/^Copy of /i, '')); } catch (e) { /* fine */ }   // "Copy of Family Dashboard" → "Family Dashboard"
+  // "Copy of HouseRunner BLANK" → "HouseRunner MAIN DATA", so it's never mistaken for the template
+  try { if (/^Copy of /i.test(ss.getName())) ss.rename('HouseRunner MAIN DATA'); } catch (e) { /* fine */ }
   ss.setSpreadsheetTimeZone(TZ); // so dates typed in the sheet mean the family's own time zone
   ensureTabs_();
   const def = ss.getSheetByName('Sheet1');
@@ -4070,7 +4071,8 @@ function menuConnect() {
   }
   const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
   dialog_('Published ✅', '<p>✅ Your HouseRunner dashboard is published.</p>' +
-    '<p>Click the button to carry on with setup. It opens the setup page already connected to this Sheet – nothing to type:</p>' +
+    '<p>Click the button to carry on with setup. It opens the setup page in a new tab, already connected to this Sheet – nothing to type. ' +
+    '(Your setup page in the other tab updates by itself too – carry on in whichever you like and close the rest.)</p>' +
     '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Carry on with setup</a></p>' +
     '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
 }

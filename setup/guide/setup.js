@@ -238,10 +238,11 @@
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
                         'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></div></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
+                    '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
                     '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +
                     helpLink('setup') + '</div>' +
-                    '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: press <b>Next</b> for the by-hand way to publish.</p>' + manual() + '</details>'
+                    '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: <button class="btn sm ghost" data-byhand>Publish it by hand instead</button></p>' + manual() + '</details>'
                   : '<div class="note">Whoever gave you this setup page hasn’t added a ready-made Sheet yet, so here’s the by-hand way (about 5 minutes). Then press <b>Next</b>.</div><div class="card big">' + manual() + '</div>');
             function manual() {
                 return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>HouseRunner</b>.</li>' +
@@ -677,6 +678,7 @@
             return S.code ? null : get('claim').then(function (d) { S.code = d.code; save(); });
         }).then(function () { return get('layout'); }).then(function (L) {
             S.connected = true; S.needCode = false;
+            try { new BroadcastChannel('hr-setup').postMessage('connected'); } catch (e) { /* the storage event does it */ }
             if (L.privacyAccepted === P.version) S.privacy = P.version;   // already accepted on the screen or a phone
             save();
             if (S.privacy === P.version && L.privacyAccepted !== P.version) post({ action: 'acceptPrivacy', version: P.version, who: 'setup app' }).catch(function () {});
@@ -796,12 +798,16 @@
     /* ------------------------------------------------------------ frame */
 
     function isDone(id) {
-        return { welcome: S.step > 0 || S.privacy === P.version, privacy: S.privacy === P.version, sheet: connected() || S.step > 1, publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
+        return { welcome: S.step > 0 || S.privacy === P.version, privacy: S.privacy === P.version, sheet: connected(), publish: connected(), licence: !!(S.licOk || S.licensed), devices: !!S.devicesSeen, phones: !!S.phonesSeen, family: !!S.familyDone, calendar: !!S.calDone,
             keys: KEYS.every(function (x) { return S.keys && S.keys[x.k] || S.skip && S.skip[x.k]; }), check: !!S.checkedOk, finish: false }[id];
     }
+    /** "Publish by hand" is only for when the Sheet's menu can't publish: hidden (and not counted) unless someone opens it. */
+    function pubShown() { return !!S.byHand || STEPS[S.step] && STEPS[S.step].id === 'publish'; }
+    function num(i) { var p = STEPS.map(function (x) { return x.id; }).indexOf('publish'); return i > p && !pubShown() ? i - 1 : i; }
     function renderSteps() {
         $('steps').innerHTML = STEPS.map(function (st, i) {
-            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + '" data-i="' + i + '"><span class="n">' + (isDone(st.id) ? '✔' : st.id === 'finish' ? '🏁' : st.id === 'welcome' ? '👋' : i) + '</span>' + esc(st.title) + '</li>';
+            if (st.id === 'publish' && !pubShown()) return '';
+            return '<li class=""' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + '" data-i="' + i + '"><span class="n">' + (isDone(st.id) ? '✔' : st.id === 'finish' ? '🏁' : st.id === 'welcome' ? '👋' : num(i)) + '</span>' + esc(st.title) + '</li>';
         }).join('');
     }
     function render() {
@@ -810,7 +816,7 @@
         if (st.id === 'devices' && connected()) S.devicesSeen = true;
         if (st.id === 'phones' && connected()) S.phonesSeen = true;
         var pg = $('page'); pg.onclick = pg.oninput = pg.onchange = null; pg.classList.remove('show-match');
-        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'finish' && !SOLO ? '<h1>' + S.step + '. ' : '<h1>');
+        $('page').innerHTML = st.render().replace(/<h1>\d+\.\s*/, S.step && st.id !== 'finish' && !SOLO ? '<h1>' + num(S.step) + '. ' : '<h1>');
         if (st.wire) st.wire();
         $('back').style.visibility = S.step ? 'visible' : 'hidden';
         $('next').style.visibility = S.step < STEPS.length - 1 ? 'visible' : 'hidden';
@@ -818,7 +824,7 @@
         var ok = !st.ready || st.ready();
         $('next').classList.toggle('off', !ok);
         $('next').title = ok ? '' : st.blocked || '';
-        $('where').textContent = st.id === 'finish' || st.id === 'welcome' || SOLO ? '' : 'Step ' + S.step + ' of ' + (STEPS.length - 2);
+        $('where').textContent = st.id === 'finish' || st.id === 'welcome' || SOLO ? '' : 'Step ' + num(S.step) + ' of ' + (STEPS.length - (pubShown() ? 2 : 3));
         if (SOLO) { $('back').style.visibility = 'hidden'; $('next').style.visibility = 'visible'; $('next').classList.remove('off'); $('next').textContent = 'Done – back to Setup'; }
         renderSteps();
         window.scrollTo(0, 0);
@@ -826,17 +832,20 @@
     /** Steps that need something first (privacy accepted, connected) can't be skipped past. */
     function canLeave(i) { var st = STEPS[i]; return !st.ready || st.ready(); }
     function go(i) {
-        for (var k = 0; k < i; k++) if (!canLeave(k)) { S.step = k; render(); toast(STEPS[k].blocked, true); return; }
+        for (var k = 0; k < i; k++) if (!canLeave(k)) {
+            // Not connected yet: stay on "Make your Sheet" (the by-hand way only when asked for) – this page notices by itself when it's done
+            if (STEPS[k].id === 'publish' && !S.byHand) { S.step = k - 1; render(); toast('Not connected yet – finish the steps in your Sheet (🏠 HouseRunner → ▶ HouseRunner – SETUP). This page carries on by itself once it says Published ✅.', true); return; }
+            S.step = k; render(); toast(STEPS[k].blocked, true); return;
+        }
         S.step = i;
         if (STEPS[i] && STEPS[i].id === 'check') S.autoCheck = true;
         if (STEPS[i] && (STEPS[i].id === 'family' || STEPS[i].id === 'calendar')) FAM = null;   // start from what's saved (read once, kept up to date by each save)
         render();
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
-    $('back').onclick = function () { S.step -= S.step - 1 === PUB && connected() ? 2 : 1; render(); };
+    $('back').onclick = function () { S.step -= S.step - 1 === PUB && (connected() || !S.byHand) ? 2 : 1; render(); };
     // Connected in another tab (the Sheet's "Carry on with setup" opens a new one): this tab catches up too
-    window.addEventListener('storage', function (e) {
-        if (e.key !== KEY) return;
+    var catchUp = function () {
         var was = connected(); S = load();
         if (!was && connected()) {
             // The Sheet's "Carry on with setup" opened setup in a new tab, and that one is connected: this old tab steps aside
@@ -846,10 +855,15 @@
             $('next').style.visibility = 'hidden'; $('back').style.visibility = 'hidden';
             $('suHere').onclick = function () { if (STEPS[S.step] && /^(sheet|publish)$/.test(STEPS[S.step].id)) S.step = PUB + 1; render(); };
         }
-    });
+    };
+    window.addEventListener('storage', function (e) { if (e.key === KEY) catchUp(); });
+    window.addEventListener('focus', catchUp);
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-byhand]')) { S.byHand = true; S.step = PUB; render(); } });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
+    try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
     // The menu in the Sheet publishes and connects in one go, so once connected "Publish & connect" is skipped going forwards and back
     var PUB = STEPS.map(function (x) { return x.id; }).indexOf('publish');
-    $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1 === PUB && connected() ? PUB + 1 : S.step + 1); };
+    $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1 === PUB && (connected() || !S.byHand) ? PUB + 1 : S.step + 1); };
     document.addEventListener('click', function (e) {
         var c = e.target.closest('[data-copy]');
         if (c) { var t = $(c.getAttribute('data-copy')); navigator.clipboard.writeText(t.value).then(function () { toast('Copied'); }, function () { t.select(); toast('Press Ctrl+C to copy'); }); }

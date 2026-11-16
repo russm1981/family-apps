@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.264",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup instructions (wizard and Start HERE picture) now include Google’s first ‘Authorization required’ box – click OK"
+    ]
+  },
+  {
     "version": "2026.11.263",
     "date": "2026-11-15",
     "notes": [
