@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.259",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard says the new Sheet opens on its Start HERE tab; the loader never writes over that tab"
+    ]
+  },
+  {
     "version": "2026.11.258",
     "date": "2026-11-15",
     "notes": [

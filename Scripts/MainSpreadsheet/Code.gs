@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.109';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.110';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4000,7 +4000,6 @@ function spotifyControl_(op) {
 
 function onOpen() {
   try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
-  try { if (LOADED && typeof globalThis.startHere_ === 'function') globalThis.startHere_(); } catch (e) { /* fine */ }   // a brand-new copy: what to do next
   const m = SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
     .addItem('▶ HouseRunner – SETUP (connect my screen and phones)', 'menuConnect')
     .addItem('Change family & calendar', 'menuFamily')

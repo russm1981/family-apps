@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.259",
-  "script": "2026.11.109",
+  "app": "2026.11.260",
+  "script": "2026.11.110",
   "date": "2026-11-15",
   "notes": [
-    "Blank Template’s HOME tab: a ▶ Set up HouseRunner button (runs the same as the menu); the picture and the setup wizard now say to click it"
+    "Setup wizard says the new Sheet opens on its Start HERE tab; the loader never writes over that tab"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",

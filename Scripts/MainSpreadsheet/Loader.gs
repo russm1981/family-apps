@@ -146,27 +146,10 @@ function onOpen(e) {
   catch (err) {
     // A brand-new copy can't download the program while the Sheet is opening (Google doesn't allow it yet), so this
     // menu has the same first steps: each one loads the program when it's clicked.
-    try { startHere_(); } catch (x) { /* fine */ }
     try {
       SpreadsheetApp.getUi().createMenu('🏠 HouseRunner').addItem('▶ HouseRunner – SETUP', 'menuConnect').addToUi();
     } catch (x) { /* no UI */ }
   }
-}
-/** A brand-new copy: the empty first tab explains what happens next (setup removes it once it has made its own tabs). */
-function startHere_() {
-  const ss = SpreadsheetApp.getActive(), sh = ss.getSheets()[0];
-  // Only a truly blank copy: one untouched "Sheet1" (the template's own Start HERE tab, with its pictures, is left alone)
-  if (ss.getSheets().length !== 1 || sh.getLastRow() > 0 || !/^Sheet ?1$/i.test(sh.getName()) || (sh.getImages && sh.getImages().length)) return;
-  sh.setName('Start here');
-  sh.getRange('A1').setValue('Welcome to your HouseRunner Sheet – click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ HouseRunner – SETUP')
-    .setFontSize(16).setFontWeight('bold');
-  sh.getRange('A2').setValue('Google then asks you to allow HouseRunner in your own copy: click Advanced → Go to HouseRunner (unsafe), then Select all → Continue.').setFontSize(12);
-  // (No =IMAGE() picture here: Google shows a "formulas send data to external parties" warning for it. The template's own HOME tab has the picture.)
-  sh.getRange('A3').setValue('A picture of each step: https://houserunner.app/shared/brand/sheet-start.png').setFontSize(12);
-  sh.setColumnWidth(1, 1140);
-  sh.getRange('A4').setValue('Why each permission is needed, and using a separate Google account just for HouseRunner: https://houserunner.app/help/#permissions').setFontSize(12);
-  sh.getRange('A5').setValue('⚠ No “Published ✅” message after allowing it? Choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more – the first click often only asks for permission.')
-    .setFontSize(13).setFontWeight('bold').setFontColor('#b91c1c').setBackground('#fff1f0');
 }
 // Names Google calls: the web app, the menu, the timer.
 function doGet() { return fdCall_('doGet', arguments); }
