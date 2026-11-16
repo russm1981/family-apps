@@ -229,11 +229,11 @@
                 (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span></li>' +
-                    '<li>Your new Sheet opens. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
+                    '<li>Your new Sheet opens on its <b>HOME</b> tab. Click the blue <b>▶ Set up HouseRunner</b> button there. <span class="mute">(Or use the menu along the top, next to <b>Help</b>: <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> – it appears a few seconds after the Sheet opens.)</span></li>' +
                     '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
                         'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
-                    '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
+                    '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then click the <b>▶ Set up HouseRunner</b> button (or the menu) once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
                         'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></div></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
