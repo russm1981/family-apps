@@ -155,7 +155,8 @@ function onOpen(e) {
 /** A brand-new copy: the empty first tab explains what happens next (setup removes it once it has made its own tabs). */
 function startHere_() {
   const ss = SpreadsheetApp.getActive(), sh = ss.getSheets()[0];
-  if (ss.getSheets().length !== 1 || sh.getLastRow() > 0) return;
+  // Only a truly blank copy: one untouched "Sheet1" (the template's own Start HERE tab, with its pictures, is left alone)
+  if (ss.getSheets().length !== 1 || sh.getLastRow() > 0 || !/^Sheet ?1$/i.test(sh.getName()) || (sh.getImages && sh.getImages().length)) return;
   sh.setName('Start here');
   sh.getRange('A1').setValue('Welcome to your HouseRunner Sheet – click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ HouseRunner – SETUP')
     .setFontSize(16).setFontWeight('bold');

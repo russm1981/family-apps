@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.258",
+  "app": "2026.11.259",
   "script": "2026.11.109",
   "date": "2026-11-15",
   "notes": [
-    "Loader: the fallback Start here tab no longer uses a picture formula (Google warns about formulas fetching from outside) – the template’s own HOME tab has the picture"
+    "Blank Template’s HOME tab: a ▶ Set up HouseRunner button (runs the same as the menu); the picture and the setup wizard now say to click it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",

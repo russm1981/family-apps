@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.258",
+    "date": "2026-11-15",
+    "notes": [
+      "Blank Template’s HOME tab: a ▶ Set up HouseRunner button (runs the same as the menu); the picture and the setup wizard now say to click it"
+    ]
+  },
+  {
     "version": "2026.11.257",
     "date": "2026-11-15",
     "notes": [
