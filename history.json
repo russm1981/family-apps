@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.252",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard: an early note that Google will ask for permissions, with the option of a separate Google account just for HouseRunner; a new Help article on what each permission is for, which are needed and which are optional",
+      "Setup wizard: steps 4 and 5 match Google’s real screens (the red ‘Google hasn’t verified this app’ page – Advanced → Go to HouseRunner), and say why the menu is chosen twice",
+      "Setup wizard: after ‘Carry on with setup’ the new tab says it’s connected and to press Next; the old tab says setup has moved and can be closed; ‘Publish by hand’ is skipped once connected",
+      "Google script 2026.11.107: if Calendar, Gmail, Drive or Tasks wasn’t allowed, only that widget stops and says how to allow it; new Sheet menu item ‘Allow more permissions’ (with the new loader); a brand-new copy’s first tab says what to do"
+    ]
+  },
+  {
     "version": "2026.11.250",
     "date": "2026-11-15",
     "notes": [

@@ -164,11 +164,12 @@ function startHere_() {
     ['1. Click 🏠 HouseRunner in the menu bar above (next to Help) → ▶ Set up & connect my screen and phones.'],
     ['2. Google asks for permission. On the red “Google hasn’t verified this app” page, click Advanced → Go to HouseRunner (unsafe) – that’s normal for your own copy.'],
     ['3. When Google lists the permissions, click Select all, then Continue. What each one is for, and which are optional: https://houserunner.app/help/#permissions'],
-    ['4. Google stops once you’ve allowed it, so click 🏠 HouseRunner → ▶ Set up & connect my screen and phones once more.'], [''],
+    ['4. No “Published ✅” message yet? Choose 🏠 HouseRunner → ▶ Set up & connect my screen and phones once more – Google stops as soon as you’ve allowed it, so the first click often only asks for permission.'],
+    ['5. When it says “Published ✅”, click Carry on with setup.'], [''],
     ['Rather not use your main Google account? You can make a new Google account just for HouseRunner – see the link above.']];
   sh.getRange(1, 1, rows.length, 1).setValues(rows).setWrap(false);
   sh.getRange(1, 1).setFontSize(18).setFontWeight('bold');
-  sh.getRange(3, 1, 4, 1).setFontSize(12);
+  sh.getRange(3, 1, 5, 1).setFontSize(12);
   sh.setColumnWidth(1, 900);
 }
 // Names Google calls: the web app, the menu, the timer.

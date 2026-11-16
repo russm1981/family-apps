@@ -233,8 +233,9 @@
                     '<li>Google asks for permission: click <b>Continue</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
                         'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
-                    '<li>Choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> again. <span class="mute">Why twice? Google stops as soon as you’ve allowed it, so the first click only asks for permission. ' +
-                        'On a Google account that’s never published a script, it may also ask you to turn on one switch (the Apps Script API) – follow its link, turn it on, and choose the menu once more.</span></li>' +
+                    '<li><b>No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ Set up &amp; connect my screen and phones</b> once more. ' +
+                        '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
+                        'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></li>' +
                     '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
                     whyPerms() +
                     helpLink('setup') + '</div>' +
