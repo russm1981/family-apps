@@ -342,7 +342,7 @@
             card('', connLine() + '<p class="small hm-how"><b>How it works:</b> everything that belongs to your family – names, the calendar, points, notes and settings – is kept in a Google Sheet in <b>your own Google account</b>. ' +
                 'HouseRunner reaches it with a <b>private access code</b> that stays on your own screen, phones and computer, so your family’s information stays private.</p>', 'hm-top') +
             (PHONE ? '' : '<div class="card hm-new hm-wiz"><a class="hm-go2" href="#" data-go="start"><b>🚀 New to HouseRunner?</b><span>The Setup wizard takes you through everything, step by step.</span><i>›</i></a>' +
-                '<a class="hm-go2" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener"><b>✨ Set up another family</b><span>A new Google Sheet – the dashboard that’s set up here stays exactly as it is.</span><i>›</i></a></div>') +
+                '<a class="hm-go2" href="' + esc(guideUrl()) + '" data-newfam><b>✨ Set up another family</b><span>A new Google Sheet – the dashboard that’s set up here stays exactly as it is.</span><i>›</i></a></div>') +
             '<h1 class="page-h hm-h">Setup</h1>' +
             '<p class="mute help">houserunner.app is in two parts – <b>⚙ Setup</b> and <b>⚙ Widgets</b>. Stuck? <a href="#" data-go="help">Help</a> is at the top, by the title.</p>' +
             card('Setup', '<p class="small">How your dashboard is set up – what’s on the screens, who’s in the family, the reward system, and the settings you’ll rarely need.</p><div class="hm-grid">' +
@@ -383,9 +383,9 @@
         $('body').innerHTML =
             card('Start full wizard', connLine() +
                 '<p class="small">The setup wizard takes you through everything step by step: your Google Sheet, the licence, the family, connecting the display and phones, and the free keys for live data.</p>' +
-                '<div class="btn-row wiz-btns"><a class="btn" href="' + esc(guideUrl()) + '" target="_blank" rel="noopener">Set up a new family (first use)</a>' +
+                '<div class="btn-row wiz-btns"><a class="btn" href="' + esc(guideUrl()) + '" data-newfam>Set up a new family (first use)</a>' +
                 '<a class="btn" href="' + esc(guideUrl() + '#api=' + encodeURIComponent(FD.config().url) + '&code=' + encodeURIComponent(FD.config().code) + '&go=welcome') + '">Rerun wizard for the ' + esc(String(DATA.familyName || '').trim() ? DATA.familyName + ' family' : 'current family') + '</a></div>' +
-                '<p class="mute small"><b>New family</b> – makes a new Google Sheet. <b>Rerun</b> – change what’s there, or clear it and start again; a backup copy is kept in your Google Drive first.</p>') +
+                '<p class="mute small"><b>New family</b> – disconnects this computer from your current family (their dashboard isn’t changed) and makes a new Google Sheet. <b>Rerun</b> – change what’s there, or clear it and start again; a backup copy is kept in your Google Drive first.</p>') +
             stepsCard();
     }
     /** The Setup website's guided steps (the setup app), each opening at the right place, already connected. */
@@ -2294,6 +2294,15 @@
         location.hash = ''; location.reload();
     }
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#hmOut, [data-out]')) disconnectHere(e); });
+    /** "Set up a new family": this computer lets go of the family it's connected to (their dashboard isn't touched), then the wizard starts from the beginning, here. */
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('[data-newfam]'); if (!a) return;
+        e.preventDefault();
+        var fam = String((DATA && DATA.familyName) || '').trim();
+        if (!confirm('Set up a new family?\n\nThis computer disconnects from ' + (fam ? 'the ' + fam + ' family’s' : 'the') + ' dashboard first. Their dashboard, Sheet, screens and phones aren’t changed – you can connect this computer to it again later with a code from Family Admin.\n\nThen the setup wizard starts from the beginning.')) return;
+        FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (x) { /* ignore */ } });
+        location.href = guideUrl();
+    });
     /** The phone's More: help and support, then the few settings that are on the phone, then the Configurator. */
     function renderMore() {
         title('More');

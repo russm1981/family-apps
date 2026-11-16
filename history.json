@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.261",
+    "date": "2026-11-15",
+    "notes": [
+      "Start here picture and setup wizard back to the menu only (no setup button)"
+    ]
+  },
+  {
     "version": "2026.11.260",
     "date": "2026-11-15",
     "notes": [

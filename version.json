@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.261",
+  "app": "2026.11.262",
   "script": "2026.11.110",
   "date": "2026-11-15",
   "notes": [
-    "Loader and Google script no longer write any instructions into the Sheet – the template’s own Start HERE tab does that job"
+    "Start here picture and setup wizard back to the menu only (no setup button)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",
