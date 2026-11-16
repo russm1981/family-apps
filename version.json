@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.260",
+  "app": "2026.11.261",
   "script": "2026.11.110",
   "date": "2026-11-15",
   "notes": [
-    "Setup wizard says the new Sheet opens on its Start HERE tab; the loader never writes over that tab"
+    "Loader and Google script no longer write any instructions into the Sheet – the template’s own Start HERE tab does that job"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",

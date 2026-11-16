@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.260",
+    "date": "2026-11-15",
+    "notes": [
+      "Loader and Google script no longer write any instructions into the Sheet – the template’s own Start HERE tab does that job"
+    ]
+  },
+  {
     "version": "2026.11.259",
     "date": "2026-11-15",
     "notes": [
