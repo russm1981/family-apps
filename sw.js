@@ -1,6 +1,6 @@
 /* Keeps houserunner.app (the Configurator / Family Admin) available offline. Family data always comes live from Google.
  * The screen, the Family Calendar app and the licence pages look after themselves, so they're left alone here. */
-const CACHE = 'root-v99';
+const CACHE = 'root-v100';
 const FILES = ["./", "index.html", "manifest.webmanifest", "admin/app.js", "admin/phone.js", "admin/phone.css", "admin/admin.css", "admin/icons/icon-192.png", "setup/desk.css", "setup/editor.css", "setup/editor.js", "setup/calsetup.js", "setup/config.js",
   "help/topics.js", "shared/fd.js", "shared/head.js", "shared/storecheck.js", "shared/move.js", "shared/base.css", "shared/brand/mark.svg", "shared/privacy.js", "shared/countries.js", "shared/icons.js", "shared/pair.js", "shared/qrcode.js"];
 const OWN = /^\/(screen|dashboard|calendar|licencing|windows|downloads|Scripts)\//;

@@ -1,4 +1,4 @@
-/* Family Dashboard – Google script – LOADER (version 1.2)
+/* HouseRunner – Google script – LOADER (version 1.2)
  *
  * This small file is all that lives in this Apps Script project's "Code" file. Each time the script runs it fetches
  * the real program from where the apps are hosted (GitHub Pages), keeps a copy for a few hours so it stays quick,
@@ -65,7 +65,7 @@ const FD_LOADER = (function () {
       let sh = ss.getSheetByName(BACKUP);
       if (!sh) { sh = ss.insertSheet(BACKUP); try { sh.hideSheet(); } catch (e) { /* fine */ } }
       const cs = split(p.src, CELL), hs = split(p.html || '', CELL), n = Math.max(cs.length, hs.length);
-      const rows = [[p.ver, 'Family Dashboard keeps its last program here in case GitHub can’t be reached. Don’t edit this tab.']];
+      const rows = [[p.ver, 'HouseRunner keeps its last program here in case GitHub can’t be reached. Don’t edit this tab.']];
       for (let i = 0; i < n; i++) rows.push(['|' + (cs[i] || ''), '|' + (hs[i] || '')]);
       sh.clearContents();
       sh.getRange(1, 1, rows.length, 2).setNumberFormat('@').setValues(rows);
@@ -139,7 +139,7 @@ function fdRepair() {
   let msg;
   try { const r = FD_LOADER.refresh('menu'); msg = r.updated ? 'Loaded version ' + r.to + ' from GitHub.' : 'Already the newest version (' + r.version + ').'; }
   catch (e) { msg = 'Couldn’t load it: ' + e.message; }
-  try { SpreadsheetApp.getUi().alert('Family Dashboard', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) { console.log(msg); }
+  try { SpreadsheetApp.getUi().alert('HouseRunner', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) { console.log(msg); }
 }
 function onOpen(e) {
   try { fdCall_('onOpen', [e]); }
@@ -147,7 +147,7 @@ function onOpen(e) {
     // A brand-new copy can't download the program while the Sheet is opening (Google doesn't allow it yet), so this
     // menu has the same first steps: each one loads the program when it's clicked.
     try {
-      SpreadsheetApp.getUi().createMenu('🏠 Family Dashboard')
+      SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
         .addItem('▶ Set up & connect my screen and phones', 'menuConnect')
         .addItem('Change family & calendar', 'menuFamily')
         .addSeparator().addItem('Load the dashboard program', 'fdRepair').addToUi();

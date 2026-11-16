@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.247",
+    "date": "2026-11-15",
+    "notes": [
+      "Setup wizard: Back and Next are always in view at the bottom of the window, on every step",
+      "Setup wizard: reads your Sheet and licence once, in the background as it opens, so steps open straight away instead of ‘Reading your Sheet…’ each time",
+      "Setup wizard: says which family it’s connected to (e.g. the MacMillan family) instead of part of the script address; Welcome and Finish are marked 👋 and 🏁 in the step list"
+    ]
+  },
+  {
     "version": "2026.11.246",
     "date": "2026-11-15",
     "notes": [
