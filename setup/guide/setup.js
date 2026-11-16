@@ -50,10 +50,14 @@
     // The family and the calendar set-up, read from the Sheet (not kept in the browser: the Sheet is the record).
     var ADM = null, FAM = null, admBusy = false;
     function instV(k) { return ((ADM && ADM.install || []).filter(function (f) { return f.k === k; })[0] || {}).value || ''; }
+    /** The licence check, read once in advance (it asks the licence server, so it's the slowest). */
+    var LICP = null;
+    function licenceNow() { if (!LICP) { LICP = post({ action: 'licence' }); LICP.catch(function () { LICP = null; }); } return LICP; }
     function loadAdm() {
         if (admBusy) return; admBusy = true;
         setTimeout(function () {
-            post({ action: 'admin' }).then(function (d) { admBusy = false; ADM = d; render(); },
+            // Read once, in the background when the wizard opens – only redrawn if this page is waiting for it (or shows the family's name)
+            post({ action: 'admin' }).then(function (d) { admBusy = false; ADM = d; if ($('admLoad') || STEPS[S.step].id === 'welcome') render(); },
                 function (e) { admBusy = false; var b = $('admLoad'); if (b) b.innerHTML = okLine(false, e.message); });
         }, 0);
     }
@@ -139,8 +143,8 @@
                     'and you go through setup from the beginning. Your licence key and access code are kept, so the screen and phones stay connected.</p>' +
                     '<button class="btn" id="suWipe" style="background:#ef4444">Back up, clear everything and start again</button><p id="suWipeSt"></p></div>';
             return (S.mode === 'fresh' && S.backup ? '<div class="note ok">🧹 Cleared, ready to set up again. Your backup is <a href="' + esc(S.backup.url) + '" target="_blank" rel="noopener">' + esc(S.backup.name) + '</a> in your Google Drive.</div>' : '') +
-                (connected() ? '<div class="card"><p>This page is connected to a HouseRunner dashboard (Sheet ' + esc(String(S.url).replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…). ' +
-                    'Setting up a <b>different</b> family? <button class="link" id="suForget">Disconnect and start a new one</button></p></div>' : '') +
+                (connected() ? ((ADM || loadAdm()), '<div class="card"><p>This page is connected to ' + (ADM && String(ADM.familyName || '').trim() ? 'the <b>' + esc(String(ADM.familyName).trim()) + ' family</b> dashboard' : 'your family’s HouseRunner dashboard') + '. ' +
+                    'Setting up a <b>different</b> family instead?</p><button class="btn ghost sm" id="suForget">Disconnect and start a new family</button></div>') : '') +
                 (S.licKey ? '<div class="note ok">🔑 Your licence key <b class="mono">' + esc(S.licKey) + '</b> came with the link from your email. Setup fills it in for you – nothing to type.</div>' : '') +
                 (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done on Google’s website, which doesn’t work properly on a phone. ' +
                     'Open your licence email on your computer and click the link there, or send this page to yourself: <button class="btn sm" id="suSend">Copy this page’s link</button></div>' : '') +
@@ -315,7 +319,7 @@
                     : L.state === 'trial' ? '<div class="status">⏳ ' + esc(L.message) + '</div>' : okLine(false, L.message);
                 $('licForm').style.display = good ? 'none' : '';
             };
-            post({ action: 'licence' }).then(function (d) {
+            licenceNow().then(function (d) {
                 show(d.licence);
                 // Key from the order email's link: check and save it by itself.
                 if (S.licKey && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
@@ -323,7 +327,7 @@
             $('licGo').onclick = function () {
                 var k = $('licKey').value.trim(); if (!k) { toast('Paste your key in first', true); return; }
                 $('licStatus').innerHTML = '<div class="status">Checking your key with the licence server…</div>'; $('licGo').disabled = true;
-                post({ action: 'setLicence', key: k }).then(function (d) { $('licGo').disabled = false; S.licensed = true; S.licKey = ''; save(); show(d.licence); toast('Licence saved ✅'); },
+                post({ action: 'setLicence', key: k }).then(function (d) { LICP = Promise.resolve(d); $('licGo').disabled = false; S.licensed = true; S.licKey = ''; save(); show(d.licence); toast('Licence saved ✅'); },
                     function (e) { $('licGo').disabled = false; S.licKey = ''; save(); $('licStatus').innerHTML = okLine(false, e.message); });
             };
         } },
@@ -772,7 +776,7 @@
     }
     function renderSteps() {
         $('steps').innerHTML = STEPS.map(function (st, i) {
-            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + '" data-i="' + i + '"><span class="n">' + (isDone(st.id) ? '✔' : i) + '</span>' + esc(st.title) + '</li>';
+            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + '" data-i="' + i + '"><span class="n">' + (isDone(st.id) ? '✔' : st.id === 'finish' ? '🏁' : st.id === 'welcome' ? '👋' : i) + '</span>' + esc(st.title) + '</li>';
         }).join('');
     }
     function render() {
@@ -800,7 +804,7 @@
         for (var k = 0; k < i; k++) if (!canLeave(k)) { S.step = k; render(); toast(STEPS[k].blocked, true); return; }
         S.step = i;
         if (STEPS[i] && STEPS[i].id === 'check') S.autoCheck = true;
-        if (STEPS[i] && (STEPS[i].id === 'family' || STEPS[i].id === 'calendar')) { ADM = null; FAM = null; }   // read it fresh from the Sheet
+        if (STEPS[i] && (STEPS[i].id === 'family' || STEPS[i].id === 'calendar')) FAM = null;   // start from what's saved (read once, kept up to date by each save)
         render();
     }
     $('steps').onclick = function (e) { var li = e.target.closest('[data-i]'); if (li) go(+li.getAttribute('data-i')); };
@@ -844,6 +848,8 @@
             if (p.from === 'sheet' && connected()) toast('Connected to your HouseRunner Google Sheet \u2705');
         };
         var pending = (p.api && p.code) ? connect(true) : Promise.resolve();
-        pending.then(refreshVersions).then(after, after);
+        // Read the Sheet (family, calendar) and the licence in the background, so the steps open straight away
+        var ahead = function () { if (connected()) { if (!ADM) loadAdm(); licenceNow(); } };
+        pending.then(refreshVersions).then(after, after).then(ahead, ahead);
     })();
 })();

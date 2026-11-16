@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.246",
+  "app": "2026.11.247",
   "script": "2026.11.105",
   "date": "2026-11-15",
   "notes": [
-    "New page houserunner.app/pi: setting up a Raspberry Pi step by step, with the one line to copy into its Terminal (curl -sL houserunner.app/pi.sh | bash) – the Configurator, setup wizard and Help now point to it"
+    "Licence server 2026.11.23: the standard licence email is now short – the key, where to set up, keep this email – signed The Team @ HouseRunner (if you’d changed the wording yourself, yours is kept)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",

@@ -208,3 +208,5 @@ select { width: 100%; height: 46px; background: var(--panel-2); color: var(--tex
 .tabs button:hover { border-color: #3fa9f5; color: #fff; }
 .tabs button.on { background: #3fa9f5; border-color: #3fa9f5; color: #fff; box-shadow: 0 0 0 2px rgba(255,255,255,.85); }
 ul.need, .card ul, .note ul { padding-left: 30px; } ul.need li, .card li, .note li { padding-left: 4px; }
+/* Back / Next always in view at the bottom, however long or short the page */
+main > .nav { position: sticky; bottom: 0; z-index: 5; background: var(--bg, #0c0e12); border-top: 1px solid var(--line); max-width: none; }
