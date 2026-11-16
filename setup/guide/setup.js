@@ -74,7 +74,7 @@
     }
     function filesBox(name, label) {
         return '<div class="copy"><div class="copy-top"><b>' + esc(label) + '</b><button class="btn sm" data-copyfile="../files/' + name + '">Copy the code</button>' +
-            '<a class="btn sm ghost" href="../files/' + name + '" download>Download</a></div></div>';
+            '<a class="btn sm ghost" href="../files/' + name + '" download="' + esc(label.split(' ')[0]) + '">Download</a></div></div>';
     }
     function okLine(ok, text) { return '<div class="status ' + (ok ? 'ok' : 'bad') + '">' + (ok ? '✔ ' : '⚠ ') + esc(text) + '</div>'; }
     function connected() { return !!(S.url && S.code && S.connected); }
@@ -222,7 +222,7 @@
                 return '<ol class="howto"><li>Open <a href="https://sheets.new" target="_blank" rel="noopener">sheets.new</a> and name the Sheet <b>HouseRunner</b>.</li>' +
                     '<li><b>Extensions → Apps Script</b>. Replace everything in <b>Code.gs</b> with the <b>loader</b> – a small file that fetches the latest program each time, so it keeps itself up to date:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
                     '<li><b>+</b> → <b>HTML</b>, name it <b>Admin</b>, and replace its contents with:' + filesBox('Admin.html', 'Admin.html') + '</li>' +
-                    '<li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json"</b>; open it and replace it with:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
+                    '<li>⚙ <b>Project Settings</b> → tick <b>Show "appsscript.json"</b>; open it and replace it with:' + filesBox('appsscript-loader.json', 'appsscript.json') + '</li>' +
                     '<li>Save (<b>Ctrl+S</b>).</li></ol>';
             }
         } },
@@ -564,7 +564,7 @@
                         '<details open><summary>Or switch to the loader – the last time you’ll ever do this</summary><p>The loader is a small file that fetches the newest program from these apps every time the script runs. Paste it in once and the script keeps itself up to date – no switches, no Google Cloud.</p><ol class="howto"><li>Open your Sheet → <b>Extensions → Apps Script</b>.</li>' +
                         '<li>Open <b>Code.gs</b>, select everything (Ctrl+A) and paste the loader:' + filesBox('Loader.gs', 'Loader.gs (goes in Code.gs)') + '</li>' +
                         '<li>Open <b>Admin.html</b> and replace it too (a spare copy, used if the internet is down):' + filesBox('Admin.html', 'Admin.html') + '</li>' +
-                        '<li>Project Settings (cog) → tick “Show appsscript.json”, then replace <b>appsscript.json</b>:' + filesBox('appsscript.json', 'appsscript.json') + '</li>' +
+                        '<li>Project Settings (cog) → tick “Show appsscript.json”, then replace <b>appsscript.json</b>:' + filesBox('appsscript-loader.json', 'appsscript.json') + '</li>' +
                         '<li>Save, then <b>Deploy → Manage deployments → ✎ → Version: New version → Deploy</b>. Your links stay the same.</li>' +
                         '<li>Come back here and press <b>Check again</b>.</li></ol></details>'
                     : mine ? okLine(true, 'Your Google script is up to date (version ' + mine + ').') : '<div class="status">Checking…</div>') +

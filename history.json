@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.248",
+    "date": "2026-11-15",
+    "notes": [
+      "Google script loader: the menu a brand-new copy shows is called 🏠 HouseRunner (not Family Dashboard) – paste the new Loader.gs into the Blank Template to change it there"
+    ]
+  },
+  {
     "version": "2026.11.247",
     "date": "2026-11-15",
     "notes": [

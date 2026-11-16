@@ -1,11 +1,9 @@
 {
-  "app": "2026.11.248",
+  "app": "2026.11.249",
   "script": "2026.11.105",
   "date": "2026-11-15",
   "notes": [
-    "Setup wizard: Back and Next are always in view at the bottom of the window, on every step",
-    "Setup wizard: reads your Sheet and licence once, in the background as it opens, so steps open straight away instead of ‘Reading your Sheet…’ each time",
-    "Setup wizard: says which family it’s connected to (e.g. the MacMillan family) instead of part of the script address; Welcome and Finish are marked 👋 and 🏁 in the step list"
+    "Google script loader: the menu a brand-new copy shows is called 🏠 HouseRunner (not Family Dashboard) – paste the new Loader.gs into the Blank Template to change it there"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",
