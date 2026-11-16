@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.245",
+    "date": "2026-11-15",
+    "notes": [
+      "New page houserunner.app/pi: setting up a Raspberry Pi step by step, with the one line to copy into its Terminal (curl -sL houserunner.app/pi.sh | bash) – the Configurator, setup wizard and Help now point to it"
+    ]
+  },
+  {
     "version": "2026.11.244",
     "date": "2026-11-15",
     "notes": [

@@ -1,11 +1,11 @@
 {
-  "app": "2026.11.245",
+  "app": "2026.11.246",
   "script": "2026.11.105",
   "date": "2026-11-15",
   "notes": [
-    "Family Dashboard (phone): the ⓘ button opens About & diagnostics as a normal page under the top row (not a pop-up), and widgets are listed only if something’s wrong – otherwise it says ‘All widgets working’"
+    "New page houserunner.app/pi: setting up a Raspberry Pi step by step, with the one line to copy into its Terminal (curl -sL houserunner.app/pi.sh | bash) – the Configurator, setup wizard and Help now point to it"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.22",
+  "licenceServer": "2026.11.23",
   "loader": "1"
 }

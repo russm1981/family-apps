@@ -20,7 +20,7 @@
  * menu), or being signed in as the owner when opened from the Sheet's menu.
  */
 
-const LS_VERSION = '2026.11.22';
+const LS_VERSION = '2026.11.23';
 // Run by the loader (the small "Code" file that fetches this program from GitHub)? Then updating needs nothing else.
 const LOADED = typeof FD_LOADER !== 'undefined' && FD_LOADER ? FD_LOADER : null;
 function adminTemplate_() { return LOADED ? HtmlService.createTemplate(LOADED.html()) : HtmlService.createTemplateFromFile('Admin'); }
@@ -38,7 +38,15 @@ const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';     // no 0/O, 1/I – easy
 const DEFAULTS = {
   sellerName: 'HouseRunner',
   subject: 'Your HouseRunner licence key – and how to get started',
-  body: 'Hello {name},\n\nThank you for buying HouseRunner. This email has everything you need.\n\n' +
+  body: 'Hello {name},\n\nThank you for buying HouseRunner.\n\nYour licence key is:\n\n    {key}\n\n' +
+    'To set up your dashboard, open {setup} on a computer and follow the steps. You will be asked for this key.\n\n' +
+    'Keep this email: you need the key again if you ever set the dashboard up from scratch.\n\nBest wishes,\n\nThe Team @ HouseRunner',
+  setupLink: 'https://houserunner.app/',
+};
+// Earlier standard wording: treated as "not changed", so buyers get the current wording.
+const OLD_DEFAULTS = {
+  subject: ['Your HouseRunner licence key'],
+  body: ['Hello {name},\n\nThank you for buying HouseRunner. This email has everything you need.\n\n' +
     'YOUR LICENCE KEY\n\n    {key}\n\nKeep this email: you need the key again if you ever set the dashboard up from scratch.\n\n' +
     'HOW IT WORKS\n\n' +
     'HouseRunner is standard software that runs on your display and your phones. Everything that belongs to your family – names, ' +
@@ -59,12 +67,7 @@ const DEFAULTS = {
     'START HERE\n\n' +
     'On a computer (not a phone or tablet), click the link below. It opens setup with your licence key already in it:\n\n{setup}\n\n' +
     'STUCK?\n\nThere’s help for every step here: {help}\nOr just reply to this email.\n\nBest wishes,\n{seller}',
-  setupLink: 'https://houserunner.app/',
-};
-// Earlier standard wording: treated as "not changed", so buyers get the current wording.
-const OLD_DEFAULTS = {
-  subject: ['Your HouseRunner licence key'],
-  body: ["Hello {name},\n\nThank you for buying HouseRunner. Everything you need to get started is in this email.\n\nYOUR LICENCE KEY\n\n    {key}\n\nKeep this email: you need the key again if you ever set the dashboard up from scratch.\n\nHOW TO GET STARTED\n\n1. Use a computer (a Windows PC or a Mac), not a phone or tablet – part of setup is done on Google’s website.\n\n2. Click the link below. It opens the setup page with your licence key already filled in:\n\n{setup}\n\n3. Press Start, then follow the page one step at a time, pressing Next at the bottom of each one. It takes about 30 minutes, and if you stop, the page remembers where you got to.\n\nWHAT YOU’LL NEED\n\n- A Google (Gmail) account – ideally the one your family calendar is in\n- Your display: a Windows PC with a Corsair XENEON EDGE, a tablet, or a Raspberry Pi with a screen\n- About half an hour\n\nSTUCK?\n\nThere’s help for every step here: {help}\nOr just reply to this email.\n\nBest wishes,\n{seller}",
+    "Hello {name},\n\nThank you for buying HouseRunner. Everything you need to get started is in this email.\n\nYOUR LICENCE KEY\n\n    {key}\n\nKeep this email: you need the key again if you ever set the dashboard up from scratch.\n\nHOW TO GET STARTED\n\n1. Use a computer (a Windows PC or a Mac), not a phone or tablet – part of setup is done on Google’s website.\n\n2. Click the link below. It opens the setup page with your licence key already filled in:\n\n{setup}\n\n3. Press Start, then follow the page one step at a time, pressing Next at the bottom of each one. It takes about 30 minutes, and if you stop, the page remembers where you got to.\n\nWHAT YOU’LL NEED\n\n- A Google (Gmail) account – ideally the one your family calendar is in\n- Your display: a Windows PC with a Corsair XENEON EDGE, a tablet, or a Raspberry Pi with a screen\n- About half an hour\n\nSTUCK?\n\nThere’s help for every step here: {help}\nOr just reply to this email.\n\nBest wishes,\n{seller}",
     'Hello {name},\n\nThank you for buying HouseRunner.\n\nYour licence key is:\n\n    {key}\n\n' +
     'To set up your dashboard, open {setup} on a computer and follow the steps. You will be asked for this key.\n\n' +
     'Keep this email: you need the key again if you ever set the dashboard up from scratch.\n\nBest wishes,\n{seller}'],
