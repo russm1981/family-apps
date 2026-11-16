@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.254",
+    "date": "2026-11-15",
+    "notes": [
+      "A brand-new Sheet’s menu is just 🏠 HouseRunner → ▶ HouseRunner – SETUP, and its Start here tab shows a picture of the four screens to expect (also in the setup wizard)"
+    ]
+  },
+  {
     "version": "2026.11.253",
     "date": "2026-11-15",
     "notes": [

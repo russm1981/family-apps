@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.108';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.109';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -782,9 +782,10 @@ function doGet(e) {
 
 /** A backup of the family's private links, emailed to the Google account the dashboard belongs to – so if a computer or phone
  * forgets its connection, the email has a link that connects it again. Only ever sent to the owner's own address. */
-/* ---- Permissions people can leave unticked on Google's permission screen (Google lets them pick) ----
- * Essential: the Sheet, connecting to other services, the menu, timers, and publishing itself. Optional: these four – a
- * widget that needs one that wasn't allowed says so (rather than failing oddly), and everything else carries on. */
+/* ---- Permissions ----
+ * All are needed, and ▶ HouseRunner – SETUP asks again until they're all allowed. Google lets people untick some on its
+ * permission screen, and they can take them away later, so a widget that needs one that's missing says so (rather than
+ * failing oddly), and everything else carries on. */
 const OPT_SCOPES = {
   calendar: ['https://www.googleapis.com/auth/calendar', 'Google Calendar', 'the calendar'],
   gmail: ['https://mail.google.com/', 'Gmail', 'the Parcels widget and emailing you your links'],
@@ -4044,8 +4045,8 @@ function autoPublish_() {
   return url;
 }
 function menuConnect() {
-  // The permissions setup can't work without (Google may let people untick them): ask again for any that are missing.
-  if (ScriptApp.requireScopes) ScriptApp.requireScopes(ScriptApp.AuthMode.FULL, ESSENTIAL_SCOPES);
+  // Every permission is needed (Google may let people untick some): ask again for any that are missing before going on.
+  if (ScriptApp.requireAllScopes) ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
   setup();
   let url = myUrl_(), apiErr = '';
   // Publish by itself through Google's Apps Script API (needs one switch per Google account); otherwise the Deploy screen by hand.

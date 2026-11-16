@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.254",
-  "script": "2026.11.108",
+  "app": "2026.11.255",
+  "script": "2026.11.109",
   "date": "2026-11-15",
   "notes": [
-    "Setup wizard and the new Sheet’s Start here tab: choose the menu a second time only if “Published ✅” hasn’t appeared, and why"
+    "A brand-new Sheet’s menu is just 🏠 HouseRunner → ▶ HouseRunner – SETUP, and its Start here tab shows a picture of the four screens to expect (also in the setup wizard)"
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.23",
