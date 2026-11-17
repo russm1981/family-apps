@@ -863,6 +863,26 @@
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
     // …and in case the browser held back those messages (a tab in the background often is): look every few seconds as well
     setInterval(function () { if (!connected()) { var s2 = load(); if (s2.url && s2.code && s2.connected) catchUp(); } }, 3000);
+    // Waiting at "Make your Sheet": if it already knows the Sheet's address but couldn't reach it (Google can be slow to
+    // answer, especially first thing in the morning), quietly try again every 10 seconds – no need to press anything.
+    var retrying = false;
+    setInterval(function () {
+        if (retrying || connected() || !S.url || !S.code || document.hidden || !STEPS[S.step] || STEPS[S.step].id !== 'sheet') return;
+        retrying = true;
+        connect(true).then(function (ok) { retrying = false; if (ok) { toast('Connected to your HouseRunner Google Sheet \u2705'); $('next').onclick(); } }, function () { retrying = false; });
+    }, 10000);
+    // A setup tab left open from an older release: when you come back to it, it reloads itself with the newest one
+    // (your progress is kept in this browser), so it never runs out-of-date steps. Only on steps with nothing typed in.
+    var MYV = ((document.currentScript && /[?&]v=(\d+)/.exec(document.currentScript.src)) || [])[1] || '';
+    var freshen = function () {
+        if (!MYV || document.hidden || !STEPS[S.step] || !/^(welcome|privacy|sheet|publish|finish)$/.test(STEPS[S.step].id)) return;
+        fetch('../../version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (v) {
+            var now = v && String(v.app || '').replace(/\D/g, '');
+            if (now && now.length === MYV.length && now > MYV) location.reload();
+        }).catch(function () { /* offline – fine */ });
+    };
+    window.addEventListener('focus', freshen);
+    document.addEventListener('visibilitychange', freshen);
     // The menu in the Sheet publishes and connects in one go, so once connected "Publish & connect" is skipped going forwards and back
     var PUB = STEPS.map(function (x) { return x.id; }).indexOf('publish');
     $('next').onclick = function () { if (SOLO) { location.href = '../../#/tools'; return; } go(S.step + 1 === PUB && (connected() || !S.byHand) ? PUB + 1 : S.step + 1); };

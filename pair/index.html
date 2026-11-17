@@ -34,13 +34,19 @@
      // your family on their screen.
      $('box').innerHTML = '<div class="card"><h2 style="margin:0 0 10px">Connect this display to <span id="fam">your family dashboard</span>?</h2>' +
        '<p id="who" class="small" style="opacity:.75;margin:0 0 10px"></p>' +
-       '<p>Only say yes if the display showing this code is in your home – it will show your family’s calendar, points, notes and photos.</p>' +
-       '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="go">Yes – Connect it</button><button class="btn ghost" id="no">No – Cancel</button></div><p id="st"></p></div><div id="other"></div>';
+       '<p>Only say yes if the display showing this code is in <b>your</b> home – it will show <b>your</b> family’s calendar, points, notes and photos. ' +
+       'Helping a relative or friend with the same surname? Check the names above – if they aren’t that home’s people, press <b>No</b>.</p>' +
+       '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="go" disabled>Yes – Connect it</button><button class="btn ghost" id="no">No – Cancel</button></div><p id="st" class="small" style="opacity:.75">Checking whose family this phone is connected to…</p></div><div id="other"></div>';
+     // "Yes" only once it's clear WHOSE family this phone holds – so nobody connects their own family to a screen in someone else's home by mistake
+     var ready = function (msg) { $('go').disabled = false; $('st').innerHTML = msg || ''; };
+     var slow = setTimeout(function () { ready('<span class="bad">Couldn’t check whose family this is (Google is slow to answer). Only connect if you’re sure the display is in your home.</span>'); }, 30000);
      fetch(cfg.url + '?action=whose&code=' + encodeURIComponent(cfg.code), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+       clearTimeout(slow);
        var names = (d.people || []).filter(Boolean);
        if (d.familyName) $('fam').textContent = 'the ' + d.familyName + ' family dashboard';
-       if (names.length) $('who').textContent = (d.familyName ? 'The ' + d.familyName + ' family: ' : 'Your family: ') + names.slice(0, 8).join(', ') + (names.length > 8 ? ' and others' : '');
-     }).catch(function () { /* fine */ });
+       if (names.length) { $('who').style.opacity = '1'; $('who').innerHTML = '<b>' + (d.familyName ? 'The ' + d.familyName + ' family: ' : 'Your family: ') + names.slice(0, 8).join(', ') + (names.length > 8 ? ' and others' : '') + '</b>'; }
+       ready();
+     }).catch(function () { clearTimeout(slow); ready('<span class="bad">Couldn’t check whose family this is. Only connect if you’re sure the display is in your home.</span>'); });
      $('go').onclick = function () {
        var b = this; b.disabled = true; $('st').textContent = 'Sending…';
        FDPairSend.send(code, cfg).then(function () { $('st').innerHTML = '<span class="ok">✔ Sent – it connects within a few seconds.</span>'; },
