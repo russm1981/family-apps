@@ -1,11 +1,13 @@
 {
-  "app": "2026.11.268",
-  "script": "2026.11.112",
+  "app": "2026.11.269",
+  "script": "2026.11.113",
   "date": "2026-11-17",
   "notes": [
-    "Connecting a display by QR code: the phone now shows whose family it holds (with everyone’s names) before you can press Yes – so helping a relative with the same surname can’t put your family on their screen by mistake.",
-    "Setup: after “Carry on with setup”, the new tab keeps trying to connect for up to two minutes, and an old setup tab notices by itself (it checks every few seconds).",
-    "Setup: waiting at “Make your Sheet” with a Sheet that didn’t answer, it quietly tries again every 10 seconds. A setup tab left open from an older release reloads itself with the newest one when you come back to it."
+    "Setup is more forgiving of mistakes (from a full test by a first-time buyer): two setup tabs no longer move each other’s steps; a Web app URL that doesn’t answer is never kept as your connection; what you type in the URL box is kept if you press Next by mistake, and Next takes you straight to that box.",
+    "Setup: the Web app URL box is always in view (no longer hidden inside a folded section), and pasting your Sheet’s address there by mistake says so. Clicking Make my copy a second time warns that you already have one. Cancelled Google’s permission page? It says what to do.",
+    "Support works before you’re connected: help’s “Send a support request” now opens a form (with your email so we can reply), instead of the home page. The home page says Resume setup when one is under way, and explains when a page needs setup finished first.",
+    "Privacy notice: each of the ten Google permissions now says exactly what HouseRunner uses it for (Google’s own wording is broader). You’ll be asked to accept it once more. Help and the screen’s connect instructions now use the same words as the real screens.",
+    "Licence emails now say how many displays the licence covers (licence server 2026.11.24)."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

@@ -3,7 +3,7 @@
  * (Plain English draft – have it checked before giving the dashboard to people outside your own family.)
  */
 window.FD_PRIVACY = {
-    version: '4',
+    version: '5',
     updated: '8 November 2026',
     summary: [
         'Your family’s information is kept in <b>your own Google account</b> (a Google Sheet and script you own). The people who make HouseRunner can’t see it.',
@@ -16,10 +16,11 @@ window.FD_PRIVACY = {
     full: '' +
         '<h3>Who holds your information</h3><p>Everything you put into HouseRunner – children’s names, points, tasks, reminders, notes, lists, settings and API keys – is stored in a Google Sheet in your own Google account, and is processed by a Google script that you publish from that Sheet. The people who make and host HouseRunner do not receive or store any of it. You can see it all in the Sheet, and you can delete it at any time by deleting the Sheet (and its web app deployment).</p>' +
         '<h3>What the app files are</h3><p>The dashboard, Family Admin and the website are all web pages at houserunner.app, hosted on GitHub Pages. When a device loads them, GitHub (like any website) receives the device’s IP address. The pages then talk only to your own Google script. The website and its welcome page load a QR-code library from cdnjs.cloudflare.com.</p>' +
-        '<h3>Google permissions</h3><p>When you set up your Sheet, Google asks you to allow ten things. Google words them broadly – “all” your spreadsheets, calendars, email and files – because it doesn’t offer narrower versions for a script like this. What HouseRunner actually does with each:</p><ul>' +
-        '<li><b>Spreadsheets</b> – reads and writes your own HouseRunner Sheet only.</li>' +
+        '<h3>Google permissions</h3><p>When you set up your Sheet, Google asks you to allow eleven things. Some are worded broadly (“all” your calendars or files) because Google doesn’t offer narrower versions for a script like this. What HouseRunner actually does with each:</p><ul>' +
+        '<li><b>This spreadsheet</b> – reads and writes your own HouseRunner Sheet. It has no access to your other spreadsheets.</li>' +
         '<li><b>Calendar</b> – shows your family calendar’s events, and adds or changes the ones you enter in HouseRunner.</li>' +
-        '<li><b>Gmail</b> (Google’s wording: “read, compose, send and permanently delete”) – the Parcels widget reads delivery emails, and HouseRunner emails you a backup of your private links. It never deletes or changes your emails.</li>' +
+        '<li><b>Gmail, read only</b> – the Parcels widget reads delivery emails. It can’t change, send or delete any email.</li>' +
+        '<li><b>Send email as you</b> – HouseRunner emails you a backup of your private links.</li>' +
         '<li><b>Drive</b> (“see and download”) – the photo slideshow reads the folder you choose.</li>' +
         '<li><b>Tasks</b> – the To-Do List (Google) widget.</li>' +
         '<li><b>Connect to an external service</b> – weather, traffic, trains, bins and the other widgets you switch on (listed below), and HouseRunner’s licence check.</li>' +

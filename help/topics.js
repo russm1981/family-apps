@@ -20,9 +20,10 @@ window.FD_HELP = [
 <p>On the way, Google shows a red ⚠ page saying the developer – <b>your own email address</b> – hasn’t had the app verified. That’s normal: the copy is yours, so Google counts you as its developer. Click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. Don’t press <b>Back to safety</b>.</p>
 <h2>All of them are needed – click Select all</h2>
 <ul>
-<li><b>See, edit, create and delete your spreadsheets</b> – your family’s information is kept in your own Sheet; setup also makes backup copies.</li>
+<li><b>See, edit, create and delete only the specific spreadsheets this application has been installed in</b> – your family’s information is kept in your own Sheet. HouseRunner can’t see your other spreadsheets.</li>
 <li><b>Google Calendar</b> – the calendar screen, adding events, Today &amp; tomorrow, birthdays and the holiday countdown.</li>
-<li><b>Gmail</b> (“read, compose, send and permanently delete”) – the <b>Parcels</b> widget looks for delivery emails, and HouseRunner emails you a backup of your private links. Google only offers this all-in-one permission; HouseRunner never deletes or changes your email.</li>
+<li><b>View your email messages and settings</b> (Gmail, read only) – the <b>Parcels</b> widget looks for delivery emails. It can’t change, send or delete anything.</li>
+<li><b>Send email as you</b> – HouseRunner emails <b>you</b> a backup of your private links.</li>
 <li><b>Google Drive</b> (see and download files) – the <b>Photo slideshow</b> from a folder you choose. Read only.</li>
 <li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>
 <li><b>Connect to an external service</b> – downloading the HouseRunner program, live information (weather, trains, buses, traffic, flights, news) and the daily licence check.</li>

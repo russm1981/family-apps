@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.112';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.113';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -426,7 +426,10 @@ const PAGE_ICONS = ['\u2302', '\u25C8', '\u2726', '\u2600', '\u266B', '\u2708', 
 
 /* ------------------------------------------------------------------ setup */
 
-function setup() {
+function setup(step) {
+  // The SETUP window in the Sheet calls this, one step at a time ("hr:tabs", "hr:publish", "hr:check"), so it can show its progress
+  // (it's the one name the loader already passes on, so no Sheet needs a new loader for it).
+  if (typeof step === 'string' && /^hr:/.test(step)) return setupStep_(step.slice(3));
   freshCopy_();
   const ss = SpreadsheetApp.getActive();
   // "Copy of HouseRunner BLANK" → "HouseRunner MAIN DATA", so it's never mistaken for the template
@@ -789,22 +792,45 @@ function doGet(e) {
  * failing oddly), and everything else carries on. */
 const OPT_SCOPES = {
   calendar: ['https://www.googleapis.com/auth/calendar', 'Google Calendar', 'the calendar'],
-  gmail: ['https://mail.google.com/', 'Gmail', 'the Parcels widget and emailing you your links'],
+  // Read-only Gmail (Sheets set up before 2026.11.269 have Google's all-in-one Gmail permission instead – that counts too)
+  gmail: ['https://www.googleapis.com/auth/gmail.readonly', 'Gmail (read only)', 'the Parcels widget', 'https://mail.google.com/'],
+  send: ['https://www.googleapis.com/auth/script.send_mail', 'Send email as you', 'emailing you your links', 'https://mail.google.com/'],
   drive: ['https://www.googleapis.com/auth/drive.readonly', 'Google Drive (read only)', 'the Photo slideshow'],
   tasks: ['https://www.googleapis.com/auth/tasks', 'Google Tasks', 'the To-Do List (Google)'],
 };
-function granted_(k) {
+function hasScope_(scope) {
   try {
-    const i = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL, [OPT_SCOPES[k][0]]);
+    const i = ScriptApp.getAuthorizationInfo(ScriptApp.AuthMode.FULL, [scope]);
     return i.getAuthorizationStatus() !== ScriptApp.AuthorizationStatus.REQUIRED;
-  } catch (e) { return true; }      // can't tell: try, and let Google's own error show
+  } catch (e) { return null; }      // can't tell
+}
+function granted_(k) {
+  const o = OPT_SCOPES[k], a = hasScope_(o[0]);
+  if (a === null) return true;      // can't tell: try, and let Google's own error show
+  return a || (o[3] ? hasScope_(o[3]) === true : false);
+}
+/** Which Gmail route this Sheet has: 'api' (read-only permission + the Gmail service) or 'app' (the older all-in-one permission). */
+function gmailRoute_() {
+  if (hasScope_(OPT_SCOPES.gmail[0]) && typeof Gmail !== 'undefined' && Gmail.Users) return 'api';
+  return hasScope_('https://mail.google.com/') ? 'app' : '';
+}
+/** Email to the Google account's own address (or the moving pack's new account): MailApp where allowed, else the older Gmail route. */
+function sendMail_(to, subject, body) {
+  const send = hasScope_(OPT_SCOPES.send[0]), full = hasScope_('https://mail.google.com/');
+  if (send) { MailApp.sendEmail(to, subject, body); return true; }
+  if (full) { GmailApp.sendEmail(to, subject, body); return true; }
+  if (send === null) {   // can't tell which is allowed: try each
+    try { MailApp.sendEmail(to, subject, body); return true; } catch (e) { /* try the other */ }
+    try { GmailApp.sendEmail(to, subject, body); return true; } catch (e) { /* neither */ }
+  }
+  return false;
 }
 function needScope_(k, what) {
   if (granted_(k)) return;
   throw new Error((what || OPT_SCOPES[k][2]) + ' needs the ' + OPT_SCOPES[k][1] + ' permission, which wasn’t ticked when HouseRunner was allowed. ' +
     'To add it: in your Google Sheet choose 🏠 HouseRunner → Allow more permissions, and tick ' + OPT_SCOPES[k][1] + ' when Google asks.');
 }
-const ESSENTIAL_SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/script.external_request',
+const ESSENTIAL_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.currentonly', 'https://www.googleapis.com/auth/script.external_request',
   'https://www.googleapis.com/auth/script.container.ui', 'https://www.googleapis.com/auth/script.scriptapp',
   'https://www.googleapis.com/auth/script.projects', 'https://www.googleapis.com/auth/script.deployments'];
 /** Sheet menu → Allow more permissions: Google asks for any left unticked (the optional ones), then says what's on. */
@@ -832,8 +858,7 @@ function emailLinks_() {
     'The dashboard (the Corsair XENEON EDGE, a tablet, a browser – and everyone’s phones, as the Family Dashboard app):\n' + base + 'dashboard/' + tail + '\n\n' +
     'These links contain your access code, which is the key to your family’s information – don’t forward this email outside the family. ' +
     'If you change your access code (houserunner.app → System → My data), you’ll be sent new links.\n';
-  if (!granted_('gmail')) return false;      // Gmail not allowed: no backup email (the apps show the links instead)
-  GmailApp.sendEmail(to, 'Your HouseRunner links – keep this email', body);
+  if (!sendMail_(to, 'Your HouseRunner links – keep this email', body)) return false;   // not allowed: no backup email (the apps show the links instead)
   PropertiesService.getScriptProperties().setProperty('linksEmailed', String(Date.now()));
   return { ok: true, to: to };
 }
@@ -854,6 +879,7 @@ function doPost(e) {
     ensureMigrated_();
     autoRefresh_();
     const body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (body.action === 'exportPack') return exportPack_(body);   // checked against the one-off moving key instead
     checkCode_(body.code);
     if (body.action !== 'moveDone') movedCheck_();
     return withLock_(() => dispatch_(body));
@@ -879,7 +905,7 @@ function dispatch_(b) {
     case 'moveDone': return moveDone_(b);
     case 'packForAccount': return packForAccount_(b.email);
     case 'emailLinks': return emailLinks_();
-    case 'importPack': return importPack_(b.pack);
+    case 'importPack': return importPack_(b.pack, b.from);
     case 'setLicence': return setLicence_(b.key);
     case 'releaseLicence': return releaseLicence_();
     case 'screens': return { ok: true, screens: screenList_(), allowed: screensAllowed_() };
@@ -3741,13 +3767,12 @@ function parcels_(s) {
   const q = 'newer_than:' + days + 'd -in:spam -in:trash subject:(delivered OR delivery OR dispatched OR despatched OR shipped OR parcel OR package OR "on its way" OR "out for delivery" OR arriving OR "missed you")';
   const out = [];
   needScope_('gmail', 'The Parcels widget');
-  GmailApp.search(q, 0, 40).forEach(t => {
-    const msgs = t.getMessages(), m = msgs[msgs.length - 1];
-    const subj = String(m.getSubject() || ''), from = String(m.getFrom() || '');
+  parcelMail_(q).forEach(m => {
+    const subj = m.subject, from = m.from;
     let st = PARCEL_STATUS.find(x => x[0].test(subj));
-    if (!st) st = PARCEL_STATUS.find(x => x[0].test(String(m.getPlainBody() || '').slice(0, 1500)));
+    if (!st) st = PARCEL_STATUS.find(x => x[0].test(m.body()));
     if (!st) return;
-    const when = m.getDate();
+    const when = m.date;
     if (st[1] === 'Delivered' && Date.now() - when.getTime() > keep) return;
     const who = (CARRIERS.find(c => c[0].test(from)) || CARRIERS.find(c => c[0].test(subj)) ||
       [null, from.replace(/<.*>/, '').replace(/"/g, '').trim().slice(0, 24) || 'Parcel'])[1];
@@ -3755,6 +3780,25 @@ function parcels_(s) {
   });
   out.sort((a, b) => (b.rank - a.rank) || (a.at < b.at ? 1 : -1));
   return { items: out.slice(0, 12) };
+}
+
+/** The newest email of each matching conversation: { subject, from, date, body() }. Read only – through Google's Gmail service where
+ * this Sheet has the read-only permission, otherwise (older Sheets) through GmailApp. */
+function parcelMail_(q) {
+  if (gmailRoute_() === 'api') {
+    const seen = {}, out = [];
+    ((Gmail.Users.Messages.list('me', { q: q, maxResults: 60 }) || {}).messages || []).forEach(x => {
+      if (seen[x.threadId] || out.length >= 40) return; seen[x.threadId] = 1;   // newest first: the first of each conversation
+      const m = Gmail.Users.Messages.get('me', x.id, { format: 'metadata', metadataHeaders: ['Subject', 'From'] });
+      const h = n => ((m.payload && m.payload.headers || []).filter(y => y.name === n)[0] || {}).value || '';
+      out.push({ subject: String(h('Subject')), from: String(h('From')), date: new Date(Number(m.internalDate)), body: () => String(m.snippet || '') });
+    });
+    return out;
+  }
+  return GmailApp.search(q, 0, 40).map(t => {
+    const msgs = t.getMessages(), m = msgs[msgs.length - 1];
+    return { subject: String(m.getSubject() || ''), from: String(m.getFrom() || ''), date: m.getDate(), body: () => String(m.getPlainBody() || '').slice(0, 1500) };
+  });
 }
 
 /* ------------------------------------------------------ memos */
@@ -4026,14 +4070,60 @@ function myUrl_() {
   const u = ScriptApp.getService().getUrl() || '';
   return /\/exec$/.test(u) ? u : '';
 }
+/** Does this address really answer as this dashboard? (Google can give an address that isn't published, or an old deployment's.) */
+function answers_(u) {
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(String(u || ''))) return false;
+  try {
+    const r = UrlFetchApp.fetch(u + '?action=ping&t=' + Date.now(), { muteHttpExceptions: true, followRedirects: true });
+    if (r.getResponseCode() !== 200) return false;
+    const d = JSON.parse(r.getContentText());
+    return !!(d && d.ok && d.app === 'family-dashboard');
+  } catch (e) { return false; }
+}
+/** The address that works: the one noted before, then each of this script's web app deployments, then Google's own idea. Noted for next time. */
+function workingUrl_() {
+  const P = PropertiesService.getScriptProperties(), tried = {};
+  const ok = u => { if (!u || tried[u]) return false; tried[u] = 1; if (!answers_(u)) return false; P.setProperty('execUrl', u); return true; };
+  const saved = P.getProperty('execUrl');
+  if (ok(saved)) return saved;
+  let deps = [];
+  try { deps = (scriptApi_('get', '/deployments').deployments || []).filter(d => d.deploymentConfig && d.deploymentConfig.versionNumber); } catch (e) { /* API off: carry on */ }
+  // newest first: an older deployment can be an earlier version of the program
+  deps.sort((a, b) => String(b.updateTime || '') < String(a.updateTime || '') ? -1 : 1);
+  for (const d of deps) { const u = ((d.entryPoints || []).filter(e => e.webApp)[0] || {}).webApp; if (u && ok(u.url)) return u.url; }
+  let g = ''; try { g = ScriptApp.getService().getUrl() || ''; } catch (e) { /* none */ }
+  return ok(g) ? g : '';
+}
+/** One step of the SETUP window. Each returns { ok, … } – or what to show if it can't go on. */
+function setupStep_(step) {
+  if (step === 'tabs') { setup(); return { ok: true, name: SpreadsheetApp.getActive().getName() }; }
+  if (step === 'publish') {
+    let url = workingUrl_();
+    if (url) return { ok: true, url: url, already: true };
+    try { url = autoPublish_(); } catch (err) {
+      const apiOff = /Apps Script API/.test(err.message) && !/Cloud project/.test(err.message);
+      let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
+      return { ok: false, kind: apiOff ? 'api' : 'hand', who: who, error: err.message };
+    }
+    return url ? { ok: true, url: url } : { ok: false, kind: 'hand' };
+  }
+  if (step === 'check') {
+    // A deployment made a moment ago can take a little while to answer: keep asking for up to about 40 seconds
+    const P = PropertiesService.getScriptProperties(), u = P.getProperty('execUrl');
+    for (let i = 0; i < 8; i++) { if (answers_(u)) break; if (i === 7) return { ok: false, kind: 'slow', url: u }; Utilities.sleep(5000); }
+    return { ok: true, link: appsBase_() + '#api=' + encodeURIComponent(u) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet' };
+  }
+  throw new Error('Unknown setup step');
+}
 function dialog_(title, html, h) {
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(
     '<div style="font:15px/1.5 Arial,sans-serif;color:#222">' + html + '</div>').setWidth(520).setHeight(h || 360), title);
 }
 /** Publish the web app without the Deploy screens (needs the Apps Script API switch, once per Google account). */
 function autoPublish_() {
+  // Only ever one: an existing web app (the newest) is used rather than making another each time SETUP is chosen
   const list = (scriptApi_('get', '/deployments').deployments || []).filter(d => d.deploymentConfig && d.deploymentConfig.versionNumber &&
-    (d.entryPoints || []).some(e => e.entryPointType === 'WEB_APP'));
+    (d.entryPoints || []).some(e => e.entryPointType === 'WEB_APP')).sort((a, b) => String(b.updateTime || '') < String(a.updateTime || '') ? -1 : 1);
   let url = '';
   if (list.length) url = ((list[0].entryPoints || []).filter(e => e.webApp)[0] || {}).webApp.url || '';
   else {
@@ -4047,34 +4137,28 @@ function autoPublish_() {
 function menuConnect() {
   // Every permission is needed (Google may let people untick some): ask again for any that are missing before going on.
   if (ScriptApp.requireAllScopes) ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
-  setup();
-  let url = myUrl_(), apiErr = '';
-  // Publish by itself through Google's Apps Script API (needs one switch per Google account); otherwise the Deploy screen by hand.
-  if (!url) { try { url = autoPublish_(); } catch (err) { apiErr = err.message; console.warn('Publish by itself: ' + apiErr); } }
-  if (!url && /Apps Script API/.test(apiErr) && !/Cloud project/.test(apiErr)) {
-    let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
-    dialog_('One switch, then it publishes itself', '<p>Google needs one switch turned on (once for your Google account' + (who ? ', <b>' + clean_(who) + '</b>' : '') + ') so the dashboard can publish itself:</p><ol>' +
-      '<li>Open <a href="https://script.google.com/home/usersettings" target="_blank"><b>this Google settings page</b></a> (it opens in a new tab)</li>' +
-      '<li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li>' +
-      '<li>Come back to this tab and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again</li></ol>' +
-      '<p style="color:#888;font-size:13px">If it already says On, wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>', 340);
-    return;
-  }
-  if (!url) {
-    dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
-      '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
-      '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
-      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to HouseRunner (unsafe) → Select all → Continue</b></li>' +
-      '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
-      '<p>Then come back here and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>', 420);
-    return;
-  }
-  const link = appsBase_() + '#api=' + encodeURIComponent(url) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet';
-  dialog_('Published ✅', '<p>✅ Your HouseRunner dashboard is published.</p>' +
-    '<p>Click the button to carry on with setup. It opens the setup page in a new tab, already connected to this Sheet – nothing to type. ' +
-    '(Your setup page in the other tab updates by itself too – carry on in whichever you like and close the rest.)</p>' +
-    '<p><a href="' + link + '" target="_blank" style="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold">Carry on with setup</a></p>' +
-    '<p style="color:#888;font-size:13px">That link contains your private access code. Don’t share it outside the family.</p>', 300);
+  // A window that stays open and shows each step as it happens – nothing to click until it's done.
+  const html = '<div id="w" style="font:15px/1.5 Arial,sans-serif;color:#222">' +
+    '<p style="margin:0 0 10px">Setting up your HouseRunner Sheet. <b>Please leave this window open</b> – it takes about a minute.</p>' +
+    '<ol id="st" style="list-style:none;padding:0;margin:0 0 12px">' +
+    '<li id="s-tabs">⏳ Making the tabs your dashboard keeps its information in</li>' +
+    '<li id="s-publish" style="color:#999">○ Publishing your dashboard, so your screen and phones can reach it</li>' +
+    '<li id="s-check" style="color:#999">○ Checking it answers</li></ol><div id="out"></div></div>' +
+    '<script>' +
+    'var BTN="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold";' +
+    'function mark(k,ok,t){var e=document.getElementById("s-"+k);e.style.color=ok===null?"#222":"";e.innerHTML=(ok===null?"⏳ ":ok?"✅ ":"⚠️ ")+(t||e.innerHTML.replace(/^\\S+\\s/,""));}' +
+    'function out(h){document.getElementById("out").innerHTML=h;}' +
+    'function fail(e){out("<p style=\\"color:#b91c1c\\"><b>Something went wrong:</b> "+String(e&&e.message||e).replace(/</g,"&lt;")+"</p><p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – it carries on from where it got to.</p>");}' +
+    'function run(k,next){google.script.run.withSuccessHandler(next).withFailureHandler(function(e){mark(k,false);fail(e);}).setup("hr:"+k);}' +
+    'run("tabs",function(){mark("tabs",true);mark("publish",null);run("publish",function(r){' +
+    ' if(!r.ok&&r.kind==="api"){mark("publish",false,"Publishing needs one Google switch");out("<p>Google needs one switch turned on (once for your Google account"+(r.who?", <b>"+r.who+"</b>":"")+") so the dashboard can publish itself:</p><ol><li>Open <a href=\\"https://script.google.com/home/usersettings\\" target=\\"_blank\\"><b>this Google settings page</b></a> (a new tab)</li><li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li><li>Come back here and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again</li></ol><p style=\\"color:#888;font-size:13px\\">Already On? Wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>");return;}' +
+    ' if(!r.ok){mark("publish",false,"Couldn’t publish by itself");out("<p>Publish it by hand instead – the setup page shows how: <b>Publish by hand</b> on the “Make your Sheet” step.</p>"+(r.error?"<p style=\\"color:#888;font-size:13px\\">("+String(r.error).replace(/</g,"&lt;")+")</p>":""));return;}' +
+    ' mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
+    '  if(!c.ok){mark("check",false,"It isn’t answering yet");out("<p>Google can take a minute after publishing. Wait a minute, then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – nothing is published twice.</p>");return;}' +
+    '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Click the button to carry on with setup. It opens the setup page, already connected to this Sheet – nothing to type. (A setup page you already have open updates by itself too – carry on in whichever you like and close the rest.)</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" style=\\""+BTN+"\\">Carry on with setup</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family.</p>");' +
+    ' });});});' +
+    '</script>';
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(540).setHeight(430), 'HouseRunner – SETUP');
 }
 /** Opens the setup app straight at "Family & calendar": people, groups, categories and the children's page. */
 function menuFamily() {
@@ -4370,37 +4454,7 @@ const MOVE_SKIP = ['installId', 'licence', 'licenceServerAt', 'updating', 'claim
 
 /** Step 1, in the old Sheet: make the new Sheet and script, copy everything, publish the new web app. */
 function startAfresh_() {
-  if (LOADED) throw new Error('Not needed any more: this dashboard loads its program from GitHub, so it never uses up Google’s saved versions. To move to another Google account, use “Move to a different Google account”.');
-  const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
-  if (inst_('MovedTo')) throw new Error('This dashboard has already moved to a new Sheet');
-  const from = myUrl_();
-  if (!from) throw new Error('Open the web app address once first, so the script knows its own address');
-  const cur = scriptApi_('get', '/content');                    // also checks the Apps Script API is on
-  // 1. New Sheet with a copy of every tab (data, formatting, hidden or not).
-  const name = ss.getName().replace(/\s*\((old|new)[^)]*\)\s*$/i, '');
-  const ns = SpreadsheetApp.create(name + ' (new)');
-  const blank = ns.getSheets()[0];
-  ss.getSheets().forEach(sh => { const c = sh.copyTo(ns); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet(); });
-  ns.deleteSheet(blank);
-  ns.setSpreadsheetTimeZone(ss.getSpreadsheetTimeZone());
-  // 2. A new script in it: the same files as this one, published as a web app.
-  const proj = scriptApiAt_('', 'post', '', { title: 'Family Dashboard', parentId: ns.getId() });
-  scriptApiAt_(proj.scriptId, 'put', '/content', { files: (cur.files || []).map(f => ({ name: f.name, type: f.type, source: f.source })) });
-  const ver = scriptApiAt_(proj.scriptId, 'post', '/versions', { description: 'Family Dashboard ' + SCRIPT_VERSION + ' (moved)' });
-  const dep = scriptApiAt_(proj.scriptId, 'post', '/deployments', { versionNumber: ver.versionNumber, manifestFileName: 'appsscript', description: 'Family Dashboard' });
-  const web = (dep.entryPoints || []).map(e => e.webApp && e.webApp.url).filter(Boolean)[0] || '';
-  if (!web) throw new Error('The new web app was made but its address wasn’t returned – open the new Sheet and use Deploy → Manage deployments');
-  // 3. What the new script needs to carry on where this one is: its settings, a new installation number for the licence, where it came from.
-  const all = P.getProperties(), props = {};
-  Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
-  const carry = { props: props, install: Utilities.getUuid(), from: from, to: web, fromSheet: ss.getUrl(), autoUpdate: autoUpdateOn_(), at: new Date().toISOString() };
-  const cs = ns.insertSheet('_move');
-  cs.getRange(1, 1).setValue('Moving in progress – open the 🏠 HouseRunner menu and choose “Finish moving here”. This tab disappears afterwards.');
-  cs.getRange(2, 1).setValue(JSON.stringify(carry));
-  ns.setActiveSheet(cs);
-  const moving = { sheetUrl: ns.getUrl(), sheetId: ns.getId(), url: web, install: carry.install, at: carry.at };
-  P.setProperty('moving', JSON.stringify(moving));
-  return { ok: true, sheetUrl: ns.getUrl(), url: web, message: 'New Sheet made. Open it, wait for the 🏠 HouseRunner menu, and choose “Finish moving here”.' };
+  throw new Error('Not needed any more: this dashboard loads its program from GitHub, so it never uses up Google’s saved versions. To move to another Google account, use “Move to a different Google account”.');
 }
 
 /** Step 2, in the new Sheet (from its menu, so Google can ask for permission once). */
@@ -4465,34 +4519,39 @@ function packForAccount_(email) {
   email = String(email || '').trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error('Type the new Google account’s email address');
   const me = String(Session.getEffectiveUser().getEmail() || '').toLowerCase();
-  if (email === me) throw new Error('That’s the account the dashboard is in now – use “Start afresh” instead');
+  if (email === me) throw new Error('That’s the account the dashboard is in now');
   if (inst_('MovedTo')) throw new Error('This dashboard has already moved');
   const from = myUrl_();
   if (!from) throw new Error('Open the web app address once first, so the script knows its own address');
-  const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
-  const pack = SpreadsheetApp.create('HouseRunner – moving pack (' + Utilities.formatDate(new Date(), TZ, 'd MMM yyyy') + ')');
-  const blank = pack.getSheets()[0];
-  ss.getSheets().forEach(sh => { const c = sh.copyTo(pack); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet(); });
-  pack.deleteSheet(blank);
-  const all = P.getProperties(), props = {};
-  Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
-  const token = Utilities.getUuid(), install = Utilities.getUuid();
-  const cs = pack.insertSheet('_move');
-  cs.getRange(1, 1).setValue('Moving pack – open the setup link from the Family Admin app while signed in to ' + email + '. Delete this Sheet once the move is finished.');
-  cs.getRange(2, 1).setValue(JSON.stringify({ props: props, install: install, token: token, from: from, autoUpdate: autoUpdateOn_(), at: new Date().toISOString() }));
-  pack.addEditor(email);
-  P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, sheetUrl: pack.getUrl(), packId: pack.getId(), token: token, install: install, at: new Date().toISOString() }));
-  const setupLink = appsBase_() + '#go=import&pack=' + encodeURIComponent(pack.getId());
+  const P = PropertiesService.getScriptProperties();
+  // The "moving pack" isn't a file any more: the new dashboard asks this one for everything, once, using this one-off key
+  // (so HouseRunner never needs access to any spreadsheet but its own). The key stops working when the move finishes.
+  const token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, ''), install = Utilities.getUuid();
+  P.setProperty('moving', JSON.stringify({ mode: 'account', email: email, token: token, install: install, at: new Date().toISOString() }));
+  const setupLink = appsBase_() + '#go=import&pack=' + token + '&packFrom=' + encodeURIComponent(from);
   let emailed = false;
-  try { GmailApp.sendEmail(email, 'Moving HouseRunner to this Google account', moveEmail_(email, setupLink, me)); emailed = true; } catch (e) { /* the app shows the same steps */ }
-  return { ok: true, packId: pack.getId(), email: email, setupLink: setupLink, emailed: emailed };
+  try { emailed = sendMail_(email, 'Moving HouseRunner to this Google account', moveEmail_(email, setupLink, me)); } catch (e) { /* the app shows the same steps */ }
+  return { ok: true, email: email, setupLink: setupLink, emailed: emailed };
+}
+/** Asked by the new dashboard during a move (with the one-off key): every tab's contents and the script's settings. */
+function exportPack_(b) {
+  let mv = null; try { mv = JSON.parse(PropertiesService.getScriptProperties().getProperty('moving') || 'null'); } catch (e) { mv = null; }
+  if (!mv || mv.mode !== 'account' || !mv.token || String(b.token || '') !== mv.token) throw new Error('That moving link has expired or was replaced – make a new one in the old dashboard (System → My data → Move to a different Google account)');
+  if (Date.now() - new Date(mv.at).getTime() > 14 * 864e5) throw new Error('That moving link is more than two weeks old – make a new one in the old dashboard');
+  const P = PropertiesService.getScriptProperties(), all = P.getProperties(), props = {};
+  Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
+  const tabs = SpreadsheetApp.getActive().getSheets().filter(sh => !/^FD program|^_/.test(sh.getName())).map(sh => {
+    const r = sh.getDataRange(), v = r.getValues(), f = r.getFormulas();
+    return { name: sh.getName(), hidden: sh.isSheetHidden(), rows: v.map((row, i) => row.map((c, j) => f[i][j] ? { f: f[i][j] } : Object.prototype.toString.call(c) === '[object Date]' ? { d: c.toISOString() } : c)) };
+  });
+  return { ok: true, tabs: tabs, carry: { props: props, install: mv.install, token: mv.token, from: myUrl_(), autoUpdate: autoUpdateOn_(), at: mv.at } };
 }
 /** The steps for the new account, emailed to it with the moving pack. */
 function moveEmail_(email, link, from) {
   const fam = String(inst_('FamilyName') || '').trim();
   return 'Hello,\n\n' +
     'This email is to move ' + (fam ? 'the ' + fam + ' family dashboard' : 'your HouseRunner family dashboard') + ' into this Google account (' + email + ')' + (from ? ', from ' + from : '') + '.\n\n' +
-    'A “moving pack” has been shared with this account: a copy of everything – people, points, lists, notes, settings and the licence. ' +
+    'The link below brings a copy of everything across – people, points, lists, notes, settings and the licence. ' +
     'Nothing changes on the screen until you finish the steps below, so take your time.\n\n' +
     'WHAT TO DO (about 20 minutes, on a computer – not a phone or tablet)\n\n' +
     '1. Sign in to Google as ' + email + '. If your browser is signed in to another account too, use a private (incognito) window and sign in there, so the right account is used.\n\n' +
@@ -4503,27 +4562,34 @@ function moveEmail_(email, link, from) {
     'You don’t need to connect them again. The old dashboard tells every screen, tablet and phone the new address, and each one switches over by itself the next time it’s on (normally within a few minutes).\n\n' +
     'If one hasn’t switched after 15 minutes – for example a tablet that was switched off – reload it. If it then asks for a code, connect it again: on a phone that has switched, open Family Admin → More → Connect a display, and type the code the screen shows.\n\n' +
     'AFTERWARDS\n\n' +
-    'The old Google Sheet stays in the old account as a backup. Once everything is working you can delete the moving pack (“HouseRunner – moving pack”) from this account’s Google Drive.\n\n' +
+    'The old Google Sheet stays in the old account as a backup.\n\n' +
     'Help with every step: ' + appsBase_() + 'help/\n';
 }
 /**
  * Step 2, in the new account's new dashboard (from the setup app): bring every tab and setting across, take over the
  * licence, switch automatic updates back on, and tell the old dashboard to point everyone here.
  */
-function importPack_(id) {
-  id = String(id || '').replace(/[^\w-]/g, '');
-  let src;
-  try { src = SpreadsheetApp.openById(id); } catch (e) { throw new Error('Can’t open the moving pack – are you signed in to the account it was shared with?'); }
-  const cs = src.getSheetByName('_move');
-  if (!cs) throw new Error('That isn’t a HouseRunner moving pack');
-  const carry = JSON.parse(String(cs.getRange(2, 1).getValue()));
-  const ss = SpreadsheetApp.getActive(), P = PropertiesService.getScriptProperties();
-  const tmp = ss.insertSheet('_tmp' + Date.now());
-  src.getSheets().filter(sh => sh.getName() !== '_move').forEach(sh => {
-    const old = ss.getSheetByName(sh.getName()); if (old) ss.deleteSheet(old);
-    const c = sh.copyTo(ss); c.setName(sh.getName()); if (sh.isSheetHidden()) c.hideSheet();
+function importPack_(token, from) {
+  token = String(token || '').replace(/[^\w-]/g, ''); from = String(from || '');
+  if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(from)) throw new Error('This moving link is from an older version – make a new one in the old dashboard (System → My data → Move to a different Google account)');
+  let d;
+  try { d = JSON.parse(uf_(from, { method: 'post', contentType: 'text/plain', muteHttpExceptions: true, payload: JSON.stringify({ action: 'exportPack', token: token }) }).getContentText()); }
+  catch (e) { throw new Error('Couldn’t reach the old dashboard to bring everything across (' + e.message + ') – try again in a minute'); }
+  if (!d || !d.ok) throw new Error((d && d.error) || 'The old dashboard didn’t send everything across');
+  const carry = d.carry, ss = SpreadsheetApp.getActive(), P = PropertiesService.getScriptProperties();
+  const val = c => c && typeof c === 'object' ? (c.f || (c.d ? new Date(c.d) : '')) : c;
+  d.tabs.forEach(t => {
+    let sh = ss.getSheetByName(t.name);
+    if (!sh) sh = ss.insertSheet(t.name);
+    sh.clearContents();
+    const rows = t.rows || [], w = rows.reduce((m, r) => Math.max(m, r.length), 0);
+    if (rows.length && w) {
+      if (sh.getMaxRows() < rows.length) sh.insertRowsAfter(sh.getMaxRows(), rows.length - sh.getMaxRows());
+      if (sh.getMaxColumns() < w) sh.insertColumnsAfter(sh.getMaxColumns(), w - sh.getMaxColumns());
+      sh.getRange(1, 1, rows.length, w).setValues(rows.map(r => { const o = r.map(val); while (o.length < w) o.push(''); return o; }));
+    }
+    if (t.hidden) sh.hideSheet(); else if (sh.isSheetHidden()) sh.showSheet();
   });
-  ss.deleteSheet(tmp);
   P.setProperties(carry.props);
   P.setProperty('installId', carry.install);
   P.deleteProperty('licence');

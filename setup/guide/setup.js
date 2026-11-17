@@ -15,9 +15,10 @@
         return '<div class="card perms"><h3>A note on the permissions</h3><p class="mute">Google lists what HouseRunner may do. It all runs as you, inside your own Google account – nobody else, including us, gets access. ' +
             'Google may show a tick box for each one: click <b>Select all</b>.</p>' +
             '<p><b>All of them are needed</b> – please leave every box ticked (setup asks again for any that aren’t):</p><ul class="mute">' +
-            '<li><b>Spreadsheets</b> – your family’s information is kept in your own Sheet.</li>' +
+            '<li><b>This spreadsheet</b> (“the spreadsheets this application has been installed in”) – your family’s information is kept in your own Sheet. It can’t see your other spreadsheets.</li>' +
             '<li><b>Google Calendar</b> – the calendar, adding events, birthdays and the holiday countdown.</li>' +
-            '<li><b>Gmail</b> – the <b>Parcels</b> widget (finds delivery emails) and emailing you a backup of your private links. Google only offers “read, send and delete” together; HouseRunner never deletes or changes your email.</li>' +
+            '<li><b>Gmail, read only</b> (“view your email messages”) – the <b>Parcels</b> widget finds delivery emails. It can’t change or delete anything.</li>' +
+            '<li><b>Send email as you</b> – emails <b>you</b> a backup of your private links.</li>' +
             '<li><b>Google Drive (see files)</b> – the <b>Photo slideshow</b> from a folder you choose.</li>' +
             '<li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>' +
             '<li><b>Connect to an external service</b> – fetching the HouseRunner program, live information (weather, trains, traffic…) and the licence check.</li>' +
@@ -241,7 +242,7 @@
                     '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
                         'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></div></li>' +
-                    '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
+                    '<li>A <b>HouseRunner – SETUP</b> window shows each step as it happens (about a minute – leave it open). When it says <b>“Published ✅”</b>, click <b>Carry on with setup</b> – setup carries on in a new tab, already connected, showing <b>✅ Your Google Sheet is published and connected</b>. You can close the old tabs.</li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
                     '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +
@@ -334,7 +335,7 @@
             };
             if ($('packGo')) $('packGo').onclick = function () {
                 var b = this; b.disabled = true; $('packStatus').textContent = 'Copying everything… (up to a minute)';
-                post({ action: 'importPack', pack: S.pack }).then(function (d) {
+                post({ action: 'importPack', pack: S.pack, from: S.packFrom }).then(function (d) {
                     if (d.code) { S.code = d.code; }          // the family's own access code comes across too
                     S.pack = ''; save();
                     $('packStatus').innerHTML = okLine(true, 'Everything is here.' + (d.note ? ' Note: ' + d.note : ' Your screen and phones will switch over within a few minutes.'));
@@ -936,7 +937,7 @@
         if (p.key) { S.licKey = p.key; save(); }
         // Started from a new screen's QR code: connect that screen once this family is set up.
         if (p.pair) { S.pairCode = p.pair; save(); }
-        if (p.pack) { S.pack = p.pack.replace(/[^\w-]/g, ''); save(); setTimeout(function () { toast('Moving your dashboard: set up this new one as usual – at “Publish & connect” you’ll bring everything across'); }, 600); }
+        if (p.pack) { S.pack = p.pack.replace(/[^\w-]/g, ''); S.packFrom = p.packFrom || ''; save(); setTimeout(function () { toast('Moving your dashboard: set up this new one as usual – at “Publish & connect” you’ll bring everything across'); }, 600); }
         if (p.api && p.code) {
             var changed = p.api !== S.url || p.code !== S.code;
             S.url = p.api; S.code = p.code; if (changed) S.connected = false; save();
