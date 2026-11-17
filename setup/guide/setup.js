@@ -226,14 +226,18 @@
             if (connected()) return '<h1>Make your Google Sheet and switch it on</h1><div class="card big">' + okLine(true, 'Done – your Sheet is made and this page is connected to it.') + '<p>Press <b>Next</b>.</p></div>';
             return '<h1>Make your Google Sheet and switch it on</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account, and switches on the small program inside it so your screen and phones can reach it. ' +
                 'Only you can see it. <span class="mute">(About 3 minutes – you do it all in the new tab.)</span></p>' +
-                (tpl ? '<div class="card big"><ol class="howto"><li>Click <a class="btn" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
+                (tpl ? '<div class="card big">' + (S.copiedAt ? '<div class="note warn">📄 <b>You already made a copy</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + '). ' +
+                    'Carry on in that one: find <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b>) in <a href="https://drive.google.com" target="_blank" rel="noopener">your Google Drive</a> and go on from step 3. ' +
+                    '<span class="mute">Only click Make my copy again if you want a brand-new Sheet – you can delete the spare one in Drive.</span></div>' : '') +
+                    '<ol class="howto"><li>Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                     '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
                     '<li>Your new Sheet opens on its <b>Start HERE</b> tab. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
                     '<li>Google says <b>“Authorization required – a script attached to this document needs your permission to run”</b>: click <b>OK</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
-                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>.</li>' +
+                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>. ' +
+                        '<span class="mute">Pressed Cancel, or saw <b>“Access is denied”</b> / <b>“This app is blocked”</b>? Nothing has been changed – close that tab, go back to your Sheet and choose <b>▶ HouseRunner – SETUP</b> again.</span></li>' +
                     '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
                         'If it asks you to turn on one Google switch (the Apps Script API), follow its link, turn it on, and choose the menu once more.</span></div></li>' +
@@ -256,7 +260,7 @@
         { id: 'publish', title: 'Publish by hand (if needed)', render: function () {
             var perms = whyPerms();
             if (connected()) return '<h1>Publish it and connect</h1><div class="card big">' + okLine(true, 'Done – this page is connected to your HouseRunner Google Sheet.') + '<p>Press <b>Next</b>.</p>' +
-                '<div id="connStatus"></div></div>' + packAndPair() + otherWay();
+                '<div id="connStatus"></div></div>' + packAndPair() + urlCard() + otherWay();
             return '<h1>Publish it and connect</h1><p class="lead">Already clicked <b>Carry on with setup</b> in your Sheet? Setup carries on in that new tab – you can close this one. Otherwise: your Sheet comes with a small program inside it. “Publishing” switches it on, so your screen and phones can talk to your Sheet – ' +
                 'using the private access code, and nothing else. You do it once, from a menu in your Sheet.</p>' +
                 '<div class="card big"><h3>In the tab with your new Sheet</h3><ol class="howto">' +
@@ -267,15 +271,15 @@
                     '<span class="mute">The first time, it may ask you to turn on one Google switch – follow its link, turn it on, and choose the menu once more.</span></li>' +
                 '<li>It says <b>“Published ✅”</b>. Click <b>Carry on with setup</b> – this page opens again, already connected. Nothing to copy or paste.</li></ol>' +
                 helpLink('setup') + '<div id="connStatus"></div></div>' +
+                urlCard() +
                 '<details class="card"><summary>No menu, or it didn’t work? Publish it by hand instead</summary><ol class="howto">' +
                 '<li>In the menu along the top of the Sheet, click <b>Extensions</b> → <b>Apps Script</b>. A new tab opens with some code in it. <span class="mute">You don’t need to change anything.</span></li>' +
                 '<li>Top right, click the blue <b>Deploy</b> button → <b>New deployment</b>.</li>' +
                 '<li>Next to <b>“Select type”</b>, click the ⚙ cog → <b>Web app</b>.</li>' +
                 '<li>Under <b>Who has access</b>, choose <b>Anyone</b> <span class="mute">(not “Anyone with Google account”)</span>. Leave <b>Execute as</b> on <b>Me</b>. Click <b>Deploy</b> (and allow access, as above).</li>' +
                 '<li>Google shows <b>“New deployment”</b> with a <b>Web app URL</b>. Click <b>Copy</b> under the URL.</li>' +
-                '<li>Paste it in the box below (Ctrl+V, or ⌘V on a Mac) and click <b>Connect</b>. ' +
+                '<li>Paste it in the box <b>“Your Web app URL”</b> on this page (Ctrl+V, or ⌘V on a Mac) and click <b>Connect</b>. ' +
                     '<span class="mute">Then go back to Apps Script and click <b>Done</b>.</span></li></ol>' +
-                '<div class="row" style="margin-top:10px"><input id="url" placeholder="Paste the Web app URL here – https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
                 '<p class="mute">Don’t deploy again if it says “Deployment successfully updated” – that means it worked; just copy that URL.</p>' +
                 '<details class="card"><summary>Deploy just spins, or Google keeps asking for permission?</summary><ol class="howto">' +
                 '<li>This is nearly always because the browser is signed in to <b>more than one Google account</b>. Open a private window (Chrome: Ctrl+Shift+N, or ⌘+Shift+N on a Mac), ' +
@@ -284,6 +288,12 @@
                 '<li>In Apps Script, press <b>Save</b> (the 💾 icon) once before <b>Deploy</b>.</li>' +
                 '<li>Still spinning? Make a fresh copy (step 1) and try again in the private window – a new copy usually deploys straight away.</li></ol></details>' +
                 '</details>' + otherWay();
+            /** The Web app URL box: always in view (not inside a folded section), and it keeps what you typed. */
+            function urlCard() {
+                return '<div class="card big" id="urlCard"><h3>Your Web app URL</h3><p class="mute">Only if you publish it by hand (below) – or if the menu’s <b>Carry on with setup</b> didn’t work. It ends in <b>/exec</b>.</p>' +
+                    '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.urlDraft != null ? S.urlDraft : (S.url || '')) + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' +
+                    '<div class="row" style="margin-top:8px"><input id="code" placeholder="Access code (only if it asks – in the Installation tab of your Sheet)" value="' + esc(S.code || '') + '"></div><div id="connStatus2"></div></div>';
+            }
             function packAndPair() {
                 return (S.pairCode && window.FDPairSend ? '<div class="card big" id="pairCard" style="border-color:var(--acc)"><h3>📺 Connect your new screen</h3>' +
                     '<p>The display showing <b>' + esc(S.pairCode) + '</b> is waiting. Connect it to this family now?</p><button class="btn" id="pairSend">Connect the display</button><div id="pairStatus" class="mute"></div></div>' : '') +
@@ -293,21 +303,30 @@
             }
             function otherWay() {
                 return '<details class="card"' + (S.needCode ? ' open' : '') + '><summary>Lost the URL, or it asks for an access code?</summary>' +
-                    '<p class="mute">The URL: in Apps Script, <b>Deploy → Manage deployments</b>, and copy the <b>Web app URL</b> (it ends in /exec)' +
-                    (connected() ? '' : ' – then paste it in the box above') + '.</p>' +
-                    (connected() ? '<div class="row"><input id="url" placeholder="https://script.google.com/macros/s/…/exec" value="' + esc(S.url || '') + '" spellcheck="false"><button class="btn" id="connect">Connect</button></div>' : '') +
-                    '<p class="mute">Or, in your Sheet, reload it and use the menu <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>.</p>' +
-                    '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet:</p>' +
-                    '<div class="row"><input id="code" placeholder="Access code" value="' + esc(S.code || '') + '"><button class="btn ghost" id="useCode">Use this code</button></div></details>';
+                    '<p class="mute">The URL: in Apps Script, <b>Deploy → Manage deployments</b>, and copy the <b>Web app URL</b> (it ends in /exec), then paste it in <b>Your Web app URL</b> on this page. ' +
+                    'Or, in your Sheet, reload it and use the menu <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>.</p>' +
+                    '<p class="mute">If it asks for an access code, it’s in the <b>Installation</b> tab of your Sheet – type it in the second box, under the URL.</p></details>';
             }
         }, wire: function () {
+            var st2 = function (h) { var el = $('connStatus2') || $('connStatus'); if (el) el.innerHTML = h; };
+            $('url').oninput = function () { S.urlDraft = this.value; save(); };
+            $('code').oninput = function () { S.codeDraft = this.value; };
             $('connect').onclick = function () {
                 var u = $('url').value.trim();
-                if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) && !/^http:\/\/localhost/.test(u)) { $('connStatus').innerHTML = okLine(false, 'That doesn’t look like a web app address – it should start https://script.google.com/macros/s/ and end /exec'); return; }
-                S.url = u; S.connected = false; save();
-                connect(false);
+                if (/docs\.google\.com\/spreadsheets/.test(u)) { st2(okLine(false, 'That’s your Sheet’s address. The one needed here is the Web app URL from Apps Script → Deploy → Manage deployments – it starts https://script.google.com/macros/s/ and ends /exec')); return; }
+                if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u) && !/^http:\/\/localhost/.test(u)) { st2(okLine(false, 'That doesn’t look like a web app address – it should start https://script.google.com/macros/s/ and end /exec')); return; }
+                // Try the new address; only keep it once it answers – a failed one never replaces a working connection
+                var was = { url: S.url, code: S.code, connected: S.connected }, typed = $('code').value.trim();
+                S.url = u; if (typed) S.code = typed; S.connected = false;
+                var b = this; b.disabled = true;
+                connect(true).then(function (ok) {
+                    b.disabled = false;
+                    if (ok) { delete S.urlDraft; save(); st2(okLine(true, 'Connected to your HouseRunner Google Sheet – press Next.')); return; }
+                    var why = $('connStatus') && $('connStatus').textContent.replace(/^\W*/, '');
+                    S.url = was.url; S.code = was.code; S.connected = was.connected; S.urlDraft = u; save();
+                    st2(okLine(false, 'Couldn’t connect to that address' + (was.connected ? ' – this page stays connected to your Sheet as before' : '') + '. ' + (why || 'Check it’s the Web app URL, and that “Who has access” is Anyone.') + ' Fix it in the box and press Connect again.'));
+                });
             };
-            $('useCode').onclick = function () { S.code = $('code').value.trim(); save(); $('connect').onclick(); };
             if ($('pairSend')) $('pairSend').onclick = function () {
                 var b = this; b.disabled = true;
                 FDPairSend.send(S.pairCode, { url: S.url, code: S.code }).then(function () { $('pairStatus').innerHTML = okLine(true, 'Sent – the screen connects within a few seconds.'); S.pairCode = ''; save(); },
@@ -322,7 +341,7 @@
                     toast('Moved ✅'); setTimeout(render, 2500);
                 }, function (e) { b.disabled = false; $('packStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'This new dashboard’s script is out of date – update it first (Updates step).' : e.message); });
             };
-        }, ready: function () { return connected(); }, blocked: 'Paste the Web app URL in the box and click Connect first' },
+        }, ready: function () { return connected(); }, blocked: 'Not connected yet: paste the Web app URL in “Your Web app URL” and click Connect' },
 
         { id: 'licence', title: 'Your licence key', render: function () {
             if (!connected()) return '<h1>3. Your licence key</h1>' + needConnect();
@@ -835,7 +854,9 @@
         for (var k = 0; k < i; k++) if (!canLeave(k)) {
             // Not connected yet: stay on "Make your Sheet" (the by-hand way only when asked for) – this page notices by itself when it's done
             if (STEPS[k].id === 'publish' && !S.byHand) { S.step = k - 1; render(); toast('Not connected yet – finish the steps in your Sheet (🏠 HouseRunner → ▶ HouseRunner – SETUP). This page carries on by itself once it says Published ✅.', true); return; }
-            S.step = k; render(); toast(STEPS[k].blocked, true); return;
+            S.step = k; render(); toast(STEPS[k].blocked, true);
+            var ub = $('url'); if (ub) { ub.scrollIntoView({ block: 'center' }); ub.focus(); }
+            return;
         }
         S.step = i;
         if (STEPS[i] && STEPS[i].id === 'check') S.autoCheck = true;
@@ -846,7 +867,7 @@
     $('back').onclick = function () { S.step -= S.step - 1 === PUB && (connected() || !S.byHand) ? 2 : 1; render(); };
     // Connected in another tab (the Sheet's "Carry on with setup" opens a new one): this tab catches up too
     var catchUp = function () {
-        var was = connected(); S = load();
+        var was = connected(), mine = S.step, draftU = S.urlDraft; S = load(); S.step = mine; if (draftU != null) S.urlDraft = draftU;   // this tab stays on the page it shows
         if (!was && connected()) {
             // The Sheet's "Carry on with setup" opened setup in a new tab, and that one is connected: this old tab steps aside
             ADM = null; LICP = null;
@@ -859,6 +880,12 @@
     window.addEventListener('storage', function (e) { if (e.key === KEY) catchUp(); });
     window.addEventListener('focus', catchUp);
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-byhand]')) { S.byHand = true; S.step = PUB; render(); } });
+    // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
+    document.addEventListener('click', function (e) {
+        var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
+        if (S.copiedAt && !confirm('You already made a copy of the Sheet. Make another, brand-new one?\n\n(Usually you want to carry on in the first one – find “HouseRunner MAIN DATA” in your Google Drive.)')) { e.preventDefault(); return; }
+        S.copiedAt = Date.now(); save(); setTimeout(render, 500);
+    });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
     // …and in case the browser held back those messages (a tab in the background often is): look every few seconds as well

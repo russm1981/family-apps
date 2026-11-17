@@ -737,7 +737,9 @@
         $('mCopy').onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(ROOT) : Promise.reject()).then(function () { FD.toast('Copied'); }, function () { prompt('Copy this address:', ROOT); }); };
         $('mOut').onclick = function () {
             if (!confirm('Disconnect this phone from the dashboard? You can connect it again with a QR code or code from another family phone.')) return;
-            FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) { /* fine */ } });
+            var keepKey = ''; try { var dr = JSON.parse(localStorage.getItem('fdsetup.v1') || '{}') || {}; if (!dr.connected) keepKey = dr.licKey || ''; } catch (x) { /* fine */ }   // an unfinished setup's key from the order email
+        FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); } catch (x) { /* fine */ } });
+        if (keepKey) try { localStorage.setItem('fdsetup.v1', JSON.stringify({ licKey: keepKey })); } catch (x) { /* fine */ }   // the licence key from the order email stays
             location.hash = ''; location.reload();
         };
     }

@@ -59,7 +59,7 @@
             '<ol><li>Scan the code with your phone’s camera.</li>' +
             '<li><b>New to HouseRunner?</b> Your phone takes you through setting up first (about 30 minutes), then connects this screen.</li>' +
             '<li><b>Already set up?</b> One tap on your phone connects it.</li></ol>' +
-            '<p class="pr-code">Or type <span class="pr-c">' + esc(code) + '</span> at houserunner.app → <b>Type a display’s code</b>, or in Family Admin → More → <b>Connect a display</b></p>' +
+            '<p class="pr-code">Or type <span class="pr-c">' + esc(code) + '</span> on a phone or computer that’s already set up for your family: Family Admin → More → <b>Connect a display</b>, or houserunner.app → Home → <b>Type a display’s code</b></p>' +
             '<p class="pr-state">Waiting for your phone…</p>' +
             '<details class="pr-paste"><summary>Have a keyboard? Paste a dashboard link instead</summary><div class="connect-row"><input id="pairIn" placeholder="Paste your screen link" autocomplete="off" spellcheck="false"><button id="pairGo">Connect</button></div></details>' +
             '</div></div>';

@@ -2290,7 +2290,9 @@
         if (e && e.preventDefault) e.preventDefault();
         if (!confirm('Disconnect this ' + (DESK ? 'computer' : 'phone') + ' from the dashboard? It goes back to the start, where you connect it – to this family or another one – with a code or link from a family phone.')) return;
         // Forget the family everywhere on this device – including the setup wizard's copy, or it would connect again by itself.
+        var keepKey = ''; try { var dr = JSON.parse(localStorage.getItem('fdsetup.v1') || '{}') || {}; if (!dr.connected) keepKey = dr.licKey || ''; } catch (x) { /* fine */ }   // an unfinished setup's key from the order email
         FD.clearConfig(); ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1', 'fdadmin.data', 'fdadmin.glance'].forEach(function (k) { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (x) { /* ignore */ } });
+        if (keepKey) try { localStorage.setItem('fdsetup.v1', JSON.stringify({ licKey: keepKey })); } catch (x) { /* fine */ }   // the licence key from the order email stays
         location.hash = ''; location.reload();
     }
     document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('#hmOut, [data-out]')) disconnectHere(e); });

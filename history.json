@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.267",
+    "date": "2026-11-17",
+    "notes": [
+      "Connecting a display by QR code: the phone now shows whose family it holds (with everyone’s names) before you can press Yes – so helping a relative with the same surname can’t put your family on their screen by mistake.",
+      "Setup: after “Carry on with setup”, the new tab keeps trying to connect for up to two minutes, and an old setup tab notices by itself (it checks every few seconds).",
+      "Setup: waiting at “Make your Sheet” with a Sheet that didn’t answer, it quietly tries again every 10 seconds. A setup tab left open from an older release reloads itself with the newest one when you come back to it."
+    ]
+  },
+  {
     "version": "2026.11.266",
     "date": "2026-11-15",
     "notes": [

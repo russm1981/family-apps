@@ -1,11 +1,13 @@
 {
-  "app": "2026.11.267",
+  "app": "2026.11.268",
   "script": "2026.11.112",
-  "date": "2026-11-15",
+  "date": "2026-11-17",
   "notes": [
-    "Setup: after “Carry on with setup” in your Sheet, the new tab keeps trying to connect for up to two minutes (a just-published Sheet can take a moment to answer), and the old setup tab now also checks every few seconds, so it notices for sure."
+    "Connecting a display by QR code: the phone now shows whose family it holds (with everyone’s names) before you can press Yes – so helping a relative with the same surname can’t put your family on their screen by mistake.",
+    "Setup: after “Carry on with setup”, the new tab keeps trying to connect for up to two minutes, and an old setup tab notices by itself (it checks every few seconds).",
+    "Setup: waiting at “Make your Sheet” with a Sheet that didn’t answer, it quietly tries again every 10 seconds. A setup tab left open from an older release reloads itself with the newest one when you come back to it."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
-  "licenceServer": "2026.11.23",
+  "licenceServer": "2026.11.24",
   "loader": "1"
 }

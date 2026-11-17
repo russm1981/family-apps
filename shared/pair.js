@@ -31,7 +31,7 @@
     function saved() {
         var keys = ['fdapp.cfg.v1', 'fdsetup.v1', 'familyDashboard.cfg.v1'];
         for (var i = 0; i < keys.length; i++) {
-            try { var c = JSON.parse(localStorage.getItem(keys[i]) || 'null'); if (c && c.url && c.code) return { url: c.url, code: c.code }; } catch (e) { /* ignore */ }
+            try { var c = JSON.parse(localStorage.getItem(keys[i]) || 'null'); if (c && c.url && c.code && (keys[i] !== 'fdsetup.v1' || c.connected)) return { url: c.url, code: c.code }; /* a setup that never connected doesn't count */ } catch (e) { /* ignore */ }
         }
         return null;
     }

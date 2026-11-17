@@ -45,11 +45,11 @@ window.FD_HELP = [
 <dl>
 <dt>“Make my copy” asks me to sign in, or copies into the wrong account</dt><dd>Sign in with the Google account the dashboard should live in – the one with the family calendar. If you’re signed into two accounts, Google uses the one shown at the top right; switch there and click <b>Make my copy</b> again.</dd>
 <dt>There’s no 🏠 HouseRunner menu in my Sheet</dt><dd>It appears a few seconds after the Sheet opens, at the end of the menus along the top (after <b>Help</b>). If it doesn’t, reload the Sheet’s tab. Still nothing? Use <b>Publish it by hand instead</b> on the setup page.</dd>
-<dt>It asks me to turn on the “Google Apps Script API”</dt><dd>That’s Google’s switch that lets your copy publish itself. Open <b>script.google.com/home/usersettings</b>, turn <b>Google Apps Script API</b> on, then choose <b>🏠 HouseRunner → ▶ Set up &amp; connect</b> again. Check it’s the same Google account as your Sheet (top right). You only do it once.</dd>
+<dt>It asks me to turn on the “Google Apps Script API”</dt><dd>That’s Google’s switch that lets your copy publish itself. Open <b>script.google.com/home/usersettings</b>, turn <b>Google Apps Script API</b> on, then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again. Check it’s the same Google account as your Sheet (top right). You only do it once.</dd>
 <dt>I can’t find Deploy</dt><dd>You only need Deploy if you’re publishing by hand. It’s in the <b>Apps Script</b> tab, not the Sheet: in the Sheet click <b>Extensions → Apps Script</b>. <b>Deploy</b> is the blue button at the top right of that tab.</dd>
 <dt>Deploy just spins, or Google keeps asking for permission</dt><dd>Nearly always the browser is signed in to more than one Google account. Open a private window (Chrome: Ctrl+Shift+N), sign in with only the account the Sheet is in, open the Sheet from drive.google.com and deploy there. Use Chrome or Edge and allow pop-ups. Press Save (💾) in Apps Script before Deploy. If it still spins, make a fresh copy and deploy that in the private window.</dd>
-<dt>“Google hasn’t verified this app”</dt><dd>That’s normal: it’s your own private copy, which Google hasn’t reviewed. Click <b>Advanced</b> (small, bottom left), then <b>Go to Family Dashboard (unsafe)</b>, then <b>Allow</b>.</dd>
-<dt>The menu only says “Load the dashboard program” (no “Set up &amp; connect”)</dt><dd>A brand-new copy can’t fetch its program while the Sheet opens. Click <b>🏠 HouseRunner → Load the dashboard program</b>, allow it if Google asks, click <b>OK</b> when it says “Loaded version …”, then reload the Sheet. The full menu appears.</dd>
+<dt>“Google hasn’t verified this app”</dt><dd>That’s normal: it’s your own private copy, which Google hasn’t reviewed. Click <b>Advanced</b> (small, bottom left), then <b>Go to HouseRunner (unsafe)</b>, then <b>Select all</b> → <b>Continue</b>.</dd>
+<dt>The menu only says “Load the dashboard program” (no “HouseRunner – SETUP”)</dt><dd>A brand-new copy can’t fetch its program while the Sheet opens. Click <b>🏠 HouseRunner → Load the dashboard program</b>, allow it if Google asks, click <b>OK</b> when it says “Loaded version …”, then reload the Sheet. The full menu appears.</dd>
 <dt>The 🏠 HouseRunner menu doesn’t appear in the Sheet</dt><dd>Reload the Sheet’s tab (F5, or ⌘R on a Mac) and wait about 10 seconds – it appears after <b>Help</b> along the top.</dd>
 <dt>The setup page says “Couldn’t reach that address” or “opened a Google page instead”</dt><dd>In Apps Script: <b>Deploy → Manage deployments → ✎ (pencil)</b>, check <b>Who has access</b> is <b>Anyone</b>, and click <b>Deploy</b>.</dd>
 <dt>The licence key isn’t accepted</dt><dd>See <a href="#licence">Licence key</a>. You can carry on without it for 14 days and add it later.</dd>
@@ -157,7 +157,7 @@ window.FD_HELP = [
 <li>Add it to the home screen: iPhone – Safari → Share → <b>Add to Home Screen</b>. Android – Chrome → ⋮ → <b>Install app</b>.</li>
 </ol>
 <h2>A new display</h2>
-<p>On the new display, start the dashboard – it shows a code like <b>K7Q2-M9XD</b>. Then on a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b> (or on a phone: <b>Family Admin → More → Connect a display</b>).</p>
+<p>On the new display, start the dashboard – it shows a code like <b>K7Q2-M9XD</b>. Then, on a phone or computer that’s already set up for your family: <b>Family Admin → More → Connect a display</b>, or <b>houserunner.app → Home → Type a display’s code</b> – and type it in.</p>
 <ul>
 <li><b>Corsair XENEON EDGE (running Windows), or any Windows PC:</b> see <a href="#windows">Corsair XENEON EDGE or a Windows PC</a>.</li>
 <li><b>Raspberry Pi or tablet:</b> see <a href="#pi">Raspberry Pi or tablet</a>.</li>
@@ -177,7 +177,7 @@ window.FD_HELP = [
 <li>It’s a small <b>zip file</b>. Open your Downloads folder, right-click it → <b>Extract All…</b>, and put the folder somewhere permanent, such as <b>Documents</b>.</li>
 <li>In the folder, double-click <b>Start HouseRunner</b>. If Windows says “Windows protected your PC”: <b>More info → Run anyway</b>.</li>
 <li>The first time it asks two Yes/No questions: start when the PC turns on, and keep the screen switched on. <b>Yes</b> to both is best.</li>
-<li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a computer go to <b>houserunner.app</b> → Home → <b>Type a display’s code</b>, or on a phone: <b>Family Admin → More → Connect a display</b>.</li>
+<li>The dashboard opens full screen and shows a code like <b>K7Q2-M9XD</b>. On a phone or computer that’s already set up for your family: <b>Family Admin → More → Connect a display</b>, or <b>houserunner.app → Home → Type a display’s code</b>.</li>
 </ol>
 <p>Close the dashboard with <b>Alt+F4</b>. Nothing needs updating by hand – it fetches the newest version each time it starts. If it doesn’t start with the PC, see <a href="#startup">The dashboard doesn’t start when the PC turns on</a>.</p>`
   },

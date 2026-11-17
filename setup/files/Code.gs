@@ -4064,7 +4064,7 @@ function menuConnect() {
     dialog_('Publish it first', '<p>Your dashboard isn’t published yet. In this Sheet:</p><ol>' +
       '<li><b>Extensions → Apps Script</b></li><li><b>Deploy → New deployment</b> → ⚙ <b>Web app</b></li>' +
       '<li>Execute as <b>Me</b>, Who has access <b>Anyone</b> → <b>Deploy</b> (allow access)</li>' +
-      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>System → Go to Family Dashboard → Allow</b></li>' +
+      '<li>Google asks for permission: <b>Authorize access</b> → your account → “Google hasn’t verified this app” is normal for your own copy: <b>Advanced → Go to HouseRunner (unsafe) → Select all → Continue</b></li>' +
       '<li><b>Click the Web app URL</b> it shows once (a page opens – you can close it)</li></ol>' +
       '<p>Then come back here and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>', 420);
     return;
