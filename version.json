@@ -1,13 +1,12 @@
 {
-  "app": "2026.11.269",
-  "script": "2026.11.113",
+  "app": "2026.11.270",
+  "script": "2026.11.114",
   "date": "2026-11-17",
   "notes": [
-    "Setup is more forgiving of mistakes (from a full test by a first-time buyer): two setup tabs no longer move each other’s steps; a Web app URL that doesn’t answer is never kept as your connection; what you type in the URL box is kept if you press Next by mistake, and Next takes you straight to that box.",
-    "Setup: the Web app URL box is always in view (no longer hidden inside a folded section), and pasting your Sheet’s address there by mistake says so. Clicking Make my copy a second time warns that you already have one. Cancelled Google’s permission page? It says what to do.",
-    "Support works before you’re connected: help’s “Send a support request” now opens a form (with your email so we can reply), instead of the home page. The home page says Resume setup when one is under way, and explains when a page needs setup finished first.",
-    "Privacy notice: each of the ten Google permissions now says exactly what HouseRunner uses it for (Google’s own wording is broader). You’ll be asked to accept it once more. Help and the screen’s connect instructions now use the same words as the real screens.",
-    "Licence emails now say how many displays the licence covers (licence server 2026.11.24)."
+    "Fewer, narrower Google permissions: HouseRunner now only asks for read-only Gmail (for Parcels) plus “send email as you” (for emailing you your links), instead of Google’s all-in-one “read, compose, send and permanently delete all your email”. And it can only see its own Sheet, not all your spreadsheets. Existing Sheets carry on working; to switch one over, replace its appsscript.json (see help).",
+    "Setting up in your Sheet: ▶ HouseRunner – SETUP now opens a window that shows each step as it happens – making the tabs, publishing, checking it answers – and only says Published ✅ once your dashboard really answers. Choosing SETUP again never makes a second copy of the published dashboard.",
+    "Moving to a different Google account no longer shares a copy of your Sheet: the new dashboard collects everything straight from the old one, with a one-off link that stops working once the move is done.",
+    "Privacy notice updated for the narrower permissions – you’ll be asked to accept it once more."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

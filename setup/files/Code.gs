@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.113';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.114';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4045,19 +4045,8 @@ function spotifyControl_(op) {
 
 function onOpen() {
   try { freshCopy_(); } catch (e) { /* a simple trigger may not be allowed to – the first web request does it */ }
-  const m = SpreadsheetApp.getUi().createMenu('🏠 HouseRunner')
-    .addItem('▶ HouseRunner – SETUP (connect my screen and phones)', 'menuConnect')
-    .addItem('Change family & calendar', 'menuFamily')
-    .addItem(LOADED ? 'Load the newest program now' : 'Update the Google script now', 'menuUpdate');
-  // With the loader, updates need no switch and use no saved versions, so these two aren't needed.
-  if (!LOADED) m.addItem('Turn automatic updates on / off', 'menuAutoUpdate');
-  m.addSeparator().addItem('Repair the tabs (runs setup)', 'setup');
-  // (Through the loader, a menu item needs a matching name in the loader file – loaders from before 1.1 don't have this one.)
-  if (!LOADED || typeof globalThis.menuWipe === 'function') m.addItem('Clear everything and start from scratch…', 'menuWipe');
-  if (!LOADED) m.addItem('Start afresh in a new Sheet (copies everything)', 'menuStartAfresh');
-  if (!LOADED || typeof globalThis.menuPermissions === 'function') m.addItem('Allow more permissions (Gmail, Drive…)', 'menuPermissions');
-  if (SpreadsheetApp.getActive().getSheetByName('_move')) m.addSeparator().addItem('▶ Finish moving here', 'finishMove');
-  m.addToUi();
+  // Just the one item: everything else is done on the HouseRunner website (System → My data), not in the Sheet.
+  SpreadsheetApp.getUi().createMenu('🏠 HouseRunner').addItem('▶ HouseRunner – SETUP', 'menuConnect').addToUi();
 }
 function appsBase_() {
   const b = appsAddr_().replace(/\/?$/, '/');
