@@ -1,12 +1,9 @@
 {
-  "app": "2026.11.270",
-  "script": "2026.11.114",
+  "app": "2026.11.271",
+  "script": "2026.11.115",
   "date": "2026-11-17",
   "notes": [
-    "Fewer, narrower Google permissions: HouseRunner now only asks for read-only Gmail (for Parcels) plus “send email as you” (for emailing you your links), instead of Google’s all-in-one “read, compose, send and permanently delete all your email”. And it can only see its own Sheet, not all your spreadsheets. Existing Sheets carry on working; to switch one over, replace its appsscript.json (see help).",
-    "Setting up in your Sheet: ▶ HouseRunner – SETUP now opens a window that shows each step as it happens – making the tabs, publishing, checking it answers – and only says Published ✅ once your dashboard really answers. Choosing SETUP again never makes a second copy of the published dashboard.",
-    "Moving to a different Google account no longer shares a copy of your Sheet: the new dashboard collects everything straight from the old one, with a one-off link that stops working once the move is done.",
-    "Privacy notice updated for the narrower permissions – you’ll be asked to accept it once more."
+    "The 🏠 HouseRunner menu in your Sheet now has just the one item, ▶ HouseRunner – SETUP. Everything else is on the HouseRunner website."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

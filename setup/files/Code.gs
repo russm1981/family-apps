@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.114';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.115';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4139,13 +4139,17 @@ function menuConnect() {
     'function out(h){document.getElementById("out").innerHTML=h;}' +
     'function fail(e){out("<p style=\\"color:#b91c1c\\"><b>Something went wrong:</b> "+String(e&&e.message||e).replace(/</g,"&lt;")+"</p><p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – it carries on from where it got to.</p>");}' +
     'function run(k,next){google.script.run.withSuccessHandler(next).withFailureHandler(function(e){mark(k,false);fail(e);}).setup("hr:"+k);}' +
-    'run("tabs",function(){mark("tabs",true);mark("publish",null);run("publish",function(r){' +
-    ' if(!r.ok&&r.kind==="api"){mark("publish",false,"Publishing needs one Google switch");out("<p>Google needs one switch turned on (once for your Google account"+(r.who?", <b>"+r.who+"</b>":"")+") so the dashboard can publish itself:</p><ol><li>Open <a href=\\"https://script.google.com/home/usersettings\\" target=\\"_blank\\"><b>this Google settings page</b></a> (a new tab)</li><li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li><li>Come back here and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again</li></ol><p style=\\"color:#888;font-size:13px\\">Already On? Wait a minute and try again. Signed in to more than one Google account? Check the account at the top right of that page.</p>");return;}' +
-    ' if(!r.ok){mark("publish",false,"Couldn’t publish by itself");out("<p>Publish it by hand instead – the setup page shows how: <b>Publish by hand</b> on the “Make your Sheet” step.</p>"+(r.error?"<p style=\\"color:#888;font-size:13px\\">("+String(r.error).replace(/</g,"&lt;")+")</p>":""));return;}' +
-    ' mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
+    'var waiting=false;' +
+    'function publish(){run("publish",function(r){' +
+    ' if(!r.ok&&r.kind==="api"){mark("publish",false,"Publishing needs one Google switch");' +
+    '  if(!waiting){waiting=true;out("<p>Google needs one switch turned on (once for your Google account"+(r.who?", <b>"+r.who+"</b>":"")+") so the dashboard can publish itself:</p><ol><li>Open <a href=\\"https://script.google.com/home/usersettings\\" target=\\"_blank\\"><b>this Google settings page</b></a> (a new tab)</li><li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li><li>Come back to this window – it carries on by itself</li></ol><p style=\\"color:#888;font-size:13px\\" id=\\"wt\\">⏳ Waiting for the switch… (it can take a minute to work after you turn it on)</p>");}' +
+    '  setTimeout(function(){mark("publish",null,"Publishing your dashboard, so your screen and phones can reach it");publish();},10000);return;}' +
+    ' if(!r.ok){mark("publish",false,"Couldn’t publish by itself");out("<p>Publish it by hand instead – on the setup page, open <b>Stuck? Do it by hand</b> → <b>Publish it by hand instead</b>.</p>"+(r.error?"<p style=\\"color:#888;font-size:13px\\">("+String(r.error).replace(/</g,"&lt;")+")</p>":""));return;}' +
+    ' out("");mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
     '  if(!c.ok){mark("check",false,"It isn’t answering yet");out("<p>Google can take a minute after publishing. Wait a minute, then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – nothing is published twice.</p>");return;}' +
-    '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Click the button to carry on with setup. It opens the setup page, already connected to this Sheet – nothing to type. (A setup page you already have open updates by itself too – carry on in whichever you like and close the rest.)</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" style=\\""+BTN+"\\">Carry on with setup</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family.</p>");' +
-    ' });});});' +
+    '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Now click <b>Open HouseRunner</b>. It opens the HouseRunner website already connected to this Sheet, for the last three short steps – nothing to type.</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" style=\\""+BTN+"\\">Open HouseRunner</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family. You can close this window afterwards.</p>");' +
+    ' });});}' +
+    'run("tabs",function(){mark("tabs",true);mark("publish",null);publish();});' +
     '</script>';
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(540).setHeight(430), 'HouseRunner – SETUP');
 }
