@@ -1,11 +1,9 @@
 {
-  "app": "2026.11.291",
-  "script": "2026.11.122",
+  "app": "2026.11.292",
+  "script": "2026.11.123",
   "date": "2026-11-17",
   "notes": [
-    "Start HERE picture: now 9 steps – after clicking the Web app URL it shows closing the “published” tab, then Done and closing the Apps Script tab, so you end up back on your Sheet before running SETUP.",
-    "The Parcels widget is gone completely – from the dashboard, the screen, the Configurator and setup. Any Parcels widget still on a page is taken off by itself.",
-    "Setup: fixed a small error when the setup page handed over to your original tab while it was still checking the licence."
+    "Setup: after Make my copy, the 9 steps can float in a small window that stays on top of your Sheet and Apps Script tabs (Chrome and Edge; a small separate window in other browsers) – one step at a time with its picture, Back and Next. It closes by itself when Open HouseRunner brings you back."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

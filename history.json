@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.291",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: after Make my copy, the 9 steps can float in a small window that stays on top of your Sheet and Apps Script tabs (Chrome and Edge; a small separate window in other browsers) – one step at a time with its picture, Back and Next. It closes by itself when Open HouseRunner brings you back."
+    ]
+  },
+  {
     "version": "2026.11.290",
     "date": "2026-11-17",
     "notes": [

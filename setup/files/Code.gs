@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.122';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.123';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4168,8 +4168,9 @@ function menuConnect() {
     ' if(!r.ok){mark("publish",false,"Couldn’t publish");out("<p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>");return;}' +
     ' out("");mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
     '  if(!c.ok){mark("check",false,"It isn’t answering yet");out("<p>Google can take a minute after publishing. Wait a minute, then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – nothing is published twice.</p>");return;}' +
-    '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Now click <b>Open HouseRunner</b>. It takes you back to your HouseRunner setup page, already connected to this Sheet, for the last few steps – nothing to type.</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" onclick=\\"window.open(this.href);return false\\" style=\\""+BTN+"\\">Open HouseRunner</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family. You can close this window afterwards.</p>");' +
+    '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Now click <b>Open HouseRunner</b>. It takes you back to your HouseRunner setup page, already connected to this Sheet, for the last few steps – nothing to type.</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" onclick=\\"window.open(this.href);gone();return false\\" style=\\""+BTN+"\\">Open HouseRunner</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family. You can close this window afterwards.</p>");' +
     ' });});}' +
+    'function gone(){out("<h2 style=\\"margin:8px 0\\">✅ All done in the Sheet</h2><p style=\\"font-size:16px\\"><b>Close this tab now</b> (the ✕ on the Sheet’s tab at the top of your browser). Setup carries on in your <b>HouseRunner setup</b> tab.</p><p style=\\"color:#888;font-size:13px\\">Your Sheet keeps working in the background – you don’t need it open. Its first tab, <b>My ID</b>, has your private link if a device ever needs connecting again.</p>");}' +
     'run("tabs",function(){mark("tabs",true);mark("publish",null);publish();});' +
     '</script>';
   SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(560).setHeight(470), 'HouseRunner – SETUP');

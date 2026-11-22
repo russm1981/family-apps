@@ -678,6 +678,8 @@
     var NEW = [
         { id: 'start', title: 'Make your Google Sheet', render: function () {
             if (connected()) return OLD.sheet.render();
+            if (window.hrConnecting) return '<h1>⏳ Connecting to your new Sheet…</h1><p class="lead">Your Sheet says it’s published – this page is connecting to it now. Google can take up to a minute after publishing; it keeps trying by itself.</p>' +
+                '<div class="status">⏳ Connecting…</div>';
             if (window.hrCopiedNow) return '<h1>⏳ Over to your new Sheet</h1>' +       // straight after Make my copy: one clear thing to do
                 '<p class="lead">Your copy opened in a new tab. <b>Follow the 9 steps on its Start HERE tab</b> – they look like this (click to enlarge):</p>' +
                 '<div class="card big" id="floatCard" style="margin:0 0 16px"><h3>📌 Keep the steps in view</h3><p>' + (window.HRFloat && HRFloat.floats ? 'A small window with the steps, one at a time, that <b>stays on top</b> while you work in the Sheet and Apps Script tabs.' : 'A small window with the steps, one at a time, to keep beside the Sheet while you work.') + '</p>' +
@@ -716,11 +718,12 @@
         }, ready: function () { return connected(); },
            blocked: 'Not connected yet – finish the steps in your Sheet (🏠 HouseRunner → ▶ HouseRunner – SETUP). This page carries on by itself.' },
         OLD.publish,
-        { id: 'welcome', title: 'Welcome', render: function () {
+        { id: 'welcome', title: 'Privacy notice', render: function () {
             if (connected() && !S.mode) return OLD.welcome.render();      // run again on a family that's set up: change it, or clear and start again?
             return (S.mode === 'fresh' && S.backup ? '<div class="note ok">🧹 Cleared, ready to set up again. Your backup is <a href="' + esc(S.backup.url) + '" target="_blank" rel="noopener">' + esc(S.backup.name) + '</a> in your Google Drive.</div>' : '') +
-                '<h1>Welcome</h1><p class="lead">' + (connected() ? 'Your Google Sheet is connected. ' : '') + 'A few short steps to go: this one, your licence key, your family, your calendar, and connecting your screen and phones.</p>' +
-                bare(OLD.privacy.render()).replace(/^\s*<p class="lead">[\s\S]*?<\/p>/, '<p>First, what HouseRunner keeps about your family, and where. In short – everything stays in your own Google account.</p>');
+                (window.hrArrived && connected() ? '<div class="note ok arrived big-ok"><h2>✅ Your Google Sheet is made and connected</h2><p>That part’s done – you can close any Sheet or Apps Script tabs still open. Now the rest of the setup, here: the privacy notice, your licence key, your family, your calendar, and connecting your screen and phones.</p></div>' : '') +
+                '<h1>Privacy notice</h1><p class="lead">' + (connected() && !window.hrArrived ? 'Your Google Sheet is connected. ' : '') + 'What HouseRunner keeps about your family, and where. In short – everything stays in your own Google account.</p>' +
+                bare(OLD.privacy.render()).replace(/^\s*<p class="lead">[\s\S]*?<\/p>/, '');
         }, wire: function () { OLD.welcome.wire(); OLD.privacy.wire(); },
            ready: function () { return (!connected() || !!S.mode) && S.privacy === P.version; },
            blocked: 'Tick the box to accept the privacy notice first' },
@@ -968,23 +971,50 @@
     // Connected in another tab (the Sheet's "Open HouseRunner" opens a new one): this tab catches up too
     // The setup tabs talk on one channel: "anyone" (a tab the Sheet just opened asks whether the setup tab is still open) → "here"
     var HRB = { postMessage: function () {} }; try { HRB = new BroadcastChannel('hr-setup'); } catch (e) { /* older browser */ }
-    var hrbListen = function (e) { if (e && e.data === 'anyone') { try { HRB.postMessage('here'); } catch (x) { /* fine */ } } else catchUp(); };
+    var hrbListen = function (e) {
+        if (e && e.data === 'anyone') { try { HRB.postMessage('here'); } catch (x) { /* fine */ } }
+        else if (e && e.data === 'connect') takeOver();
+        else catchUp();
+    };
+    /** The Sheet's "Open HouseRunner" opened a new tab, which handed over to this one: connect here, and carry on here. */
+    var takeOver = function () {
+        if (window.hrConnecting) return;
+        var mine = S.step; S = load(); S.step = mine;
+        ADM = null; LICP = null; window.hrCopiedNow = false; window.hrConnecting = true; render();
+        try { window.focus(); } catch (e) { /* the browser decides */ }
+        var tries = 0;
+        (function one() {
+            connect(true).then(function (ok) {
+                if (ok) {
+                    if (!S.mode) S.mode = 'new';
+                    var ids = STEPS.map(function (x) { return x.id; });
+                    S.step = SOLO ? S.step : ids.indexOf(S.privacy === P.version ? (S.licOk || S.licensed ? 'family' : 'licence') : 'welcome'); save();
+                    arrived();
+                    if (!ADM) loadAdm(); licenceNow();
+                    var t0 = document.title, n = 0, fl = setInterval(function () { document.title = ++n % 2 ? '✅ Carry on here – HouseRunner' : t0; if (n > 11 || !document.hidden) { clearInterval(fl); document.title = t0; } }, 900);
+                } else if (++tries <= 24) setTimeout(one, 5000);
+                else { window.hrConnecting = false; render(); toast('Your Sheet isn’t answering yet – in the Sheet choose 🏠 HouseRunner → ▶ SETUP again, then Open HouseRunner', true); }
+            });
+        })();
+    };
     var arrived = function () {
         if (window.HRFloat) HRFloat.close();      // the steps window has done its job
         toast('Connected to your HouseRunner Google Sheet \u2705');
+        window.hrArrived = true; window.hrConnecting = false; render();
         var pg = $('page'); if (pg && !pg.querySelector('.arrived')) pg.insertAdjacentHTML('afterbegin', '<div class="note ok arrived">✅ <b>Your Google Sheet is published and connected – that part’s done.</b> You can close the Sheet’s tab. ' +
             'Carry on with this step, then press <b>Next →</b> at the bottom right.</div>');
         $('next').classList.add('pulse'); setTimeout(function () { $('next').classList.remove('pulse'); }, 12000);
     };
     var handedOver = function () {
         window.hrHanded = true;
-        $('page').innerHTML = '<div class="card big moved"><h1>✅ Connected – back to your setup tab</h1><p class="lead">Your Google Sheet is published and connected. Setup carries on in the <b>HouseRunner setup tab</b> you started in – this tab can close.</p>' +
+        $('page').innerHTML = '<div class="card big moved"><h1>↩ Back to your setup tab…</h1><p class="lead">Setup carries on in the <b>HouseRunner setup tab</b> you started in – this tab closes by itself. If you land on your Sheet, close its tab too.</p>' +
             '<button class="btn ghost" id="suHere">Carry on in this tab instead</button></div>';
         $('next').style.visibility = 'hidden'; $('back').style.visibility = 'hidden';
         $('suHere').onclick = function () { window.hrHanded = false; $('next').style.visibility = ''; $('back').style.visibility = ''; HRB.onmessage = hrbListen; render(); arrived(); };
-        setTimeout(function () { try { window.close(); } catch (e) { /* not allowed: the message says what to do */ } }, 1500);
+        setTimeout(function () { try { window.close(); } catch (e) { /* not allowed: the message says what to do */ } }, 900);
     };
     var catchUp = function () {
+        if (window.hrHanded) return;      // this tab handed over to the one the user started in
         var was = connected(), mine = S.step, draftU = S.urlDraft; S = load(); S.step = mine; if (draftU != null) S.urlDraft = draftU;   // this tab stays on the page it shows
         if (!was && connected()) {
             // The Sheet's "Open HouseRunner" just connected (in a tab that closes itself): this tab – the one the user started in – carries on
@@ -1063,6 +1093,18 @@
             var changed = p.api !== S.url || p.code !== S.code;
             S.url = p.api; S.code = p.code; if (changed) S.connected = false; save();
         }
+        if (p.from === 'sheet' && p.api && p.code && !SOLO) {
+            $('page').innerHTML = '<div class="card big"><h1>⏳ One moment…</h1><p class="lead">Finding your HouseRunner setup tab.</p></div>';
+            var heard = false;
+            try {
+                HRB.onmessage = function (e) { if (e.data === 'here' && !heard) { heard = true; HRB.postMessage('connect'); handedOver(); } };
+                HRB.postMessage('anyone');
+            } catch (e) { /* older browser: carry on here */ }
+            setTimeout(function () { if (!heard) { HRB.onmessage = hrbListen; boot2(); } }, 700);
+            return;
+        }
+        boot2();
+        function boot2() {
         render();
         var after = function () {
             var ids = STEPS.map(function (x) { return x.id; });
@@ -1073,15 +1115,7 @@
                 S.step = S.privacy === P.version ? ids.indexOf(S.licOk || S.licensed ? 'family' : 'licence') : ids.indexOf(SOLO ? 'privacy' : 'welcome');
             }
             render();
-            if (p.from === 'sheet' && connected()) {
-                // Is the setup tab the user started in still open? Then hand over to it and close this one.
-                var asked = false;
-                try {
-                    HRB.onmessage = function (e) { if (e.data === 'here' && !asked) { asked = true; handedOver(); } };
-                    HRB.postMessage('anyone');
-                } catch (e) { /* older browser */ }
-                setTimeout(function () { if (!asked) { HRB.onmessage = hrbListen; arrived(); } }, 900);
-            }
+            if (p.from === 'sheet' && connected()) arrived();      // no setup tab to go back to: carry on in this one
         };
         // From the Sheet's "Published ✅": a dashboard published a moment ago can take a minute to answer, so keep trying
         var patient = function () {
@@ -1101,5 +1135,6 @@
         // Read the Sheet (family, calendar) and the licence in the background, so the steps open straight away
         var ahead = function () { if (connected()) { if (!ADM) loadAdm(); licenceNow(); } };
         pending.then(refreshVersions).then(after, after).then(ahead, ahead);
+        }
     })();
 })();

@@ -11,9 +11,9 @@
         ['Authorize access → choose your Google account', 'Choose the account you want the family dashboard in.'],
         ['Advanced → Go to HouseRunner (unsafe)', 'Google warns because the copy is yours – you’re its “developer”. That’s normal: click <b>Advanced</b>, then <b>Go to HouseRunner (unsafe)</b>.'],
         ['Tick Select all → Continue', 'Every permission is needed – tick <b>Select all</b> at the top.'],
-        ['Click the Web app URL – then close the tab it opens', 'A new tab says <b>HouseRunner is published</b>. Close that tab (its ✕).'],
-        ['Back in Apps Script: Done – then close the Apps Script tab', 'That leaves you on your <b>Sheet</b>.'],
-        ['In your Sheet: 🏠 HouseRunner → ▶ SETUP', 'Wait for <b>Published ✅</b>, then click <b>Open HouseRunner</b>. It brings you back to the setup page and this guide closes by itself.<br><span class="mute">No 🏠 HouseRunner menu? Reload the Sheet.</span>']
+        ['Click the Web app URL – a new tab says “published”', 'It’s under <b>Web app</b> in the <b>Deployment successfully created</b> box. A new tab opens saying <b>HouseRunner is published</b>.'],
+        ['Close the two extra tabs: “published” and Apps Script', 'Click the ✕ on each. No need to click <b>Done</b> first – it’s already published. That leaves you on your <b>Sheet</b>.'],
+        ['In your Sheet: 🏠 HouseRunner → ▶ SETUP', 'Wait for <b>Published ✅</b>, then click <b>Open HouseRunner</b>. Then close the Sheet’s tab too – setup carries on in your HouseRunner setup tab, and this guide closes by itself.<br><span class="mute">No 🏠 HouseRunner menu? Reload the Sheet.</span>']
     ];
     // The setup video, once there is one: its address and each step's part of it, in seconds ([from, to]).
     var VIDEO = null;    // e.g. { src: '../../shared/brand/setup.mp4', clips: [[0, 12], [12, 20], …] }
