@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.277",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: if the copy you made has already been published and no longer answers (deleted), the first step says so and offers Make a new copy. Otherwise it asks plainly: Still have it? Open it – or Deleted it, or want a fresh start? Make a new copy."
+    ]
+  },
+  {
     "version": "2026.11.276",
     "date": "2026-11-17",
     "notes": [
