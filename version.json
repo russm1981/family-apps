@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.273",
+  "app": "2026.11.274",
   "script": "2026.11.116",
   "date": "2026-11-17",
   "notes": [
-    "Setup’s Make my copy now copies the new HouseRunner Sheet, which publishes itself without any Google Cloud settings."
+    "Setting up in your Sheet: Google only lets a copy publish itself if it’s linked to a Google Cloud project you manage, which a new copy isn’t. So the SETUP window now shows you how to publish once with Google’s own Deploy button (about a minute), spots it by itself and carries on. No Apps Script API switch to find.",
+    "Two fewer Google permissions: HouseRunner no longer asks to “create and update Apps Script projects and deployments”. Nine in all. The privacy notice is updated to match – you’ll be asked to accept it once more."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

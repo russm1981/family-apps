@@ -227,10 +227,12 @@
             return '<h1>Make your Google Sheet and switch it on</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account, and switches on the small program inside it so your screen and phones can reach it. ' +
                 'Only you can see it. <span class="mute">(About 3 minutes – you do it all in the new tab.)</span></p>' +
                 (tpl ? '<div class="card big">' + (S.copiedAt ? '<div class="note warn">📄 <b>You already made a copy</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + '). ' +
-                    'Carry on in that one: find <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b>) in <a href="https://drive.google.com" target="_blank" rel="noopener">your Google Drive</a> and go on from step 3. ' +
-                    '<span class="mute">Only click Make my copy again if you want a brand-new Sheet – you can delete the spare one in Drive.</span></div>' : '') +
-                    '<ol class="howto"><li>Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
-                    '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
+                    'Usually you want to carry on in that one.' +
+                    '<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><a class="btn" target="_blank" rel="noopener" href="https://drive.google.com/drive/search?q=HouseRunner">Open my copy (in Google Drive)</a>' +
+                    '<a class="btn ghost" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make a brand-new copy</a></div>' +
+                    '<p class="mute small" style="margin:8px 0 0">In Google Drive it’s called <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b> if you haven’t run SETUP in it yet). Then carry on from step 3.</p></div>' : '') +
+                    '<ol class="howto"><li>' + (S.copiedAt ? 'Your copy is made ✔ ' : 'Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ') +
+                    (S.copiedAt ? '</li>' : '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>') +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
                     '<li>Your new Sheet opens on its <b>Start HERE</b> tab. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
@@ -970,8 +972,7 @@
     // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
-        if (S.copiedAt && !confirm('You already made a copy of the Sheet. Make another, brand-new one?\n\n(Usually you want to carry on in the first one – find “HouseRunner MAIN DATA” in your Google Drive.)')) { e.preventDefault(); return; }
-        S.copiedAt = Date.now(); save(); setTimeout(render, 500);
+        S.copiedAt = Date.now(); save(); setTimeout(render, 500);   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
