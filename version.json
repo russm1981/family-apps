@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.282",
+  "app": "2026.11.283",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Home page: the opening paragraph now runs the full width, like the rest of the page."
+    "Start HERE picture: step 1 now shows its four clicks numbered – Extensions, Apps Script, then (in the new Apps Script tab) Deploy and New deployment – with the bar around the Deploy button so it’s easy to find."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.282",
+    "date": "2026-11-17",
+    "notes": [
+      "Start HERE picture: step 1 now shows its four clicks numbered – Extensions, Apps Script, then (in the new Apps Script tab) Deploy and New deployment – with the bar around the Deploy button so it’s easy to find."
+    ]
+  },
+  {
     "version": "2026.11.281",
     "date": "2026-11-17",
     "notes": [
