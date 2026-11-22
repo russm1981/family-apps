@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.283",
+    "date": "2026-11-17",
+    "notes": [
+      "Start HERE picture: now 8 steps in two rows – A: publish your dashboard (Extensions → Apps Script, Deploy → New deployment, Web app settings, Authorize access) and B: allow it, then run SETUP (Google’s warning, Select all, Done, then 🏠 HouseRunner → ▶ SETUP → Open HouseRunner)."
+    ]
+  },
+  {
     "version": "2026.11.282",
     "date": "2026-11-17",
     "notes": [

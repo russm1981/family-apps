@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.283",
-  "script": "2026.11.117",
+  "app": "2026.11.284",
+  "script": "2026.11.118",
   "date": "2026-11-17",
   "notes": [
-    "Start HERE picture: step 1 now shows its four clicks numbered – Extensions, Apps Script, then (in the new Apps Script tab) Deploy and New deployment – with the bar around the Deploy button so it’s easy to find."
+    "Start HERE picture: now 8 steps in two rows – A: publish your dashboard (Extensions → Apps Script, Deploy → New deployment, Web app settings, Authorize access) and B: allow it, then run SETUP (Google’s warning, Select all, Done, then 🏠 HouseRunner → ▶ SETUP → Open HouseRunner)."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

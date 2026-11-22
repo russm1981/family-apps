@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.117';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.118';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -779,6 +779,12 @@ function doGet(e) {
       throw new Error('Unknown action');
     });
   }
+  // A plain visit – usually the Web app URL clicked straight after Deploy. That visit is what lets the Sheet learn its own
+  // address (rememberUrl_ above: Google only tells a script its /exec address while it's being visited), so say what happens next.
+  if (!p.admin) return HtmlService.createHtmlOutput('<div style="font:17px/1.5 Arial,sans-serif;max-width:560px;margin:60px auto;padding:0 20px;color:#222">' +
+    '<h1 style="font-size:28px">✅ HouseRunner is published</h1><p>Close this tab and go back to your Sheet. The <b>HouseRunner – SETUP</b> window carries on by itself – ' +
+    'or, if you closed it, choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>.</p></div>').setTitle('HouseRunner – published')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
   return (LOADED ? HtmlService.createHtmlOutput(LOADED.html()) : HtmlService.createHtmlOutputFromFile('Admin'))
     .setTitle('HouseRunner – Admin')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
@@ -4096,6 +4102,13 @@ function setupStep_(step) {
     }
     return { ok: false, kind: 'deploy', editor: 'https://script.google.com/d/' + ScriptApp.getScriptId() + '/edit' };
   }
+  if (step.indexOf('url:') === 0) {
+    const u = step.slice(4).trim().replace(/\/(dev|exec)?\/?(\?.*)?$/, '/exec');
+    if (!/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(u)) return { ok: false, error: 'That isn’t the Web app URL – it starts https://script.google.com/macros/s/ and ends /exec' };
+    if (!answers_(u)) return { ok: false, error: 'That address doesn’t answer – check Who has access is Anyone' };
+    PropertiesService.getScriptProperties().setProperty('execUrl', u);
+    return { ok: true, url: u };
+  }
   if (step === 'check') {
     // A deployment made a moment ago can take a little while to answer: keep asking for up to about 40 seconds
     const P = PropertiesService.getScriptProperties(), u = P.getProperty('execUrl');
@@ -4150,8 +4163,10 @@ function menuConnect() {
     ' if(!r.ok&&r.kind==="deploy"){mark("publish",null,"Publish your dashboard – once, with Google’s Deploy button (1 minute)");' +
     '  if(!waiting){waiting=true;out("<ol style=\\"margin:4px 0 8px;padding-left:20px\\"><li><a href=\\""+r.editor+"\\" target=\\"_blank\\" style=\\""+BTN+";padding:7px 14px\\">Open Apps Script</a> (a new tab)</li>' +
     '<li>Click the blue <b>Deploy</b> button (top right) → <b>New deployment</b></li><li>Click the ⚙ next to <b>Select type</b> → <b>Web app</b></li>' +
-    '<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b> → click <b>Deploy</b> (allow it if Google asks)</li><li>Click <b>Done</b> and come back to this window</li></ol>' +
+    '<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b> → click <b>Deploy</b> (allow it if Google asks)</li><li>When it says <b>Deployment successfully created</b>, click the <b>Web app URL</b> link under it (a page opens saying <b>HouseRunner is published</b>) – then <b>Done</b>, and come back here</li></ol>' +
+    '<p style=\\"font-size:13px;margin:6px 0\\">Or copy the <b>Web app URL</b> and paste it here: <input id=\\"pu\\" style=\\"width:58%;padding:4px 6px\\" placeholder=\\"https://script.google.com/macros/s/…/exec\\"> <button id=\\"pb\\">OK</button> <span id=\\"pm\\" style=\\"color:#b91c1c\\"></span></p>' +
     '<p style=\\"color:#888;font-size:13px\\">⏳ Watching for it – this window carries on by itself as soon as it’s published.</p>");}' +
+    '  var pb=document.getElementById("pb");if(pb&&!pb.onclick)pb.onclick=function(){document.getElementById("pm").textContent="Checking…";google.script.run.withSuccessHandler(function(x){if(x.ok){document.getElementById("pm").textContent="";}else document.getElementById("pm").textContent=x.error;}).setup("hr:url:"+document.getElementById("pu").value);};' +
     '  setTimeout(publish,8000);return;}' +
     ' if(!r.ok){mark("publish",false,"Couldn’t publish");out("<p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>");return;}' +
     ' out("");mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
