@@ -1,5 +1,14 @@
 [
   {
+    "version": "2026.11.271",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup is now four steps and starts in Google Sheets: Make my copy → 🏠 HouseRunner → ▶ HouseRunner – SETUP. When the window says Published ✅, Open HouseRunner brings you to the website already connected, for Welcome, Your family and Connect your screen and phones. No more tabs to juggle.",
+      "The SETUP window in your Sheet now waits by itself if Google’s Apps Script API switch needs turning on, and carries on as soon as it’s on.",
+      "Your family now includes the licence key (filled in from your email) and the calendar, which is set up automatically from the family’s names – fine-tune it later in Screens. Free API keys are optional and added later in System → API keys."
+    ]
+  },
+  {
     "version": "2026.11.270",
     "date": "2026-11-17",
     "notes": [
