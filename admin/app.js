@@ -82,11 +82,11 @@
     }
     // quiet: a refresh nobody asked for (coming back to the window, a retry) – if it fails, the dot goes red but no
     // message pops up; the Google script can take a while to wake up, so it has a minute to answer.
-    var loadErr = '';
+    var loadErr = '', fresh = false;      // fresh: the Sheet has answered since this page opened (until then DATA is what was saved on this computer)
     function load(quiet) {
         loadErr = '';
         sync('busy');
-        return FD.post({ action: 'admin' }, 60000).then(function (d) { sync('ok'); setData(d); })
+        return FD.post({ action: 'admin' }, 60000).then(function (d) { sync('ok'); fresh = true; setData(d); })
             .catch(function (e) { loadErr = e.message; sync('err', e.message); if (quiet !== true) FD.toast(e.message, true); if (!hasEdits()) render(); });
     }
 
@@ -290,6 +290,7 @@
             famcfg: renderFamCfg, dhome: renderHome, rewards: function () { renderRewards(r.sub); }, reminders: function () { renderRewards('timetable', true); }, advanced: function () { renderAdvanced(r.sub); }, help: renderHelp, calendar: renderCalApp, feedback: function () { renderFeedback(r.sub); }, more: r.help ? renderHelp : renderMore })[r.tab]();
         var n = notices();
         if (n) $('body').insertAdjacentHTML('afterbegin', n);
+        Array.prototype.forEach.call($('body').querySelectorAll('[data-retry]'), function (b) { b.onclick = function () { loadErr = ''; render(); load(); }; });
         // On the website the title bar always says "HouseRunner" (with the logo); the page's own name is its heading.
         if (DESK && pageName && r.tab !== 'layout' && r.tab !== 'rewards' && !$('body').querySelector('.page-h')) $('body').insertAdjacentHTML('afterbegin', '<h1 class="page-h">' + esc(pageName) + '</h1>');
         privacyCheck();
@@ -772,6 +773,8 @@
     function notices() {
         if (!DATA || !('privacyAccepted' in DATA)) return '';
         var out = '', L = DATA.licence, r = route();
+        if (loadErr && !fresh) out += '<div class="banner warn"><b>Can’t reach your family’s Google Sheet</b> – this shows what was saved on this ' + (DESK ? 'computer' : 'phone') + ', and changes can’t be saved. ' +
+            '<button class="link" data-retry>Try again</button> · <button class="link" data-out>Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button></div>';
         if (L && L.required && !L.ok && r.s !== 'licence') out += '<div class="banner warn"><b>🎫 ' + esc(L.message) + '</b> <button class="link" data-go="s/licence">Add your key</button></div>';
         else if (L && L.state === 'trial' && r.tab === 'family' && !r.w && !r.pts) out += '<div class="banner">' + esc(L.message) + ' <button class="link" data-go="s/licence">Add your key</button></div>';
         if (DATA.moving && r.s !== 'updates') out += '<div class="banner warn"><b>Moving to a new Sheet isn’t finished.</b> <button class="link" data-go="s/updates">What to do</button></div>';
@@ -783,7 +786,7 @@
     }
     function privacyCheck() {
         var P = window.FD_PRIVACY;
-        if (!P || !DATA || !('privacyAccepted' in DATA) || DATA.privacyAccepted === P.version || privacyOpen) return;
+        if (!P || !DATA || !fresh || !('privacyAccepted' in DATA) || DATA.privacyAccepted === P.version || privacyOpen) return;
         privacyOpen = true;
         sheet('<h2>' + (DATA.privacyAccepted ? 'The privacy notice has changed' : 'Privacy notice') + '</h2><ul class="pvl">' + P.summary.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
             '<details class="adv"><summary>Read the full notice</summary><div class="pv-full">' + P.full + '</div></details>' +
@@ -795,7 +798,12 @@
                 DATA.privacyAccepted = P.version; privacyOpen = false;
                 $('sheetBg').onclick = function (e) { if (e.target === $('sheetBg')) closeSheet(); };
                 closeSheet(); load();
-            }, function () {});
+            }, function (e) {
+                var b = $('pvOk'); if (!b) return;
+                b.textContent = 'Try again';
+                if (!$('pvErr')) b.insertAdjacentHTML('beforebegin', '<p class="small" id="pvErr" style="color:#f87171">Couldn’t save to your Google Sheet (' + esc(e.message) + '). Check the Sheet still exists, then try again – or <button class="link" id="pvOut">disconnect this ' + (DESK ? 'computer' : 'phone') + '</button>.</p>');
+                $('pvOut').onclick = function () { privacyOpen = false; closeSheet(); disconnectHere(); };
+            });
         };
     }
 
