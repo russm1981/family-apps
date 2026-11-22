@@ -773,14 +773,15 @@
                 }).join('') + '</div>' +
                 (S.mode === 'new' ? '' : '<div class="card big"><h3>Checking every widget</h3><p class="mute">HouseRunner asks your Sheet to fetch each widget’s live data, and says if anything needs attention.</p><div id="checkOut"></div>' +
                     '<button class="btn ghost sm" id="runCheck" style="margin-top:10px">Check again</button></div>') +
-                '<div class="card big"><h3>What next</h3><p>After setup, these are the next things to do, at <a href="../../">houserunner.app</a> on this computer (or in Family Admin on your phone) – in any order, whenever you like:</p>' +
+                '<div class="card big"><h3>What next</h3><p>After setup, these are the next things to do, at <a href="../../">houserunner.app</a> on this computer (or in Family Admin on your phone) – in any order, whenever you like. They’re all on its menu bar:</p>' +
+                    '<img class="step-pic" src="../../shared/brand/menu-next.png" alt="houserunner.app’s menu bar, with 1 Screens, 2 Notes, Lists and Reminders, and 3 Rewards circled" style="width:100%;border-radius:10px;margin:2px 0 10px">' +
                     '<ol class="howto">' +
                     '<li><b>Set up the widgets on your screens</b> – houserunner.app → <b>Screens</b>. Your screens start with a few widgets as examples: move them, remove them, or add others. ' +
                         '<span class="mute">Some widgets need something before they show anything – your council for bin days, a shared folder for photos, or a free key from the service for traffic, trains and buses. ' +
                         'Each one asks for what it needs when you add it or click it, with the steps to get it. Until then it shows a short note on the screen saying what it needs.</span></li>' +
                     '<li><b>Add your lists, notes and reminders</b> – houserunner.app → <b>Lists</b>, <b>Notes</b> and <b>Reminders</b> (sports kit, library books – the things to remember each day).</li>' +
                     '<li><b>Set up the reward system</b> <span class="mute">(only if you’re using it)</span> – houserunner.app → <b>Rewards</b>: the Reward Tasks and Daily To-Dos that earn points, and what the points buy.</li></ol>' +
-                    '<a class="btn" href="../../">Open houserunner.app</a></div>';
+                    '</div>';
         }, wire: function () {
             $('page').querySelectorAll('[data-fin]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-fin')); }; });
             if ($('runCheck')) { if (connected()) { $('runCheck').onclick = runCheck; runCheck(); } else $('checkOut').innerHTML = needConnect(); }
