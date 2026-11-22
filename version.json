@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.281",
+  "app": "2026.11.282",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup: the “you started a setup before” warning is now red, with a larger, clearer round i."
+    "Home page: the opening paragraph now runs the full width, like the rest of the page."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

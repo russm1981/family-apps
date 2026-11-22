@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.281",
+    "date": "2026-11-17",
+    "notes": [
+      "Home page: the opening paragraph now runs the full width, like the rest of the page."
+    ]
+  },
+  {
     "version": "2026.11.280",
     "date": "2026-11-17",
     "notes": [
