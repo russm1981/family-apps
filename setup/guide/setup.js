@@ -226,13 +226,17 @@
             if (connected()) return '<h1>Make your Google Sheet and switch it on</h1><div class="card big">' + okLine(true, 'Done – your Sheet is made and this page is connected to it.') + '<p>Press <b>Next</b>.</p></div>';
             return '<h1>Make your Google Sheet and switch it on</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account, and switches on the small program inside it so your screen and phones can reach it. ' +
                 'Only you can see it. <span class="mute">(About 3 minutes – you do it all in the new tab.)</span></p>' +
-                (tpl ? '<div class="card big">' + (S.copiedAt ? '<div class="note warn">📄 <b>You already made a copy</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + '). ' +
-                    'Usually you want to carry on in that one.' +
-                    '<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><a class="btn" target="_blank" rel="noopener" href="https://drive.google.com/drive/search?q=HouseRunner">Open my copy (in Google Drive)</a>' +
-                    '<a class="btn ghost" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make a brand-new copy</a></div>' +
-                    '<p class="mute small" style="margin:8px 0 0">In Google Drive it’s called <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b> if you haven’t run SETUP in it yet). Then carry on from step 3.</p></div>' : '') +
-                    '<ol class="howto"><li>' + (S.copiedAt ? 'Your copy is made ✔ ' : 'Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ') +
-                    (S.copiedAt ? '</li>' : '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>') +
+                (tpl ? '<div class="card big">' + (S.copiedAt ? (S.copyGone ?
+                    // The copy got as far as being published, and its address doesn't answer any more: it's been deleted (or unpublished)
+                    '<div class="note bad">🗑 <b>The copy you made</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ') <b>doesn’t answer any more</b> – it looks as if it was deleted. ' +
+                    'Make a new one to start again.<div class="row" style="margin-top:10px"><a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make a new copy</a></div></div>'
+                    // Not published yet: Google doesn't tell this page whether it still exists, so offer both, plainly
+                    : '<div class="note warn">📄 <b>You made a copy</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ').' +
+                    '<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><a class="btn" target="_blank" rel="noopener" href="https://drive.google.com/drive/search?q=HouseRunner">Still have it? Open it (in Google Drive)</a>' +
+                    '<a class="btn ghost" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Deleted it, or want a fresh start? Make a new copy</a></div>' +
+                    '<p class="mute small" style="margin:8px 0 0">In Google Drive it’s called <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b> if you haven’t run SETUP in it yet). Then carry on from step 3.</p></div>') : '') +
+                    '<ol class="howto"><li>' + (S.copiedAt && !S.copyGone ? 'Your copy is made ✔ ' : S.copyGone ? 'Make a new copy with the button above ' : 'Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ') +
+                    (S.copiedAt && !S.copyGone ? '</li>' : '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>') +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
                     '<li>Your new Sheet opens on its <b>Start HERE</b> tab. <b>Follow the 4 steps on it</b> – they look like this (click to enlarge):' +
@@ -692,7 +696,15 @@
                     '<li><b>A computer</b> for this part, and <b>your phone</b> for the Family Admin app at the end.</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later.</p></div>' +
                 bare(OLD.sheet.render()).replace(/^\s*<p class="lead">[\s\S]*?<\/p>/, '');
-        }, wire: function () { if (OLD.sheet.wire) OLD.sheet.wire(); }, ready: function () { return connected(); },
+        }, wire: function () {
+            if (OLD.sheet.wire) OLD.sheet.wire();
+            if (!connected() && S.copiedAt && S.url && !S.copyGone && !window.hrGonePinged) {
+                window.hrGonePinged = true;   // once per visit
+                fetch(S.url + '?action=ping&t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+                    if (!(d && d.ok)) throw new Error('no');
+                }).catch(function () { S.copyGone = true; save(); render(); });
+            }
+        }, ready: function () { return connected(); },
            blocked: 'Not connected yet – finish the steps in your Sheet (🏠 HouseRunner → ▶ HouseRunner – SETUP). This page carries on by itself.' },
         OLD.publish,
         { id: 'welcome', title: 'Welcome', render: function () {
@@ -966,7 +978,7 @@
     // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
-        S.copiedAt = Date.now(); save(); setTimeout(render, 500);   // no pop-up: a second copy is offered as its own button
+        S.copiedAt = Date.now(); S.copyGone = false; save(); setTimeout(render, 500);   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }

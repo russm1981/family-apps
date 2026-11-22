@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.276",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: the “Make your Google Sheet” step no longer repeats the Sheet’s instructions. After Make my copy, it says to follow the 4 steps on the Sheet’s Start HERE tab – with a picture of them so you recognise it – and to click Open HouseRunner when the SETUP window says Published ✅."
+    ]
+  },
+  {
     "version": "2026.11.275",
     "date": "2026-11-17",
     "notes": [

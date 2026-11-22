@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.276",
+  "app": "2026.11.277",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup in your Sheet now publishes first: Extensions → Apps Script → Deploy, which is also where Google asks for your permission – once. Then 🏠 HouseRunner → ▶ HouseRunner – SETUP runs straight through to Published ✅ – no second permission round and no second click.",
-    "If Google asks for permission again while the SETUP window is open, the window now says plainly to choose SETUP once more, instead of “Something went wrong”."
+    "Setup: the “Make your Google Sheet” step no longer repeats the Sheet’s instructions. After Make my copy, it says to follow the 4 steps on the Sheet’s Start HERE tab – with a picture of them so you recognise it – and to click Open HouseRunner when the SETUP window says Published ✅."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
