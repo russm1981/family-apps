@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.295",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup wizard: the side panel now just says “Setup wizard” in a bigger title – no second HouseRunner logo."
+    ]
+  },
+  {
     "version": "2026.11.294",
     "date": "2026-11-17",
     "notes": [

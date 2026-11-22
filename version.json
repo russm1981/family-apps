@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.295",
-  "script": "2026.11.123",
+  "app": "2026.11.296",
+  "script": "2026.11.124",
   "date": "2026-11-17",
   "notes": [
-    "Setup: fixed Make my copy not opening the copy when the step window opened at the same time. The step window now has its own button, before Make my copy, and starts with making the copy.",
-    "Step window: “▶ Show full video in new tab” (starting at that step) instead of a second video inside it, and a “Close this step window” button at the end – it still closes by itself when you’re back in setup."
+    "Setup wizard: the side panel now just says “Setup wizard” in a bigger title – no second HouseRunner logo."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

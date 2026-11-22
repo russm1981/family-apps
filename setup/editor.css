@@ -381,3 +381,4 @@
 .cs-card .cs-row:not(.cs-rhead) { min-height: 58px; }
 .ed-below h4.ed-grp { margin: 20px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--mute, #8b95a5); }
 .ed-below h4.ed-grp:first-child { margin-top: 4px; }
+.cs-busy { color: var(--mute, #9fb0c2); font-size: 13px; margin-left: 10px; }

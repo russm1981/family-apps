@@ -21,7 +21,7 @@
         ['In your Sheet: 🏠 HouseRunner → ▶ SETUP', 'Wait for <b>Published ✅</b>, then click <b>Open HouseRunner</b>. Then close the Sheet’s tab too – setup carries on in your HouseRunner setup tab, and this guide closes by itself.<br><span class="mute">No 🏠 HouseRunner menu? Reload the Sheet.</span>']
     ];
     // The setup video, once there is one: its address and each step's part of it, in seconds ([from, to]).
-    var VIDEO = { src: '../../shared/brand/setup.mp4', from: [3, 8.5, 17, 30, 39, 51, 60, 60, 66, 76, 92.6] };   // where each step starts in it (the two before step 1 first)
+    var VIDEO = { src: '../../shared/brand/setup.mp4', from: [3.5, 15.2, 23.2, 37.3, 48.1, 60.4, 67.4, 67.4, 73.4, 80.9, 93.1] };   // where each step starts in it (the two before step 1 first)
     var ALL = PRE.map(function (x) { return [x[0], x[1], x[2], '']; }).concat(STEPS.map(function (x, k) { return [x[0], x[1], '../../shared/brand/steps/s' + (k + 1) + '.png', String(k + 1)]; }));
 
     var KEY = 'hrfloat.step', win = null, i = 0;

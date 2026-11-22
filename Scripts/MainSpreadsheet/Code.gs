@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.123';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.124';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -931,6 +931,8 @@ function dispatch_(b) {
     case 'myFeedback': return toLicenceServer_({ action: 'myFeedback' });
     case 'calScan': return calScan_(b);
     case 'calFix': return calFix_(b);
+    case 'calUndoList': return calUndoList_();
+    case 'calUndo': return calUndo_(b);
     case 'saveInstall': return saveInstall_(b.values);
     case 'saveWidget': return saveWidget_(b.widget);
     case 'addWidget': return addWidget_(b.page, b.type, b.at);
@@ -3309,6 +3311,7 @@ function calScan_(b) {
 /** Apply the tidy-up to some events (up to 60 at a time): the title, and the category's Google colour. Repeating events change as a whole. */
 function calFix_(b) {
   const M = calModel_(), items = (b.items || []).slice(0, 60), done = [], failed = [], left = [], t0 = Date.now(), cals = {};
+  const batch = String(b.batch || '').replace(/[^\w-]/g, '').slice(0, 40) || ('t' + Date.now()), undo = [];
   // Google Calendar is slow to change events (about a second each): stop after 20 seconds and say which are left,
   // so the website sends them again – no request runs long enough to time out.
   items.forEach(x => {
@@ -3322,13 +3325,67 @@ function calFix_(b) {
       if (!cal) throw new Error('Can’t open that calendar');
       const ev = x.rec ? cal.getEventSeriesById(x.id) : cal.getEventById(x.id);
       if (!ev) throw new Error('Not found (deleted?)');
-      ev.setTitle(person ? text + ' (' + cat.name + ')' : text);
+      let oldG = ''; try { oldG = String(ev.getColor() || ''); } catch (e) { oldG = ''; }
+      const oldT = ev.getTitle() || '', newT = person ? text + ' (' + cat.name + ')' : text;
+      undo.push([batch, new Date(), x.cal, x.id, x.rec ? 'y' : '', oldT, oldG, newT]);      // noted first, so it can always be put back
+      ev.setTitle(newT);
       if (cat) ev.setColor(person ? PERSON_G : cat.g); else ev.resetColor && ev.resetColor();
       done.push(x.id);
     } catch (e) { failed.push({ id: x.id, error: String(e && e.message || e).slice(0, 120) }); }
   });
+  if (undo.length) calUndoNote_(undo);
   bumpCalVersion_();
-  return { ok: true, done: done, failed: failed, left: left };
+  return { ok: true, done: done, failed: failed, left: left, batch: batch };
+}
+/* The tidy-up's undo record: each event's title and colour from before, in a hidden tab of the Sheet (the last 3000 changes). */
+const CAL_UNDO_TAB = '_Calendar undo';
+function calUndoSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(CAL_UNDO_TAB);
+  if (!sh) { sh = ss.insertSheet(CAL_UNDO_TAB); sh.appendRow(['Batch', 'When', 'Calendar', 'Event', 'Repeating', 'Title before', 'Colour before', 'Title after']); sh.hideSheet(); }
+  return sh;
+}
+function calUndoNote_(rows) {
+  const sh = calUndoSheet_();
+  sh.getRange(sh.getLastRow() + 1, 1, rows.length, 8).setNumberFormat('@').setValues(rows.map(r => r.map((c, i) => i === 1 ? fmt_(c, 'yyyy-MM-dd HH:mm') : String(c))));
+  const extra = sh.getLastRow() - 1 - 3000;
+  if (extra > 0) sh.deleteRows(2, extra);
+}
+/** The tidy-ups that can be undone, newest first. */
+function calUndoList_() {
+  const sh = SpreadsheetApp.getActive().getSheetByName(CAL_UNDO_TAB);
+  if (!sh || sh.getLastRow() < 2) return { ok: true, batches: [] };
+  const by = {}, order = [];
+  sh.getRange(2, 1, sh.getLastRow() - 1, 8).getValues().forEach(r => {
+    const k = String(r[0]); if (!k) return;
+    if (!by[k]) { by[k] = { batch: k, when: String(r[1]), n: 0, undone: 0 }; order.push(k); }
+    if (String(r[7]) === '\u21A9') by[k].undone++; else by[k].n++;
+  });
+  return { ok: true, batches: order.reverse().map(k => by[k]).filter(x => x.n).slice(0, 15) };
+}
+/** Put one tidy-up back: each event's old title and colour – unless the event has been changed again since (then it's left alone). */
+function calUndo_(b) {
+  const sh = SpreadsheetApp.getActive().getSheetByName(CAL_UNDO_TAB), batch = String(b.batch || '');
+  if (!sh || !batch) throw new Error('Nothing to undo');
+  const vals = sh.getRange(2, 1, Math.max(1, sh.getLastRow() - 1), 8).getValues(), t0 = Date.now(), cals = {};
+  let done = 0, changed = 0, gone = 0, left = 0;
+  vals.forEach((r, i) => {
+    if (String(r[0]) !== batch || String(r[7]) === '\u21A9') return;
+    if (Date.now() - t0 > 20000) { left++; return; }
+    try {
+      const cal = cals[r[2]] || (cals[r[2]] = calApp_().getCalendarById(String(r[2])));
+      const ev = cal && (r[4] === 'y' ? cal.getEventSeriesById(String(r[3])) : cal.getEventById(String(r[3])));
+      if (!ev) { gone++; } else if ((ev.getTitle() || '') !== String(r[7])) { changed++; }
+      else {
+        ev.setTitle(String(r[5]));
+        if (String(r[6])) ev.setColor(String(r[6])); else if (ev.resetColor) ev.resetColor();
+        done++;
+      }
+      sh.getRange(i + 2, 8).setValue('\u21A9');      // marked as dealt with
+    } catch (e) { gone++; sh.getRange(i + 2, 8).setValue('\u21A9'); }
+  });
+  bumpCalVersion_();
+  return { ok: true, done: done, changed: changed, gone: gone, left: left };
 }
 /** For the set-up page: the categories, the Google colours, and each calendar page's key. */
 function calSetup_() {
@@ -4143,7 +4200,7 @@ function menuConnect() {
     '<li id="s-tabs">⏳ Making the tabs your dashboard keeps its information in</li>' +
     '<li id="s-publish" style="color:#999">○ Publishing your dashboard, so your screen and phones can reach it</li>' +
     '<li id="s-check" style="color:#999">○ Checking it answers</li></ol><div id="out"></div></div>' +
-    '<script>' +
+    '<script>function calm(){try{var w=document.getElementById("w");w.tabIndex=-1;w.style.outline="none";w.focus();}catch(e){}}calm();setTimeout(calm,300);setTimeout(calm,1200);' +
     'var BTN="display:inline-block;background:#3fa9f5;color:#fff;padding:12px 22px;border-radius:10px;text-decoration:none;font-weight:bold";' +
     'function mark(k,ok,t){var e=document.getElementById("s-"+k);e.style.color=ok===null?"#222":"";e.innerHTML=(ok===null?"⏳ ":ok?"✅ ":"⚠️ ")+(t||e.innerHTML.replace(/^\\S+\\s/,""));}' +
     'function out(h){document.getElementById("out").innerHTML=h;}' +

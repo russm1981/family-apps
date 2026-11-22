@@ -105,7 +105,7 @@
             people.map(function (p, i) {
                 return '<div class="cs-row cs-prow" data-row="p' + i + '"><span class="cs-nm"><b>' + esc(p.name) + '</b></span>' + personSwatch(p, i) + sel('data-pshow', 'p' + i, where, p.display) + '<span></span></div>';
             }).join('') +
-            '<p class="mute small">In Family or in a group: their own events (“Drums (Oliver)”) are shown in that colour.</p>' +
+            '<p class="mute small">If someone is set to “In Family” or “In &lt;a&gt; group”, their own events (“Drums (Oliver)”) are shown in that group’s colour.</p>' +
 
             '<h3 class="cs-h2">Other category</h3>' +
             '<div class="cs-other"><span class="cs-sw" style="--sc:#8a93a3"></span><p>This includes everything that doesn’t have a category in Google, and anything set above to “Show as Other”.</p></div>' +
@@ -160,7 +160,8 @@
     function tidyHtml() {
         return '<div class="cs-card"><h3>Tidy up your Google calendar</h3><p class="mute small">Goes through the last three months and the next year of your family calendar and lists what the calendar can’t show properly: ' +
             'events with no category, and titles too long for the screen. Events like “Oliver – Drums” are fine – they show as “Drums (Oliver)”. You choose; nothing changes until you press Apply.</p>' +
-            '<button class="btn" id="csScan">Check the Google calendar</button></div>';
+            '<p class="mute small">🛟 <b>Every change can be undone.</b> Before changing an event, HouseRunner notes its old title and colour in your Google Sheet, so a tidy-up can be put back exactly as it was.</p>' +
+            '<button class="btn" id="csScan">Check the Google calendar</button> <button class="btn ghost" id="csUndoList">Undo an earlier tidy-up</button></div>';
     }
     function when(r) { var d = String(r.date || '').split('-'); return (d.length === 3 ? d[2] + '-' + d[1] + '-' + d[0] : r.date) + (r.time ? ' @ ' + r.time : ''); }
     function tidy(all) {
@@ -207,17 +208,19 @@
                     return { id: r.id, cal: r.cal, rec: r.rec, cat: tr.querySelector('.cs-cat').value, text: tr.querySelector('.cs-title').value.trim() };
                 });
                 if (!items.length) { close(); return; }
-                var btn = this, done = 0, failed = [], total = items.length;
+                var btn = this, done = 0, failed = [], total = items.length, batch = 't' + Date.now();
                 btn.disabled = true;
                 var next = function () {
                     var part = items.splice(0, 15);
                     if (!part.length) {
-                        ov.querySelector('#csTMsg').textContent = '✔ ' + done + ' changed' + (failed.length ? ' · ' + failed.length + ' couldn’t be (' + failed[0].error + ')' : '') + '.';
+                        ov.querySelector('#csTMsg').innerHTML = '✔ ' + done + ' changed' + (failed.length ? ' · ' + failed.length + ' couldn’t be (' + esc(failed[0].error) + ')' : '') + '. ' +
+                            (done ? '<button class="btn ghost sm" id="csTUndo">↩ Undo this tidy-up</button>' : '');
                         btn.textContent = 'Done'; btn.disabled = false; btn.onclick = close; H.toast('Calendar tidied – the screen updates within a few minutes');
+                        if (ov.querySelector('#csTUndo')) ov.querySelector('#csTUndo').onclick = function () { undoBatch(batch, ov.querySelector('#csTMsg')); };
                         return;
                     }
                     ov.querySelector('#csTMsg').textContent = 'Changing… ' + done + ' of ' + total + ' done';
-                    window.FD.post({ action: 'calFix', items: part }, 90000).then(function (x) {
+                    window.FD.post({ action: 'calFix', items: part, batch: batch }, 90000).then(function (x) {
                         if (x.error) throw new Error(x.error);
                         done += x.done.length; failed = failed.concat(x.failed);
                         if (x.left && x.left.length) items = part.filter(function (it) { return x.left.indexOf(it.id) >= 0; }).concat(items);      // not reached yet: send again
@@ -228,6 +231,42 @@
                 next();
             };
         }).catch(function (e) { ov.querySelector('.cs-modal').innerHTML = '<h2>Tidy up your Google calendar</h2><p class="bad">' + esc(e.message) + '</p><div class="sheet-actions"><button class="btn" id="csTClose">Close</button></div>'; ov.querySelector('#csTClose').onclick = close; });
+    }
+
+    /** Put a tidy-up back (in parts: Google Calendar is slow), saying how it went in el. */
+    function undoBatch(batch, el) {
+        var n = 0, changed = 0, gone = 0;
+        el.innerHTML = '⏳ Putting the calendar back as it was…';
+        var one = function () {
+            return window.FD.post({ action: 'calUndo', batch: batch }, 90000).then(function (x) {
+                if (x.error) throw new Error(x.error);
+                n += x.done; changed += x.changed; gone += x.gone;
+                if (x.left) { el.innerHTML = '⏳ Putting it back… ' + n + ' done so far'; return one(); }
+                el.innerHTML = '↩ Undone: ' + n + ' event' + (n === 1 ? '' : 's') + ' put back as they were.' +
+                    (changed ? ' ' + changed + ' had been changed again since, so were left alone.' : '') + (gone ? ' ' + gone + ' no longer exist.' : '');
+                H.toast('Tidy-up undone – the screen updates within a few minutes');
+            });
+        };
+        one().catch(function (e) { el.innerHTML = '<span class="bad">' + esc(e.message) + '</span>'; });
+    }
+    function undoList() {
+        var ov = document.createElement('div');
+        ov.className = 'cs-ov'; ov.innerHTML = '<div class="cs-modal"><h2>Undo a tidy-up</h2><div class="empty">Reading the list…</div></div>';
+        document.body.appendChild(ov);
+        var close = function () { ov.remove(); };
+        window.FD.post({ action: 'calUndoList' }, 60000).then(function (d) {
+            if (d.error) throw new Error(d.error);
+            var bs = d.batches || [];
+            ov.querySelector('.cs-modal').innerHTML = '<h2>Undo a tidy-up</h2>' +
+                (bs.length ? '<p class="mute small">Each tidy-up puts back the old titles and colours. An event that’s been changed again since is left alone.</p>' +
+                    '<table class="cs-table"><tbody>' + bs.map(function (b, i) { return '<tr><td>' + esc(b.when) + '</td><td>' + b.n + ' event' + (b.n === 1 ? '' : 's') + '</td><td><button class="btn ghost sm" data-ub="' + i + '">↩ Undo</button></td></tr>'; }).join('') + '</tbody></table>'
+                    : '<p>No tidy-ups to undo.</p>') +
+                '<p class="small" id="csUMsg"></p><div class="sheet-actions"><button class="btn ghost" id="csUClose">Close</button></div>';
+            ov.querySelector('#csUClose').onclick = close;
+            Array.prototype.forEach.call(ov.querySelectorAll('[data-ub]'), function (b) {
+                b.onclick = function () { b.disabled = true; undoBatch(bs[+b.getAttribute('data-ub')].batch, ov.querySelector('#csUMsg')); };
+            });
+        }).catch(function (e) { ov.querySelector('.cs-modal').innerHTML = '<h2>Undo a tidy-up</h2><p class="bad">' + esc(/Unknown action/.test(e.message) ? 'Your Google script needs updating first.' : e.message) + '</p><div class="sheet-actions"><button class="btn" id="csUClose">Close</button></div>'; ov.querySelector('#csUClose').onclick = close; });
     }
 
     /* ------------------------------------------------------------ drawing and wiring */
@@ -277,9 +316,14 @@
                 if (colourCount() > CS.limits.key) { H.toast('The calendar can show up to ' + CS.limits.key + ' colours – set some to Show as Other, or hide them', true); return; }
                 applyMembers();
                 var pc = {}; people.forEach(function (p) { pc[p.name] = p.colour; });
-                H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals, peopleColours: pc, key: keyFromCats() }, 'Colour coding saved – the screen updates within a few minutes');
+                t.disabled = true; t.textContent = '⏳ Saving the colour coding…';      // a few seconds: shown, so nobody clicks twice
+                if (!box.querySelector('#csBusy')) t.insertAdjacentHTML('afterend', '<span id="csBusy" class="cs-busy"> Saving to your Google Sheet – this takes a few seconds.</span>');
+                var back = function () { var b = box.querySelector('#csSaveCats'); if (b) { b.disabled = false; b.textContent = 'Save the colour coding'; } var w = box.querySelector('#csBusy'); if (w) w.remove(); };
+                var pr = H.act({ action: 'saveCalCats', groups: cats.groups, generals: cats.generals, peopleColours: pc, key: keyFromCats() }, 'Colour coding saved – the screen updates within a few minutes');
+                if (pr && pr.then) pr.then(back, back); else back();
             }
             else if ((t = e.target.closest('#csScan'))) tidy();
+            else if ((t = e.target.closest('#csUndoList'))) undoList();
         };
     }
 

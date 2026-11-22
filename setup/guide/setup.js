@@ -352,7 +352,7 @@
             if (!connected()) return;
             var show = function (L) {
                 var good = !L || !L.required || (L.ok && L.state !== 'trial');
-                S.licOk = good; save(); renderSteps();
+                S.licOk = good; S.licTrial = !!(L && L.state === 'trial'); save(); renderSteps();
                 if (!$('licStatus')) return;      // moved on (or this tab handed over) while it was checking
                 $('licStatus').innerHTML = !L || !L.required ? okLine(true, 'Licence keys aren’t needed yet – press Next.')
                     : L.ok && L.state !== 'trial' ? okLine(true, L.message + (L.key ? ' (key …' + L.key + ')' : '') + ' – all done, press Next.')
@@ -393,7 +393,8 @@
                     (FAM.people.length < 10 ? '<button class="btn sm" id="fwAdd">+ Add a person</button>' : '<p class="mute">That’s the most (10).</p>') +
                     '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks and Daily To-Dos, and their own Child’s Rewards widget to put on a screen. ' +
                     'Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is the next step.</p>' +
-                    '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div><div id="famStatus"></div></div>';
+                    '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div>' +
+                    '<p class="mute small">Saving can take up to half a minute: it also asks your local council whether your bin days can be read automatically.</p><div id="famStatus"></div></div>';
             function famRow(p, i) {
                 return '<div class="fw-row"><input type="color" data-fc="' + i + '" value="' + esc(p.colour || '#3fa9f5') + '" title="Their colour">' +
                     '<input data-fn="' + i + '" maxlength="10" value="' + esc(p.name) + '" placeholder="Name" autocomplete="off">' +
@@ -404,17 +405,20 @@
             if (!connected() || !ADM || !FAM) return;
             var PAL = ['#3fa9f5', '#f5a623', '#7ed321', '#a855f7', '#f472b6', '#22d3ee', '#facc15', '#fb7185', '#34d399', '#c084fc'];
             $('fwName').oninput = function () { FAM.name = this.value; };
-            $('fwCountry').onchange = function () { var c = FD_COUNTRIES.filter(function (x) { return x[0] === $('fwCountry').value; })[0]; if (c) $('fwTz').value = c[3]; var lc = FD_localeFor($('fwCountry').value); $('fwWeek').value = lc.WeekStart; $('fwOrder').value = lc.DateOrder; };
+            // Typed-in settings are kept as you go, so adding or removing a person (which redraws the page) never loses them
+            var keep = function () { S.home = $('home').value; S.country = $('fwCountry').value; S.tz = $('fwTz').value; S.week = $('fwWeek').value; S.order = $('fwOrder').value; save(); };
+            $('home').oninput = keep; ['fwTz', 'fwWeek', 'fwOrder'].forEach(function (id) { $(id).addEventListener('change', keep); });
+            $('fwCountry').onchange = function () { var c = FD_COUNTRIES.filter(function (x) { return x[0] === $('fwCountry').value; })[0]; if (c) $('fwTz').value = c[3]; var lc = FD_localeFor($('fwCountry').value); $('fwWeek').value = lc.WeekStart; $('fwOrder').value = lc.DateOrder;  keep(); };
             $('fwRows').oninput = function (e) { var t = e.target, k;
                 if ((k = t.getAttribute('data-fn')) !== null) FAM.people[+k].name = t.value; else if ((k = t.getAttribute('data-fc')) !== null) FAM.people[+k].colour = t.value; };
             $('fwRows').onclick = function (e) { var t;
                 if ((t = e.target.closest('[data-fr]'))) { var p = FAM.people[+t.getAttribute('data-fr')]; p.rewards = !p.rewards; t.classList.toggle('on', p.rewards); }
                 else if ((t = e.target.closest('[data-fx]'))) { var q = FAM.people[+t.getAttribute('data-fx')];
                     if (q.was && !confirm('Take ' + (q.name || 'this person') + ' out of the family?' + (q.rewards ? ' Their points are kept.' : ''))) return;
-                    FAM.people.splice(+t.getAttribute('data-fx'), 1); render(); } };
+                    keep(); FAM.people.splice(+t.getAttribute('data-fx'), 1); render(); } };
             if ($('fwAdd')) $('fwAdd').onclick = function () {
                 var used = FAM.people.map(function (p) { return p.colour; }), c = PAL.filter(function (x) { return used.indexOf(x) < 0; })[0] || PAL[FAM.people.length % PAL.length];
-                FAM.people.push({ name: '', colour: c, rewards: false }); render();
+                keep(); FAM.people.push({ name: '', colour: c, rewards: false }); render();
                 var ins = document.querySelectorAll('[data-fn]'); if (ins.length) ins[ins.length - 1].focus();
             };
             $('fwSave').onclick = function () {
@@ -422,7 +426,7 @@
                 if (!list.length) { $('famStatus').innerHTML = okLine(false, 'Add at least one person'); return; }
                 if (!home) { $('famStatus').innerHTML = okLine(false, 'Add your home address or postcode'); return; }
                 var b = this; b.disabled = true; S.home = home; save();
-                $('famStatus').innerHTML = '<div class="status">Saving…</div>';
+                $('famStatus').innerHTML = '<div class="status">⏳ Saving the family, then checking your council for bin days – up to half a minute…</div>'; b.textContent = '⏳ Saving…';
                 var ctry = $('fwCountry').value, cinfo = FD_COUNTRIES.filter(function (x) { return x[0] === ctry; })[0];
                 S.country = ctry; S.tz = $('fwTz').value; S.week = $('fwWeek').value; S.order = $('fwOrder').value; save();
                 post({ action: 'saveInstall', values: { HomeAddress: home, Country: ctry, TimeZone: S.tz, WeekStart: S.week, DateOrder: S.order, Currency: cinfo ? cinfo[2].trim() : '£' } }).then(function () {
@@ -435,7 +439,7 @@
                         $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
                             : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Other → Bins.</div>');
                     }, function () { /* older Google script – the Check step will say */ });
-                }).catch(function (e) { b.disabled = false; $('famStatus').innerHTML = okLine(false, e.message); });
+                }).catch(function (e) { b.disabled = false; b.textContent = 'Save the family'; $('famStatus').innerHTML = okLine(false, e.message); });
             };
         } },
         { id: 'calendar', title: 'Your calendar', render: function () {
@@ -930,7 +934,8 @@
     function renderSteps() {
         $('steps').innerHTML = STEPS.map(function (st, i) {
             if (st.id === 'publish' && !pubShown()) return '';
-            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + '" data-i="' + i + '"><span class="n">' + (isDone(st.id) ? '✔' : st.id === 'finish' || st.id === 'done' ? '🏁' : SOLO || STEPS !== NEW ? (st.id === 'welcome' ? '👋' : num(i)) : num(i) + 1) + '</span>' + esc(st.title) + '</li>';
+            var part = !isDone(st.id) && st.id === 'licence' && S.licTrial && S.step > i;     // passed on the free trial: half done
+            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + (part ? ' part' : '') + '" data-i="' + i + '"' + (part ? ' title="Free trial – add your licence key later"' : '') + '><span class="n">' + (isDone(st.id) ? '✔' : part ? '½' : st.id === 'finish' || st.id === 'done' ? '🏁' : SOLO || STEPS !== NEW ? (st.id === 'welcome' ? '👋' : num(i)) : num(i) + 1) + '</span>' + esc(st.title) + '</li>';
         }).join('');
     }
     function render() {
@@ -1039,6 +1044,7 @@
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
         if (window.HRFloat) HRFloat.at('copied');      // the step window (if it's open) moves on to "Copy document?" – it can't be opened by this click too: the copy needs it
+        delete S.familyDone; delete S.calDone; delete S.licOk; delete S.licensed; FAM = null;      // saved into the last Sheet, not this new one (the address and country stay – same home)
         S.copiedAt = Date.now(); S.copyGone = false; window.hrCopiedNow = true; save(); setTimeout(render, 500);   // this visit's copy: no "you started before" note   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
@@ -1095,7 +1101,8 @@
         if (p.pack) { S.pack = p.pack.replace(/[^\w-]/g, ''); S.packFrom = p.packFrom || ''; save(); setTimeout(function () { toast('Moving your dashboard: set up this new one as usual – at “Publish & connect” you’ll bring everything across'); }, 600); }
         if (p.api && p.code) {
             var changed = p.api !== S.url || p.code !== S.code;
-            S.url = p.api; S.code = p.code; if (changed) S.connected = false; save();
+            S.url = p.api; S.code = p.code; if (changed) S.connected = false; if (changed && p.from === 'sheet') { delete S.familyDone; delete S.calDone; FAM = null; }   // a different Sheet: its family isn't saved yet
+            save();
         }
         if (p.from === 'sheet' && p.api && p.code && !SOLO) {
             $('page').innerHTML = '<div class="card big"><h1>⏳ One moment…</h1><p class="lead">Finding your HouseRunner setup tab.</p></div>';
