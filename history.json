@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.293",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: a 2-minute video of the Sheet steps, with each step written across the bottom. Each step in the floating step window has a ▶ Show me button that plays just that part, and the waiting screen links to the whole video."
+    ]
+  },
+  {
     "version": "2026.11.292",
     "date": "2026-11-17",
     "notes": [

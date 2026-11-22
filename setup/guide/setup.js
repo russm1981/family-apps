@@ -229,7 +229,8 @@
                     : '<div class="note bad" style="display:flex;gap:14px;align-items:flex-start"><span aria-hidden="true" style="flex:none;width:30px;height:30px;border-radius:50%;background:#ef4444;color:#fff;font:700 19px/30px Georgia,serif;text-align:center;margin-top:1px">i</span><div><b>You started a setup on this computer before</b> (a copy made on ' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + '). Carrying on below makes a <b>new</b> Sheet and starts again. ' +
                         'Your earlier copy isn’t changed or deleted – it stays in your Google Drive. ' +
                         '<span class="mute">Meant to carry on with that one instead? Open it from <a href="https://drive.google.com/drive/search?q=HouseRunner" target="_blank" rel="noopener">Google Drive</a> and follow its Start HERE tab – or, if it’s already working, use <a href="../../?connect">Connect this computer to your family</a>.</span></div></div>') : '') +
-                    '<ol class="howto"><li>Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
+                    '<ol class="howto">' + (window.HRFloat ? '<li>Click <button class="btn ghost" id="floatStart">📌 Open the step window</button> – a small window that ' + (HRFloat.floats ? 'stays on top while you work in Google Sheets' : 'sits beside Google Sheets') + ' and shows each step as you go, with the video. <span class="mute">(Optional, but it helps.)</span></li>' : '') +
+                    '<li>Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                         '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                       '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
@@ -703,6 +704,10 @@
                 bare(OLD.sheet.render()).replace(/^\s*<p class="lead">[\s\S]*?<\/p>/, '');
         }, wire: function () {
             if ($('showAll')) $('showAll').onclick = function (e) { e.preventDefault(); window.hrCopiedNow = false; render(); };
+            if ($('floatStart')) $('floatStart').onclick = function () {
+                var b = this;
+                HRFloat.open(true).then(function (ok) { b.textContent = ok ? '📌 Step window open ✓' : 'Your browser blocked it – allow pop-ups for this site'; });
+            };
             if ($('floatGo')) $('floatGo').onclick = function () {
                 if (!window.HRFloat) return;
                 HRFloat.open().then(function (ok) { if (!ok && $('floatMsg')) $('floatMsg').textContent = 'Your browser blocked it – allow pop-ups for this site, or use the picture below.'; });
@@ -1033,8 +1038,7 @@
     // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
-        if (window.HRFloat && HRFloat.floats) { try { HRFloat.open(true); } catch (x) { /* the button on the next page does it */ } }   // the steps float over the Sheet's tab
-        else if (window.HRFloat) try { localStorage.setItem('hrfloat.step', '0'); } catch (x) { /* fine */ }
+        if (window.HRFloat) HRFloat.at('copied');      // the step window (if it's open) moves on to "Copy document?" – it can't be opened by this click too: the copy needs it
         S.copiedAt = Date.now(); S.copyGone = false; window.hrCopiedNow = true; save(); setTimeout(render, 500);   // this visit's copy: no "you started before" note   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });

@@ -4,6 +4,11 @@
  * One step at a time: its picture, a line of help and, once there's a video, a "Show me" clip.
  * It closes itself when the Sheet's "Open HouseRunner" brings you back to the setup page. */
 (function () {
+    // The first two happen on the setup page and Google's copy page; then the 9 steps on the Sheet's Start HERE tab.
+    var PRE = [
+        ['Click Make my copy', 'It’s the blue <b>Make my copy</b> button on the HouseRunner setup page, behind this window. Your copy opens in a new tab.', ''],
+        ['Google asks “Copy document?” – click Make a copy', 'If Google asks you to sign in, use the account you want the dashboard in – the one with the family calendar. Your new Sheet then opens on its <b>Start HERE</b> tab.', '../../shared/brand/copy-document.png']
+    ];
     var STEPS = [
         ['In this Sheet: Extensions → Apps Script', 'Two clicks: <b>Extensions</b> in the menu, then <b>Apps Script</b>. Apps Script opens in a new tab.'],
         ['Click Deploy (top right) → New deployment', 'The blue <b>Deploy</b> button is at the top right of Apps Script.'],
@@ -16,11 +21,11 @@
         ['In your Sheet: 🏠 HouseRunner → ▶ SETUP', 'Wait for <b>Published ✅</b>, then click <b>Open HouseRunner</b>. Then close the Sheet’s tab too – setup carries on in your HouseRunner setup tab, and this guide closes by itself.<br><span class="mute">No 🏠 HouseRunner menu? Reload the Sheet.</span>']
     ];
     // The setup video, once there is one: its address and each step's part of it, in seconds ([from, to]).
-    var VIDEO = { src: '../../shared/brand/setup.mp4',
-        clips: [[17, 30], [30, 39], [39, 51], [51, 60], [60, 66], [60, 66], [66, 76], [76, 92.6], [92.6, 116]] };
+    var VIDEO = { src: '../../shared/brand/setup.mp4', from: [3, 8.5, 17, 30, 39, 51, 60, 60, 66, 76, 92.6] };   // where each step starts in it (the two before step 1 first)
+    var ALL = PRE.map(function (x) { return [x[0], x[1], x[2], '']; }).concat(STEPS.map(function (x, k) { return [x[0], x[1], '../../shared/brand/steps/s' + (k + 1) + '.png', String(k + 1)]; }));
 
     var KEY = 'hrfloat.step', win = null, i = 0;
-    try { i = Math.min(STEPS.length - 1, Math.max(0, +localStorage.getItem(KEY) || 0)); } catch (e) { i = 0; }
+    try { i = Math.min(ALL.length - 1, Math.max(0, +localStorage.getItem(KEY) || 0)); } catch (e) { i = 0; }
     function abs(u) { return new URL(u, location.href).href; }
     function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -29,39 +34,34 @@
         '.bar{height:4px;background:#243040;margin:0 14px;border-radius:3px;overflow:hidden}.bar i{display:block;height:100%;background:#3fa9f5;transition:width .2s}' +
         '.bd{flex:1;overflow:auto;padding:10px 14px}h2{font-size:18px;line-height:1.25;margin:4px 0 10px;display:flex;gap:9px}h2 span{flex:none;width:28px;height:28px;border-radius:50%;background:#3fa9f5;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px}' +
         '.pic{display:block;width:100%;border-radius:10px;background:#fff;border:1px solid #2b3a4c}p{margin:10px 0 0;color:#cbd6e2}p b{color:#fff}.mute{color:#8a9bb0;font-size:13px}' +
-        'video{width:100%;border-radius:10px;margin-top:10px;background:#000}.show{margin-top:10px}' +
+        '.vl{color:#7cc4fa;font-weight:700;text-decoration:none}.vl:hover{text-decoration:underline}' +
         '.ft{display:flex;gap:8px;align-items:center;padding:10px 14px 12px;border-top:1px solid #1e2a38}' +
         'button{font:inherit;font-weight:700;border-radius:10px;padding:9px 16px;cursor:pointer;border:1px solid transparent}.go{background:#3fa9f5;color:#fff;margin-left:auto}.gh{background:transparent;color:#cbd6e2;border-color:#33465c}' +
-        'button:disabled{opacity:.35;cursor:default}.dots{display:flex;gap:5px;justify-content:center;padding:0 14px 10px}.dots button{width:22px;height:22px;padding:0;border-radius:50%;font-size:11px;background:#1b2633;color:#9fb0c2}.dots .on{background:#3fa9f5;color:#fff}.dots .done{background:#1f5f3a;color:#bff0cf}' +
+        'button:disabled{opacity:.35;cursor:default}.dots{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;padding:0 14px 10px}.dots button{width:22px;height:22px;padding:0;border-radius:50%;font-size:11px;background:#1b2633;color:#9fb0c2}.dots .on{background:#3fa9f5;color:#fff}.dots .done{background:#1f5f3a;color:#bff0cf}' +
         '.wait{margin-top:12px;padding:9px 11px;border-radius:10px;background:#13283b;border:1px solid #23527a;font-size:13.5px}';
 
     function draw() {
         if (!win || win.closed) return;
-        var d = win.document, s = STEPS[i], last = i === STEPS.length - 1, clip = VIDEO && VIDEO.clips && VIDEO.clips[i];
+        var d = win.document, s = ALL[i], last = i === ALL.length - 1, n = s[3];
         d.body.innerHTML =
-            '<div class="hd"><b>HouseRunner setup</b> · in your Sheet<span class="n">Step ' + (i + 1) + ' of ' + STEPS.length + '</span></div>' +
-            '<div class="bar"><i style="width:' + Math.round((i + 1) / STEPS.length * 100) + '%"></i></div>' +
-            '<div class="bd"><h2><span>' + (i + 1) + '</span>' + esc(s[0]) + '</h2>' +
-            '<img class="pic" alt="" src="' + abs('../../shared/brand/steps/s' + (i + 1) + '.png') + '">' +
+            '<div class="hd"><b>HouseRunner setup</b> · ' + (n ? 'in your Sheet' : 'getting your copy') + '<span class="n">' + (n ? 'Step ' + n + ' of ' + STEPS.length : 'Before step 1') + '</span></div>' +
+            '<div class="bar"><i style="width:' + Math.round((i + 1) / ALL.length * 100) + '%"></i></div>' +
+            '<div class="bd"><h2><span>' + (n || '★') + '</span>' + esc(s[0]) + '</h2>' +
+            (s[2] ? '<img class="pic" alt="" src="' + abs(s[2]) + '">' : '') +
             '<p>' + s[1] + '</p>' +
-            (clip ? '<button class="gh show" id="show">▶ Show me</button><div id="vid"></div>' : '') +
-            (last ? '<div class="wait">⏳ The setup page is waiting for your Sheet to say <b>Published ✅</b>.</div>' : '') + '</div>' +
-            '<div class="dots">' + STEPS.map(function (x, k) { return '<button data-k="' + k + '" class="' + (k === i ? 'on' : k < i ? 'done' : '') + '" title="' + esc(x[0]) + '">' + (k < i ? '✓' : k + 1) + '</button>'; }).join('') + '</div>' +
+            (VIDEO ? '<p><a class="vl" target="_blank" rel="noopener" href="' + abs(VIDEO.src) + '#t=' + VIDEO.from[i] + '">▶ Show full video in new tab</a> <span class="mute">– starts at this step</span></p>' : '') +
+            (last ? '<div class="wait">⏳ The setup page is waiting for your Sheet to say <b>Published ✅</b>. This window closes by itself when you’re back in setup – or close it now.</div>' : '') + '</div>' +
+            '<div class="dots">' + ALL.map(function (x, k) { return '<button data-k="' + k + '" class="' + (k === i ? 'on' : k < i ? 'done' : '') + '" title="' + esc(x[0]) + '">' + (k < i ? '✓' : x[3] || '★') + '</button>'; }).join('') + '</div>' +
             '<div class="ft"><button class="gh" id="bk"' + (i ? '' : ' disabled') + '>← Back</button>' +
-            (last ? '<span class="mute" style="margin-left:auto">Last step</span>' : '<button class="go" id="nx">Done – next step →</button>') + '</div>';
+            (last ? '<button class="go" id="cl">✕ Close this step window</button>' : '<button class="go" id="nx">Done – next step →</button>') + '</div>';
         var on = function (id, f) { var b = d.getElementById(id); if (b) b.onclick = f; };
         on('bk', function () { go(i - 1); });
         on('nx', function () { go(i + 1); });
-        on('show', function () {
-            var v = d.createElement('video'); v.src = abs(VIDEO.src) + '#t=' + clip[0] + ',' + clip[1]; v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
-            v.addEventListener('loadedmetadata', function () { if (v.currentTime < clip[0] - 0.5) v.currentTime = clip[0]; });
-            v.addEventListener('timeupdate', function () { if (v.currentTime >= clip[1]) { v.pause(); v.currentTime = clip[0]; } });
-            var box = d.getElementById('vid'); box.innerHTML = ''; box.appendChild(v); this.style.display = 'none';
-        });
+        on('cl', function () { HRFloat.close(); });
         Array.prototype.forEach.call(d.querySelectorAll('.dots button'), function (b) { b.onclick = function () { go(+b.getAttribute('data-k')); }; });
     }
     function go(k) {
-        i = Math.min(STEPS.length - 1, Math.max(0, k));
+        i = Math.min(ALL.length - 1, Math.max(0, k));
         try { localStorage.setItem(KEY, String(i)); } catch (e) { /* fine */ }
         draw();
     }
@@ -98,6 +98,8 @@
             }
             return Promise.resolve(popup());
         },
+        /** Move to a step: 'copied' = Make my copy was just clicked. */
+        at: function (what) { if (what === 'copied' && i < 1) go(1); },
         close: function () { if (win && !win.closed) { try { win.close(); } catch (e) { /* fine */ } } win = null; },
         onchange: null
     };
