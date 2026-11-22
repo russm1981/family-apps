@@ -4,7 +4,7 @@
  */
 window.FD_PRIVACY = {
     version: '7',
-    updated: '8 November 2026',
+    updated: '22 November 2026',
     summary: [
         'Your family’s information is kept in <b>your own Google account</b> (a Google Sheet and script you own). The people who make HouseRunner can’t see it.',
         'To show live information, your Google script sends small pieces of information to the services you turn on – mainly <b>your home location</b> (for weather, traffic, buses and flights), your <b>postcode</b> (bins) and your <b>API keys</b>.',

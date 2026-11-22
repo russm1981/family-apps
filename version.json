@@ -1,10 +1,12 @@
 {
-  "app": "2026.11.285",
-  "script": "2026.11.119",
+  "app": "2026.11.286",
+  "script": "2026.11.120",
   "date": "2026-11-17",
   "notes": [
-    "Setting up in your Sheet: Google only tells your Sheet its published address once that address is visited – so after Deploy, click the Web app URL in Google’s box (a page says HouseRunner is published), then Done. The SETUP window then carries on by itself. You can paste the Web app URL into the window instead.",
-    "Start HERE picture: step 7 shows that click."
+    "Fewer permissions again – seven in all: HouseRunner no longer asks to read your Gmail or your Google Drive. It still emails you your links (Send email as you).",
+    "The Parcels widget has been removed – it needed to read your Gmail.",
+    "Photo slideshow: a Google Drive folder now works without any Drive permission – share the folder as “Anyone with the link – Viewer” and HouseRunner reads it the way anyone with the link can. Google Photos shared albums work as before.",
+    "Privacy notice updated to match – you’ll be asked to accept it once more."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
