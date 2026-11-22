@@ -1,12 +1,12 @@
 {
-  "app": "2026.11.286",
+  "app": "2026.11.287",
   "script": "2026.11.120",
   "date": "2026-11-17",
   "notes": [
-    "Fewer permissions again – seven in all: HouseRunner no longer asks to read your Gmail or your Google Drive. It still emails you your links (Send email as you).",
-    "The Parcels widget has been removed – it needed to read your Gmail.",
-    "Photo slideshow: a Google Drive folder now works without any Drive permission – share the folder as “Anyone with the link – Viewer” and HouseRunner reads it the way anyone with the link can. Google Photos shared albums work as before.",
-    "Privacy notice updated to match – you’ll be asked to accept it once more."
+    "Setup: after Make my copy, the setup page switches to one clear screen – “Over to your new Sheet”: follow its 8 steps, then come back. Open HouseRunner at the end brings you back to that same setup page, already connected (the extra tab closes itself).",
+    "Setup: the steps list on the left now shows finished steps with a green tick and highlights the step you’re on.",
+    "Setup: Licence key, Your family and Your calendar are separate steps again – so the calendar gets set up during setup.",
+    "The screen’s copy of the privacy notice now matches the website’s."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

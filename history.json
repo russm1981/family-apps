@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.286",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: after Make my copy, the setup page switches to one clear screen – “Over to your new Sheet”: follow its 8 steps, then come back. Open HouseRunner at the end brings you back to that same setup page, already connected (the extra tab closes itself).",
+      "Setup: the steps list on the left now shows finished steps with a green tick and highlights the step you’re on.",
+      "Setup: Licence key, Your family and Your calendar are separate steps again – so the calendar gets set up during setup.",
+      "The screen’s copy of the privacy notice now matches the website’s."
+    ]
+  },
+  {
     "version": "2026.11.285",
     "date": "2026-11-17",
     "notes": [
