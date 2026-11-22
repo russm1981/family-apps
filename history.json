@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.294",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: fixed Make my copy not opening the copy when the step window opened at the same time. The step window now has its own button, before Make my copy, and starts with making the copy.",
+      "Step window: “▶ Show full video in new tab” (starting at that step) instead of a second video inside it, and a “Close this step window” button at the end – it still closes by itself when you’re back in setup."
+    ]
+  },
+  {
     "version": "2026.11.293",
     "date": "2026-11-17",
     "notes": [

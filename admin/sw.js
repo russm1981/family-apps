@@ -1,5 +1,5 @@
 /* Keeps the app itself available offline. Calendar and points data always come live from Google. */
-const CACHE = 'admin-v297';
+const CACHE = 'admin-v298';
 const FILES = ["./", "index.html", "app.js", "admin.css", "manifest.webmanifest", "icons/icon-192.png", "../shared/fd.js", "../shared/storecheck.js", "../shared/move.js", "../shared/base.css", "../shared/brand/symbol.svg", "../shared/privacy.js", "../shared/countries.js", "../shared/pair.js", "../shared/qrcode.js"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k.startsWith('admin-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

@@ -218,3 +218,4 @@ main > .nav { position: sticky; bottom: 0; z-index: 5; background: var(--bg, #0c
 .note.big-ok { padding: 18px 22px; border-radius: 14px; margin-bottom: 22px; }
 .note.big-ok h2 { margin: 0 0 6px; font-size: 22px; }
 .note.big-ok p { margin: 0; font-size: 15.5px; }
+.brand .wiz-t { font-size: 24px; font-weight: 800; color: #fff; letter-spacing: -.2px; }
