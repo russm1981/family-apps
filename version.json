@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.278",
+  "app": "2026.11.279",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup: if the copy you made has already been published and no longer answers (deleted), the first step says so and offers Make a new copy. Otherwise it asks plainly: Still have it? Open it – or Deleted it, or want a fresh start? Make a new copy."
+    "Setup: when you’ve already made a copy, the numbered steps now follow on from either choice – kept your copy (open it from Drive) or made a new one (Google’s Copy document page) – then the Start HERE tab’s 4 steps, carrying on from wherever you got to."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

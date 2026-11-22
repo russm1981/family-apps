@@ -226,27 +226,17 @@
             if (connected()) return '<h1>Make your Google Sheet and switch it on</h1><div class="card big">' + okLine(true, 'Done – your Sheet is made and this page is connected to it.') + '<p>Press <b>Next</b>.</p></div>';
             return '<h1>Make your Google Sheet and switch it on</h1><p class="lead">This makes your family’s own Google Sheet from a blank template, in your Google account, and switches on the small program inside it so your screen and phones can reach it. ' +
                 'Only you can see it. <span class="mute">(About 3 minutes – you do it all in the new tab.)</span></p>' +
-                (tpl ? '<div class="card big">' + (S.copiedAt ? (S.copyGone ?
-                    // The copy got as far as being published, and its address doesn't answer any more: it's been deleted (or unpublished)
-                    '<div class="note bad">🗑 <b>The copy you made</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ') <b>doesn’t answer any more</b> – it looks as if it was deleted. ' +
-                    'Make a new one to start again.<div class="row" style="margin-top:10px"><a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make a new copy</a></div></div>'
-                    // Not published yet: Google doesn't tell this page whether it still exists, so offer both, plainly
-                    : '<div class="note warn">📄 <b>You made a copy</b> (' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit' })) + ').' +
-                    '<div class="row" style="margin-top:10px;gap:10px;flex-wrap:wrap"><a class="btn" target="_blank" rel="noopener" href="https://drive.google.com/drive/search?q=HouseRunner">Still have it? Open it (in Google Drive)</a>' +
-                    '<a class="btn ghost" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Deleted it, or want a fresh start? Make a new copy</a></div>' +
-                    '<p class="mute small" style="margin:8px 0 0">In Google Drive it’s called <b>HouseRunner MAIN DATA</b> (or <b>Copy of HouseRunner…</b> if you haven’t run SETUP in it yet).</p></div>') : '') +
-                    (S.copiedAt && !S.copyGone
-                    // A copy is already made: the steps follow on from whichever button above was chosen
-                    ? '<ol class="howto"><li><b>Kept your copy?</b> Open it from Google Drive (the button above). ' +
-                        '<b>Made a new one?</b> Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button.</li>' +
-                      '<li>In the Sheet, go to its <b>Start HERE</b> tab and <b>follow the 4 steps on it</b> – carry on from wherever you got to (click the picture to enlarge):' +
-                        '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 4 steps: Apps Script → Deploy, Web app, allow it, then 🏠 HouseRunner → SETUP" class="step-pic" style="max-width:560px;cursor:zoom-in"></a></li>'
-                    : '<ol class="howto"><li>' + (S.copyGone ? 'Make a new copy with the button above ' : 'Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ') +
+                (tpl ? '<div class="card big">' + (S.copiedAt && !window.hrCopiedNow ? (S.copyGone
+                    ? '<div class="note bad">🗑 <b>The copy you made on ' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + ' doesn’t answer any more</b> – it looks as if it was deleted. Just carry on below to make a new one.</div>'
+                    : '<div class="note warn">ℹ <b>You started a setup on this computer before</b> (a copy made on ' + esc(new Date(S.copiedAt).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })) + '). Carrying on below makes a <b>new</b> Sheet and starts again. ' +
+                        'Your earlier copy isn’t changed or deleted – it stays in your Google Drive. ' +
+                        '<span class="mute">Meant to carry on with that one instead? Open it from <a href="https://drive.google.com/drive/search?q=HouseRunner" target="_blank" rel="noopener">Google Drive</a> and follow its Start HERE tab – or, if it’s already working, use <a href="../../?connect">Connect this computer to your family</a>.</span></div>') : '') +
+                    '<ol class="howto"><li>Click <a class="btn" id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(tpl) + '/copy">Make my copy</a> ' +
                         '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                       '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
                       '<li>Your new Sheet opens on its <b>Start HERE</b> tab. <b>Follow the 4 steps on it</b> – they look like this (click to enlarge):' +
-                        '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 4 steps: Apps Script → Deploy, Web app, allow it, then 🏠 HouseRunner → SETUP" class="step-pic" style="max-width:560px;cursor:zoom-in"></a></li>') +
+                        '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 4 steps: Apps Script → Deploy, Web app, allow it, then 🏠 HouseRunner → SETUP" class="step-pic" style="max-width:560px;cursor:zoom-in"></a></li>' +
                     '<li>When the <b>HouseRunner – SETUP</b> window in your Sheet says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. ' +
                         '<span class="mute">This tab notices too and moves on by itself, so you can carry on in whichever you like.</span></li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
@@ -984,7 +974,7 @@
     // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
-        S.copiedAt = Date.now(); S.copyGone = false; save(); setTimeout(render, 500);   // no pop-up: a second copy is offered as its own button
+        S.copiedAt = Date.now(); S.copyGone = false; window.hrCopiedNow = true; save(); setTimeout(render, 500);   // this visit's copy: no "you started before" note   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
     try { new BroadcastChannel('hr-setup').onmessage = catchUp; } catch (e) { /* older browser: the others do it */ }
