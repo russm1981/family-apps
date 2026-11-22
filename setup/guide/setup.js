@@ -680,7 +680,9 @@
             if (connected()) return OLD.sheet.render();
             if (window.hrCopiedNow) return '<h1>⏳ Over to your new Sheet</h1>' +       // straight after Make my copy: one clear thing to do
                 '<p class="lead">Your copy opened in a new tab. <b>Follow the 9 steps on its Start HERE tab</b> – they look like this (click to enlarge):</p>' +
-                '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 8 steps" class="step-pic" style="max-width:640px;cursor:zoom-in"></a>' +
+                '<div class="card big" id="floatCard" style="margin:0 0 16px"><h3>📌 Keep the steps in view</h3><p>' + (window.HRFloat && HRFloat.floats ? 'A small window with the steps, one at a time, that <b>stays on top</b> while you work in the Sheet and Apps Script tabs.' : 'A small window with the steps, one at a time, to keep beside the Sheet while you work.') + '</p>' +
+                    '<button class="btn" id="floatGo">' + (window.HRFloat && HRFloat.isOpen() ? 'Show the step window' : 'Open the step window') + '</button> <span class="mute small" id="floatMsg"></span></div>' +
+                '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 9 steps" class="step-pic" style="max-width:640px;cursor:zoom-in"></a>' +
                 '<div class="card big" style="margin-top:18px"><h3>Then come back here</h3><p>At the end, the <b>SETUP</b> window in your Sheet says <b>Published ✅</b>. Click <b>Open HouseRunner</b> – it brings you back to <b>this page</b>, already connected, and setup carries on here by itself.</p>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b>…</div></div>' +
                 '<p class="mute small">The copy didn’t open? <a id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(CFG.templateId || '') + '/copy">Make my copy again</a> · ' +
@@ -699,6 +701,11 @@
                 bare(OLD.sheet.render()).replace(/^\s*<p class="lead">[\s\S]*?<\/p>/, '');
         }, wire: function () {
             if ($('showAll')) $('showAll').onclick = function (e) { e.preventDefault(); window.hrCopiedNow = false; render(); };
+            if ($('floatGo')) $('floatGo').onclick = function () {
+                if (!window.HRFloat) return;
+                HRFloat.open().then(function (ok) { if (!ok && $('floatMsg')) $('floatMsg').textContent = 'Your browser blocked it – allow pop-ups for this site, or use the picture below.'; });
+            };
+            if (window.HRFloat) HRFloat.onchange = function () { if ($('floatGo')) $('floatGo').textContent = HRFloat.isOpen() ? 'Show the step window' : 'Open the step window'; };
             if (OLD.sheet.wire && !window.hrCopiedNow) OLD.sheet.wire();
             if (!connected() && S.copiedAt && S.url && !S.copyGone && !window.hrGonePinged) {
                 window.hrGonePinged = true;   // once per visit
@@ -963,6 +970,7 @@
     var HRB = { postMessage: function () {} }; try { HRB = new BroadcastChannel('hr-setup'); } catch (e) { /* older browser */ }
     var hrbListen = function (e) { if (e && e.data === 'anyone') { try { HRB.postMessage('here'); } catch (x) { /* fine */ } } else catchUp(); };
     var arrived = function () {
+        if (window.HRFloat) HRFloat.close();      // the steps window has done its job
         toast('Connected to your HouseRunner Google Sheet \u2705');
         var pg = $('page'); if (pg && !pg.querySelector('.arrived')) pg.insertAdjacentHTML('afterbegin', '<div class="note ok arrived">✅ <b>Your Google Sheet is published and connected – that part’s done.</b> You can close the Sheet’s tab. ' +
             'Carry on with this step, then press <b>Next →</b> at the bottom right.</div>');
@@ -995,6 +1003,8 @@
     // "Make my copy" clicked: remembered, so a second click warns that a Sheet was already made
     document.addEventListener('click', function (e) {
         var c = e.target.closest && e.target.closest('#copyGo'); if (!c) return;
+        if (window.HRFloat && HRFloat.floats) { try { HRFloat.open(true); } catch (x) { /* the button on the next page does it */ } }   // the steps float over the Sheet's tab
+        else if (window.HRFloat) try { localStorage.setItem('hrfloat.step', '0'); } catch (x) { /* fine */ }
         S.copiedAt = Date.now(); S.copyGone = false; window.hrCopiedNow = true; save(); setTimeout(render, 500);   // this visit's copy: no "you started before" note   // no pop-up: a second copy is offered as its own button
     });
     document.addEventListener('visibilitychange', function () { if (!document.hidden) catchUp(); });
