@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.118';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.119';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -267,7 +267,7 @@ const WIDGET_TYPES = {
   photos: { name: 'Photo slideshow', icon: '\uD83D\uDDBC\uFE0F', sizes: ['full', 'half'], ttl: 30 * 60, about: 'Photos from a Google Drive folder or a shared Google Photos album.',
     settings: [
       { k: 'Source', label: 'Photos from', type: 'select', def: 'Google Drive folder', options: ['Google Drive folder', 'Google Photos shared album'] },
-      { k: 'DriveFolder', label: 'Google Drive folder link', type: 'url', def: '', help: 'Make a folder in Drive, share it as "Anyone with the link \u2013 Viewer", and paste its link.' },
+      { k: 'DriveFolder', label: 'Google Drive folder link', type: 'url', def: '', help: 'Make a folder in Drive, share it as "Anyone with the link \u2013 Viewer", and paste its link. HouseRunner reads it like anyone with the link would \u2013 it doesn\u2019t need permission to your Drive.' },
       { k: 'AlbumLink', label: 'Google Photos album link', type: 'url', def: '', help: 'In Google Photos: open the album \u2192 Share \u2192 Create link, then paste it here.' },
       { k: 'Seconds', label: 'Change photo every (seconds)', type: 'number', def: 15, min: 5, max: 600 },
       { k: 'Order', label: 'Order', type: 'select', def: 'Shuffle', options: ['Shuffle', 'Newest first', 'In order'] },
@@ -343,12 +343,6 @@ Object.assign(WIDGET_TYPES, {
       { k: 'AddOnScreen', label: 'Allow adding on the screen', type: 'bool', def: true },
     ],
     data: (s) => todo_(s), nocache: true },
-  parcels: { name: 'Parcels', icon: '📦', sizes: ['half', 'full'], ttl: 15 * 60, about: 'Deliveries on their way, read from delivery emails in your Gmail (Royal Mail, Evri, DPD, Amazon…).',
-    settings: [
-      { k: 'Days', label: 'Look back (days)', type: 'number', def: 7, min: 1, max: 30 },
-      { k: 'KeepDelivered', label: 'Keep delivered parcels on screen (hours)', type: 'number', def: 24, min: 0, max: 168 },
-    ],
-    data: (s) => parcels_(s) },
   kidrem: { name: 'Reminders', icon: '🎒', sizes: ['half', 'full'], about: 'Everyone’s reminders together – sports kit, library books, swimming – for today, or tomorrow’s from the evening before. The reminders themselves are set up on the Reminders page.',
     settings: [
       { k: 'Title', label: 'Title', type: 'text', def: 'Reminders', max: 30 },
@@ -415,7 +409,6 @@ const DEFAULT_WIDGETS = [
   ['whereabouts1', 'family', 1, 'whereabouts', 'full', 'Yes'],
   ['todo1', 'family', 2, 'todo', 'full', 'Yes'],
   ['memo1', 'family', 3, 'memo', 'half', 'Yes'],
-  ['parcels1', 'family', 4, 'parcels', 'half', 'Yes'],
   ['bus1', 'family', 5, 'bus', 'half', 'Yes'],
   ['quote1', 'family', 6, 'quote', 'half', 'Yes'],
   ['apod1', 'discover', 1, 'apod', 'full', 'Yes'],
@@ -799,9 +792,7 @@ function doGet(e) {
 const OPT_SCOPES = {
   calendar: ['https://www.googleapis.com/auth/calendar', 'Google Calendar', 'the calendar'],
   // Read-only Gmail (Sheets set up before 2026.11.269 have Google's all-in-one Gmail permission instead – that counts too)
-  gmail: ['https://www.googleapis.com/auth/gmail.readonly', 'Gmail (read only)', 'the Parcels widget', 'https://mail.google.com/'],
   send: ['https://www.googleapis.com/auth/script.send_mail', 'Send email as you', 'emailing you your links', 'https://mail.google.com/'],
-  drive: ['https://www.googleapis.com/auth/drive.readonly', 'Google Drive (read only)', 'the Photo slideshow'],
   tasks: ['https://www.googleapis.com/auth/tasks', 'Google Tasks', 'the To-Do List (Google)'],
 };
 function hasScope_(scope) {
@@ -814,11 +805,6 @@ function granted_(k) {
   const o = OPT_SCOPES[k], a = hasScope_(o[0]);
   if (a === null) return true;      // can't tell: try, and let Google's own error show
   return a || (o[3] ? hasScope_(o[3]) === true : false);
-}
-/** Which Gmail route this Sheet has: 'api' (read-only permission + the Gmail service) or 'app' (the older all-in-one permission). */
-function gmailRoute_() {
-  if (hasScope_(OPT_SCOPES.gmail[0]) && typeof Gmail !== 'undefined' && Gmail.Users) return 'api';
-  return hasScope_('https://mail.google.com/') ? 'app' : '';
 }
 /** Email to the Google account's own address (or the moving pack's new account): MailApp where allowed, else the older Gmail route. */
 function sendMail_(to, subject, body) {
@@ -2693,7 +2679,7 @@ function photos_(s) {
 function drivePhotos_(link) {
   const id = (String(link || '').match(/folders\/([\w-]{10,})/) || String(link || '').match(/^([\w-]{20,})$/) || [])[1];
   if (!id) throw new Error('Paste a Google Drive folder link into the Photos widget settings');
-  needScope_('drive', 'The Photo slideshow');
+  if (!hasScope_('https://www.googleapis.com/auth/drive.readonly')) return publicDrivePhotos_(id);   // Sheets from 2026.11.285 on
   const folder = DriveApp.getFolderById(id);
   const out = [];
   const files = folder.getFiles();
@@ -2708,6 +2694,25 @@ function drivePhotos_(link) {
   const shared = /^ANYONE/.test(String(access));
   return { title: folder.getName(), photos: out,
     warning: shared ? '' : 'Share the "' + folder.getName() + '" folder as \u201cAnyone with the link \u2013 Viewer\u201d so the screen can show the photos.' };
+}
+
+/** A Drive folder shared "Anyone with the link – Viewer", read the way anyone with the link can see it – so HouseRunner needs no
+ * permission to your Google Drive. Google's simple "embedded folder" page lists each file's id and name. */
+function publicDrivePhotos_(id) {
+  const r = uf_('https://drive.google.com/embeddedfolderview?id=' + encodeURIComponent(id), { muteHttpExceptions: true, followRedirects: true });
+  const html = r.getResponseCode() === 200 ? r.getContentText() : '';
+  if (!/flip-entry/.test(html) && !/<title>/.test(html)) throw new Error('Couldn\u2019t open that Drive folder. Share it as \u201cAnyone with the link \u2013 Viewer\u201d, then try again.');
+  const title = (html.match(/<title>([^<]*)<\/title>/) || [])[1] || 'Photos', out = [], seen = {};
+  const re = /id="entry-([\w-]{20,})"[\s\S]*?flip-entry-title">([^<]*)</g;
+  let m;
+  while ((m = re.exec(html)) && out.length < 300) {
+    const fid = m[1], name = m[2].replace(/&amp;/g, '&').replace(/&#39;/g, '\'');
+    if (seen[fid] || !/\.(jpe?g|png|gif|webp|heic|heif|bmp)$/i.test(name)) continue;
+    seen[fid] = 1;
+    out.push({ src: 'https://drive.google.com/thumbnail?id=' + fid + '&sz=w1920', alt: 'https://lh3.googleusercontent.com/d/' + fid + '=w1920', name: name.replace(/\.[^.]+$/, ''), added: '', t: 0 });
+  }
+  if (!out.length) return { title: clean_(title), photos: [], warning: /flip-entry/.test(html) ? 'No photos found in that folder (JPEG, PNG, HEIC…).' : 'Share the Drive folder as \u201cAnyone with the link \u2013 Viewer\u201d so the screen can show the photos.' };
+  return { title: clean_(title), photos: out, warning: '' };
 }
 
 /**
@@ -3752,58 +3757,6 @@ function todo_(s) {
   if (Object.keys(alive).length !== Object.keys(st).length) PropertiesService.getScriptProperties().setProperty('todoStars', JSON.stringify(alive));   // forget deleted tasks
   const open = items.filter(i => !i.done).sort((a, b) => (b.star - a.star) || ((a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0));
   return { name: s.Title, source: 'tasks', today: fmt_(new Date(), 'yyyy-MM-dd'), items: open.concat(items.filter(i => i.done)) };
-}
-
-/* ------------------------------------------------------ parcels (Gmail) */
-
-const CARRIERS = [[/royal ?mail/i, 'Royal Mail'], [/parcelforce/i, 'Parcelforce'], [/evri|hermes/i, 'Evri'], [/\bdpd\b|dpd\./i, 'DPD'],
-  [/yodel/i, 'Yodel'], [/\bups\b|ups\.com/i, 'UPS'], [/\bdhl\b|dhl\./i, 'DHL'], [/inpost/i, 'InPost'], [/fedex/i, 'FedEx'], [/amazon/i, 'Amazon'],
-  [/ebay/i, 'eBay'], [/argos/i, 'Argos'], [/john ?lewis/i, 'John Lewis'], [/apc/i, 'APC']];
-const PARCEL_STATUS = [
-  [/\bdelivered\b|has been delivered|was delivered/i, 'Delivered', 1],
-  [/attempted|missed (?:you|your)|sorry we missed|couldn.?t deliver|card through/i, 'Missed delivery', 6],
-  [/out for delivery|with (?:your|the) driver|arriving today|delivered today|due today|coming today/i, 'Arriving today', 5],
-  [/arriving tomorrow|delivery tomorrow|due tomorrow/i, 'Arriving tomorrow', 4],
-  [/dispatched|despatched|shipped|on (?:its|the) way|has left|in transit|is coming|been sent/i, 'On its way', 3],
-];
-/** Delivery emails from the last few days, newest status per email thread. */
-function parcels_(s) {
-  const days = Number(s.Days) || 7, keep = (Number(s.KeepDelivered) || 0) * 3600000;
-  const q = 'newer_than:' + days + 'd -in:spam -in:trash subject:(delivered OR delivery OR dispatched OR despatched OR shipped OR parcel OR package OR "on its way" OR "out for delivery" OR arriving OR "missed you")';
-  const out = [];
-  needScope_('gmail', 'The Parcels widget');
-  parcelMail_(q).forEach(m => {
-    const subj = m.subject, from = m.from;
-    let st = PARCEL_STATUS.find(x => x[0].test(subj));
-    if (!st) st = PARCEL_STATUS.find(x => x[0].test(m.body()));
-    if (!st) return;
-    const when = m.date;
-    if (st[1] === 'Delivered' && Date.now() - when.getTime() > keep) return;
-    const who = (CARRIERS.find(c => c[0].test(from)) || CARRIERS.find(c => c[0].test(subj)) ||
-      [null, from.replace(/<.*>/, '').replace(/"/g, '').trim().slice(0, 24) || 'Parcel'])[1];
-    out.push({ who: who, status: st[1], rank: st[2], what: subj.replace(/^(re|fw|fwd):\s*/i, '').slice(0, 90), at: when.toISOString() });
-  });
-  out.sort((a, b) => (b.rank - a.rank) || (a.at < b.at ? 1 : -1));
-  return { items: out.slice(0, 12) };
-}
-
-/** The newest email of each matching conversation: { subject, from, date, body() }. Read only – through Google's Gmail service where
- * this Sheet has the read-only permission, otherwise (older Sheets) through GmailApp. */
-function parcelMail_(q) {
-  if (gmailRoute_() === 'api') {
-    const seen = {}, out = [];
-    ((Gmail.Users.Messages.list('me', { q: q, maxResults: 60 }) || {}).messages || []).forEach(x => {
-      if (seen[x.threadId] || out.length >= 40) return; seen[x.threadId] = 1;   // newest first: the first of each conversation
-      const m = Gmail.Users.Messages.get('me', x.id, { format: 'metadata', metadataHeaders: ['Subject', 'From'] });
-      const h = n => ((m.payload && m.payload.headers || []).filter(y => y.name === n)[0] || {}).value || '';
-      out.push({ subject: String(h('Subject')), from: String(h('From')), date: new Date(Number(m.internalDate)), body: () => String(m.snippet || '') });
-    });
-    return out;
-  }
-  return GmailApp.search(q, 0, 40).map(t => {
-    const msgs = t.getMessages(), m = msgs[msgs.length - 1];
-    return { subject: String(m.getSubject() || ''), from: String(m.getFrom() || ''), date: m.getDate(), body: () => String(m.getPlainBody() || '').slice(0, 1500) };
-  });
 }
 
 /* ------------------------------------------------------ memos */

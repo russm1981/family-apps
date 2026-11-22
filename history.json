@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.284",
+    "date": "2026-11-17",
+    "notes": [
+      "Setting up in your Sheet: Google only tells your Sheet its published address once that address is visited – so after Deploy, click the Web app URL in Google’s box (a page says HouseRunner is published), then Done. The SETUP window then carries on by itself. You can paste the Web app URL into the window instead.",
+      "Start HERE picture: step 7 shows that click."
+    ]
+  },
+  {
     "version": "2026.11.283",
     "date": "2026-11-17",
     "notes": [

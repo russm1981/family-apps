@@ -22,9 +22,7 @@ window.FD_HELP = [
 <ul>
 <li><b>See, edit, create and delete only the specific spreadsheets this application has been installed in</b> – your family’s information is kept in your own Sheet. HouseRunner can’t see your other spreadsheets.</li>
 <li><b>Google Calendar</b> – the calendar screen, adding events, Today &amp; tomorrow, birthdays and the holiday countdown.</li>
-<li><b>View your email messages and settings</b> (Gmail, read only) – the <b>Parcels</b> widget looks for delivery emails. It can’t change, send or delete anything.</li>
 <li><b>Send email as you</b> – HouseRunner emails <b>you</b> a backup of your private links.</li>
-<li><b>Google Drive</b> (see and download files) – the <b>Photo slideshow</b> from a folder you choose. Read only.</li>
 <li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>
 <li><b>Connect to an external service</b> – downloading the HouseRunner program, live information (weather, trains, buses, traffic, flights, news) and the daily licence check.</li>
 <li><b>Display and run third-party web content in prompts and sidebars</b> – the 🏠 HouseRunner menu and its windows in your Sheet.</li>
@@ -32,7 +30,7 @@ window.FD_HELP = [
 </ul>
 <p>If one is unticked, ▶ HouseRunner – SETUP asks again until all are allowed. If one is taken away later, only the part that needs it stops, and says which permission it needs.</p>
 <h2>Rather not give your main Google account these permissions? Use a separate one</h2>
-<p>If you’d rather not give your main Google account these permissions, make a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">new Google account</a> just for HouseRunner and do the setup signed in to it. The catch: the calendar, parcels, photos and tasks it shows are that account’s. Share your family calendar with the new account (Google Calendar → ⚙ Settings → your calendar → <b>Share with specific people</b>, “Make changes to events”), and add the new account on your phone if you want to add events or tasks from Google’s own apps. HouseRunner’s phone apps work either way.</p>
+<p>If you’d rather not give your main Google account these permissions, make a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">new Google account</a> just for HouseRunner and do the setup signed in to it. The catch: the calendar and tasks it shows are that account’s. Share your family calendar with the new account (Google Calendar → ⚙ Settings → your calendar → <b>Share with specific people</b>, “Make changes to events”), and add the new account on your phone if you want to add events or tasks from Google’s own apps. HouseRunner’s phone apps work either way.</p>
 `
   },
   {
@@ -217,7 +215,7 @@ window.FD_HELP = [
     id: 'account', icon: '📦', title: 'Move to a different Google account',
     summary: 'You can move the whole dashboard to another Google account – for example a Gmail account just for the dashboard – and keep everything.',
     body: `
-<p>Some families prefer the dashboard’s permissions (calendar, Gmail for parcels…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
+<p>Some families prefer the dashboard’s permissions (calendar, tasks…) to be on a separate Google account rather than their main one. Moving takes about 10 minutes and nothing is lost.</p>
 <ol>
 <li>If you haven’t got one, make the new Google account (e.g. at gmail.com).</li>
 <li>On a computer (or in Family Admin): <b>System → My data (Google) → Move to a different Google account</b>. Type the new account’s email and press <b>Make a moving pack</b>. It gives you a link – copy it or send it to yourself.</li>

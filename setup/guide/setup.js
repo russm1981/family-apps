@@ -17,14 +17,12 @@
             '<p><b>All of them are needed</b> – please leave every box ticked (setup asks again for any that aren’t):</p><ul class="mute">' +
             '<li><b>This spreadsheet</b> (“the spreadsheets this application has been installed in”) – your family’s information is kept in your own Sheet. It can’t see your other spreadsheets.</li>' +
             '<li><b>Google Calendar</b> – the calendar, adding events, birthdays and the holiday countdown.</li>' +
-            '<li><b>Gmail, read only</b> (“view your email messages”) – the <b>Parcels</b> widget finds delivery emails. It can’t change or delete anything.</li>' +
             '<li><b>Send email as you</b> – emails <b>you</b> a backup of your private links.</li>' +
-            '<li><b>Google Drive (see files)</b> – the <b>Photo slideshow</b> from a folder you choose.</li>' +
             '<li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>' +
             '<li><b>Connect to an external service</b> – fetching the HouseRunner program, live information (weather, trains, traffic…) and the licence check.</li>' +
             '<li><b>Display content in prompts and sidebars</b> – the 🏠 HouseRunner menu in your Sheet. <b>Run when you’re not present</b> – the timers that keep it up to date.</li>' +
             '<div class="note warn"><b>Don’t want to give your main Google account these permissions?</b> Make a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">new Google account just for HouseRunner</a> and do this setup signed in to that one. ' +
-            'The catch: it shows that account’s calendar, emails, photos and tasks – so share your family calendar with it, and add it on your phone to add events or tasks from Google’s own apps.</div>' +
+            'The catch: it shows that account’s calendar and tasks – so share your family calendar with it, and add it on your phone to add events or tasks from Google’s own apps.</div>' +
             '</div>';
     }
     function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
@@ -170,11 +168,11 @@
                     '<li><b>Your phone</b> – you’ll put the <b>Family Admin</b> app on it. It’s important: if this website ever forgets your family, the app is how you connect it again (we’ll also email you a backup link).</li></ul>' +
                     '<p class="mute small">No licence key yet? That’s fine – you get a 14-day free trial and can add it later. No display yet? You can try the dashboard in another tab on this computer.</p></div>' +
                 '<div class="note"><h3>🔐 Before you start: Google will ask for permissions</h3>' +
-                    '<p>HouseRunner runs as a small program in a Google Sheet in <b>your</b> Google account, so Google asks you to allow it to use parts of that account – Sheets, Calendar, Gmail (for the Parcels widget), Drive (for photos), Tasks. ' +
+                    '<p>HouseRunner runs as a small program in a Google Sheet in <b>your</b> Google account, so Google asks you to allow it to use parts of that account – Sheets, Calendar, Tasks, and sending you an email. ' +
                     'Google shows a red “Google hasn’t verified this app” page on the way: that’s normal for your own private copy. When it lists the permissions, click <b>Select all</b> – HouseRunner needs every one. ' +
                     '<a href="../../help/#permissions" target="_blank" rel="noopener">Why each permission is needed ›</a></p>' +
                     '<p><b>Rather keep it away from your main Google account?</b> You can <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">make a new Google account</a> just for HouseRunner, and do this whole setup signed in to that one. ' +
-                    'The catch: the calendar, Gmail parcels, photos and Google Tasks it shows are that account’s, not your main one’s – so share your family calendar with the new account (Google Calendar → Settings → Share with specific people), ' +
+                    'The catch: the calendar and Google Tasks it shows are that account’s, not your main one’s – so share your family calendar with the new account (Google Calendar → Settings → Share with specific people), ' +
                     'and to add events or tasks from your phone’s own Google apps, add the new account on your phone too. HouseRunner’s own phone apps work either way.</p></div>' +
                 '<div class="card big"><h3>How it works</h3>' +
                 '<p>HouseRunner is standard software that runs on your display and your phones. Everything that belongs to your family – names, the calendar, ' +

@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.284",
-  "script": "2026.11.118",
+  "app": "2026.11.285",
+  "script": "2026.11.119",
   "date": "2026-11-17",
   "notes": [
-    "Start HERE picture: now 8 steps in two rows – A: publish your dashboard (Extensions → Apps Script, Deploy → New deployment, Web app settings, Authorize access) and B: allow it, then run SETUP (Google’s warning, Select all, Done, then 🏠 HouseRunner → ▶ SETUP → Open HouseRunner)."
+    "Setting up in your Sheet: Google only tells your Sheet its published address once that address is visited – so after Deploy, click the Web app URL in Google’s box (a page says HouseRunner is published), then Done. The SETUP window then carries on by itself. You can paste the Web app URL into the window instead.",
+    "Start HERE picture: step 7 shows that click."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
