@@ -804,7 +804,7 @@
         };
         $('faMain').innerHTML = '<a class="fa-back" href="#/more">‹ More</a>' + h('Add a phone') +
             '<p class="fa-lead">On the other phone, point the camera at a code and open the link – the app opens already connected. Then add it to the home screen: <b>iPhone</b> – Share → Add to Home Screen; <b>Android</b> – ⋮ → Install app.</p>' +
-            one('admin', '', 'Family Admin', 'for the grown-ups – this app') + one('dashboard', '', 'Family Dashboard', 'for everyone – the dashboard itself') +
+            one('admin', '', 'Family Admin', 'for adults / admins – this app') + one('dashboard', '', 'Family Dashboard', 'for everyone – the dashboard itself') +
             '<p class="fa-note">These codes contain your private access code – only use them for your own family’s phones.</p>';
         $('faMain').onclick = function (e) {
             var b = e.target.closest('[data-share]'); if (!b) return;

@@ -374,7 +374,7 @@
                 '<div class="hm-dev hm-code"><span>🔢</span><div><a class="btn" href="#" data-go="s/devices">Type a display’s code ›</a>' +
                 '<p class="mute small">' + (PHONE ? 'Or on a computer: <b>' + esc(host) + '</b> → Home → <b>Type a display’s code</b>.' : 'Not at this computer? On a phone with <b>Family Admin</b>: <b>More → Connect a display</b> – or scan the display’s QR code with that phone’s camera.') + '</p></div></div></div>') +
             card('Connect a new phone', '<p class="small">Scan a code with the phone’s camera – the app opens already connected to your family. Then add it to the home screen: <b>iPhone</b> – Safari → Share → <b>Add to Home Screen</b>; <b>Android</b> – Chrome → ⋮ → <b>Install app</b>.</p>' +
-                '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for the grown-ups', 'Points and tasks, notes, lists, the calendar and everyday settings.') +
+                '<div class="hm-apps">' + app('admin', '', 'Family Admin', 'for adults / admins', 'Notes, lists, the calendar and everyday settings – and points and tasks, if you use rewards.') +
                 app('dashboard', '', 'Family Dashboard', 'for everyone', 'The dashboard itself on the phone – the calendar, the children’s cards and every widget, one under another.') + '</div>' +
                 '<p class="mute small">These codes contain your private access code – only scan them with your own family’s phones.</p>');
     }
@@ -2748,7 +2748,7 @@
     var devPick = 'admin';
     function secDevices() {
         var c = FD.config(), base = appsRoot();
-        var APPS = { admin: ['⚙ Family Admin (adults)', 'The grown-ups’ app: give and take away points, tick off tasks, add notes and list items, change everyday settings, and look after the display and licence.'],
+        var APPS = { admin: ['⚙ Family Admin (adults / admins)', 'For whoever runs the dashboard: add notes, lists and reminders, change everyday settings, and look after the display and licence – and, if you use the reward system, give points and tick off tasks.'],
             dashboard: ['▦ Family Dashboard (everyone)', 'The dashboard itself on a phone: the calendar (it opens on it), the children’s cards and every widget, one under another. Add events from its calendar. It can’t change settings, and phones don’t count as displays.'] };
         if (!APPS[devPick]) devPick = 'admin';
         $('body').innerHTML =

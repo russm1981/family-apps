@@ -226,3 +226,4 @@ main > .nav { position: sticky; bottom: 0; z-index: 5; background: var(--bg, #0c
 button:disabled, .btn:disabled, .btn[disabled] { opacity: .45 !important; filter: saturate(.35); cursor: not-allowed; }
 button[data-hrbusy] { cursor: progress !important; }
 html.hr-busy, html.hr-busy * { cursor: progress !important; }
+table.check tr.todo td { color: var(--mute); } table.check tr.todo td:nth-child(3) { color: var(--mute); } table.check tr.wait td:nth-child(3) { color: #f5a623; }

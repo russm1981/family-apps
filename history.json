@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.297",
+    "date": "2026-11-17",
+    "notes": [
+      "Everywhere: while something you clicked is saving, that button is greyed out and the mouse pointer shows it’s working – so it’s clear not to click again. Greyed-out buttons now look greyed out on every page (they didn’t on the setup pages)."
+    ]
+  },
+  {
     "version": "2026.11.296",
     "date": "2026-11-17",
     "notes": [

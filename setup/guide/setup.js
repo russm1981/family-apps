@@ -182,7 +182,7 @@
                 '<div class="card big"><h3>What you’ll end up with</h3><ul>' +
                 '<li>A touch dashboard: weather, traffic, trains, bins, calendar, points for the children, photos and more.</li>' +
                 '<li>A Google Sheet that holds everything – yours, in your own Google account.</li>' +
-                '<li>Two phone apps: <b>Family Dashboard</b> (everyone – the dashboard on a phone) and <b>Family Admin</b> (adults – the settings).</li></ul></div>' +
+                '<li>Two phone apps: <b>Family Dashboard</b> (everyone – the dashboard on a phone) and <b>Family Admin</b> (adults / admins – the settings).</li></ul></div>' +
                 '<p class="mute">Stuck at any point? Every step has a <b>Help</b> link, or see the <a href="../../help/" target="_blank" rel="noopener">help centre</a>.</p>';
         }, wire: function () {
             if ($('suAmend')) $('suAmend').onclick = function () { S.mode = 'amend'; save(); render(); };
@@ -507,12 +507,13 @@
             var app = S.papp === 'dashboard' || S.papp === 'calendar' ? 'dashboard' : 'admin', os = S.pos === 'android' ? 'android' : 'iphone';
             var tab = function (attr, k, cur, t) { return '<button ' + attr + '="' + k + '" class="' + (cur === k ? 'on' : '') + '">' + t + '</button>'; };
             var A = app === 'admin'
-                ? { ico: '⚙', name: 'Family Admin', who: 'for the adults', what: 'The grown-ups’ app: give and take away the children’s points and tick off their tasks, add notes and shopping-list items, change the widgets’ everyday settings, and look after the screen and the licence. Put it on each adult’s phone.' }
+                ? { ico: '⚙', name: 'Family Admin', who: 'for adults / admins', what: 'The app for whoever runs the dashboard: add notes, lists and reminders, change the widgets’ everyday settings, and look after the screen and the licence. ' +
+                    'If you use the reward system, it’s also where points are given and taken away and tasks ticked off. Put it on the phone of each person who looks after the dashboard.' }
                 : { ico: '▦', name: 'Family Dashboard', who: 'for everyone', what: 'The dashboard itself on a phone: the calendar (it opens on it – add events there), the children’s cards and every widget, one under another. Put it on everyone’s phone – the children’s too, if they have one. It can’t change settings, and phones don’t count as displays on your licence.' };
             return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If houserunner.app website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
                     'If a device ever forgets your family: the first tab of your Google Sheet, <b>My ID</b>, has a link that connects it again (it’s also been emailed to your Google account – “Your HouseRunner links”).</p></div>' +
-                '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'dashboard', app, '▦ Family Dashboard (everyone)') + '</div>' +
+                '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults / admins)') + tab('data-papp', 'dashboard', app, '▦ Family Dashboard (everyone)') + '</div>' +
                 '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
                     '<ol class="howto"><li><b>Scan this code</b> with the phone’s camera and tap the link that appears. It opens ' + A.name + ', already connected to your family – the code holds your family’s private link.' +
                     qr(linkFor(app)) +
@@ -770,16 +771,19 @@
                     return '<div class="fin-r ' + cls + '"><span class="fin-i">' + (cls === 'ok' ? '✔' : cls === 'info' ? 'ℹ' : '⚠') + '</span><span class="fin-t"><small>' + esc(cls === 'ok' ? r[1] : r[2]) + '</small></span>' +
                         (cls === 'ok' ? '' : '<button class="btn sm ghost" data-fin="' + ids.indexOf(r[3]) + '">Go to this step</button>') + '</div>';
                 }).join('') + '</div>' +
-                '<div class="card big"><h3>Checking every widget</h3><p class="mute">HouseRunner asks your Sheet to fetch each widget’s live data, and says if anything needs attention.</p><div id="checkOut"></div>' +
-                    '<button class="btn ghost sm" id="runCheck" style="margin-top:10px">Check again</button></div>' +
-                '<div class="card big"><h3>Traffic, trains, buses…</h3><p>A few widgets need a free key from the service they use (TomTom for traffic and maps, National Rail for trains, TransportAPI for buses, NASA, Spotify). ' +
-                    'They’re optional – add them when you want those widgets: houserunner.app → System → <a href="../../#/s/keys">API keys</a>.</p></div>' +
-                '<div class="card big"><h3>What next</h3><ul><li>Change anything later at <a href="../../">houserunner.app</a> on this computer, or in the Family Admin app on your phone.</li>' +
-                    '<li>Set up the reward system – Reward Tasks and Daily To-Dos – at houserunner.app → Rewards, and reminders at houserunner.app → Reminders.</li><li>Arrange the widgets on each screen at houserunner.app → Screens.</li></ul>' +
+                (S.mode === 'new' ? '' : '<div class="card big"><h3>Checking every widget</h3><p class="mute">HouseRunner asks your Sheet to fetch each widget’s live data, and says if anything needs attention.</p><div id="checkOut"></div>' +
+                    '<button class="btn ghost sm" id="runCheck" style="margin-top:10px">Check again</button></div>') +
+                '<div class="card big"><h3>What next</h3><p>After setup, these are the next things to do, at <a href="../../">houserunner.app</a> on this computer (or in Family Admin on your phone) – in any order, whenever you like:</p>' +
+                    '<ol class="howto">' +
+                    '<li><b>Set up the widgets on your screens</b> – houserunner.app → <b>Screens</b>. Your screens start with a few widgets as examples: move them, remove them, or add others. ' +
+                        '<span class="mute">Some widgets need something before they show anything – your council for bin days, a shared folder for photos, or a free key from the service for traffic, trains and buses. ' +
+                        'Each one asks for what it needs when you add it or click it, with the steps to get it. Until then it shows a short note on the screen saying what it needs.</span></li>' +
+                    '<li><b>Add your lists, notes and reminders</b> – houserunner.app → <b>Lists</b>, <b>Notes</b> and <b>Reminders</b> (sports kit, library books – the things to remember each day).</li>' +
+                    '<li><b>Set up the reward system</b> <span class="mute">(only if you’re using it)</span> – houserunner.app → <b>Rewards</b>: the Reward Tasks and Daily To-Dos that earn points, and what the points buy.</li></ol>' +
                     '<a class="btn" href="../../">Open houserunner.app</a></div>';
         }, wire: function () {
             $('page').querySelectorAll('[data-fin]').forEach(function (b) { b.onclick = function () { go(+b.getAttribute('data-fin')); }; });
-            if (connected()) { $('runCheck').onclick = runCheck; runCheck(); } else $('checkOut').innerHTML = needConnect();
+            if ($('runCheck')) { if (connected()) { $('runCheck').onclick = runCheck; runCheck(); } else $('checkOut').innerHTML = needConnect(); }
         } }
     ];
     var STEPS = SOLO ? FULL : NEW;
@@ -882,18 +886,20 @@
                     return get('page', { page: pg.id }).then(function (d) {
                         L.widgets.filter(function (w) { return w.page === pg.id && w.show; }).forEach(function (w) {
                             var v = d.data[w.id], err = v && v.error, info = summary(w, v);
-                            rows.push([pg.title, typeName(w.type), !err, err || info]);
+                            var st = !err ? true : /\b(add an?|paste an?|set up your|choose|pick|type) .*|no .* (yet|set)|key in system|not set up/i.test(err) ? 'setup' : /busy|tries again|try again later|later/i.test(err) ? 'wait' : false;
+                            rows.push([pg.title, typeName(w.type), st, err || info]);
                         });
                     });
                 });
             }, Promise.resolve());
         }).then(function () {
-            var bad = rows.filter(function (r) { return !r[2]; }).length;
+            var bad = rows.filter(function (r) { return r[2] === false; }).length, todo = rows.filter(function (r) { return r[2] === 'setup'; }).length;
             S.checkedOk = !bad; save(); renderSteps();
-            out.innerHTML = (bad ? '<div class="note bad">' + bad + ' thing' + (bad > 1 ? 's' : '') + ' to look at – each has a hint below. Fix it in the Family Admin app (Widgets / Install tabs), then run the check again.</div>'
-                : '<div class="note ok">🎉 Everything is working. Enjoy your dashboard!</div>') +
+            out.innerHTML = (bad ? '<div class="note bad">' + bad + ' thing' + (bad > 1 ? 's' : '') + ' to look at – each has a hint below. Fix it at houserunner.app → Screens (click the widget), then run the check again.</div>'
+                : '<div class="note ok">✔ Nothing is broken.' + (todo ? ' ' + todo + ' widget' + (todo > 1 ? 's are' : ' is') + ' waiting to be set up – that’s normal: set each one up when you want it (houserunner.app → Screens → click the widget).' : ' Enjoy your dashboard!') + '</div>') +
                 '<table class="check"><thead><tr><th>Page</th><th>Widget</th><th></th><th>Details</th></tr></thead><tbody>' + rows.map(function (r) {
-                    return '<tr class="' + (r[2] ? 'ok' : 'bad') + '"><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + (r[2] ? '✔' : '⚠') + '</td><td>' + esc(r[3]) + '</td></tr>';
+                    var k = r[2] === true ? 'ok' : r[2] === 'setup' ? 'todo' : r[2] === 'wait' ? 'wait' : 'bad';
+                    return '<tr class="' + k + '"><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td><td>' + { ok: '✔', todo: '○', wait: '⏳', bad: '⚠' }[k] + '</td><td>' + (k === 'todo' ? 'Not set up yet – ' : '') + esc(r[3]) + '</td></tr>';
                 }).join('') + '</tbody></table>';
         }).catch(function (e) { out.innerHTML = okLine(false, e.message); });
     }
