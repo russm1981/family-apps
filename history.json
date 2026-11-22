@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.302",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup – Your family: the bin-day check only says anything when you’re in the UK and your council can be read automatically; otherwise it stays quiet (the Bins widget asks when you add it).",
+      "Help: “Undoing a tidy-up” – how to undo a calendar tidy-up any time later (Screens → your calendar page → Undo an earlier tidy-up)."
+    ]
+  },
+  {
     "version": "2026.11.301",
     "date": "2026-11-17",
     "notes": [

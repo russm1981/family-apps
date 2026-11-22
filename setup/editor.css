@@ -387,3 +387,5 @@
 button:disabled, .btn:disabled, .btn[disabled] { opacity: .45 !important; filter: saturate(.35); cursor: not-allowed; }
 button[data-hrbusy] { cursor: progress !important; }
 html.hr-busy, html.hr-busy * { cursor: progress !important; }
+.cs-warn { background: rgba(250, 204, 21, .10); border: 1.5px solid rgba(250, 204, 21, .55); border-radius: 12px; padding: 4px 14px; margin: 10px 0 14px; font-size: 13.5px; line-height: 1.45; }
+.cs-warn p { margin: 8px 0; }

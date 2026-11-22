@@ -160,7 +160,10 @@
     function tidyHtml() {
         return '<div class="cs-card"><h3>Tidy up your Google calendar</h3><p class="mute small">Goes through the last three months and the next year of your family calendar and lists what the calendar can’t show properly: ' +
             'events with no category, and titles too long for the screen. Events like “Oliver – Drums” are fine – they show as “Drums (Oliver)”. You choose; nothing changes until you press Apply.</p>' +
-            '<p class="mute small">🛟 <b>Every change can be undone.</b> Before changing an event, HouseRunner notes its old title and colour in your Google Sheet, so a tidy-up can be put back exactly as it was.</p>' +
+            '<div class="cs-warn"><p>⚠ <b>This changes events in your real Google Calendar</b> – everyone who shares that calendar will see the changes. Look through the list carefully and untick anything you’re not sure about.</p>' +
+                '<p>🛟 To help if something goes wrong, HouseRunner notes each event’s old title and colour in your Google Sheet first, and <b>Undo an earlier tidy-up</b> puts them back. ' +
+                'That’s a safety net, not a guarantee: it can’t restore an event that has since been changed or deleted, or if Google is unavailable. ' +
+                'For a complete copy first, export your calendar from Google Calendar → ⚙ Settings → <b>Import &amp; export</b>.</p></div>' +
             '<button class="btn" id="csScan">Check the Google calendar</button> <button class="btn ghost" id="csUndoList">Undo an earlier tidy-up</button></div>';
     }
     function when(r) { var d = String(r.date || '').split('-'); return (d.length === 3 ? d[2] + '-' + d[1] + '-' + d[0] : r.date) + (r.time ? ' @ ' + r.time : ''); }
@@ -187,6 +190,7 @@
                         '<td>' + esc(r.title) + '</td><td><select class="cs-cat">' + opts(r.cat) + '</select></td>' +
                         '<td><input class="cs-title" value="' + esc(r.text) + '" maxlength="80"><small class="cs-len"></small></td><td>' + (r.problem ? '<span class="cs-prob">' + esc(r.problem) + '</span>' : '') + '</td></tr>';
                 }).join('') + '</tbody></table></div>' : '') +
+                (rows.length ? '<p class="mute small">Only the ticked events are changed. Check them before you apply – you can undo afterwards, but it isn’t guaranteed to put back everything.</p>' : '') +
                 '<div class="sheet-actions">' + (rows.length ? '<button class="btn good" id="csTApply">Apply the ticked ones</button>' : '') + '<button class="btn ghost" id="csTClose">Close</button></div><p class="mute small" id="csTMsg"></p>';
             var len = function (tr) {
                 var v = tr.querySelector('.cs-title').value.trim(), cat = tr.querySelector('.cs-cat').value, p = CS.people.some(function (x) { return x.name === cat; });

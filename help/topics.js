@@ -336,7 +336,7 @@ window.FD_HELP = [
 <li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
 <p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Screens → your calendar page → Tidy up your Google calendar</b>.</p>
 <h2>Undoing a tidy-up</h2>
-<p>Every change the tidy-up makes can be undone, any time later – not just straight after. Before changing an event, HouseRunner notes its old title and colour in a hidden tab of your Google Sheet (<b>_Calendar undo</b>).</p>
+<p>The tidy-up changes events in your real Google Calendar, so check the list carefully before you apply it. As a safety net, HouseRunner notes each event’s old title and colour in a hidden tab of your Google Sheet (<b>_Calendar undo</b>) before changing it, so a tidy-up can be undone any time later – not just straight after. It’s a best effort, not a guarantee: for a complete copy, export your calendar first (see below).</p>
 <ul><li>On a computer: <b>houserunner.app → Screens → your calendar page → Tidy up your Google calendar → Undo an earlier tidy-up</b>. It lists the last 15 tidy-ups by date and how many events each changed; click <b>↩ Undo</b> beside one.</li>
 <li>Each event goes back to its old title and colour. An event that’s been changed again since (in Google Calendar or on the dashboard) is left alone, so undo never overwrites a later change.</li>
 <li>Undo only puts back what the tidy-up changed. It doesn’t touch events added since.</li>
