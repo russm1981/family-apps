@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.280",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: the “you started a setup before” warning is now red, with a larger, clearer round i."
+    ]
+  },
+  {
     "version": "2026.11.279",
     "date": "2026-11-17",
     "notes": [

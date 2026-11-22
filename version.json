@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.280",
+  "app": "2026.11.281",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup: if you started a setup on this computer before, the first step now just warns that carrying on makes a new Sheet (your earlier copy stays in Google Drive, untouched) – and says how to carry on with that one instead – then shows the usual steps."
+    "Setup: the “you started a setup before” warning is now red, with a larger, clearer round i."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

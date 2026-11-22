@@ -24,11 +24,11 @@
         window.FD_DESK = true; window.FD_PHONE = !!phone;
     })();
     </script>
-    <link rel="stylesheet" href="shared/base.css?v=202611280">
-    <link rel="stylesheet" href="admin/admin.css?v=202611280">
-    <link rel="stylesheet" href="setup/desk.css?v=202611280">
-    <link rel="stylesheet" href="setup/editor.css?v=202611280">
-    <link rel="stylesheet" href="admin/phone.css?v=202611280">
+    <link rel="stylesheet" href="shared/base.css?v=202611281">
+    <link rel="stylesheet" href="admin/admin.css?v=202611281">
+    <link rel="stylesheet" href="setup/desk.css?v=202611281">
+    <link rel="stylesheet" href="setup/editor.css?v=202611281">
+    <link rel="stylesheet" href="admin/phone.css?v=202611281">
     <style>
 #landing { min-height: 100vh; }
 #landing .ld-wrap { max-width: 1100px; margin: 0 auto; padding: 30px 18px 50px; }
@@ -61,7 +61,7 @@
 #landing .ld-step { align-self: flex-start; display: inline-block; background: var(--acc); color: #fff; font-weight: 800; font-size: 12px; border-radius: 99px; padding: 2px 9px; }
 #landing .ld-land { padding: 26px 0 6px; }
 #landing .ld-land-h { font-size: 40px; line-height: 1.12; letter-spacing: -.02em; max-width: 760px; }
-#landing .ld-land .ld-lead { font-size: 19px; max-width: 760px; }
+#landing .ld-land .ld-lead { font-size: 19px; }
 .ld-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 16px; }
 .ld-modal[hidden] { display: none; }
 .ld-note { margin: 0 0 18px; text-align: left; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--acc); background: rgba(63,169,245,.10); } .ld-note a { color: var(--acc); }
@@ -134,7 +134,7 @@
   <p class="ld-lead">HouseRunner turns a small screen – like the Corsair XENEON EDGE, a tablet or an old monitor – into your family’s dashboard: the calendar, weather, bins, the school run, reminders and the children’s reward points, all in one place. Two phone apps keep it up to date.</p>
   <div class="note ld-note" id="ldNote" hidden></div>
   <div class="ld-cta"><a class="btn ld-big" id="startBtn" href="setup/guide/">Start new setup</a><button class="btn ghost ld-big" id="codeGo">Already have HouseRunner – Connect this device</button></div>
-  <p class="ld-sub">Setup takes about 30 minutes, one step at a time. Starting a new setup makes a new Google Sheet – any earlier setups stay in your Google account, unaffected.</p>
+  <p class="ld-sub">Setup takes about 20 minutes, one step at a time. Starting a new setup makes a new Google Sheet – any earlier setups stay in your Google account, unaffected.</p>
  </section>
 
  <section>
@@ -206,20 +206,20 @@
     </div></div>
     <!-- Connected: houserunner.app (computer) or Family Admin (phone) – the same app. -->
     <div id="app"></div>
-    <script src="shared/storecheck.js?v=202611280"></script>
-    <script src="shared/fd.js?v=202611280"></script>
-    <script src="dashboard/scripts/platform.js?v=202611280"></script>
-    <script src="shared/pair.js?v=202611280"></script>
-    <script src="shared/qrcode.js?v=202611280"></script>
-    <script src="shared/privacy.js?v=202611280"></script>
-    <script src="shared/countries.js?v=202611280"></script>
-    <script src="setup/config.js?v=202611280"></script>
-    <script src="help/topics.js?v=202611280"></script>
-    <script src="setup/editor.js?v=202611280"></script>
-    <script src="setup/calsetup.js?v=202611280"></script>
-    <script src="shared/icons.js?v=202611280"></script>
+    <script src="shared/storecheck.js?v=202611281"></script>
+    <script src="shared/fd.js?v=202611281"></script>
+    <script src="dashboard/scripts/platform.js?v=202611281"></script>
+    <script src="shared/pair.js?v=202611281"></script>
+    <script src="shared/qrcode.js?v=202611281"></script>
+    <script src="shared/privacy.js?v=202611281"></script>
+    <script src="shared/countries.js?v=202611281"></script>
+    <script src="setup/config.js?v=202611281"></script>
+    <script src="help/topics.js?v=202611281"></script>
+    <script src="setup/editor.js?v=202611281"></script>
+    <script src="setup/calsetup.js?v=202611281"></script>
+    <script src="shared/icons.js?v=202611281"></script>
     <!-- A phone gets Family Admin, written for the phone; a computer houserunner.app. -->
-    <script>document.write('<script src="admin/' + (window.FD_PHONE ? 'phone' : 'app') + '.js?v=202611280"><\/script>');</script>
+    <script>document.write('<script src="admin/' + (window.FD_PHONE ? 'phone' : 'app') + '.js?v=202611281"><\/script>');</script>
 <script>
  (function () {
    'use strict';
