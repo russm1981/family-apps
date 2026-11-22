@@ -695,19 +695,6 @@ button.ag-more { font-size: 0.85rem; }
 .td-due.late { color: #fff; background: var(--bad); } .td-due.now { color: #1a1400; background: #ffd54a; }
 .td-all { display: flex; flex-direction: column; margin-bottom: 0.6rem; } .td-all .td-it { min-height: 3rem; font-size: 1.15rem; }
 
-/* parcels */
-.wg-parcels { gap: 0.45rem; }
-.pc-head { display: flex; align-items: baseline; gap: 0.5rem; } .pc-head .foot { margin-left: auto; color: var(--good); font-weight: 700; }
-.pc-list { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0.3rem; overflow: hidden; }
-.pc-row { --pc: var(--acc); display: grid; grid-template-columns: 1.8rem minmax(0, 1fr) auto; gap: 0.5rem; align-items: center; background: var(--panel-2); border-radius: 0.55rem; padding: 0.3rem 0.5rem; border-left: 0.3rem solid var(--pc); }
-.pc-row.today { --pc: var(--good); } .pc-row.missed { --pc: var(--bad); } .pc-row.tomorrow { --pc: #ffb020; } .pc-row.done { --pc: #555; opacity: .7; }
-.pc-ico { font-size: 1.2rem; text-align: center; }
-.pc-main { display: flex; flex-direction: column; min-width: 0; }
-.pc-main b { font-size: 0.98rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pc-main b em { font-style: normal; color: var(--pc); font-weight: 700; margin-left: 0.25rem; }
-.pc-main small { color: var(--mute); font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pc-when { color: var(--mute); font-size: 0.75rem; white-space: nowrap; }
-
 /* memo */
 .wg-memo { gap: 0.5rem; }
 .mm-head { display: flex; align-items: center; gap: 0.5rem; }

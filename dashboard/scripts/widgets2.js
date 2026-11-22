@@ -1,5 +1,5 @@
 /* Family Dashboard – more widgets (November 2026): holiday countdown, Weasley Clock, bus stop, to-do (Google Tasks),
- * parcels, memo, quote, NASA Daily Picture, Spotify and Duolingo Words.
+ * memo, quote, NASA Daily Picture, Spotify and Duolingo Words.
  * Same rules as widgets.js: FDW.types[type](el, widget, ctx) → { update(data), show(), destroy() }.
  */
 (function () {
@@ -246,28 +246,6 @@
         }
         el.addEventListener('click', click);
         return { update: function (d) { if (!pending && Date.now() - touched > 8000) { data = d; render(); } } };
-    };
-
-    /* =============================================================== PARCELS */
-
-    var PARCEL = { 'Arriving today': ['today', '🚚'], 'Missed delivery': ['missed', '⚠️'], 'Arriving tomorrow': ['tomorrow', '📅'],
-        'On its way': ['way', '📦'], 'Delivered': ['done', '✅'] };
-    T.parcels = function (el, w) {
-        var full = w.size === 'full';
-        el.innerHTML = '<div class="pc-head"><h3>Parcels</h3><span class="foot pc-sum"></span></div><div class="pc-list">' + loading() + '</div>';
-        var box = el.querySelector('.pc-list');
-        return {
-            update: function (d) {
-                if (!d || d.error) { box.innerHTML = errBox(d ? d.error : 'No parcel data'); return; }
-                var today = d.items.filter(function (x) { return x.status === 'Arriving today'; }).length;
-                el.querySelector('.pc-sum').textContent = today ? today + ' arriving today' : '';
-                box.innerHTML = d.items.slice(0, full ? 9 : 4).map(function (x) {
-                    var k = PARCEL[x.status] || ['way', '📦'];
-                    return '<div class="pc-row ' + k[0] + '"><span class="pc-ico">' + k[1] + '</span><span class="pc-main"><b>' + esc(x.who) + ' <em>' + esc(x.status) + '</em></b>' +
-                        '<small>' + esc(x.what) + '</small></span><span class="pc-when">' + esc(ago(x.at)) + '</span></div>';
-                }).join('') || '<div class="empty">No deliveries on the way</div>';
-            },
-        };
     };
 
     /* ================================================================ CHILD (one child's points card) */

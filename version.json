@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.289",
-  "script": "2026.11.121",
+  "app": "2026.11.290",
+  "script": "2026.11.122",
   "date": "2026-11-17",
   "notes": [
-    "Configurator: if this computer can’t reach its Google Sheet (for example after a setup was stopped half way), it now says so in a banner with Try again and Disconnect – and no longer asks you to accept the privacy notice until the Sheet answers, so it can’t get stuck on “Saving to Google…”."
+    "Your Google Sheet now has a first tab, “My ID”, with your family’s private connect link. If a computer, phone or screen can’t connect and there’s no phone set up yet, open the Sheet, copy the link and paste it in – the connect screens and Help now say so."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

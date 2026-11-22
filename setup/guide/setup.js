@@ -233,7 +233,7 @@
                         '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>' +
                       '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
-                      '<li>Your new Sheet opens on its <b>Start HERE</b> tab. <b>Follow the 8 steps on it</b> – they look like this (click to enlarge):' +
+                      '<li>Your new Sheet opens on its <b>Start HERE</b> tab. <b>Follow the 9 steps on it</b> – they look like this (click to enlarge):' +
                         '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 8 steps: publish it in Apps Script, allow it, then 🏠 HouseRunner → SETUP" class="step-pic" style="max-width:560px;cursor:zoom-in"></a></li>' +
                     '<li>When the <b>HouseRunner – SETUP</b> window in your Sheet says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – it brings you back to <b>this page</b>, already connected, and setup carries on here by itself.</li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
@@ -352,6 +352,7 @@
             var show = function (L) {
                 var good = !L || !L.required || (L.ok && L.state !== 'trial');
                 S.licOk = good; save(); renderSteps();
+                if (!$('licStatus')) return;      // moved on (or this tab handed over) while it was checking
                 $('licStatus').innerHTML = !L || !L.required ? okLine(true, 'Licence keys aren’t needed yet – press Next.')
                     : L.ok && L.state !== 'trial' ? okLine(true, L.message + (L.key ? ' (key …' + L.key + ')' : '') + ' – all done, press Next.')
                     : L.state === 'trial' ? '<div class="status">⏳ ' + esc(L.message) + '</div>' : okLine(false, L.message);
@@ -360,8 +361,8 @@
             licenceNow().then(function (d) {
                 show(d.licence);
                 // Key from the order email's link: check and save it by itself.
-                if (S.licKey && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
-            }, function (e) { $('licStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'Your Google script needs updating first – see the Updates step.' : e.message); });
+                if (S.licKey && $('licGo') && d.licence && d.licence.required && (!d.licence.ok || d.licence.state === 'trial')) $('licGo').onclick();
+            }, function (e) { if ($('licStatus')) $('licStatus').innerHTML = okLine(false, /Unknown action/.test(e.message) ? 'Your Google script needs updating first – see the Updates step.' : e.message); });
             $('licGo').onclick = function () {
                 var k = $('licKey').value.trim(); if (!k) { toast('Paste your key in first', true); return; }
                 $('licStatus').innerHTML = '<div class="status">Checking your key with the licence server…</div>'; $('licGo').disabled = true;
@@ -610,7 +611,7 @@
                 (connected() && !S.loader ? '<div class="card big"><h3>Automatic updates for the Google script <span class="mute">(older way)</span></h3><p class="mute">Easier: paste in the loader (above) – then nothing needs switching on.</p>' +
                     '<p>With this on, your Google script updates itself – within minutes of a new version, and it checks every hour – so you never have to copy code again.</p>' +
                     '<div class="note"><b>Before you switch it on:</b> your script will download its new code from <b>' + esc(location.href.replace(/setup\/.*$/, '')) + '</b>. ' +
-                    'That code runs with the access you gave the script (your Sheet, calendar, Gmail delivery emails, Tasks and photos folder). Only switch it on if you trust whoever publishes these apps.</div>' +
+                    'That code runs with the access you gave the script (your Sheet, calendar and Tasks). Only switch it on if you trust whoever publishes these apps.</div>' +
                     '<ol class="howto"><li>Once per Google account: open <a href="https://script.google.com/home/usersettings" target="_blank" rel="noopener">script.google.com/home/usersettings</a> ' +
                     '(signed in as the Sheet’s owner) and switch <b>Google Apps Script API</b> on.</li>' +
                     '<li>Then: <button class="btn sm' + (S.autoUpdate ? ' ghost' : '') + '" id="autoBtn">' + (S.autoUpdate ? 'Turn automatic updates off' : 'Turn automatic updates on') + '</button></li></ol>' +
@@ -678,7 +679,7 @@
         { id: 'start', title: 'Make your Google Sheet', render: function () {
             if (connected()) return OLD.sheet.render();
             if (window.hrCopiedNow) return '<h1>⏳ Over to your new Sheet</h1>' +       // straight after Make my copy: one clear thing to do
-                '<p class="lead">Your copy opened in a new tab. <b>Follow the 8 steps on its Start HERE tab</b> – they look like this (click to enlarge):</p>' +
+                '<p class="lead">Your copy opened in a new tab. <b>Follow the 9 steps on its Start HERE tab</b> – they look like this (click to enlarge):</p>' +
                 '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 8 steps" class="step-pic" style="max-width:640px;cursor:zoom-in"></a>' +
                 '<div class="card big" style="margin-top:18px"><h3>Then come back here</h3><p>At the end, the <b>SETUP</b> window in your Sheet says <b>Published ✅</b>. Click <b>Open HouseRunner</b> – it brings you back to <b>this page</b>, already connected, and setup carries on here by itself.</p>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b>…</div></div>' +
@@ -879,7 +880,7 @@
     }
     var TYPE_NAMES = { weather: 'Weather', traffic: 'Traffic', trains: 'Trains', agenda: 'Today & tomorrow', bins: 'Bins', flights: 'Flights overhead',
         news: 'News', timer: 'Kitchen timer', photos: 'Photo slideshow', clock: 'Clock', list: 'List', countdown: 'Holiday countdown', whereabouts: 'Weasley Clock',
-        bus: 'Bus stop', todo: 'To-do', parcels: 'Parcels', memo: 'Notes', quote: 'Quote', apod: 'NASA Daily Picture', spotify: 'Spotify', words: 'Duolingo Words' };
+        bus: 'Bus stop', todo: 'To-do', memo: 'Notes', quote: 'Quote', apod: 'NASA Daily Picture', spotify: 'Spotify', words: 'Duolingo Words' };
     function typeName(t) { return TYPE_NAMES[t] || t; }
     function summary(w, v) {
         if (v == null) return 'Works on the screen itself';
@@ -894,7 +895,6 @@
             case 'photos': return v.warning || (v.photos || []).length + ' photos in "' + v.title + '"';
             case 'bus': return (v.stop || '') + ' – ' + (v.departures || []).length + ' buses';
             case 'todo': case 'list': return (v.items || []).length + ' items';
-            case 'parcels': return (v.items || []).length + ' deliveries found';
             case 'apod': return v.title || '';
             case 'spotify': return v.idle ? 'Connected (nothing playing)' : v.track ? 'Playing: ' + v.track : 'Connected';
             case 'countdown': return (v.items || []).length ? 'Next: ' + v.items[0].name : 'Nothing to count down to yet';

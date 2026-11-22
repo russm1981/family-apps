@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.289",
+    "date": "2026-11-17",
+    "notes": [
+      "Your Google Sheet now has a first tab, “My ID”, with your family’s private connect link. If a computer, phone or screen can’t connect and there’s no phone set up yet, open the Sheet, copy the link and paste it in – the connect screens and Help now say so."
+    ]
+  },
+  {
     "version": "2026.11.288",
     "date": "2026-11-17",
     "notes": [

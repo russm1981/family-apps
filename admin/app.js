@@ -837,7 +837,7 @@
     /* ================================================================ home */
 
     // Widgets with something to show or do in the app. ('do' = everyday things you add to or change.)
-    var GLANCE = { birthdays: 1, weather: 1, traffic: 1, trains: 1, agenda: 1, bins: 1, countdown: 1, news: 1, flights: 1, bus: 1, parcels: 1, photos: 1, apod: 1, words: 1, quote: 1, spotify: 1 };
+    var GLANCE = { birthdays: 1, weather: 1, traffic: 1, trains: 1, agenda: 1, bins: 1, countdown: 1, news: 1, flights: 1, bus: 1, photos: 1, apod: 1, words: 1, quote: 1, spotify: 1 };
     var EVERYDAY = { memo: 1, list: 1, todo: 1, whereabouts: 1 };
 
     /** One widget of each kind (two Memo widgets show the same notes; two lists of the same name are one list). */
@@ -980,7 +980,6 @@
                 case 'news': return d.items[0] ? esc(d.items[0].title) : '';
                 case 'flights': return d.planes.length + ' plane' + (d.planes.length === 1 ? '' : 's') + ' within ' + d.radiusMiles + ' miles';
                 case 'bus': var dp = d.departures[0]; return dp ? esc(dp.service + ' to ' + dp.dest + ' at ' + dp.time) : 'No buses soon';
-                case 'parcels': var on = d.items.filter(function (i) { return i.rank > 1; }); return on.length ? on.length + ' on the way: ' + esc(on[0].status) : 'Nothing on the way';
                 case 'photos': return d.photos.length + ' photos';
                 case 'apod': return esc(d.title);
                 case 'words': return esc(d.users.map(function (u) { return u.name + ' 🔥' + u.streak; }).join(' · '));
@@ -1085,10 +1084,6 @@
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
             return card(esc(d.stop || 'Bus stop'), rows(d.departures, function (x) { return row('<b class="bus-no">' + esc(x.service) + '</b> ' + esc(x.dest), esc(x.time), x.live ? 'Live' : 'Timetable'); }, 'No buses soon') +
                 (d.note ? '<p class="mute small">' + esc(d.note) + '</p>' : ''));
-        },
-        parcels: function (w) {
-            var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));
-            return card('Deliveries', rows(d.items, function (p) { return row(esc(p.who) + ' – ' + esc(p.status), null, esc(p.what)); }, 'No delivery emails'));
         },
         photos: function (w) {
             var d = GL[w.id]; if (!d || d.error) return card('', waiting(w));

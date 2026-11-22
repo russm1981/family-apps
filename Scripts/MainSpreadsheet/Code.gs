@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.121';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.122';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -738,8 +738,22 @@ function ensureMigrated_() {
   freshCopy_();
   const ss = SpreadsheetApp.getActive();
   const ver = PropertiesService.getScriptProperties().getProperty('layoutVer');
-  if (ss.getSheetByName(TAB.widgets) && ss.getSheetByName(TAB.install) && ss.getSheetByName(tabName_('memos')) && ver === LAYOUT_VER) return;
+  if (ss.getSheetByName(TAB.widgets) && ss.getSheetByName(TAB.install) && ss.getSheetByName(tabName_('memos')) && ver === LAYOUT_VER) { dropParcels_(); return; }
   withLock_(() => migrate_());
+  dropParcels_();
+}
+/** The Parcels widget is gone (it needed to read Gmail): take any left on a page off the Sheet, once. */
+function dropParcels_() {
+  const P = PropertiesService.getScriptProperties();
+  if (P.getProperty('noParcels')) return;
+  try {
+    const sh = SpreadsheetApp.getActive().getSheetByName(TAB.widgets);
+    if (sh && sh.getLastRow() > 1) {
+      const v = sh.getDataRange().getValues(), t = v[0].map(String).indexOf('Type');
+      if (t >= 0) for (let i = v.length - 1; i >= 1; i--) if (String(v[i][t]).trim() === 'parcels') sh.deleteRow(i + 1);
+    }
+    P.setProperty('noParcels', '1');
+  } catch (e) { /* next time */ }
 }
 
 /* ------------------------------------------------------------ web entry */

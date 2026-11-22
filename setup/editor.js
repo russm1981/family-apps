@@ -243,7 +243,7 @@
 
     /* The widgets to drag on, in the same groups as Widgets → Other (plus the rewards and lists ones first). */
     var TYPE_GROUPS = [['Rewards', ['child']], ['Lists, notes and reminders', ['list', 'todo', 'memo', 'kidrem']],
-        ['Information', ['weather', 'clock', 'bins', 'parcels', 'news']], ['Travel', ['traffic', 'trains', 'bus']],
+        ['Information', ['weather', 'clock', 'bins', 'news']], ['Travel', ['traffic', 'trains', 'bus']],
         ['Family', ['agenda', 'birthdays', 'countdown', 'photos', 'whereabouts']], ['Tools', ['timer', 'spotify']],
         ['Interest', ['apod', 'flights', 'quote', 'words']]];
     function typeGroups() {
