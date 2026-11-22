@@ -394,7 +394,7 @@
                     '<p class="mute">Up to 10 people. Ticking ⭐ Rewards gives them points for Reward Tasks and Daily To-Dos, and their own Child’s Rewards widget to put on a screen. ' +
                     'Grouping people for the calendar – “the children”, “Adam &amp; Eve” – is the next step.</p>' +
                     '<div class="row" style="margin-top:14px"><button class="btn good" id="fwSave">Save the family</button></div>' +
-                    '<p class="mute small">Saving can take up to half a minute: it also asks your local council whether your bin days can be read automatically.</p><div id="famStatus"></div></div>';
+                    '<p class="mute small">Saving can take up to half a minute.</p><div id="famStatus"></div></div>';
             function famRow(p, i) {
                 return '<div class="fw-row"><input type="color" data-fc="' + i + '" value="' + esc(p.colour || '#3fa9f5') + '" title="Their colour">' +
                     '<input data-fn="' + i + '" maxlength="10" value="' + esc(p.name) + '" placeholder="Name" autocomplete="off">' +
@@ -426,7 +426,7 @@
                 if (!list.length) { $('famStatus').innerHTML = okLine(false, 'Add at least one person'); return; }
                 if (!home) { $('famStatus').innerHTML = okLine(false, 'Add your home address or postcode'); return; }
                 var b = this; b.disabled = true; S.home = home; save();
-                $('famStatus').innerHTML = '<div class="status">⏳ Saving the family, then checking your council for bin days – up to half a minute…</div>'; b.textContent = '⏳ Saving…';
+                $('famStatus').innerHTML = '<div class="status">⏳ Saving the family – up to half a minute…</div>'; b.textContent = '⏳ Saving…';
                 var ctry = $('fwCountry').value, cinfo = FD_COUNTRIES.filter(function (x) { return x[0] === ctry; })[0];
                 S.country = ctry; S.tz = $('fwTz').value; S.week = $('fwWeek').value; S.order = $('fwOrder').value; save();
                 post({ action: 'saveInstall', values: { HomeAddress: home, Country: ctry, TimeZone: S.tz, WeekStart: S.week, DateOrder: S.order, Currency: cinfo ? cinfo[2].trim() : '£' } }).then(function () {
@@ -436,8 +436,7 @@
                     $('famStatus').innerHTML = okLine(true, (STEPS === NEW ? 'Saved – press Next.' : 'Saved. Press Next to set up the calendar.'));
                     var pc = ctry === 'GB' && /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
                     if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
-                        $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + ' – add the Bins widget at houserunner.app → Screens whenever you like.')
-                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' Set it up when you add the Bins widget (houserunner.app → Screens).</div>');
+                        if (x.automatic && $('famStatus')) $('famStatus').insertAdjacentHTML('beforeend', okLine(true, 'Good news for bin days: ' + x.message + ' – add the Bins widget at houserunner.app → Screens whenever you like.'));
                     }, function () { /* older Google script – the Check step will say */ });
                 }).catch(function (e) { b.disabled = false; b.textContent = 'Save the family'; $('famStatus').innerHTML = okLine(false, e.message); });
             };

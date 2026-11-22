@@ -1,5 +1,13 @@
 [
   {
+    "version": "2026.11.301",
+    "date": "2026-11-17",
+    "notes": [
+      "New families start simpler: one Home screen of widgets that need no setting up (weather, today & tomorrow, notes, a list, birthdays, kitchen timer, news, a quote) and a Calendar screen. A Children screen appears by itself when someone joins the reward system, and goes again if no one is. Other widgets – traffic, trains, bins, photos… – are added from Screens, where each asks for what it needs. Existing dashboards are not changed.",
+      "Setup: the licence step shows an amber ½ whenever you carry on without a key (the free trial) – in the step list and on the Done page."
+    ]
+  },
+  {
     "version": "2026.11.300",
     "date": "2026-11-17",
     "notes": [

@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.301",
+  "app": "2026.11.302",
   "script": "2026.11.125",
   "date": "2026-11-17",
   "notes": [
-    "Setup – Done page: the menu-bar picture in “What next” now fills the card, cropped to the part that matters so it’s readable."
+    "New families start simpler: one Home screen of widgets that need no setting up (weather, today & tomorrow, notes, a list, birthdays, kitchen timer, news, a quote) and a Calendar screen. A Children screen appears by itself when someone joins the reward system, and goes again if no one is. Other widgets – traffic, trains, bins, photos… – are added from Screens, where each asks for what it needs. Existing dashboards are not changed.",
+    "Setup: the licence step shows an amber ½ whenever you carry on without a key (the free trial) – in the step list and on the Done page."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

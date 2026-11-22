@@ -335,6 +335,12 @@ window.FD_HELP = [
 <li>An event with <b>no colour</b> goes in <b>Other</b>.</li>
 <li>Adding an event from the dashboard does all this for you – pick General, a group or one person.</li></ul>
 <p>Older events written as “Oliver – Drums” or “Family – Zoo” still work. To put them all into the new form at once: <b>Screens → your calendar page → Tidy up your Google calendar</b>.</p>
+<h2>Undoing a tidy-up</h2>
+<p>Every change the tidy-up makes can be undone, any time later – not just straight after. Before changing an event, HouseRunner notes its old title and colour in a hidden tab of your Google Sheet (<b>_Calendar undo</b>).</p>
+<ul><li>On a computer: <b>houserunner.app → Screens → your calendar page → Tidy up your Google calendar → Undo an earlier tidy-up</b>. It lists the last 15 tidy-ups by date and how many events each changed; click <b>↩ Undo</b> beside one.</li>
+<li>Each event goes back to its old title and colour. An event that’s been changed again since (in Google Calendar or on the dashboard) is left alone, so undo never overwrites a later change.</li>
+<li>Undo only puts back what the tidy-up changed. It doesn’t touch events added since.</li>
+<li>Want a full copy as well, before you start? Google can export your whole calendar as a file: Google Calendar → ⚙ Settings → Import &amp; export.</li></ul>
 <p>The categories, who’s in each group, and what each calendar page shows on its key (up to 9, plus Other; up to two as lines under the day; or hidden) are all set on the calendar page in <b>Screens</b>.</p>
 <h2>Birthday and Holiday</h2>
 <p>These two categories are always there – the Birthdays and Holiday countdown widgets need them. You can still show them, hide them, or show them as Other. While one is showing, the calendar has a button for it: <b>🎂</b> shows only the birthdays and <b>🌴</b> only the holidays (in full, even if Holiday is normally a line under the day). Press it again to see everything.</p>`
