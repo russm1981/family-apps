@@ -2637,7 +2637,7 @@
         var pct = v ? Math.min(100, v.used / v.max * 100) : 0;
         if (DATA.loader && !v) return card('Port my data to a different Google account', '<p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
             'Everything comes across – people, points, lists, settings and your licence – and the screen and phones switch over by themselves. The new account is emailed the steps.</p>' +
-            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
+            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="name@example.com" autocomplete="off" autocapitalize="off">' +
             '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div>');
         return card('Saved versions', (v ? '<p><b>' + v.used + ' of ' + v.max + '</b> used' + (v.stale ? ' (last count)' : '') + ' – each update of the Google script uses one.</p>' +
                 '<div class="bar' + (v.warn ? ' warnbar' : '') + '"><span style="width:' + pct + '%"></span></div>'
@@ -2648,7 +2648,7 @@
             '<button class="btn wide" id="afresh">Start afresh</button></details>') +
             '<details class="adv"><summary>Port my data to a different Google account</summary><p class="small">For example a new Gmail account just for the dashboard, so its permissions aren’t on your main account. ' +
             'Everything comes across – people, points, lists, settings and your licence – and the screen and phones switch over by themselves. The new account is emailed the steps.</p>' +
-            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="ourfamily.dashboard@gmail.com" autocomplete="off" autocapitalize="off">' +
+            '<label>The new Google account’s email address</label><input id="mvEmail" type="email" placeholder="name@example.com" autocomplete="off" autocapitalize="off">' +
             '<button class="btn wide" id="mvGo">Make a moving pack</button><div id="mvOut"></div></details>');
     }
     /** Saved versions only (the Updates page); moving house is in My data. */

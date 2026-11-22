@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.304",
+    "date": "2026-11-17",
+    "notes": [
+      "Added a copyright notice (LICENSE): all rights reserved, use only under the HouseRunner licence agreement."
+    ]
+  },
+  {
     "version": "2026.11.303",
     "date": "2026-11-17",
     "notes": [

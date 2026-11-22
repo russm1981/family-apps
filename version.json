@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.304",
+  "app": "2026.11.305",
   "script": "2026.11.125",
   "date": "2026-11-17",
   "notes": [
-    "Calendar tidy-up: a clear warning that it changes your real Google Calendar – check the list carefully – and that undo is a safety net, not a guarantee; with how to export a full copy of your calendar first."
+    "Added a copyright notice (LICENSE): all rights reserved, use only under the HouseRunner licence agreement."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
