@@ -16,7 +16,8 @@
         ['In your Sheet: 🏠 HouseRunner → ▶ SETUP', 'Wait for <b>Published ✅</b>, then click <b>Open HouseRunner</b>. Then close the Sheet’s tab too – setup carries on in your HouseRunner setup tab, and this guide closes by itself.<br><span class="mute">No 🏠 HouseRunner menu? Reload the Sheet.</span>']
     ];
     // The setup video, once there is one: its address and each step's part of it, in seconds ([from, to]).
-    var VIDEO = null;    // e.g. { src: '../../shared/brand/setup.mp4', clips: [[0, 12], [12, 20], …] }
+    var VIDEO = { src: '../../shared/brand/setup.mp4',
+        clips: [[17, 30], [30, 39], [39, 51], [51, 60], [60, 66], [60, 66], [66, 76], [76, 92.6], [92.6, 116]] };
 
     var KEY = 'hrfloat.step', win = null, i = 0;
     try { i = Math.min(STEPS.length - 1, Math.max(0, +localStorage.getItem(KEY) || 0)); } catch (e) { i = 0; }
@@ -53,7 +54,8 @@
         on('nx', function () { go(i + 1); });
         on('show', function () {
             var v = d.createElement('video'); v.src = abs(VIDEO.src) + '#t=' + clip[0] + ',' + clip[1]; v.controls = true; v.autoplay = true; v.muted = true; v.playsInline = true;
-            v.addEventListener('timeupdate', function () { if (v.currentTime >= clip[1]) { v.pause(); } });
+            v.addEventListener('loadedmetadata', function () { if (v.currentTime < clip[0] - 0.5) v.currentTime = clip[0]; });
+            v.addEventListener('timeupdate', function () { if (v.currentTime >= clip[1]) { v.pause(); v.currentTime = clip[0]; } });
             var box = d.getElementById('vid'); box.innerHTML = ''; box.appendChild(v); this.style.display = 'none';
         });
         Array.prototype.forEach.call(d.querySelectorAll('.dots button'), function (b) { b.onclick = function () { go(+b.getAttribute('data-k')); }; });

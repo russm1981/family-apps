@@ -1,5 +1,15 @@
 [
   {
+    "version": "2026.11.292",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: Open HouseRunner in the Sheet now goes straight back to the setup tab you started in – no more waiting on a second setup page. The setup tab says “Connecting to your new Sheet…” while it connects.",
+      "Setup: the Sheet’s SETUP window then says “All done in the Sheet – close this tab now”.",
+      "Setup: step 2 is now called Privacy notice, and opens with a big green “Your Google Sheet is made and connected” box.",
+      "Start HERE picture and the floating steps: step 7 is clicking the Web app URL, step 8 is closing the two extra tabs (“published” and Apps Script) – no need to click Done."
+    ]
+  },
+  {
     "version": "2026.11.291",
     "date": "2026-11-17",
     "notes": [

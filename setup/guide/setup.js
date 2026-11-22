@@ -688,7 +688,7 @@
                 '<div class="card big" style="margin-top:18px"><h3>Then come back here</h3><p>At the end, the <b>SETUP</b> window in your Sheet says <b>Published ✅</b>. Click <b>Open HouseRunner</b> – it brings you back to <b>this page</b>, already connected, and setup carries on here by itself.</p>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b>…</div></div>' +
                 '<p class="mute small">The copy didn’t open? <a id="copyGo" target="_blank" rel="noopener" href="https://docs.google.com/spreadsheets/d/' + encodeURIComponent(CFG.templateId || '') + '/copy">Make my copy again</a> · ' +
-                    '<a href="#" id="showAll">Show all the instructions</a></p>';
+                    '<a href="#" id="showAll">Show all the instructions</a> · <a href="../../shared/brand/setup.mp4" target="_blank" rel="noopener">▶ Watch the 2-minute video</a></p>';
             return (S.licKey ? '<div class="note ok">🔑 Your licence key <b class="mono">' + esc(S.licKey) + '</b> came with the link from your email. Setup fills it in for you – nothing to type.</div>' : '') +
                 (phoneish() ? '<div class="note bad"><b>📱 This looks like a phone or tablet.</b> Setup needs a <b>computer</b> (Windows PC or Mac) – part of it is done in Google Sheets, which doesn’t work properly on a phone. ' +
                     'Open your licence email on your computer and click the link there.</div>' : '') +

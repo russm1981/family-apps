@@ -1,9 +1,12 @@
 {
-  "app": "2026.11.292",
+  "app": "2026.11.293",
   "script": "2026.11.123",
   "date": "2026-11-17",
   "notes": [
-    "Setup: after Make my copy, the 9 steps can float in a small window that stays on top of your Sheet and Apps Script tabs (Chrome and Edge; a small separate window in other browsers) – one step at a time with its picture, Back and Next. It closes by itself when Open HouseRunner brings you back."
+    "Setup: Open HouseRunner in the Sheet now goes straight back to the setup tab you started in – no more waiting on a second setup page. The setup tab says “Connecting to your new Sheet…” while it connects.",
+    "Setup: the Sheet’s SETUP window then says “All done in the Sheet – close this tab now”.",
+    "Setup: step 2 is now called Privacy notice, and opens with a big green “Your Google Sheet is made and connected” box.",
+    "Start HERE picture and the floating steps: step 7 is clicking the Web app URL, step 8 is closing the two extra tabs (“published” and Apps Script) – no need to click Done."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
