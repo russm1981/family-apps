@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.299",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup – Done page: “What next” shows houserunner.app’s menu bar with Screens, Notes / Lists / Reminders and Rewards circled and numbered to match the steps, instead of an Open button."
+    ]
+  },
+  {
     "version": "2026.11.298",
     "date": "2026-11-17",
     "notes": [

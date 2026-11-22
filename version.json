@@ -1,11 +1,9 @@
 {
-  "app": "2026.11.299",
+  "app": "2026.11.300",
   "script": "2026.11.124",
   "date": "2026-11-17",
   "notes": [
-    "Setup – Done page: no widget check after a brand-new setup (nothing has been set up yet). “What next” is now three clear steps: set up the widgets on your screens, add your lists, notes and reminders, and set up the reward system if you’re using it. It explains that widgets needing a key, your council or a photo folder ask for it when you add or click them.",
-    "Widget check (when you run setup again on a working dashboard): widgets that simply aren’t set up yet show as “○ Not set up yet”, and temporary hiccups as “⏳”, instead of red problems.",
-    "Family Admin is now described as the app for adults / admins – notes, lists, reminders and settings first, and points and tasks only if you use the reward system."
+    "Setup – Done page: “What next” shows houserunner.app’s menu bar with Screens, Notes / Lists / Reminders and Rewards circled and numbered to match the steps, instead of an Open button."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
