@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.272",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup’s Make my copy now copies the new HouseRunner Sheet, which publishes itself without any Google Cloud settings."
+    ]
+  },
+  {
     "version": "2026.11.271",
     "date": "2026-11-17",
     "notes": [

@@ -3,7 +3,7 @@
  * (Plain English draft – have it checked before giving the dashboard to people outside your own family.)
  */
 window.FD_PRIVACY = {
-    version: '5',
+    version: '6',
     updated: '8 November 2026',
     summary: [
         'Your family’s information is kept in <b>your own Google account</b> (a Google Sheet and script you own). The people who make HouseRunner can’t see it.',
@@ -16,7 +16,7 @@ window.FD_PRIVACY = {
     full: '' +
         '<h3>Who holds your information</h3><p>Everything you put into HouseRunner – children’s names, points, tasks, reminders, notes, lists, settings and API keys – is stored in a Google Sheet in your own Google account, and is processed by a Google script that you publish from that Sheet. The people who make and host HouseRunner do not receive or store any of it. You can see it all in the Sheet, and you can delete it at any time by deleting the Sheet (and its web app deployment).</p>' +
         '<h3>What the app files are</h3><p>The dashboard, Family Admin and the website are all web pages at houserunner.app, hosted on GitHub Pages. When a device loads them, GitHub (like any website) receives the device’s IP address. The pages then talk only to your own Google script. The website and its welcome page load a QR-code library from cdnjs.cloudflare.com.</p>' +
-        '<h3>Google permissions</h3><p>When you set up your Sheet, Google asks you to allow eleven things. Some are worded broadly (“all” your calendars or files) because Google doesn’t offer narrower versions for a script like this. What HouseRunner actually does with each:</p><ul>' +
+        '<h3>Google permissions</h3><p>When you set up your Sheet, Google asks you to allow nine things. Some are worded broadly (“all” your calendars or files) because Google doesn’t offer narrower versions for a script like this. What HouseRunner actually does with each:</p><ul>' +
         '<li><b>This spreadsheet</b> – reads and writes your own HouseRunner Sheet. It has no access to your other spreadsheets.</li>' +
         '<li><b>Calendar</b> – shows your family calendar’s events, and adds or changes the ones you enter in HouseRunner.</li>' +
         '<li><b>Gmail, read only</b> – the Parcels widget reads delivery emails. It can’t change, send or delete any email.</li>' +
@@ -26,7 +26,6 @@ window.FD_PRIVACY = {
         '<li><b>Connect to an external service</b> – weather, traffic, trains, bins and the other widgets you switch on (listed below), and HouseRunner’s licence check.</li>' +
         '<li><b>Run when you’re not present</b> – the timers that keep the dashboard up to date overnight.</li>' +
         '<li><b>Display content in prompts and sidebars</b> – the HouseRunner menu’s own small windows in your Sheet.</li>' +
-        '<li><b>Create and update Apps Script projects and deployments</b> – so your Sheet can publish itself (the “Published ✅” step), without you using Google’s Deploy screens.</li></ul>' +
         '<p>These run as you, inside your Google account. Nothing is sent to HouseRunner except what’s described on this page. Rather keep them off your main account? Set HouseRunner up in a new Google account just for it.</p>' +
         '<h3>Updates</h3><p>The script in your Sheet is a small “loader”: each time it runs, it downloads the current HouseRunner program from the site that hosts these apps (houserunner.app) and runs it, keeping a copy in a hidden tab of your Sheet in case the site can’t be reached. That program runs with the same access as the rest of the script, so only use it if you trust whoever publishes that site.</p>' +
         '<h3>Licence checks</h3><p>HouseRunner is sold under licence. Once a day your Google script contacts the seller’s licence server (a Google Apps Script web app in the seller’s Google account) and sends your licence key, a random installation number made by your script, and the version of the script. The seller’s register links the key to the name, email address and order number you gave when you bought it, and records the date of each check and the version. Nothing from your dashboard itself (names, calendar, points, locations and so on) is sent. If you connect a new screen by scanning its code, your family’s private link passes through the seller’s licence server for up to 10 minutes, locked with that code so the seller can’t read it. The seller keeps this to manage licences and to deal with refunds or misuse.</p>' +

@@ -23,7 +23,6 @@
             '<li><b>Google Tasks</b> – the <b>To-Do List (Google)</b>.</li>' +
             '<li><b>Connect to an external service</b> – fetching the HouseRunner program, live information (weather, trains, traffic…) and the licence check.</li>' +
             '<li><b>Display content in prompts and sidebars</b> – the 🏠 HouseRunner menu in your Sheet. <b>Run when you’re not present</b> – the timers that keep it up to date.</li>' +
-            '<li><b>Create and update Apps Script projects and deployments</b> – so it can publish itself, without you using Google’s Deploy screens.</li></ul>' +
             '<div class="note warn"><b>Don’t want to give your main Google account these permissions?</b> Make a <a href="https://accounts.google.com/signup" target="_blank" rel="noopener">new Google account just for HouseRunner</a> and do this setup signed in to that one. ' +
             'The catch: it shows that account’s calendar, emails, photos and tasks – so share your family calendar with it, and add it on your phone to add events or tasks from Google’s own apps.</div>' +
             '</div>';
@@ -241,7 +240,7 @@
                         '<span class="mute">Pressed Cancel, or saw <b>“Access is denied”</b> / <b>“This app is blocked”</b>? Nothing has been changed – close that tab, go back to your Sheet and choose <b>▶ HouseRunner – SETUP</b> again.</span></li>' +
                     '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
                         '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
-                        'If it asks you to turn on one Google switch (the Apps Script API), follow its link and turn it on – the window waits, and carries on by itself.</span></div></li>' +
+                        'The first time, the window also shows you how to <b>publish</b> your dashboard – once, with Google’s Deploy button (about a minute) – and carries on by itself when that’s done.</span></div></li>' +
                     '<li>A <b>HouseRunner – SETUP</b> window shows each step as it happens (about a minute – leave it open). When it says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. You can close this tab.</li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
                     '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +

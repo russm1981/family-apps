@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.115';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.116';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -831,8 +831,7 @@ function needScope_(k, what) {
     'To add it: in your Google Sheet choose 🏠 HouseRunner → Allow more permissions, and tick ' + OPT_SCOPES[k][1] + ' when Google asks.');
 }
 const ESSENTIAL_SCOPES = ['https://www.googleapis.com/auth/spreadsheets.currentonly', 'https://www.googleapis.com/auth/script.external_request',
-  'https://www.googleapis.com/auth/script.container.ui', 'https://www.googleapis.com/auth/script.scriptapp',
-  'https://www.googleapis.com/auth/script.projects', 'https://www.googleapis.com/auth/script.deployments'];
+  'https://www.googleapis.com/auth/script.container.ui', 'https://www.googleapis.com/auth/script.scriptapp'];
 /** Sheet menu → Allow more permissions: Google asks for any left unticked (the optional ones), then says what's on. */
 function menuPermissions() {
   if (ScriptApp.requireAllScopes) ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL);
@@ -4076,7 +4075,7 @@ function workingUrl_() {
   const saved = P.getProperty('execUrl');
   if (ok(saved)) return saved;
   let deps = [];
-  try { deps = (scriptApi_('get', '/deployments').deployments || []).filter(d => d.deploymentConfig && d.deploymentConfig.versionNumber); } catch (e) { /* API off: carry on */ }
+  if (hasScope_('https://www.googleapis.com/auth/script.deployments')) try { deps = (scriptApi_('get', '/deployments').deployments || []).filter(d => d.deploymentConfig && d.deploymentConfig.versionNumber); } catch (e) { /* API off: carry on */ }
   // newest first: an older deployment can be an earlier version of the program
   deps.sort((a, b) => String(b.updateTime || '') < String(a.updateTime || '') ? -1 : 1);
   for (const d of deps) { const u = ((d.entryPoints || []).filter(e => e.webApp)[0] || {}).webApp; if (u && ok(u.url)) return u.url; }
@@ -4089,12 +4088,13 @@ function setupStep_(step) {
   if (step === 'publish') {
     let url = workingUrl_();
     if (url) return { ok: true, url: url, already: true };
-    try { url = autoPublish_(); } catch (err) {
-      const apiOff = /Apps Script API/.test(err.message) && !/Cloud project/.test(err.message);
-      let who = ''; try { who = Session.getEffectiveUser().getEmail(); } catch (e) { /* not known */ }
-      return { ok: false, kind: apiOff ? 'api' : 'hand', who: who, error: err.message };
+    // Sheets from before 2026.11.273 could publish themselves through Google's Apps Script API, but Google only allows that for scripts
+    // linked to a Cloud project you manage yourself – a new copy isn't. So: publish once with Google's own Deploy button (the window
+    // shows how), and this step spots it by itself.
+    if (hasScope_('https://www.googleapis.com/auth/script.deployments')) {
+      try { url = autoPublish_(); if (url && answers_(url)) { PropertiesService.getScriptProperties().setProperty('execUrl', url); return { ok: true, url: url }; } } catch (err) { /* do it by hand */ }
     }
-    return url ? { ok: true, url: url } : { ok: false, kind: 'hand' };
+    return { ok: false, kind: 'deploy', editor: 'https://script.google.com/d/' + ScriptApp.getScriptId() + '/edit' };
   }
   if (step === 'check') {
     // A deployment made a moment ago can take a little while to answer: keep asking for up to about 40 seconds
@@ -4141,17 +4141,20 @@ function menuConnect() {
     'function run(k,next){google.script.run.withSuccessHandler(next).withFailureHandler(function(e){mark(k,false);fail(e);}).setup("hr:"+k);}' +
     'var waiting=false;' +
     'function publish(){run("publish",function(r){' +
-    ' if(!r.ok&&r.kind==="api"){mark("publish",false,"Publishing needs one Google switch");' +
-    '  if(!waiting){waiting=true;out("<p>Google needs one switch turned on (once for your Google account"+(r.who?", <b>"+r.who+"</b>":"")+") so the dashboard can publish itself:</p><ol><li>Open <a href=\\"https://script.google.com/home/usersettings\\" target=\\"_blank\\"><b>this Google settings page</b></a> (a new tab)</li><li>Click <b>Google Apps Script API</b> and turn it <b>On</b></li><li>Come back to this window – it carries on by itself</li></ol><p style=\\"color:#888;font-size:13px\\" id=\\"wt\\">⏳ Waiting for the switch… (it can take a minute to work after you turn it on)</p>");}' +
-    '  setTimeout(function(){mark("publish",null,"Publishing your dashboard, so your screen and phones can reach it");publish();},10000);return;}' +
-    ' if(!r.ok){mark("publish",false,"Couldn’t publish by itself");out("<p>Publish it by hand instead – on the setup page, open <b>Stuck? Do it by hand</b> → <b>Publish it by hand instead</b>.</p>"+(r.error?"<p style=\\"color:#888;font-size:13px\\">("+String(r.error).replace(/</g,"&lt;")+")</p>":""));return;}' +
+    ' if(!r.ok&&r.kind==="deploy"){mark("publish",null,"Publish your dashboard – once, with Google’s Deploy button (1 minute)");' +
+    '  if(!waiting){waiting=true;out("<ol style=\\"margin:4px 0 8px;padding-left:20px\\"><li><a href=\\""+r.editor+"\\" target=\\"_blank\\" style=\\""+BTN+";padding:7px 14px\\">Open Apps Script</a> (a new tab)</li>' +
+    '<li>Click the blue <b>Deploy</b> button (top right) → <b>New deployment</b></li><li>Click the ⚙ next to <b>Select type</b> → <b>Web app</b></li>' +
+    '<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b> → click <b>Deploy</b> (allow it if Google asks)</li><li>Click <b>Done</b> and come back to this window</li></ol>' +
+    '<p style=\\"color:#888;font-size:13px\\">⏳ Watching for it – this window carries on by itself as soon as it’s published.</p>");}' +
+    '  setTimeout(publish,8000);return;}' +
+    ' if(!r.ok){mark("publish",false,"Couldn’t publish");out("<p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again.</p>");return;}' +
     ' out("");mark("publish",true,r.already?"Your dashboard is published":"Published your dashboard");mark("check",null);run("check",function(c){' +
     '  if(!c.ok){mark("check",false,"It isn’t answering yet");out("<p>Google can take a minute after publishing. Wait a minute, then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – nothing is published twice.</p>");return;}' +
     '  mark("check",true,"It answers – all working");out("<h2 style=\\"margin:8px 0\\">Published ✅</h2><p>Now click <b>Open HouseRunner</b>. It opens the HouseRunner website already connected to this Sheet, for the last three short steps – nothing to type.</p><p><a href=\\""+c.link+"\\" target=\\"_blank\\" style=\\""+BTN+"\\">Open HouseRunner</a></p><p style=\\"color:#888;font-size:13px\\">That link contains your private access code. Don’t share it outside the family. You can close this window afterwards.</p>");' +
     ' });});}' +
     'run("tabs",function(){mark("tabs",true);mark("publish",null);publish();});' +
     '</script>';
-  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(540).setHeight(430), 'HouseRunner – SETUP');
+  SpreadsheetApp.getUi().showModalDialog(HtmlService.createHtmlOutput(html).setWidth(560).setHeight(470), 'HouseRunner – SETUP');
 }
 /** Opens the setup app straight at "Family & calendar": people, groups, categories and the children's page. */
 function menuFamily() {
