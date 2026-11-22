@@ -1,10 +1,9 @@
 {
-  "app": "2026.11.303",
+  "app": "2026.11.304",
   "script": "2026.11.125",
   "date": "2026-11-17",
   "notes": [
-    "Setup – Your family: the bin-day check only says anything when you’re in the UK and your council can be read automatically; otherwise it stays quiet (the Bins widget asks when you add it).",
-    "Help: “Undoing a tidy-up” – how to undo a calendar tidy-up any time later (Screens → your calendar page → Undo an earlier tidy-up)."
+    "Calendar tidy-up: a clear warning that it changes your real Google Calendar – check the list carefully – and that undo is a safety net, not a guarantee; with how to export a full copy of your calendar first."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

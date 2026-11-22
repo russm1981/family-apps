@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.303",
+    "date": "2026-11-17",
+    "notes": [
+      "Calendar tidy-up: a clear warning that it changes your real Google Calendar – check the list carefully – and that undo is a safety net, not a guarantee; with how to export a full copy of your calendar first."
+    ]
+  },
+  {
     "version": "2026.11.302",
     "date": "2026-11-17",
     "notes": [
