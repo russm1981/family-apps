@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.288",
-  "script": "2026.11.120",
+  "app": "2026.11.289",
+  "script": "2026.11.121",
   "date": "2026-11-17",
   "notes": [
-    "Start HERE picture: step 7 now says to go back to your Sheet’s tab after Done, and step 8 that Open HouseRunner takes you back to the setup page."
+    "Configurator: if this computer can’t reach its Google Sheet (for example after a setup was stopped half way), it now says so in a banner with Try again and Disconnect – and no longer asks you to accept the privacy notice until the Sheet answers, so it can’t get stuck on “Saving to Google…”."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

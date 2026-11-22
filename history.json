@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.288",
+    "date": "2026-11-17",
+    "notes": [
+      "Configurator: if this computer can’t reach its Google Sheet (for example after a setup was stopped half way), it now says so in a banner with Try again and Disconnect – and no longer asks you to accept the privacy notice until the Sheet answers, so it can’t get stuck on “Saving to Google…”."
+    ]
+  },
+  {
     "version": "2026.11.287",
     "date": "2026-11-17",
     "notes": [

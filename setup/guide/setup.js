@@ -505,7 +505,7 @@
                 : { ico: '▦', name: 'Family Dashboard', who: 'for everyone', what: 'The dashboard itself on a phone: the calendar (it opens on it – add events there), the children’s cards and every widget, one under another. Put it on everyone’s phone – the children’s too, if they have one. It can’t change settings, and phones don’t count as displays on your licence.' };
             return '<h1>7. Connect your phones</h1><p class="lead">There are two phone apps – choose one below and set it up on the phones that need it, then do the same for the other. <span class="mute">(About 5 minutes.)</span></p>' +
                 '<div class="note warn"><p><b>Do put Family Admin on your own phone.</b> If houserunner.app website on your computer ever forgets your family, it shows a code – and Family Admin is how you connect it again. ' +
-                    'A backup of your private links has also been emailed to your Google account (“Your HouseRunner links”).</p></div>' +
+                    'If a device ever forgets your family: the first tab of your Google Sheet, <b>My ID</b>, has a link that connects it again (it’s also been emailed to your Google account – “Your HouseRunner links”).</p></div>' +
                 '<div class="tabs" id="appTabs">' + tab('data-papp', 'admin', app, '⚙ Family Admin (adults)') + tab('data-papp', 'dashboard', app, '▦ Family Dashboard (everyone)') + '</div>' +
                 '<div class="card big"><h3>' + A.ico + ' ' + A.name + ' <span class="mute">– ' + A.who + '</span></h3><p>' + A.what + '</p>' +
                     '<ol class="howto"><li><b>Scan this code</b> with the phone’s camera and tap the link that appears. It opens ' + A.name + ', already connected to your family – the code holds your family’s private link.' +

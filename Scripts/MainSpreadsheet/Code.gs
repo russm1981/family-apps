@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.120';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.121';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -888,7 +888,7 @@ function dispatch_(b) {
     case 'todo': return setTodo_(b.boy, b.item, !!b.done);
     case 'undo': return deleteEntry_(b.id);
     case 'state': return getState_();
-    case 'admin': return getAdmin_();
+    case 'admin': myIdTab_(); return getAdmin_();
     case 'licence': return { ok: true, licence: licencePublic_(!!b.recheck) };
     case 'versions': return { ok: true, versions: versionsUsed_(true) };
     case 'startAfresh': return startAfresh_();
@@ -1312,11 +1312,40 @@ function genCode_() {
   return chars.join('');
 }
 /** Admin app: change the access code. Blank = make a strong one. Every device then needs its new link. */
+/** The "My ID" tab, first in the Sheet: this family's private connect link, so anyone stuck connecting a computer, phone or
+ *  screen can open their Sheet and copy it. Rewritten only when the link changes (new address or access code). */
+const MYID_TAB = 'My ID';
+function myIdTab_(force) {
+  try {
+    const u = myUrl_(), code = String(inst_('AccessCode') || '');
+    if (!/\/exec$/.test(u) || !code) return;
+    const link = appsBase_() + '#api=' + encodeURIComponent(u) + '&code=' + encodeURIComponent(code);
+    const P = PropertiesService.getScriptProperties(), ss = SpreadsheetApp.getActive();
+    let sh = ss.getSheetByName(MYID_TAB);
+    if (sh && !force && P.getProperty('myIdLink') === link) return;
+    if (!sh) sh = ss.insertSheet(MYID_TAB, 0);
+    sh.clear();
+    sh.getRange(1, 1, 7, 1).setValues([
+      ['🏠 HouseRunner – your private connect link'],
+      ['Stuck connecting a computer, phone or screen? Copy the link below (click the cell, then Ctrl+C / ⌘C) and paste it into HouseRunner’s “Paste a setup link” box. Or just click it on the computer you want to connect.'],
+      [''], [link], [''],
+      ['🔒 Keep this private: the link includes your access code, the key to your family’s information. Don’t share this Sheet outside the family.'],
+      ['This tab keeps itself up to date (for example if you change your access code). Please don’t edit it.']]);
+    sh.setColumnWidth(1, 900); sh.getRange(1, 1, 7, 1).setWrap(true).setVerticalAlignment('middle');
+    sh.getRange(1, 1).setFontSize(16).setFontWeight('bold');
+    sh.getRange(4, 1).setFontWeight('bold').setBackground('#fff4c2').setFontFamily('Roboto Mono');
+    sh.getRange(6, 1, 2, 1).setFontColor('#555');
+    sh.setTabColor('#4aa3f0');
+    if (sh.getIndex() !== 1) { const was = ss.getActiveSheet(); ss.setActiveSheet(sh); ss.moveActiveSheet(1); if (was) ss.setActiveSheet(was); }
+    P.setProperty('myIdLink', link);
+  } catch (e) { /* not important – the apps and the email have the link too */ }
+}
 function changeCode_(b) {
   const c = String(b.newCode || '').trim() || genCode_();
   const why = codeProblem_(c);
   if (why) throw new Error('The access code ' + why);
   setInst_('AccessCode', c);
+  myIdTab_();
   try { emailLinks_(); } catch (e) { /* the old email just stops working */ }
   return { ok: true, code: c };
 }
@@ -4066,6 +4095,7 @@ function setupStep_(step) {
     // A deployment made a moment ago can take a little while to answer: keep asking for up to about 40 seconds
     const P = PropertiesService.getScriptProperties(), u = P.getProperty('execUrl');
     for (let i = 0; i < 8; i++) { if (answers_(u)) break; if (i === 7) return { ok: false, kind: 'slow', url: u }; Utilities.sleep(5000); }
+    myIdTab_(true);
     return { ok: true, link: appsBase_() + '#api=' + encodeURIComponent(u) + '&code=' + encodeURIComponent(inst_('AccessCode')) + '&from=sheet' };
   }
   throw new Error('Unknown setup step');
@@ -4420,7 +4450,7 @@ function movedCheck_() {
   if (to) { const e = new Error('This dashboard has moved to a new Google Sheet'); e.moved = to; throw e; }
 }
 // Script settings that belong to this copy only (everything else is carried to the new Sheet).
-const MOVE_SKIP = ['installId', 'licence', 'licenceServerAt', 'updating', 'claimUntil', 'claimed', 'execUrl', 'lastUpdate', 'moving', 'versionsUsed', 'dataVer', 'calVer'];
+const MOVE_SKIP = ['myIdLink', 'installId', 'licence', 'licenceServerAt', 'updating', 'claimUntil', 'claimed', 'execUrl', 'lastUpdate', 'moving', 'versionsUsed', 'dataVer', 'calVer'];
 
 /** Step 1, in the old Sheet: make the new Sheet and script, copy everything, publish the new web app. */
 function startAfresh_() {
@@ -4510,7 +4540,7 @@ function exportPack_(b) {
   if (Date.now() - new Date(mv.at).getTime() > 14 * 864e5) throw new Error('That moving link is more than two weeks old – make a new one in the old dashboard');
   const P = PropertiesService.getScriptProperties(), all = P.getProperties(), props = {};
   Object.keys(all).filter(k => MOVE_SKIP.indexOf(k) < 0).forEach(k => { props[k] = all[k]; });
-  const tabs = SpreadsheetApp.getActive().getSheets().filter(sh => !/^FD program|^_/.test(sh.getName())).map(sh => {
+  const tabs = SpreadsheetApp.getActive().getSheets().filter(sh => !/^FD program|^_|^My ID$/.test(sh.getName())).map(sh => {
     const r = sh.getDataRange(), v = r.getValues(), f = r.getFormulas();
     return { name: sh.getName(), hidden: sh.isSheetHidden(), rows: v.map((row, i) => row.map((c, j) => f[i][j] ? { f: f[i][j] } : Object.prototype.toString.call(c) === '[object Date]' ? { d: c.toISOString() } : c)) };
   });

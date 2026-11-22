@@ -163,7 +163,8 @@ window.FD_HELP = [
 <h2>How many screens?</h2>
 <p>Your licence says how many <b>displays</b> (Corsair XENEON EDGE, tablet or computer) can show the dashboard at once – most are for one. Phones – Family Admin and the Family Dashboard app – don’t count. If a new screen would be one too many, it asks whether to <b>use this screen instead of</b> the old one. Screens not used for 30 days free their place by themselves, and you can disconnect one in <b>houserunner.app → System → Devices and Phones</b> on a computer.</p>
 <p>Setting up a <b>completely separate</b> dashboard (another home)? That needs its own licence – start with First-time setup.</p>
-<p>Lost every connected device? On a computer open your Google Sheet → <b>🏠 HouseRunner → Connect my screen and phones</b>.</p>`
+<h2>No phone or computer connected yet? (stuck)</h2>
+<p>Open your <b>HouseRunner Google Sheet</b> (Google Sheets or Google Drive, signed in as the account you set up with). Its first tab, <b>My ID</b>, has your family’s private link. Copy it, then paste it into the <b>Paste a setup link</b> box on the device you’re connecting – or simply click it on the computer you want to connect. The same link is in the email <b>“Your HouseRunner links”</b> sent to your Google account.</p>`
   },
   {
     id: 'windows', icon: '🖥', title: 'Corsair XENEON EDGE or a Windows PC: connecting a new display',

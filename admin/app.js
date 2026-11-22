@@ -2772,7 +2772,7 @@
                 '<li>From now on, open it from the new icon.</li></ol>' +
                 '<div class="ladd-row">' + (navigator.share ? '<button class="btn ghost fp-add" id="devShare">Send the link instead</button>' : '<button class="btn ghost fp-add" id="devCopy">Copy the link instead</button>') + '</div>') +
             card(DESK ? 'This computer' : 'This phone', '<p class="small">Connected to ' + familyDash() + ' <span class="mute">(Sheet ' + esc(c.url.replace(/^https:\/\/script\.google\.com\/macros\/s\//, '').slice(0, 10)) + '…)</span>. Wrong family? Disconnect, then connect to the right one.</p>' +
-                '<p class="mute small">If a computer or phone ever forgets your family, the email “Your HouseRunner links” in your Google account has a link that connects it again. It was sent when you set up – send it again here.</p>' +
+                '<p class="mute small">If a computer or phone ever forgets your family, the first tab of your Google Sheet, <b>My ID</b>, has a link that connects it again – and so does the email “Your HouseRunner links” in your Google account. It was sent when you set up – send it again here.</p>' +
                 '<div class="ladd-row"><button class="btn fp-add" id="sMail">📧 Email me my links</button><button class="btn ghost fp-add" id="sOut">Disconnect this ' + (DESK ? 'computer' : 'phone') + '</button></div>');
         $('devApp').onclick = function (e) { var b = e.target.closest('[data-app]'); if (b) { devPick = b.getAttribute('data-app'); secDevices(); } };
         if ($('devShare')) $('devShare').onclick = function () { navigator.share({ title: APPS[devPick][0].slice(2), text: 'Open this on your phone, then add it to your Home Screen:', url: appLink(devPick) }).catch(function () {}); };
