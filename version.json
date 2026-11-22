@@ -1,11 +1,11 @@
 {
-  "app": "2026.11.305",
+  "app": "2026.11.306",
   "script": "2026.11.125",
   "date": "2026-11-17",
   "notes": [
-    "Added a copyright notice (LICENSE): all rights reserved, use only under the HouseRunner licence agreement."
+    "The “move to another Google account” box uses name@example.com as its example address. The website is now published from HouseRunner’s own GitHub organisation."
   ],
-  "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
+  "licence": "https://script.google.com/macros/s/AKfycbzKksmqLXKhVIyZj1orEdvqznf-9vdasvl-gS1rDS7n1TqHF6f-SXU5TvN8fcVYVZkbgA/exec",
   "licenceServer": "2026.11.24",
   "loader": "1"
 }

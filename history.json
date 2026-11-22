@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.305",
+    "date": "2026-11-17",
+    "notes": [
+      "The “move to another Google account” box uses name@example.com as its example address. The website is now published from HouseRunner’s own GitHub organisation."
+    ]
+  },
+  {
     "version": "2026.11.304",
     "date": "2026-11-17",
     "notes": [
