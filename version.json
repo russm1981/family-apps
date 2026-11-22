@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.300",
-  "script": "2026.11.124",
+  "app": "2026.11.301",
+  "script": "2026.11.125",
   "date": "2026-11-17",
   "notes": [
-    "Setup – Done page: “What next” shows houserunner.app’s menu bar with Screens, Notes / Lists / Reminders and Rewards circled and numbered to match the steps, instead of an Open button."
+    "Setup – Done page: the menu-bar picture in “What next” now fills the card, cropped to the part that matters so it’s readable."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.300",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup – Done page: the menu-bar picture in “What next” now fills the card, cropped to the part that matters so it’s readable."
+    ]
+  },
+  {
     "version": "2026.11.299",
     "date": "2026-11-17",
     "notes": [

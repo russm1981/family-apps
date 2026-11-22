@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.124';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.125';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -383,7 +383,26 @@ Object.assign(WIDGET_TYPES, {
 });
 const LAYOUT_VER = '9';   // 9: calendar categories on Google colours (the Google column, the new kinds) · 8   // 8: each child is a widget (the separate points page is hidden; its settings stay on it) · 7: automatic updates switched on (unless someone switched them off on purpose) · 6: settings left at their defaults are written into the Sheet · 5: word of the day switched from Spanish to French · 3: TransportAPI keys added to Installation · 4: Home page all half height, with a memo
 
+// What a brand-new family starts with (Nov 2026): one Home screen of widgets that work with no setup at all, and the
+// calendar. A Children screen is added by itself when children join the reward system (syncChildWidgets_). Everything
+// else – traffic, trains, bins, photos… – is added from houserunner.app → Screens, where each asks for what it needs.
 const DEFAULT_PAGES = [
+  ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
+  ['boys', 'Children', 'boys', '\u2605', 2, 'No'],     // holds the points settings; the children themselves are widgets
+  ['calendar', 'Calendar', 'calendar', '\u25A6', 3, 'Yes'],
+];
+const DEFAULT_WIDGETS = [
+  ['weather1', 'home', 1, 'weather', 'half', 'Yes'],      // clock and weather: needs only the home address from setup
+  ['agenda1', 'home', 2, 'agenda', 'half', 'Yes'],        // today & tomorrow, from the calendar
+  ['memo2', 'home', 3, 'memo', 'half', 'Yes'],
+  ['list1', 'home', 4, 'list', 'half', 'Yes'],
+  ['birthdays1', 'home', 5, 'birthdays', 'half', 'Yes'],  // from the calendar
+  ['timer1', 'home', 6, 'timer', 'half', 'Yes'],
+  ['news1', 'home', 7, 'news', 'half', 'Yes'],
+  ['quote1', 'home', 8, 'quote', 'half', 'Yes'],
+];
+// The layout families had before then – only for bringing old Sheets up to date (upgradeLayout_), never for new ones.
+const OLD_DEFAULT_PAGES = [
   ['home', 'Home', 'widgets', '\u2302', 1, 'Yes'],
   ['boys', 'Children', 'boys', '\u2605', 2, 'No'],     // holds the points settings; the children themselves are widgets
   ['calendar', 'Calendar', 'calendar', '\u25A6', 3, 'Yes'],
@@ -391,7 +410,7 @@ const DEFAULT_PAGES = [
   ['family', 'Family', 'widgets', '\u2726', 5, 'Yes'],
   ['discover', 'Discover', 'widgets', '\u2600', 6, 'Yes'],
 ];
-const DEFAULT_WIDGETS = [
+const OLD_DEFAULT_WIDGETS = [
   ['weather1', 'home', 1, 'weather', 'half', 'Yes'],
   ['memo2', 'home', 2, 'memo', 'half', 'Yes'],
   ['traffic1', 'home', 3, 'traffic', 'half', 'Yes'],
@@ -516,11 +535,12 @@ function migrate_() {
 
   const props = PropertiesService.getScriptProperties();
   const fresh = sheet_('widgets').getLastRow() < 2;
-  if (sheet_('pages').getLastRow() < 2) sheet_('pages').getRange(2, 1, DEFAULT_PAGES.length, 6).setValues(DEFAULT_PAGES);
+  const LP = oldSh ? OLD_DEFAULT_PAGES : DEFAULT_PAGES, LW = oldSh ? OLD_DEFAULT_WIDGETS : DEFAULT_WIDGETS;   // a very old Sheet keeps the widgets its old settings were for
+  if (sheet_('pages').getLastRow() < 2) sheet_('pages').getRange(2, 1, LP.length, 6).setValues(LP);
   if (!fresh && props.getProperty('layoutVer') !== LAYOUT_VER) upgradeLayout_();
   props.setProperty('layoutVer', LAYOUT_VER);
   if (fresh) {
-    sheet_('widgets').getRange(2, 1, DEFAULT_WIDGETS.length, 6).setValues(DEFAULT_WIDGETS);
+    sheet_('widgets').getRange(2, 1, LW.length, 6).setValues(LW);
     // Carry over what was in the old Settings and Destinations tabs.
     const carry = [
       ['trains1', 'From', old.TrainFrom], ['trains1', 'To', old.TrainTo],
@@ -560,8 +580,10 @@ function upgradeLayout_() {
     }
   }
   let order = rows_('pages').reduce((m, p) => Math.max(m, Number(p.Order) || 0), 0);
-  DEFAULT_PAGES.filter(p => pages.indexOf(p[0]) < 0).forEach(p => sheet_('pages').appendRow([p[0], p[1], p[2], p[3], ++order, p[5]]));
-  DEFAULT_WIDGETS.filter(w => (w[1] === 'family' || w[1] === 'discover') && ids.indexOf(w[0]) < 0).forEach(w => sheet_('widgets').appendRow(w));
+  if (was < 2) {      // version 2 only: Sheets made since then may have left these out on purpose
+    OLD_DEFAULT_PAGES.filter(p => pages.indexOf(p[0]) < 0).forEach(p => sheet_('pages').appendRow([p[0], p[1], p[2], p[3], ++order, p[5]]));
+    OLD_DEFAULT_WIDGETS.filter(w => (w[1] === 'family' || w[1] === 'discover') && ids.indexOf(w[0]) < 0).forEach(w => sheet_('widgets').appendRow(w));
+  }
   // Version 4 (Nov 2026): if Home is still the standard layout, make it eight half-height slots:
   // weather, memo / traffic, trains / today & tomorrow, bins / countdown, (space).
   const home = rows_('widgets').filter(w => String(w.Page).trim() === 'home').map(w => String(w.Widget).trim()).sort().join(',');
@@ -632,6 +654,10 @@ function syncChildWidgets_(added) {
     if (names.indexOf(c) >= 0) has[c] = has[c] || id; else gone.push(id);
   });
   if (gone.length) deleteWhere_('widgets', r => gone.indexOf(String(r[0]).trim()) >= 0);
+  // A Children screen this made ("kids…") that has nothing left on it goes too – no reward system, no Children screen.
+  const kidsPg = p => /^kids\d*$/.test(String(p.Page).trim()), onIt = rows_('widgets').map(w => String(w.Page).trim());
+  const empty = rows_('pages').filter(p => kidsPg(p) && onIt.indexOf(String(p.Page).trim()) < 0).map(p => String(p.Page).trim());
+  if (empty.length) { deleteWhere_('pages', r => empty.indexOf(String(r[0]).trim()) >= 0); renumber_('pages'); }
   const need = names.filter(n => !has[n] && (added || []).indexOf(n) >= 0);
   if (need.length) {
     const bp = rows_('pages').find(p => String(p.Type).toLowerCase() === 'boys');

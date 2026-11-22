@@ -436,8 +436,8 @@
                     $('famStatus').innerHTML = okLine(true, (STEPS === NEW ? 'Saved – press Next.' : 'Saved. Press Next to set up the calendar.'));
                     var pc = ctry === 'GB' && /\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/i.exec(home);     // bin days: can this council be read automatically?
                     if (pc) get('binCouncil', { postcode: pc[1] }).then(function (x) {
-                        $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + '.')
-                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' You can do that later in Other → Bins.</div>');
+                        $('famStatus').insertAdjacentHTML('beforeend', x.automatic ? okLine(true, 'Bins: ' + x.message + ' – add the Bins widget at houserunner.app → Screens whenever you like.')
+                            : '<div class="status warn">🗑 <b>Bins:</b> ' + esc(x.message) + ' Set it up when you add the Bins widget (houserunner.app → Screens).</div>');
                     }, function () { /* older Google script – the Check step will say */ });
                 }).catch(function (e) { b.disabled = false; b.textContent = 'Save the family'; $('famStatus').innerHTML = okLine(false, e.message); });
             };
@@ -767,8 +767,8 @@
             var ids = STEPS.map(function (x) { return x.id; }), probs = rows.filter(function (r) { return r[0] === false; });
             return '<h1>' + (probs.length ? 'Nearly there' : '🎉 You’re all set') + '</h1>' +
                 '<div class="card big fin">' + rows.map(function (r) {
-                    var cls = r[0] === true ? 'ok' : r[0] === 'note' ? 'info' : 'bad';
-                    return '<div class="fin-r ' + cls + '"><span class="fin-i">' + (cls === 'ok' ? '✔' : cls === 'info' ? 'ℹ' : '⚠') + '</span><span class="fin-t"><small>' + esc(cls === 'ok' ? r[1] : r[2]) + '</small></span>' +
+                    var cls = r[0] === true ? 'ok' : r[0] === 'note' ? (r[3] === 'licence' ? 'part' : 'info') : 'bad';
+                    return '<div class="fin-r ' + cls + '"><span class="fin-i">' + (cls === 'ok' ? '✔' : cls === 'info' ? 'ℹ' : cls === 'part' ? '½' : '⚠') + '</span><span class="fin-t"><small>' + esc(cls === 'ok' ? r[1] : r[2]) + '</small></span>' +
                         (cls === 'ok' ? '' : '<button class="btn sm ghost" data-fin="' + ids.indexOf(r[3]) + '">Go to this step</button>') + '</div>';
                 }).join('') + '</div>' +
                 (S.mode === 'new' ? '' : '<div class="card big"><h3>Checking every widget</h3><p class="mute">HouseRunner asks your Sheet to fetch each widget’s live data, and says if anything needs attention.</p><div id="checkOut"></div>' +
@@ -776,9 +776,8 @@
                 '<div class="card big"><h3>What next</h3><p>After setup, these are the next things to do, at <a href="../../">houserunner.app</a> on this computer (or in Family Admin on your phone) – in any order, whenever you like. They’re all on its menu bar:</p>' +
                     '<img src="../../shared/brand/menu-next.png" alt="houserunner.app’s menu bar, with 1 Screens, 2 Notes, Lists and Reminders, and 3 Rewards circled" style="display:block;width:100%;max-width:none;height:auto;border-radius:10px;margin:2px 0 12px">' +
                     '<ol class="howto">' +
-                    '<li><b>Set up the widgets on your screens</b> – houserunner.app → <b>Screens</b>. Your screens start with a few widgets as examples: move them, remove them, or add others. ' +
-                        '<span class="mute">Some widgets need something before they show anything – your council for bin days, a shared folder for photos, or a free key from the service for traffic, trains and buses. ' +
-                        'Each one asks for what it needs when you add it or click it, with the steps to get it. Until then it shows a short note on the screen saying what it needs.</span></li>' +
+                    '<li><b>Set up the widgets on your screens</b> – houserunner.app → <b>Screens</b>. Your <b>Home</b> screen starts with widgets that need no setting up – weather, today &amp; tomorrow, notes, a list, birthdays, a kitchen timer, news and a quote – and there’s a <b>Calendar</b> screen' + (ADM && (ADM.boys || []).length ? ' and a <b>Children</b> screen for the reward system' : '') + '. Move them, remove them, add more screens and other widgets. ' +
+                        '<span class="mute">Some widgets need something first – your council for bin days, a shared folder for photos, or a free key from the service for traffic, trains and buses. Each asks for what it needs, with the steps, when you add it.</span></li>' +
                     '<li><b>Add your lists, notes and reminders</b> – houserunner.app → <b>Lists</b>, <b>Notes</b> and <b>Reminders</b> (sports kit, library books – the things to remember each day).</li>' +
                     '<li><b>Set up the reward system</b> <span class="mute">(only if you’re using it)</span> – houserunner.app → <b>Rewards</b>: the Reward Tasks and Daily To-Dos that earn points, and what the points buy.</li></ol>' +
                     '</div>';
@@ -941,8 +940,8 @@
     function renderSteps() {
         $('steps').innerHTML = STEPS.map(function (st, i) {
             if (st.id === 'publish' && !pubShown()) return '';
-            var part = !isDone(st.id) && st.id === 'licence' && S.licTrial && S.step > i;     // passed on the free trial: half done
-            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + (part ? ' part' : '') + '" data-i="' + i + '"' + (part ? ' title="Free trial – add your licence key later"' : '') + '><span class="n">' + (isDone(st.id) ? '✔' : part ? '½' : st.id === 'finish' || st.id === 'done' ? '🏁' : SOLO || STEPS !== NEW ? (st.id === 'welcome' ? '👋' : num(i)) : num(i) + 1) + '</span>' + esc(st.title) + '</li>';
+            var part = !isDone(st.id) && st.id === 'licence' && (S.step > i || S.licTrial) && connected();     // gone past it with no key: the free trial – half done
+            return '<li class="' + (i === S.step ? 'on' : '') + (isDone(st.id) ? ' done' : '') + (part ? ' part' : '') + '" data-i="' + i + '"' + (part ? ' title="No licence key yet – the 14-day free trial. Add your key later."' : '') + '><span class="n">' + (isDone(st.id) ? '✔' : part ? '½' : st.id === 'finish' || st.id === 'done' ? '🏁' : SOLO || STEPS !== NEW ? (st.id === 'welcome' ? '👋' : num(i)) : num(i) + 1) + '</span>' + esc(st.title) + '</li>';
         }).join('');
     }
     function render() {
