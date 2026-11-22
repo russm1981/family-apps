@@ -40,7 +40,7 @@ window.FD_HELP = [
     summary: 'Setting up from your licence email: what to click at each step, and what to do where people most often get stuck.',
     body: `
 <h2>Where to start</h2>
-<p>Open your licence email <b>on a computer</b> (not a phone) and click the link in it. Setup starts in Google Sheets: click <b>Make my copy</b>, then in your new Sheet choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>. A window shows each step; when it says <b>Published ✅</b>, click <b>Open HouseRunner</b>. That opens this website already connected, for three short steps – press <b>Next</b> at the bottom of each.</p>
+<p>Open your licence email <b>on a computer</b> (not a phone) and click the link in it. Setup starts in Google Sheets: click <b>Make my copy</b>. In your new Sheet, first publish it once – <b>Extensions → Apps Script → Deploy → New deployment</b> → ⚙ <b>Web app</b>, <b>Execute as: Me</b>, <b>Who has access: Anyone</b> → <b>Deploy</b>, and allow it – then back in the Sheet choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b>. A window shows each step; when it says <b>Published ✅</b>, click <b>Open HouseRunner</b>. That opens this website already connected, for three short steps – press <b>Next</b> at the bottom of each.</p>
 <h2>Common sticking points</h2>
 <dl>
 <dt>“Make my copy” asks me to sign in, or copies into the wrong account</dt><dd>Sign in with the Google account the dashboard should live in – the one with the family calendar. If you’re signed into two accounts, Google uses the one shown at the top right; switch there and click <b>Make my copy</b> again.</dd>

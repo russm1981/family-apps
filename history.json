@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.274",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: if you’ve already made a copy of the Sheet, the first step now offers two clear buttons – Open my copy (in Google Drive) or Make a brand-new copy – instead of an OK/Cancel pop-up."
+    ]
+  },
+  {
     "version": "2026.11.273",
     "date": "2026-11-17",
     "notes": [

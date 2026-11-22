@@ -235,15 +235,17 @@
                     (S.copiedAt ? '</li>' : '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>') +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
-                    '<li>Your new Sheet opens on its <b>Start HERE</b> tab. Wait a few seconds for the <b>🏠 HouseRunner</b> menu along the top (next to <b>Help</b>), then click it → <b>▶ HouseRunner – SETUP</b>.</li>' +
-                    '<li>Google says <b>“Authorization required – a script attached to this document needs your permission to run”</b>: click <b>OK</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
+                    '<li>Your new Sheet opens on its <b>Start HERE</b> tab. First, <b>publish</b> it (once – about a minute): in the Sheet’s menu choose <b>Extensions → Apps Script</b>. ' +
+                        'In the Apps Script tab, click the blue <b>Deploy</b> button (top right) → <b>New deployment</b> → the ⚙ next to <b>Select type</b> → <b>Web app</b>. ' +
+                        'Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then click <b>Deploy</b>.</li>' +
+                    '<li>Google asks you to allow it – the only time. Click <b>Authorize access</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
                         'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
-                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>. ' +
-                        '<span class="mute">Pressed Cancel, or saw <b>“Access is denied”</b> / <b>“This app is blocked”</b>? Nothing has been changed – close that tab, go back to your Sheet and choose <b>▶ HouseRunner – SETUP</b> again.</span></li>' +
-                    '<li><div class="note bad"><b>⚠ No “Published ✅” message yet?</b> Then choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> once more. ' +
-                        '<span class="mute">Usually it’s needed: Google stops as soon as you’ve allowed it, so the first click only asks for permission and the second one does the work. ' +
-                        'The first time, the window also shows you how to <b>publish</b> your dashboard – once, with Google’s Deploy button (about a minute) – and carries on by itself when that’s done.</span></div></li>' +
-                    '<li>A <b>HouseRunner – SETUP</b> window shows each step as it happens (about a minute – leave it open). When it says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. You can close this tab.</li></ol>' +
+                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>. Back in Apps Script, click <b>Done</b> and close that tab. ' +
+                        '<span class="mute">Pressed Cancel, or saw <b>“Access is denied”</b>? Nothing has been changed – click Deploy → New deployment again.</span></li>' +
+                    '<li>Back in your Sheet, click <b>🏠 HouseRunner</b> in the menu along the top (next to <b>Help</b>) → <b>▶ HouseRunner – SETUP</b>. ' +
+                        '<span class="mute">No menu? Reload the Sheet – it appears a few seconds after it opens.</span></li>' +
+                    '<li>A <b>HouseRunner – SETUP</b> window ticks off each step (about a minute – leave it open). When it says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. You can close this tab. ' +
+                        '<span class="mute">Skipped the publishing? No problem – the window shows you how, and carries on by itself.</span></li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
                     '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +

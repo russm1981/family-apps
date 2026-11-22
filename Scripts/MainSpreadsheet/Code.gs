@@ -17,7 +17,7 @@
 
 // The family's time zone (Configurator → System → Locations & home). Kept in the script's properties so every run can read it cheaply.
 const TZ = (function () { try { return PropertiesService.getScriptProperties().getProperty('tz') || 'Europe/London'; } catch (e) { return 'Europe/London'; } })();
-const SCRIPT_VERSION = '2026.11.116';      // compared with version.json on GitHub to tell families when to update
+const SCRIPT_VERSION = '2026.11.117';      // compared with version.json on GitHub to tell families when to update
 const APPS_DEFAULT = 'https://houserunner.app/';
 /** The apps address: the old GitHub address (before November 2026) counts as the default, so every family moves to houserunner.app. */
 function appsAddr_() { const a = String(inst_('AppsAddress') || ''); return !a || /russm1981\.github\.io\/family-apps/i.test(a) ? APPS_DEFAULT : a; }
@@ -4138,7 +4138,13 @@ function menuConnect() {
     'function mark(k,ok,t){var e=document.getElementById("s-"+k);e.style.color=ok===null?"#222":"";e.innerHTML=(ok===null?"⏳ ":ok?"✅ ":"⚠️ ")+(t||e.innerHTML.replace(/^\\S+\\s/,""));}' +
     'function out(h){document.getElementById("out").innerHTML=h;}' +
     'function fail(e){out("<p style=\\"color:#b91c1c\\"><b>Something went wrong:</b> "+String(e&&e.message||e).replace(/</g,"&lt;")+"</p><p>Close this window and choose <b>🏠 HouseRunner → ▶ HouseRunner – SETUP</b> again – it carries on from where it got to.</p>");}' +
-    'function run(k,next){google.script.run.withSuccessHandler(next).withFailureHandler(function(e){mark(k,false);fail(e);}).setup("hr:"+k);}' +
+    // Publishing with Deploy makes Google ask for permission again, and this window's link to the script lapses: try twice more,
+    // then say plainly to choose SETUP once more (which finds the published dashboard and carries on).
+    'var authTries=0;' +
+    'function run(k,next){google.script.run.withSuccessHandler(next).withFailureHandler(function(e){var m=String(e&&e.message||e);' +
+    ' if(/Authori[sz]ation is required/i.test(m)){if(++authTries<3){setTimeout(function(){run(k,next);},4000);return;}' +
+    '  mark(k,null,"Nearly there – one more click");out("<p>Google asked for your permission again while you published – that’s normal, and it means this window can’t carry on by itself.</p><p><b>Close this window and choose 🏠 HouseRunner → ▶ HouseRunner – SETUP once more.</b> It finds your published dashboard and goes straight on.</p>");return;}' +
+    ' mark(k,false);fail(e);}).setup("hr:"+k);}' +
     'var waiting=false;' +
     'function publish(){run("publish",function(r){' +
     ' if(!r.ok&&r.kind==="deploy"){mark("publish",null,"Publish your dashboard – once, with Google’s Deploy button (1 minute)");' +
