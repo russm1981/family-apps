@@ -1,9 +1,10 @@
 {
-  "app": "2026.11.275",
+  "app": "2026.11.276",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup: if you’ve already made a copy of the Sheet, the first step now offers two clear buttons – Open my copy (in Google Drive) or Make a brand-new copy – instead of an OK/Cancel pop-up."
+    "Setup in your Sheet now publishes first: Extensions → Apps Script → Deploy, which is also where Google asks for your permission – once. Then 🏠 HouseRunner → ▶ HouseRunner – SETUP runs straight through to Published ✅ – no second permission round and no second click.",
+    "If Google asks for permission again while the SETUP window is open, the window now says plainly to choose SETUP once more, instead of “Something went wrong”."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

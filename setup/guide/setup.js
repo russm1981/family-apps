@@ -235,19 +235,11 @@
                     (S.copiedAt ? '</li>' : '<span class="mute">(it opens in a new tab)</span>. If Google asks you to sign in, use the Google account you want the dashboard in – the one with the family calendar.</li>') +
                     '<li>Google shows <b>“Copy document?”</b> – click the blue <b>Make a copy</b> button. <span class="mute">(If it mentions “Apps Script files”, that’s right – they come too.)</span>' +
                         '<img src="../../shared/brand/copy-document.png" alt="Google’s Copy document page, with the blue Make a copy button" class="step-pic"></li>' +
-                    '<li>Your new Sheet opens on its <b>Start HERE</b> tab. First, <b>publish</b> it (once – about a minute): in the Sheet’s menu choose <b>Extensions → Apps Script</b>. ' +
-                        'In the Apps Script tab, click the blue <b>Deploy</b> button (top right) → <b>New deployment</b> → the ⚙ next to <b>Select type</b> → <b>Web app</b>. ' +
-                        'Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then click <b>Deploy</b>.</li>' +
-                    '<li>Google asks you to allow it – the only time. Click <b>Authorize access</b> and choose your account. Google then shows a red ⚠ <b>“Google hasn’t verified this app”</b> page, saying the developer – <b>your own email address</b> – hasn’t had it verified. ' +
-                        'That’s normal: your copy is yours, so you are its “developer”. Don’t press the blue <b>Back to safety</b> button – click <b>Advanced</b> (small, bottom left) → <b>Go to HouseRunner (unsafe)</b>. ' +
-                        'Google then lists what HouseRunner may do – click <b>Select all</b> (see the note on permissions below) → <b>Continue</b>. Back in Apps Script, click <b>Done</b> and close that tab. ' +
-                        '<span class="mute">Pressed Cancel, or saw <b>“Access is denied”</b>? Nothing has been changed – click Deploy → New deployment again.</span></li>' +
-                    '<li>Back in your Sheet, click <b>🏠 HouseRunner</b> in the menu along the top (next to <b>Help</b>) → <b>▶ HouseRunner – SETUP</b>. ' +
-                        '<span class="mute">No menu? Reload the Sheet – it appears a few seconds after it opens.</span></li>' +
-                    '<li>A <b>HouseRunner – SETUP</b> window ticks off each step (about a minute – leave it open). When it says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. You can close this tab. ' +
-                        '<span class="mute">Skipped the publishing? No problem – the window shows you how, and carries on by itself.</span></li></ol>' +
+                    '<li>Your new Sheet opens on its <b>Start HERE</b> tab. <b>Follow the 4 steps on it</b> – they look like this (click to enlarge):' +
+                        '<a href="../../shared/brand/sheet-start.png" target="_blank" rel="noopener" title="Open the picture full size"><img src="../../shared/brand/sheet-start.png" alt="The Start HERE tab’s 4 steps: Apps Script → Deploy, Web app, allow it, then 🏠 HouseRunner → SETUP" class="step-pic" style="max-width:560px;cursor:zoom-in"></a></li>' +
+                    '<li>When the <b>HouseRunner – SETUP</b> window in your Sheet says <b>“Published ✅”</b>, click <b>Open HouseRunner</b> – setup carries on there, already connected. ' +
+                        '<span class="mute">This tab notices too and moves on by itself, so you can carry on in whichever you like.</span></li></ol>' +
                     '<div class="status">⏳ Waiting for your Sheet to say <b>Published ✅</b> – this page notices by itself and carries on. No need to press Next.</div>' +
-                    '<details class="pic"><summary>Show me a picture of these screens</summary><img src="../../shared/brand/sheet-start.png" alt="The four screens: the HouseRunner menu, Google’s warning, the permissions, and Published" style="width:100%;border-radius:12px;margin-top:10px"></details>' +
                     whyPerms() +
                     helpLink('setup') + '</div>' +
                     '<details class="card"><summary>Stuck? Do it by hand</summary><p class="mute">No “Make my copy” page: make the Sheet by hand below. No menu, or publishing didn’t work: <button class="btn sm ghost" data-byhand>Publish it by hand instead</button></p>' + manual() + '</details>'
