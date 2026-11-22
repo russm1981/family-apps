@@ -1,9 +1,15 @@
 {
-  "app": "2026.11.296",
+  "app": "2026.11.297",
   "script": "2026.11.124",
   "date": "2026-11-17",
   "notes": [
-    "Setup wizard: the side panel now just says “Setup wizard” in a bigger title – no second HouseRunner logo."
+    "Calendar tidy-up: every change can now be undone. Before changing an event, HouseRunner notes its old title and colour in a hidden tab of your Google Sheet. After a tidy-up there’s an “Undo this tidy-up” button, and “Undo an earlier tidy-up” lists the last ones. An event you’ve changed again since is left alone.",
+    "Setup – Your family: the home address no longer disappears when you add or remove a person. Saving says it can take up to half a minute (it asks your council about bin days) and shows it’s busy.",
+    "Setup: a new copy of the Sheet starts the family, calendar and licence steps afresh, so leftovers from an earlier attempt no longer count as done.",
+    "Setup: the licence step shows a half-done ½ mark when you carry on with the free trial.",
+    "Calendar colour coding: Save shows it’s busy until it has finished. Clearer wording about people set to “In Family” or in a group.",
+    "Sheet SETUP window: no longer opens with a ring and “Close dialog” tooltip on its Close button.",
+    "Start HERE picture: a note at the top that the floating step window has the same steps – use whichever you prefer. New setup video."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",
