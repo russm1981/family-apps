@@ -1,9 +1,9 @@
 {
-  "app": "2026.11.279",
+  "app": "2026.11.280",
   "script": "2026.11.117",
   "date": "2026-11-17",
   "notes": [
-    "Setup: when you’ve already made a copy, the numbered steps now follow on from either choice – kept your copy (open it from Drive) or made a new one (Google’s Copy document page) – then the Start HERE tab’s 4 steps, carrying on from wherever you got to."
+    "Setup: if you started a setup on this computer before, the first step now just warns that carrying on makes a new Sheet (your earlier copy stays in Google Drive, untouched) – and says how to carry on with that one instead – then shows the usual steps."
   ],
   "licence": "https://script.google.com/macros/s/AKfycbx1rgFZNfT9dVFL1PHMmzMVjqOLV_p-LKv1LuOESdF_1PDqUT6Lfwn8F4WrwU7SSaCu2A/exec",
   "licenceServer": "2026.11.24",

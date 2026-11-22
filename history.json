@@ -1,5 +1,12 @@
 [
   {
+    "version": "2026.11.279",
+    "date": "2026-11-17",
+    "notes": [
+      "Setup: if you started a setup on this computer before, the first step now just warns that carrying on makes a new Sheet (your earlier copy stays in Google Drive, untouched) – and says how to carry on with that one instead – then shows the usual steps."
+    ]
+  },
+  {
     "version": "2026.11.278",
     "date": "2026-11-17",
     "notes": [
